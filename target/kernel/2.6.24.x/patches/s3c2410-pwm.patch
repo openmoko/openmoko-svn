@@ -1,3 +1,8 @@
+This patch adds a PWM api abstraction for the S3C2410 SoC
+
+Signed-off-by: Javi Roman <javiroman@kernel-labs.org>
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6.23/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.23.orig/arch/arm/mach-s3c2410/Kconfig

@@ -1,5 +1,7 @@
 This provides support for the GTA01 keyboard
 
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6/drivers/input/keyboard/Kconfig
 ===================================================================
 --- linux-2.6.orig/drivers/input/keyboard/Kconfig
@@ -8,12 +10,12 @@ Index: linux-2.6/drivers/input/keyboard/Kconfig
  	  To compile this driver as a module, choose M here: the
  	  module will be called bf54x-keys.
  
-+config KEYBOARD_GTA01
-+	tristate "FIC Neo1973 (GTA01) buttons"
-+	depends on MACH_NEO1973_GTA01
++config KEYBOARD_NEO1973
++	tristate "FIC Neo1973 buttons"
++	depends on MACH_NEO1973
 +	default y
 +	help
-+	  Say Y here to enable the buttons on the FIC Neo1973 (GTA01)
++	  Say Y here to enable the buttons on the FIC Neo1973
 +	  GSM phone.
 +
 +	  To compile this driver as a module, choose M here: the
@@ -29,19 +31,19 @@ Index: linux-2.6/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
-+obj-$(CONFIG_KEYBOARD_GTA01)		+= gta01kbd.o
++obj-$(CONFIG_KEYBOARD_NEO1973)		+= neo1973kbd.o
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
+Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/input/keyboard/gta01kbd.c
-@@ -0,0 +1,249 @@
++++ linux-2.6/drivers/input/keyboard/neo1973kbd.c
+@@ -0,0 +1,252 @@
 +/*
-+ * Keyboard driver for FIC GTA01 (Neo1973) GSM phone
++ * Keyboard driver for FIC Neo1973 GSM phone
 + *
-+ * (C) 2006 by OpenMoko, Inc.
++ * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
 + * All rights reserved.
 + *
@@ -63,90 +65,90 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 +#include <asm/hardware.h>
 +#include <asm/arch/gta01.h>
 +
-+struct gta01kbd {
++struct neo1973kbd {
 +	struct input_dev *input;
 +	unsigned int suspended;
 +	unsigned long suspend_jiffies;
 +};
 +
-+static irqreturn_t gta01kbd_aux_irq(int irq, void *dev_id)
++static irqreturn_t neo1973kbd_aux_irq(int irq, void *dev_id)
 +{
-+	struct gta01kbd *gta01kbd_data = dev_id;
++	struct neo1973kbd *neo1973kbd_data = dev_id;
 +
 +	/* FIXME: use GPIO from platform_dev resources */
 +	if (s3c2410_gpio_getpin(GTA01_GPIO_AUX_KEY))
-+		input_report_key(gta01kbd_data->input, KEY_PHONE, 0);
++		input_report_key(neo1973kbd_data->input, KEY_PHONE, 0);
 +	else
-+		input_report_key(gta01kbd_data->input, KEY_PHONE, 1);
++		input_report_key(neo1973kbd_data->input, KEY_PHONE, 1);
 +
-+	input_sync(gta01kbd_data->input);
++	input_sync(neo1973kbd_data->input);
 +
 +	return IRQ_HANDLED;
 +}
 +
-+static irqreturn_t gta01kbd_hold_irq(int irq, void *dev_id)
++static irqreturn_t neo1973kbd_hold_irq(int irq, void *dev_id)
 +{
-+	struct gta01kbd *gta01kbd_data = dev_id;
++	struct neo1973kbd *neo1973kbd_data = dev_id;
 +
 +	/* FIXME: use GPIO from platform_dev resources */
 +	if (s3c2410_gpio_getpin(GTA01_GPIO_HOLD_KEY))
-+		input_report_key(gta01kbd_data->input, KEY_PAUSE, 1);
++		input_report_key(neo1973kbd_data->input, KEY_PAUSE, 1);
 +	else
-+		input_report_key(gta01kbd_data->input, KEY_PAUSE, 0);
++		input_report_key(neo1973kbd_data->input, KEY_PAUSE, 0);
 +
-+	input_sync(gta01kbd_data->input);
++	input_sync(neo1973kbd_data->input);
 +
 +	return IRQ_HANDLED;
 +}
 +
-+static irqreturn_t gta01kbd_headphone_irq(int irq, void *dev_id)
++static irqreturn_t neo1973kbd_headphone_irq(int irq, void *dev_id)
 +{
-+	struct gta01kbd *gta01kbd_data = dev_id;
++	struct neo1973kbd *neo1973kbd_data = dev_id;
 +
 +	/* FIXME: use GPIO from platform_dev resources */
 +	if (s3c2410_gpio_getpin(GTA01_GPIO_JACK_INSERT))
-+		input_report_switch(gta01kbd_data->input, SW_HEADPHONE_INSERT, 1);
++		input_report_switch(neo1973kbd_data->input, SW_HEADPHONE_INSERT, 1);
 +	else
-+		input_report_switch(gta01kbd_data->input, SW_HEADPHONE_INSERT, 0);
++		input_report_switch(neo1973kbd_data->input, SW_HEADPHONE_INSERT, 0);
 +
-+	input_sync(gta01kbd_data->input);
++	input_sync(neo1973kbd_data->input);
 +
 +	return IRQ_HANDLED;
 +}
 +
 +#ifdef CONFIG_PM
-+static int gta01kbd_suspend(struct platform_device *dev, pm_message_t state)
++static int neo1973kbd_suspend(struct platform_device *dev, pm_message_t state)
 +{
-+	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
++	struct neo1973kbd *neo1973kbd = platform_get_drvdata(dev);
 +
-+	gta01kbd->suspended = 1;
++	neo1973kbd->suspended = 1;
 +
 +	return 0;
 +}
 +
-+static int gta01kbd_resume(struct platform_device *dev)
++static int neo1973kbd_resume(struct platform_device *dev)
 +{
-+	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
++	struct neo1973kbd *neo1973kbd = platform_get_drvdata(dev);
 +
-+	gta01kbd->suspended = 0;
++	neo1973kbd->suspended = 0;
 +
 +	return 0;
 +}
 +#else
-+#define gta01kbd_suspend	NULL
-+#define gta01kbd_resume		NULL
++#define neo1973kbd_suspend	NULL
++#define neo1973kbd_resume	NULL
 +#endif
 +
-+static int gta01kbd_probe(struct platform_device *pdev)
++static int neo1973kbd_probe(struct platform_device *pdev)
 +{
-+	struct gta01kbd *gta01kbd;
++	struct neo1973kbd *neo1973kbd;
 +	struct input_dev *input_dev;
-+	int irq_aux, irq_hold, irq_jack;
++	int rc, irq_aux, irq_hold, irq_jack;
 +
-+	gta01kbd = kzalloc(sizeof(struct gta01kbd), GFP_KERNEL);
++	neo1973kbd = kzalloc(sizeof(struct neo1973kbd), GFP_KERNEL);
 +	input_dev = input_allocate_device();
-+	if (!gta01kbd || !input_dev) {
-+		kfree(gta01kbd);
++	if (!neo1973kbd || !input_dev) {
++		kfree(neo1973kbd);
 +		input_free_device(input_dev);
 +		return -ENOMEM;
 +	}
@@ -166,12 +168,12 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 +	if (irq_jack < 0)
 +		return -EINVAL;
 +
-+	platform_set_drvdata(pdev, gta01kbd);
++	platform_set_drvdata(pdev, neo1973kbd);
 +
-+	gta01kbd->input = input_dev;
++	neo1973kbd->input = input_dev;
 +
 +#if 0
-+	spin_lock_init(&gta01kbd->lock);
++	spin_lock_init(&neo1973kbd->lock);
 +	/* Init Keyboard rescan timer */
 +	init_timer(&corgikbd->timer);
 +	corgikbd->timer.function = corgikbd_timer_callback;
@@ -186,40 +188,42 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 +#endif
 +
 +	input_dev->name = "Neo1973 Buttons";
-+	input_dev->phys = "gta01kbd/input0";
++	input_dev->phys = "neo1973kbd/input0";
 +	input_dev->id.bustype = BUS_HOST;
 +	input_dev->id.vendor = 0x0001;
 +	input_dev->id.product = 0x0001;
 +	input_dev->id.version = 0x0100;
 +	input_dev->cdev.dev = &pdev->dev;
-+	input_dev->private = gta01kbd;
++	input_dev->private = neo1973kbd;
 +
 +	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_SW);
 +	set_bit(SW_HEADPHONE_INSERT, input_dev->swbit);
 +	set_bit(KEY_PHONE, input_dev->keybit);
 +	set_bit(KEY_PAUSE, input_dev->keybit);
 +
-+	input_register_device(gta01kbd->input);
++	rc = input_register_device(neo1973kbd->input);
++	if (rc)
++		goto out_register;
 +
-+	if (request_irq(irq_aux, gta01kbd_aux_irq, IRQF_DISABLED |
++	if (request_irq(irq_aux, neo1973kbd_aux_irq, IRQF_DISABLED |
 +			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-+			"Neo1973 AUX button", gta01kbd)) {
++			"Neo1973 AUX button", neo1973kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_aux);
 +		goto out_aux;
 +	}
 +	enable_irq_wake(irq_aux);
 +
-+	if (request_irq(irq_hold, gta01kbd_hold_irq, IRQF_DISABLED |
++	if (request_irq(irq_hold, neo1973kbd_hold_irq, IRQF_DISABLED |
 +			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-+			"Neo1973 HOLD button", gta01kbd)) {
++			"Neo1973 HOLD button", neo1973kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_hold);
 +		goto out_hold;
 +	}
 +	enable_irq_wake(irq_hold);
 +
-+	if (request_irq(irq_jack, gta01kbd_headphone_irq, IRQF_DISABLED |
++	if (request_irq(irq_jack, neo1973kbd_headphone_irq, IRQF_DISABLED |
 +			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-+			"Neo1973 Headphone Jack", gta01kbd)) {
++			"Neo1973 Headphone Jack", neo1973kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_jack);
 +		goto out_jack;
 +	}
@@ -230,60 +234,61 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 +	return 0;
 +
 +out_jack:
-+	free_irq(irq_hold, gta01kbd);
++	free_irq(irq_hold, neo1973kbd);
 +out_hold:
-+	free_irq(irq_aux, gta01kbd);
++	free_irq(irq_aux, neo1973kbd);
 +out_aux:
-+	input_unregister_device(gta01kbd->input);
-+	input_free_device(gta01kbd->input);
++	input_unregister_device(neo1973kbd->input);
++out_register:
++	input_free_device(neo1973kbd->input);
 +	platform_set_drvdata(pdev, NULL);
-+	kfree(gta01kbd);
++	kfree(neo1973kbd);
 +
 +	return -ENODEV;
 +}
 +
-+static int gta01kbd_remove(struct platform_device *pdev)
++static int neo1973kbd_remove(struct platform_device *pdev)
 +{
-+	struct gta01kbd *gta01kbd = platform_get_drvdata(pdev);
++	struct neo1973kbd *neo1973kbd = platform_get_drvdata(pdev);
 +
-+	free_irq(s3c2410_gpio_getirq(pdev->resource[2].start), gta01kbd);
-+	free_irq(s3c2410_gpio_getirq(pdev->resource[1].start), gta01kbd);
-+	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), gta01kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[2].start), neo1973kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[1].start), neo1973kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), neo1973kbd);
 +#if 0
 +	del_timer_sync(&corgikbd->htimer);
 +	del_timer_sync(&corgikbd->timer);
 +#endif
-+	input_unregister_device(gta01kbd->input);
-+	input_free_device(gta01kbd->input);
++	input_unregister_device(neo1973kbd->input);
++	input_free_device(neo1973kbd->input);
 +	platform_set_drvdata(pdev, NULL);
-+	kfree(gta01kbd);
++	kfree(neo1973kbd);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver gta01kbd_driver = {
-+	.probe		= gta01kbd_probe,
-+	.remove		= gta01kbd_remove,
-+	.suspend	= gta01kbd_suspend,
-+	.resume		= gta01kbd_resume,
++static struct platform_driver neo1973kbd_driver = {
++	.probe		= neo1973kbd_probe,
++	.remove		= neo1973kbd_remove,
++	.suspend	= neo1973kbd_suspend,
++	.resume		= neo1973kbd_resume,
 +	.driver		= {
-+		.name	= "gta01-button",
++		.name	= "neo1973-button",
 +	},
 +};
 +
-+static int __devinit gta01kbd_init(void)
++static int __devinit neo1973kbd_init(void)
 +{
-+	return platform_driver_register(&gta01kbd_driver);
++	return platform_driver_register(&neo1973kbd_driver);
 +}
 +
-+static void __exit gta01kbd_exit(void)
++static void __exit neo1973kbd_exit(void)
 +{
-+	platform_driver_unregister(&gta01kbd_driver);
++	platform_driver_unregister(&neo1973kbd_driver);
 +}
 +
-+module_init(gta01kbd_init);
-+module_exit(gta01kbd_exit);
++module_init(neo1973kbd_init);
++module_exit(neo1973kbd_exit);
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC Neo1973 (GTA01) Buttons Driver");
++MODULE_DESCRIPTION("FIC Neo1973 buttons input driver");
 +MODULE_LICENSE("GPL");

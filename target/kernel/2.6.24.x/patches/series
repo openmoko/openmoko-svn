@@ -20,9 +20,9 @@ s3cmci-stop-fix.patch
 s3cmci-unfinished-write-fix.patch
 s3c_mci_platform.patch
 s3c2410-pwm.patch
-qt2410-base.patch
 qt2410-cs8900.patch
 qt2410-s3c_mci-pdata.patch
+gta01-no_nand_partitions.patch
 gta01-pcf50606.patch
 gta01-core.patch
 gta01-jbt6k74.patch
@@ -30,7 +30,6 @@ gta01-backlight.patch
 gta01-vibrator.patch
 gta01-inputdevice.patch
 gta01-power_control.patch
-gta01-no_nand_partitions.patch
 input-nots-mousedev.patch
 ts0710.patch
 s3c2410-qt2410-buttons.patch

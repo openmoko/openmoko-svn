@@ -29,7 +29,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,380 @@
+@@ -0,0 +1,378 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -310,7 +310,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 +};
 +
 +static struct platform_device hxd8_pm_gsm_dev = {
-+	.name		= "gta01-pm-gsm",
++	.name		= "neo1973-pm-gsm",
 +};
 +
 +static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
@@ -334,7 +334,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 +
 +/* USB Charger */
 +
-+static int hxd8_udc_vbus_draw(unsigned int ma)
++static void hxd8_udc_vbus_draw(unsigned int ma)
 +{
 +	if (ma >= 500) {
 +		/* enable fast charge */
@@ -345,8 +345,6 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 +		printk(KERN_DEBUG "udc: disabling fast charge\n");
 +		s3c2410_gpio_setpin(HXD8_GPIO_USB_CUR_SEL, 0);
 +	}
-+
-+	return 0;
 +}
 +
 +static struct s3c2410_udc_mach_info hxd8_udc_cfg = {

@@ -1,16 +1,16 @@
-Index: linux-2.6/arch/arm/common/Makefile
+Index: linux-2.6/arch/arm/plat-s3c24xx/Makefile
 ===================================================================
---- linux-2.6.orig/arch/arm/common/Makefile
-+++ linux-2.6/arch/arm/common/Makefile
-@@ -18,3 +18,4 @@
- obj-$(CONFIG_ARCH_IXP2000)	+= uengine.o
- obj-$(CONFIG_ARCH_IXP23XX)	+= uengine.o
- obj-$(CONFIG_PCI_HOST_ITE8152)  += it8152.o
-+obj-$(CONFIG_MACH_NEO1973_GTA01)+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
-Index: linux-2.6/arch/arm/common/gta01_pm_gps.c
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/Makefile
++++ linux-2.6/arch/arm/plat-s3c24xx/Makefile
+@@ -28,3 +28,4 @@
+ obj-$(CONFIG_PM)		+= sleep.o
+ obj-$(CONFIG_S3C2410_DMA)	+= dma.o
+ obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
++obj-$(CONFIG_MACH_NEO1973)	+= neo1973_pm_gsm.o neo1973_pm_gps.o neo1973_pm_bt.o
+Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/arm/common/gta01_pm_gps.c
++++ linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
 @@ -0,0 +1,558 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
@@ -550,7 +550,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_gps.c
 +	.suspend	= gta01_pm_gps_suspend,
 +	.resume		= gta01_pm_gps_resume,
 +	.driver		= {
-+		.name		= "gta01-pm-gps",
++		.name		= "neo1973-pm-gps",
 +	},
 +};
 +
@@ -569,11 +569,11 @@ Index: linux-2.6/arch/arm/common/gta01_pm_gps.c
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GPS Power Management");
-Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
++MODULE_DESCRIPTION("FIC Neo1973 GPS Power Management");
+Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 @@ -0,0 +1,217 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
@@ -772,7 +772,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
 +	.suspend	= gta01_gsm_suspend,
 +	.resume		= gta01_gsm_resume,
 +	.driver		= {
-+		.name		= "gta01-pm-gsm",
++		.name		= "neo1973-pm-gsm",
 +	},
 +};
 +
@@ -791,12 +791,12 @@ Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
-Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
++MODULE_DESCRIPTION("FIC Neo1973 GSM Power Management");
+Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/arm/common/gta01_pm_bt.c
-@@ -0,0 +1,154 @@
++++ linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
+@@ -0,0 +1,152 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone
 + *
@@ -820,7 +820,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 +#include <asm/hardware.h>
 +#include <asm/arch/gta01.h>
 +
-+#define DRVMSG "FIC GTA01 (Neo1973) Bluetooth Power Management"
++#define DRVMSG "FIC Neo1973 Bluetooth Power Management"
 +
 +static ssize_t bt_read(struct device *dev, struct device_attribute *attr,
 +		       char *buf)
@@ -872,7 +872,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 +#ifdef CONFIG_PM
 +static int gta01_bt_suspend(struct platform_device *pdev, pm_message_t state)
 +{
-+	dev_info(&pdev->dev, DRVMSG ": suspending\n");
++	dev_dbg(&pdev->dev, DRVMSG ": suspending\n");
 +	/* FIXME: The PMU should save the PMU status, and the GPIO code should
 +	 * preserve the GPIO level, so there shouldn't be anything left to do
 +	 * for us, should there? */
@@ -882,7 +882,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 +
 +static int gta01_bt_resume(struct platform_device *pdev)
 +{
-+	dev_info(&pdev->dev, DRVMSG ": resuming\n");
++	dev_dbg(&pdev->dev, DRVMSG ": resuming\n");
 +
 +	return 0;
 +}
@@ -918,8 +918,6 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 +
 +static int gta01_bt_remove(struct platform_device *pdev)
 +{
-+	dev_info(&pdev->dev, DRVMSG ": ending\n");
-+
 +	sysfs_remove_group(&pdev->dev.kobj, &gta01_bt_attr_group);
 +
 +	return 0;
@@ -931,7 +929,7 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 +	.suspend	= gta01_bt_suspend,
 +	.resume		= gta01_bt_resume,
 +	.driver		= {
-+		.name		= "gta01-pm-bt",
++		.name		= "neo1973-pm-bt",
 +	},
 +};
 +

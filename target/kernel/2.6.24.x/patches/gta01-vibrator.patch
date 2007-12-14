@@ -1,14 +1,54 @@
-This patch adds driver support for the FIC GTA01 vibrator device.  The driver
-uses the existing LED class driver framework, since there's a lot of
-similarity between the LED and the vibrator function.
+This patch adds driver support for the vibator device of the FIC/OpenMoko
+Neo1973 GSM phone. The driver uses the existing LED class driver framework,
+since there's a lot of similarity between the LED and the vibrator function.
 
-Index: linux-2.6/drivers/leds/leds-gta01.c
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
+Index: linux-2.6/drivers/leds/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/leds/Kconfig
++++ linux-2.6/drivers/leds/Kconfig
+@@ -57,7 +57,7 @@
+ 
+ config LEDS_S3C24XX
+ 	tristate "LED Support for Samsung S3C24XX GPIO LEDs"
+-	depends on LEDS_CLASS && ARCH_S3C2410
++	depends on LEDS_CLASS && ARCH_S3C2410 && S3C2410_PWM
+ 	help
+ 	  This option enables support for LEDs connected to GPIO lines
+ 	  on Samsung S3C24XX series CPUs, such as the S3C2410 and S3C2440.
+@@ -114,6 +114,12 @@
+ 	help
+ 	  This option enables support for the CM-X270 LEDs.
+ 
++config LEDS_NEO1973_VIBRATOR
++	tristate "Vibrator Support for the FIC Neo1973 GSM phone"
++	depends on LEDS_CLASS && MACH_NEO1973
++	help
++	  This option enables support for the vibrator on the FIC Neo1973.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+Index: linux-2.6/drivers/leds/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/leds/Makefile
++++ linux-2.6/drivers/leds/Makefile
+@@ -19,6 +19,7 @@
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
+ obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
+ obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
++obj-$(CONFIG_LEDS_NEO1973_VIBRATOR)	+= leds-neo1973-vibrator.o
+ 
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/leds/leds-gta01.c
-@@ -0,0 +1,177 @@
++++ linux-2.6/drivers/leds/leds-neo1973-vibrator.c
+@@ -0,0 +1,178 @@
 +/*
-+ * LED driver for the FIC GTA01 (Neo1973) GSM Phone Vibrator
++ * LED driver for the vibrator of the FIC Neo1973 GSM Phone
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -70,7 +110,7 @@ Index: linux-2.6/drivers/leds/leds-gta01.c
 +static struct gta01_vib_priv gta01_vib_led = {
 +	.cdev = {
 +		.name = "gta01:vibrator",
-+	.brightness_set = gta01vib_vib_set,
++		.brightness_set = gta01vib_vib_set,
 +	},
 +};
 +
@@ -165,7 +205,7 @@ Index: linux-2.6/drivers/leds/leds-gta01.c
 +	.resume		= gta01vib_resume,
 +#endif
 +	.driver		= {
-+		.name		= "gta01-led",
++		.name		= "neo1973-vibrator",
 +	},
 +};
 +
@@ -183,42 +223,5 @@ Index: linux-2.6/drivers/leds/leds-gta01.c
 +module_exit(gta01vib_exit);
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC GTA01 Vibrator driver");
-Index: linux-2.6/drivers/leds/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/leds/Kconfig
-+++ linux-2.6/drivers/leds/Kconfig
-@@ -57,7 +57,7 @@
- 
- config LEDS_S3C24XX
- 	tristate "LED Support for Samsung S3C24XX GPIO LEDs"
--	depends on LEDS_CLASS && ARCH_S3C2410
-+	depends on LEDS_CLASS && ARCH_S3C2410 && S3C2410_PWM
- 	help
- 	  This option enables support for LEDs connected to GPIO lines
- 	  on Samsung S3C24XX series CPUs, such as the S3C2410 and S3C2440.
-@@ -114,6 +114,12 @@
- 	help
- 	  This option enables support for the CM-X270 LEDs.
- 
-+config LEDS_GTA01
-+	tristate "Vibrator Support for the FIC Neo1973 (GTA01) Vibrator"
-+	depends on LEDS_CLASS && MACH_NEO1973_GTA01
-+	help
-+	  This option enables support for the Vibrator on the FIC Neo1973.
-+
- comment "LED Triggers"
- 
- config LEDS_TRIGGERS
-Index: linux-2.6/drivers/leds/Makefile
-===================================================================
---- linux-2.6.orig/drivers/leds/Makefile
-+++ linux-2.6/drivers/leds/Makefile
-@@ -19,6 +19,7 @@
- obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
- obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
-+obj-$(CONFIG_LEDS_GTA01)		+= leds-gta01.o
- 
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
++MODULE_DESCRIPTION("FIC Neo1973 vibrator driver");
++MODULE_LICENSE("GPL");

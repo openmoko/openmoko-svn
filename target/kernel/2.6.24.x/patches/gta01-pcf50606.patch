@@ -1,15 +1,19 @@
-This is the PCF50606 power management unit driver for FIC GTA01
+This is a NXP PCF50606 power management unit driver.
+
+The PCF50606 is used in the FIC/OpenMoko Neo1973 GTA01 GSM phone.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1929 @@
-+/* Philips PCF50606 Power Management Unit (PMU) driver
+@@ -0,0 +1,1935 @@
++/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
-+ * (C) 2006 by OpenMoko, Inc.
-+ * Author: Harald Welte <laforge@openmoko.org> +
-+ * 	   Matt Hsu <matt@openmoko.org>
++ * (C) 2006-2007 by OpenMoko, Inc.
++ * Authors: Harald Welte <laforge@openmoko.org>,
++ *	    Matt Hsu <matt@openmoko.org>
 + * All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -62,11 +66,12 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +#include "pcf50606.h"
 +
-+#if 1
-+#define DEBUGP(x, args ...) printk("%s: " x, __FUNCTION__, ## args)
++/* we use dev_dbg() throughout the code, but sometimes don't want to
++ * write an entire line of debug related information.  This DEBUGPC
++ * macro is a continuation for dev_dbg() */
++#ifdef DEBUG
 +#define DEBUGPC(x, args ...) printk(x, ## args)
 +#else
-+#define DEBUGP(x, args ...)
 +#define DEBUGPC(x, args ...)
 +#endif
 +
@@ -126,8 +131,11 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +static struct i2c_driver pcf50606_driver;
 +
++/* This is an ugly construct on how to access the (currently single/global)
++ * pcf50606 handle from other code in the kernel.  I didn't really come up with
++ * a more decent method of dynamically resolving this */
 +struct pcf50606_data *pcf50606_global;
-+EXPORT_SYMBOL(pcf50606_global);
++EXPORT_SYMBOL_GPL(pcf50606_global);
 +
 +static struct platform_device *pcf50606_pdev;
 +
@@ -229,7 +237,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	u_int8_t adcs2, adcs1;
 +	u_int16_t ret;
 +
-+	DEBUGP("entering (pcf=%p, channel=%u, data2=%p)\n",
++	dev_dbg(&pcf->client.dev, "entering (pcf=%p, channel=%u, data2=%p)\n",
 +		pcf, channel, data2);
 +
 +	channel &= PCF50606_ADCC2_ADCMUX_MASK;
@@ -254,7 +262,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	mutex_unlock(&pcf->lock);
 +
-+	DEBUGP("returning %u %u\n", ret, data2 ? *data2 : 0);
++	dev_dbg(&pcf->client.dev, "returning %u %u\n", ret,
++		data2 ? *data2 : 0);
 +
 +	return ret;
 +}
@@ -336,8 +345,6 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +static u_int8_t dx_voltage(unsigned int millivolts)
 +{
-+	DEBUGP("(mvolts=%u)\n", millivolts);
-+
 +	if (millivolts < 900)
 +		return 0;
 +	else if (millivolts > 3300)
@@ -385,7 +392,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(pcf50606_onoff_set);
++EXPORT_SYMBOL_GPL(pcf50606_onoff_set);
 +
 +int pcf50606_onoff_get(struct pcf50606_data *pcf,
 +		       enum pcf50606_regulator_id reg)
@@ -407,7 +414,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +			return 1;
 +	}
 +}
-+EXPORT_SYMBOL(pcf50606_onoff_get);
++EXPORT_SYMBOL_GPL(pcf50606_onoff_get);
 +
 +int pcf50606_voltage_set(struct pcf50606_data *pcf,
 +			 enum pcf50606_regulator_id reg,
@@ -417,7 +424,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	u_int8_t regnr;
 +	int rc;
 +
-+	DEBUGP("pcf=%p, reg=%d, mvolts=%d\n", pcf, reg, millivolts);
++	dev_dbg(&pcf->client.dev, "pcf=%p, reg=%d, mvolts=%d\n", pcf, reg,
++		millivolts);
 +
 +	if (reg >= __NUM_PCF50606_REGULATORS)
 +		return -EINVAL;
@@ -446,7 +454,6 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	case PCF50606_REGULATOR_D3REG:
 +		regnr = PCF50606_REG_D1REGC1 + (reg - PCF50606_REGULATOR_D1REG);
 +		volt_bits = dx_voltage(millivolts);
-+		DEBUGP("dx_voltage(0x%x)=%u\n", millivolts, volt_bits);
 +		rc = reg_set_bit_mask(pcf, regnr, 0x1f, volt_bits);
 +		break;
 +	case PCF50606_REGULATOR_LPREG:
@@ -467,7 +474,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	return rc;
 +}
-+EXPORT_SYMBOL(pcf50606_voltage_set);
++EXPORT_SYMBOL_GPL(pcf50606_voltage_set);
 +
 +unsigned int pcf50606_voltage_get(struct pcf50606_data *pcf,
 +			 enum pcf50606_regulator_id reg)
@@ -519,7 +526,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	return rc;
 +}
-+EXPORT_SYMBOL(pcf50606_voltage_get);
++EXPORT_SYMBOL_GPL(pcf50606_voltage_get);
 +
 +/* go into 'STANDBY' mode, i.e. power off the main CPU and peripherals */
 +void pcf50606_go_standby(void)
@@ -527,7 +534,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	reg_write(pcf50606_global, PCF50606_REG_OOCC1,
 +		  PCF50606_OOCC1_GOSTDBY);
 +}
-+EXPORT_SYMBOL(pcf50606_go_standby);
++EXPORT_SYMBOL_GPL(pcf50606_go_standby);
 +
 +void pcf50606_gpo0_set(struct pcf50606_data *pcf, int on)
 +{
@@ -540,7 +547,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	reg_set_bit_mask(pcf, PCF50606_REG_GPOC1, 0x0f, val);
 +}
-+EXPORT_SYMBOL(pcf50606_gpo0_set);
++EXPORT_SYMBOL_GPL(pcf50606_gpo0_set);
 +
 +int pcf50606_gpo0_get(struct pcf50606_data *pcf)
 +{
@@ -551,7 +558,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(pcf50606_gpo0_get);
++EXPORT_SYMBOL_GPL(pcf50606_gpo0_get);
 +
 +static void pcf50606_work(struct work_struct *work)
 +{
@@ -565,7 +572,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	int2 = __reg_read(pcf, PCF50606_REG_INT2);
 +	int3 = __reg_read(pcf, PCF50606_REG_INT3);
 +
-+	DEBUGP("INT1=0x%02x INT2=0x%02x INT3=0x%02x:", int1, int2, int3);
++	dev_dbg(&pcf->client.dev, "INT1=0x%02x INT2=0x%02x INT3=0x%02x:",
++		int1, int2, int3);
 +
 +	if (int1 & PCF50606_INT1_ONKEYF) {
 +		/* ONKEY falling edge (start of button press) */
@@ -613,8 +621,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +		if (pcf->onkey_seconds >= 0 &&
 +		    pcf->flags & PCF50606_F_PWR_PRESSED) {
-+			DEBUGP("ONKEY_SECONDS(%u, OOCC1=0x%02x) ",
-+				pcf->onkey_seconds, reg_read(pcf, PCF50606_REG_OOCC1));
++			DEBUGPC("ONKEY_SECONDS(%u, OOCC1=0x%02x) ",
++				pcf->onkey_seconds,
++				reg_read(pcf, PCF50606_REG_OOCC1));
 +			pcf->onkey_seconds++;
 +			if (pcf->onkey_seconds >=
 +			    pcf->pdata->onkey_seconds_required) {
@@ -641,8 +650,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +		if (pcf->pdata->cb)
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
-+		/* FIXME: signal this to userspace */
-+		//kobject_uevent( ,KOBJ_ADD);
++		/* FIXME: how to signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGRM) {
 +		/* Charger removed */
@@ -653,28 +661,27 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +		if (pcf->pdata->cb)
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
-+		/* FIXME: signal this to userspace */
-+		//kobject_uevent( ,KOBJ_REMOVE);
++		/* FIXME: how signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGFOK) {
 +		/* Battery ready for fast charging */
 +		DEBUGPC("CHGFOK ");
 +		pcf->flags |= PCF50606_F_CHG_FOK;
-+		/* FIXME: signal this to userspace */
++		/* FIXME: how to signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGERR) {
 +		/* Error in charge mode */
 +		DEBUGPC("CHGERR ");
 +		pcf->flags |= PCF50606_F_CHG_ERR;
 +		pcf->flags &= ~(PCF50606_F_CHG_FOK|PCF50606_F_CHG_READY);
-+		/* FIXME: signal this to userspace */
++		/* FIXME: how to signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGFRDY) {
 +		/* Fast charge completed */
 +		DEBUGPC("CHGFRDY ");
 +		pcf->flags |= PCF50606_F_CHG_READY;
 +		pcf->flags &= ~PCF50606_F_CHG_FOK;
-+		/* FIXME: signal this to userspace */
++		/* FIXME: how to signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGPROT) {
 +		/* Charging protection interrupt */
@@ -692,7 +699,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	if (int2 & PCF50606_INT2_CHGWDEXP) {
 +		/* Charger watchdog expires */
 +		DEBUGPC("CHGWDEXP ");
-+		/* FIXME: signal this to userspace */
++		/* FIXME: how to signal this to userspace */
 +	}
 +
 +	if (int3 & PCF50606_INT3_ADCRDY) {
@@ -701,14 +708,14 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	}
 +	if (int3 & PCF50606_INT3_ACDINS) {
 +		/* Accessory insertion detected */
-+		DEBUGP("ACDINS ");
++		DEBUGPC("ACDINS ");
 +		if (pcf->pdata->cb)
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50606_FEAT_ACD, PMU_EVT_INSERT);
 +	}
 +	if (int3 & PCF50606_INT3_ACDREM) {
 +		/* Accessory removal detected */
-+		DEBUGP("ACDREM ");
++		DEBUGPC("ACDREM ");
 +		if (pcf->pdata->cb)
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50606_FEAT_ACD, PMU_EVT_REMOVE);
@@ -755,7 +762,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +{
 +	struct pcf50606_data *pcf = _pcf;
 +
-+	DEBUGP("entering(irq=%u, pcf=%p): scheduling work\n",
++	dev_dbg(&pcf->client.dev, "entering(irq=%u, pcf=%p): scheduling work\n",
 +		irq, _pcf);
 +	pcf50606_schedule_work(pcf);
 +
@@ -795,7 +802,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	return adc_to_batt_millivolts(adc);
 +}
-+EXPORT_SYMBOL(pcf50606_battvolt);
++EXPORT_SYMBOL_GPL(pcf50606_battvolt);
 +
 +static ssize_t show_battvolt(struct device *dev, struct device_attribute *attr,
 +			     char *buf)
@@ -862,8 +869,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	if (reg_id < 0)
 +		return -EIO;
 +
-+	DEBUGP("attempting to set %s(%d) to %lu mvolts\n", attr->attr.name,
-+		reg_id, mvolts);
++	dev_dbg(dev, "attempting to set %s(%d) to %lu mvolts\n",
++		attr->attr.name, reg_id, mvolts);
 +
 +	if (mvolts == 0) {
 +		pcf50606_onoff_set(pcf, reg_id, 0);
@@ -918,7 +925,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +				 PCF50606_MBCC1_CHGMOD_IDLE);
 +	}
 +}
-+EXPORT_SYMBOL(pcf50606_charge_fast);
++EXPORT_SYMBOL_GPL(pcf50606_charge_fast);
 +
 +#define ONE			1000000
 +static inline u_int16_t adc_to_rntc(struct pcf50606_data *pcf, u_int16_t adc)
@@ -1164,13 +1171,13 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	pcf_tm.year = __reg_read(pcf, PCF50606_REG_RTCYR);
 +	mutex_unlock(&pcf->lock);
 +
-+	DEBUGP("PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
++	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
 +		pcf_tm.day, pcf_tm.month, pcf_tm.year,
 +		pcf_tm.hour, pcf_tm.min, pcf_tm.sec);
 +
 +	pcf2rtc_time(tm, &pcf_tm);
 +
-+	DEBUGP("RTC_TIME: %u.%u.%u %u:%u:%u\n",
++	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
 +		tm->tm_mday, tm->tm_mon, tm->tm_year,
 +		tm->tm_hour, tm->tm_min, tm->tm_sec);
 +
@@ -1183,11 +1190,11 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	struct pcf50606_time pcf_tm;
 +
-+	DEBUGP("RTC_TIME: %u.%u.%u %u:%u:%u\n",
++	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
 +		tm->tm_mday, tm->tm_mon, tm->tm_year,
 +		tm->tm_hour, tm->tm_min, tm->tm_sec);
 +	rtc2pcf_time(&pcf_tm, tm);
-+	DEBUGP("PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
++	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
 +		pcf_tm.day, pcf_tm.month, pcf_tm.year,
 +		pcf_tm.hour, pcf_tm.min, pcf_tm.sec);
 +
@@ -1419,7 +1426,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	for (i = 0; i < ARRAY_SIZE(pwm_dc_table); i++) {
 +		if (!strncmp(buf, pwm_dc_table[i], strlen(pwm_dc_table[i]))) {
-+			DEBUGP("setting pwm dc %s\n\r", pwm_dc_table[i]);
++			dev_dbg(dev, "setting pwm dc %s\n\r", pwm_dc_table[i]);
 +			reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0x1e,
 +					 (i << PCF50606_PWMC1_DC_SHIFT));
 +		}
@@ -1456,7 +1463,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	for (i = 0; i < ARRAY_SIZE(pwm_clk_table); i++) {
 +		if (!strncmp(buf, pwm_clk_table[i], strlen(pwm_clk_table[i]))) {
-+			DEBUGP("setting pwm clk %s\n\r", pwm_clk_table[i]);
++			dev_dbg(dev, "setting pwm clk %s\n\r",
++				pwm_clk_table[i]);
 +			reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0xe0,
 +					 (i << PCF50606_PWMC1_CLK_SHIFT));
 +		}
@@ -1502,11 +1510,11 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +/* We currently place those platform devices here to make sure the device
 + * suspend/resume order is correct */
 +static struct platform_device gta01_pm_gps_dev = {
-+	.name		="gta01-pm-gps",
++	.name		= "neo1973-pm-gps",
 +};
 +
 +static struct platform_device gta01_pm_bt_dev = {
-+	.name		="gta01-pm-bt",
++	.name		= "neo1973-pm-bt",
 +};
 +#endif
 +
@@ -1562,7 +1570,6 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	int err = 0;
 +	int irq;
 +
-+	DEBUGP("entering\n");
 +	if (!pcf50606_pdev) {
 +		printk(KERN_ERR "pcf50606: driver needs a platform_device!\n");
 +		return -EIO;
@@ -1624,7 +1631,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +		goto exit_sysfs;
 +
 +	data->input_dev->name = "FIC Neo1973 PMU events";
-+	data->input_dev->phys = "FIXME";
++	data->input_dev->phys = "I2C";
 +	data->input_dev->id.bustype = BUS_I2C;
 +	data->input_dev->cdev.dev = &new_client->dev;
 +
@@ -1633,7 +1640,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	set_bit(KEY_POWER2, data->input_dev->keybit);
 +	set_bit(KEY_BATTERY, data->input_dev->keybit);
 +
-+	input_register_device(data->input_dev);
++	err = input_register_device(data->input_dev);
++	if (err)
++		goto exit_sysfs;
 +
 +	/* register power off handler with core power management */
 +	pm_power_off = &pcf50606_go_standby;
@@ -1688,7 +1697,6 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +							    &pcf50606bl_ops);
 +		if (!data->backlight)
 +			goto exit_misc;
-+		/* FIXME: are we sure we want default == off? */
 +		data->backlight->props.max_brightness = 16;
 +		data->backlight->props.power = FB_BLANK_UNBLANK;
 +		data->backlight->props.brightness =
@@ -1721,9 +1729,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +			       PCF50606_ACDC1_ACDAPE);
 +
 +	return 0;
-+exit_pwm:
-+	if (data->pdata->used_features & PCF50606_FEAT_PWM_BL)
-+		backlight_device_unregister(data->backlight);
++
 +exit_misc:
 +	if (data->pdata->used_features & PCF50606_FEAT_WDT)
 +		misc_deregister(&pcf50606_wdt_miscdev);
@@ -1747,15 +1753,12 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +static int pcf50606_attach_adapter(struct i2c_adapter *adapter)
 +{
-+	DEBUGP("entering, calling i2c_probe\n");
 +	return i2c_probe(adapter, &addr_data, &pcf50606_detect);
 +}
 +
 +static int pcf50606_detach_client(struct i2c_client *client)
 +{
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
-+
-+	DEBUGP("entering\n");
 +
 +	apm_get_power_status = NULL;
 +	input_unregister_device(pcf->input_dev);
@@ -1781,9 +1784,15 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +}
 +
 +#ifdef CONFIG_PM
-+#define INT1M_RESUMERS	(PCF50606_INT1_ALARM|PCF50606_INT1_ONKEYF|PCF50606_INT1_EXTONR)
-+#define INT2M_RESUMERS	(PCF50606_INT2_CHGWD10S|PCF50606_INT2_CHGPROT|PCF50606_INT2_CHGERR)
-+#define INT3M_RESUMERS	(PCF50606_INT3_LOWBAT|PCF50606_INT3_HIGHTMP|PCF50606_INT3_ACDINS)
++#define INT1M_RESUMERS	(PCF50606_INT1_ALARM | \
++			 PCF50606_INT1_ONKEYF | \
++			 PCF50606_INT1_EXTONR)
++#define INT2M_RESUMERS	(PCF50606_INT2_CHGWD10S | \
++			 PCF50606_INT2_CHGPROT | \
++			 PCF50606_INT2_CHGERR)
++#define INT3M_RESUMERS	(PCF50606_INT3_LOWBAT | \
++			 PCF50606_INT3_HIGHTMP | \
++			 PCF50606_INT3_ACDINS)
 +static int pcf50606_suspend(struct device *dev, pm_message_t state)
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
@@ -1820,7 +1829,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +			if (i == PCF50606_REGULATOR_IOREG)
 +				continue;
 +
-+			DEBUGP("disabling pcf50606 regulator %u\n", i);
++			dev_dbg(dev, "disabling pcf50606 regulator %u\n", i);
 +			/* we cannot use pcf50606_onoff_set() because we're
 +			 * already under the mutex */
 +			tmp = __reg_read(pcf, regulator_registers[i]);
@@ -1929,6 +1938,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	platform_driver_unregister(&pcf50606_plat_driver);
 +}
 +
++MODULE_DESCRIPTION("I2C chip driver for NXP PCF50606 power management unit");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_LICENSE("GPL");
 +
@@ -2250,10 +2260,10 @@ Index: linux-2.6/drivers/i2c/chips/Kconfig
  	  will be called eeprom.
  
 +config SENSORS_PCF50606
-+	tristate "Philips PCF50606"
++	tristate "Philips/NXP PCF50606"
 +	depends on I2C
 +	help
-+	  If you say yes here you get support for Philips PCF50606
++	  If you say yes here you get support for Philips/NXP PCF50606
 +	  PMU (Power Management Unit) chips.
 +
 +	  This driver can also be built as a module.  If so, the module
@@ -2291,7 +2301,7 @@ Index: linux-2.6/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6/include/linux/pcf50606.h
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,108 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -2309,6 +2319,10 @@ Index: linux-2.6/include/linux/pcf50606.h
 +};
 +
 +struct pcf50606_data;
++
++/* This is an ugly construct on how to access the (currently single/global)
++ * pcf50606 handle from other code in the kernel.  I didn't really come up with
++ * a more decent method of dynamically resolving this */
 +extern struct pcf50606_data *pcf50606_global;
 +
 +extern void

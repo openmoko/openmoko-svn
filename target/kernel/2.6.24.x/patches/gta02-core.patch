@@ -2,7 +2,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,663 @@
+@@ -0,0 +1,667 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -393,7 +393,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +static void __gta02_udc_vbus_draw(struct work_struct *work)
 +{
 +	if (!pcf50633_global) {
-+		printk(KERN_ERR, "pcf50633 not initialized yet, can't change "
++		printk(KERN_ERR  "pcf50633 not initialized yet, can't change "
 +		       "vbus_draw\n");
 +		return;
 +	}
@@ -497,13 +497,13 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +};
 +
 +static struct platform_device gta01_button_dev = {
-+	.name		= "gta01-button",
++	.name		= "neo1973-button",
 +	.num_resources	= ARRAY_SIZE(gta01_button_resources),
 +	.resource	= gta01_button_resources,
 +};
 +
 +static struct platform_device gta01_pm_gsm_dev = {
-+	.name		= "gta01-pm-gsm",
++	.name		= "neo1973-pm-gsm",
 +};
 +
 +/* USB */
@@ -600,6 +600,8 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +static void __init gta02_machine_init(void)
 +{
++	int rc;
++
 +	s3c_device_usb.dev.platform_data = &gta02_usb_info;
 +	s3c_device_nand.dev.platform_data = &gta02_nand_info;
 +	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
@@ -652,8 +654,10 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +	/* Make sure the modem can wake us up */
 +	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
-+	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq, IRQF_DISABLED, "modem",
-+		    NULL);
++	rc = request_irq(GTA02_IRQ_MODEM, gta02_modem_irq, IRQF_DISABLED,
++			 "modem", NULL);
++	if (rc < 0)
++		printk(KERN_ERR "GTA02: can't request GSM modem wakeup IRQ\n");
 +	enable_irq_wake(GTA02_IRQ_MODEM);
 +}
 +
@@ -802,11 +806,11 @@ Index: linux-2.6/arch/arm/mach-s3c2440/Makefile
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
-Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
+Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 ===================================================================
---- linux-2.6.orig/arch/arm/common/gta01_pm_bt.c
-+++ linux-2.6/arch/arm/common/gta01_pm_bt.c
-@@ -19,22 +19,40 @@
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
++++ linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
+@@ -19,7 +19,9 @@
  #include <linux/pcf50606.h>
  
  #include <asm/hardware.h>
@@ -814,10 +818,9 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
  #include <asm/arch/gta01.h>
 +#include <asm/arch/gta02.h>
  
--#define DRVMSG "FIC GTA01 (Neo1973) Bluetooth Power Management"
-+#define DRVMSG "FIC Neo1973 Bluetooth Power Management"
+ #define DRVMSG "FIC Neo1973 Bluetooth Power Management"
  
- static ssize_t bt_read(struct device *dev, struct device_attribute *attr,
+@@ -27,14 +29,30 @@
  		       char *buf)
  {
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -924,10 +927,10 @@ Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
-Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
+Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 ===================================================================
---- linux-2.6.orig/arch/arm/common/gta01_pm_gsm.c
-+++ linux-2.6/arch/arm/common/gta01_pm_gsm.c
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
++++ linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 @@ -19,8 +19,14 @@
  #include <linux/errno.h>
  
@@ -1030,16 +1033,10 @@ Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
-@@ -214,4 +250,4 @@
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
--MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
-+MODULE_DESCRIPTION("FIC Neo1973 GSM Power Management");
-Index: linux-2.6/drivers/leds/leds-gta01.c
+Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
---- linux-2.6.orig/drivers/leds/leds-gta01.c
-+++ linux-2.6/drivers/leds/leds-gta01.c
+--- linux-2.6.orig/drivers/leds/leds-neo1973-vibrator.c
++++ linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 @@ -110,7 +110,7 @@
  	struct resource *r;
  	int rc;

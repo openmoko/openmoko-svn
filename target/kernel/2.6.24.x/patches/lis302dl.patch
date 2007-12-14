@@ -2,11 +2,11 @@ This is a Linux driver for the STmicro LIS302DL 3-axis accelerometer.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
---- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/mach-gta02.c
-+++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -44,6 +44,7 @@
+--- linux-2.6.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -45,6 +45,7 @@
  #include <linux/mtd/partitions.h>
  
  #include <linux/pcf50633.h>
@@ -14,7 +14,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  
  #include <asm/mach/arch.h>
  #include <asm/mach/map.h>
-@@ -403,7 +404,7 @@
+@@ -413,7 +414,7 @@
  	.oversampling_shift = 5,
  };
  
@@ -23,8 +23,8 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  
  static struct spi_board_info gta02_spi_board_info[] __initdata = {
  	{
-@@ -431,6 +432,48 @@
- 	.board_info	= gta02_spi_board_info,
+@@ -454,6 +455,48 @@
+ 	.resource	= gta01_led_resources,
  };
  
 +/* SPI: Accelerometers attached to SPI of s3c244x */
@@ -66,24 +66,24 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +static struct s3c2410_spi_info gta02_spi_acc_cfg = {
 +	.set_cs		= gta02_spi_acc_set_cs,
 +	.board_size	= ARRAY_SIZE(gta02_spi_acc_bdinfo),
-+	.board_info	= &gta02_spi_acc_bdinfo,
++	.board_info	= gta02_spi_acc_bdinfo,
 +};
 +
  static struct resource gta02_led_resources[] = {
- 	[0] = {
- 		.start	= GTA02_GPIO_VIBRATOR_ON,
-@@ -560,6 +603,7 @@
+ 	{
+ 		.name	= "gta02-power:orange",
+@@ -600,6 +643,7 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
 +	s3c_device_spi1.dev.platform_data = &gta02_spi_acc_cfg;
  
- 	INIT_WORK(&gta02_udc_vbus_drawer.work, __gta02_udc_vbus_draw);
- 	s3c24xx_udc_set_platdata(&gta02_udc_cfg);
-Index: linux-2.6.22.5-moko/drivers/spi/lis302dl.c
+ 	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
+ 	 * hot-pluggable, this is not required anyway */
+Index: linux-2.6/drivers/spi/lis302dl.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/drivers/spi/lis302dl.c
++++ linux-2.6/drivers/spi/lis302dl.c
 @@ -0,0 +1,633 @@
 +/* Linux kernel driver for the ST LIS302D 3-axis accelerometer
 + *
@@ -718,13 +718,13 @@ Index: linux-2.6.22.5-moko/drivers/spi/lis302dl.c
 +
 +module_init(lis302dl_init);
 +module_exit(lis302dl_exit);
-Index: linux-2.6.22.5-moko/drivers/spi/Kconfig
+Index: linux-2.6/drivers/spi/Kconfig
 ===================================================================
---- linux-2.6.22.5-moko.orig/drivers/spi/Kconfig
-+++ linux-2.6.22.5-moko/drivers/spi/Kconfig
-@@ -197,5 +197,9 @@
- 	tristate "tpo JP6K74 LCM ASIC"
- 	depends on SPI_MASTER && (MACH_NEO1973_GTA01 || MACH_QT2410)
+--- linux-2.6.orig/drivers/spi/Kconfig
++++ linux-2.6/drivers/spi/Kconfig
+@@ -243,5 +243,9 @@
+ 	help
+ 	  Driver for the tpo JP6K74-AS LCM SPI control interface.
  
 +config SPI_SLAVE_LIS302DL
 +	tristate "STmicro LIS302DL 3-axis accelerometer"
@@ -732,20 +732,20 @@ Index: linux-2.6.22.5-moko/drivers/spi/Kconfig
 +
  endmenu # "SPI support"
  
-Index: linux-2.6.22.5-moko/drivers/spi/Makefile
+Index: linux-2.6/drivers/spi/Makefile
 ===================================================================
---- linux-2.6.22.5-moko.orig/drivers/spi/Makefile
-+++ linux-2.6.22.5-moko/drivers/spi/Makefile
-@@ -35,4 +35,5 @@
+--- linux-2.6.orig/drivers/spi/Makefile
++++ linux-2.6/drivers/spi/Makefile
+@@ -40,4 +40,5 @@
  
  # SPI slave drivers (protocol for that link)
  obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
 +obj-$(CONFIG_SPI_SLAVE_LIS302DL)	+= lis302dl.o
  # 	... add above this line ...
-Index: linux-2.6.22.5-moko/include/linux/lis302dl.h
+Index: linux-2.6/include/linux/lis302dl.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/include/linux/lis302dl.h
++++ linux-2.6/include/linux/lis302dl.h
 @@ -0,0 +1,11 @@
 +#ifndef _LINUX_LIS302DL_H
 +#define _LINUX_LIS302DL_H

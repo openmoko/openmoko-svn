@@ -1,17 +1,20 @@
-This patch adds support for the FIC GTA01 machine type to the ARM port of
-the linux kernel.
+This patch adds support for the FIC Neo1973 GTA01 machine type to the ARM port
+of the Linux kernel.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/arm/mach-s3c2410/Kconfig
 +++ linux-2.6/arch/arm/mach-s3c2410/Kconfig
-@@ -116,5 +116,12 @@
+@@ -116,5 +116,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
 +config MACH_NEO1973_GTA01
 +	bool "FIC Neo1973 GSM Phone (GTA01 Hardware)"
 +	select CPU_S3C2410
++	select MACH_NEO1973
 +	select SENSORS_PCF50606
 +	help
 +	   Say Y here if you are using the FIC Neo1973 GSM Phone
@@ -31,11 +34,11 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,783 @@
+@@ -0,0 +1,740 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
-+ * S3C2410 Machine Support for the FIC GTA01 (Neo1973)
++ * S3C2410 Machine Support for the FIC Neo1973 GTA01
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -399,46 +402,12 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	&s3c_device_ts,
 +};
 +
-+static struct mtd_partition gta01_nand_part[] = {
-+	[0] = {
-+		.name	= "U-Boot",
-+		.size	= 0x30000,
-+		.offset	= 0,
-+	},
-+	[1] = {
-+		.name	= "U-Boot environment",
-+		.offset = 0x30000,
-+		.size	= 0x4000,
-+	},
-+	[2] = {
-+		.name	= "kernel",
-+		.offset = 0x34000,
-+		.size	= SZ_2M,
-+	},
-+	[3] = {
-+		.name	= "initrd",
-+		.offset	= 0x234000,
-+		.size	= SZ_4M,
-+	},
-+	[4] = {
-+		.name	= "jffs2",
-+		.offset = 0x634000,
-+		.size	= 0x39cc000,
-+	},
-+};
-+
 +static struct s3c2410_nand_set gta01_nand_sets[] = {
 +	[0] = {
-+		.name		= "NAND",
++		.name		= "neo1973-nand",
 +		.nr_chips	= 1,
-+		.nr_partitions	= ARRAY_SIZE(gta01_nand_part),
-+		.partitions	= gta01_nand_part,
 +	},
 +};
-+
-+/* choose a set of timings which should suit most 512Mbit
-+ * chips and beyond.
-+ */
 +
 +static struct s3c2410_platform_nand gta01_nand_info = {
 +	.tacls		= 20,
@@ -479,16 +448,23 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +	switch (system_rev) {
 +	case GTA01v3_SYSTEM_REV:
-+		/* FIXME */
++		switch (power_mode) {
++		case MMC_POWER_OFF:
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 0);
++			break;
++		case MMC_POWER_ON:
++			pcf50606_voltage_set(pcf50606_global,
++					     PCF50606_REGULATOR_D2REG,
++					     mmc_millivolts[vdd]);
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 1);
++			break;
++		}
 +		break;
 +	case GTA01v4_SYSTEM_REV:
-+		/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
-+		//pcf50606_voltage_set(mmc_millivolts[vdd]);
-+		break;
 +	case GTA01Bv2_SYSTEM_REV:
 +	case GTA01Bv3_SYSTEM_REV:
-+		/* FIXME */
-+		break;
 +	case GTA01Bv4_SYSTEM_REV:
 +		switch (power_mode) {
 +		case MMC_POWER_OFF:
@@ -505,8 +481,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
 +	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
 +	.set_power	= &gta01_mmc_set_power,
-+	.ocr_avail	= MMC_VDD_32_33,		/* GTA01Bv2/3/4 */
-+#if 0
 +	.ocr_avail	= MMC_VDD_145_150|MMC_VDD_150_155|MMC_VDD_155_160|
 +			  MMC_VDD_160_165| MMC_VDD_165_170|MMC_VDD_17_18|
 +			  MMC_VDD_18_19|MMC_VDD_19_20|MMC_VDD_20_21|
@@ -514,7 +488,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
 +			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
 +			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
-+#endif
 +};
 +
 +static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
@@ -527,9 +500,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +		break;
 +	case S3C2410_UDC_P_DISABLE:
 +		s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
-+		break;
-+	case S3C2410_UDC_P_RESET:
-+		/* FIXME! */
 +		break;
 +	default:
 +		break;
@@ -547,9 +517,9 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static void __gta01_udc_vbus_draw(struct work_struct *work)
 +{
-+	/* FIXME: this is a quick fix to work around boot-time
-+	 * ordering problems if the s3c2410_udc is initialized
-+	 * before the pcf50606 driver has defined pcf50606_global */
++	/* this is a fix to work around boot-time ordering problems if the
++	 * s3c2410_udc is initialized before the pcf50606 driver has defined
++	 * pcf50606_global */
 +	if (!pcf50606_global)
 +		return;
 +
@@ -564,12 +534,10 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	}
 +}
 +
-+static int gta01_udc_vbus_draw(unsigned int ma)
++static void gta01_udc_vbus_draw(unsigned int ma)
 +{
 +	gta01_udc_vbus_drawer.ma = ma;
 +	schedule_work(&gta01_udc_vbus_drawer.work);
-+
-+	return 0;
 +}
 +
 +static struct s3c2410_udc_mach_info gta01_udc_cfg = {
@@ -596,14 +564,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	},
 +};
 +
-+
-+#ifdef SPI_HARD
-+static struct s3c2410_spi_info spi_cfg = {
-+	.pin_cs		= S3C2410_GPG3,
-+	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
-+	.board_info	= gta01_spi_board_info,
-+};
-+#else
 +static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
 +{
 +	switch (cs) {
@@ -653,7 +613,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +		.platform_data = &spi_gpio_cfg,
 +	},
 +};
-+#endif
 +
 +static struct gta01bl_machinfo backlight_machinfo = {
 +	.default_intensity	= 1,
@@ -685,7 +644,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +};
 +
 +struct platform_device gta01_led_dev = {
-+	.name		= "gta01-led",
++	.name		= "neo1973-vibrator",
 +	.num_resources	= ARRAY_SIZE(gta01_led_resources),
 +	.resource	= gta01_led_resources,
 +};
@@ -706,13 +665,13 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +};
 +
 +struct platform_device gta01_button_dev = {
-+	.name		="gta01-button",
++	.name		= "neo1973-button",
 +	.num_resources	= ARRAY_SIZE(gta01_button_resources),
 +	.resource	= gta01_button_resources,
 +};
 +
 +static struct platform_device gta01_pm_gsm_dev = {
-+	.name		="gta01-pm-gsm",
++	.name		= "neo1973-pm-gsm",
 +};
 +
 +/* USB */
@@ -740,11 +699,15 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static void __init gta01_machine_init(void)
 +{
++	int rc;
++
 +	if (system_rev == GTA01v4_SYSTEM_REV ||
 +	    system_rev == GTA01Bv2_SYSTEM_REV ||
 +	    system_rev == GTA01Bv3_SYSTEM_REV ||
-+	    system_rev == GTA01Bv4_SYSTEM_REV)
++	    system_rev == GTA01Bv4_SYSTEM_REV) {
 +		gta01_udc_cfg.udc_command = gta01_udc_command;
++		gta01_mmc_cfg.ocr_avail = MMC_VDD_32_33;
++	}
 +
 +	s3c_device_usb.dev.platform_data = &gta01_usb_info;
 +	s3c_device_nand.dev.platform_data = &gta01_nand_info;
@@ -760,14 +723,11 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	s3c2410_gpio_cfgpin(S3C2410_GPC6, S3C2410_GPIO_OUTPUT);
 +	s3c2410_gpio_setpin(S3C2410_GPC6, 1);
 +
-+#ifdef SPI_HARD
-+#else
 +	/* SPI chip select is gpio output */
 +	s3c2410_gpio_cfgpin(S3C2410_GPG3, S3C2410_GPIO_OUTPUT);
 +	s3c2410_gpio_setpin(S3C2410_GPG3, 1);
-+
 +	platform_device_register(&s3c_device_spi_lcm);
-+#endif
++
 +	platform_device_register(&gta01_bl_dev);
 +	platform_device_register(&gta01_button_dev);
 +	platform_device_register(&gta01_pm_gsm_dev);
@@ -799,8 +759,10 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	s3c2410_pm_init();
 +
 +	set_irq_type(GTA01_IRQ_MODEM, IRQT_RISING);
-+	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq, IRQF_DISABLED, "modem",
-+		    NULL);
++	rc = request_irq(GTA01_IRQ_MODEM, gta01_modem_irq, IRQF_DISABLED,
++			 "modem", NULL);
++	if (!rc)
++		printk(KERN_ERR  "GTA01: can't request GSM modem wakeup IRQ\n");
 +	enable_irq_wake(GTA01_IRQ_MODEM);
 +}
 +
@@ -813,8 +775,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	.init_machine	= gta01_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-+
-+
 Index: linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
@@ -890,3 +850,36 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01Bv4_IRQ_PCF50606	IRQ_EINT9
 +
 +#endif /* _GTA01_H */
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS
++++ linux-2.6/MAINTAINERS
+@@ -1530,6 +1530,14 @@
+ M:	akinobu.mita@gmail.com
+ S:	Supported
+ 
++FIC/OPENMOKO NEO1973 GSM PHONE
++P:	Harald Welte
++M:	laforge@openmoko.org
++L:	openmoko-kernel@lists.openmoko.org
++W:	http://wiki.openmoko.org/wiki/Kernel
++W:	http://wiki.openmoko.org/wiki/Neo1973
++S:	Maintained
++
+ FRAMEBUFFER LAYER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+Index: linux-2.6/arch/arm/plat-s3c24xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/Kconfig
++++ linux-2.6/arch/arm/plat-s3c24xx/Kconfig
+@@ -46,4 +46,9 @@
+ 	help
+ 	  Common machine code for SMDK2410 and SMDK2440
+ 
++config MACH_NEO1973
++	bool
++	help
++	  Common machine code for Neo1973 hardware
++
+ endif

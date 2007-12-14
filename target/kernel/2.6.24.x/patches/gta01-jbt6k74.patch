@@ -1,17 +1,21 @@
 This driver adds support for LCM initialization of the JBT6K74 LCM
 as found on the FIC GTA01 hardware
 
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6/drivers/spi/Kconfig
 ===================================================================
 --- linux-2.6.orig/drivers/spi/Kconfig
 +++ linux-2.6/drivers/spi/Kconfig
-@@ -237,5 +237,9 @@
+@@ -237,5 +237,11 @@
  
  # (slave support would go here)
  
 +config SPI_SLAVE_JBT6K74
-+	tristate "tpo JP6K74 LCM ASIC"
-+	depends on SPI_MASTER && (MACH_NEO1973_GTA01 || MACH_QT2410)
++	tristate "tpo JP6K74 LCM ASIC control interface"
++	depends on SPI_MASTER && SYSFS
++	help
++	  Driver for the tpo JP6K74-AS LCM SPI control interface.
 +
  endmenu # "SPI support"
  
@@ -29,7 +33,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/spi/jbt6k74.c
-@@ -0,0 +1,648 @@
+@@ -0,0 +1,626 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -140,14 +144,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	[JBT_STATE_QVGA_NORMAL]		= "qvga-normal",
 +};
 +
-+#if 1
-+#define DEBUGP(x, args...) printk(KERN_ERR "%s: " x, __FUNCTION__, ## args);
-+#else
-+#define DEBUGP(x, args...) do { } while (0)
-+#endif
-+
-+
-+#define JBT_TX_BUF_SIZE
 +struct jbt_info {
 +	enum jbt_state state, last_state;
 +	u_int16_t tx_buf[8];
@@ -205,7 +201,8 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	int rc;
 +
-+	DEBUGP("entering\n");
++	dev_dbg(&jbt->spi_dev->dev, "entering %cVGA mode\n", qvga ? 'Q' : ' ');
++
 +	rc = jbt_reg_write(jbt, JBT_REG_DISPLAY_MODE1, 0x01);
 +	rc |= jbt_reg_write(jbt, JBT_REG_DISPLAY_MODE2, 0x00);
 +	rc |= jbt_reg_write(jbt, JBT_REG_RGB_FORMAT, 0x60);
@@ -235,7 +232,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_BLUE_OFFSET, 0x00);
 +
 +	if (!qvga) {
-+		DEBUGP("entering VGA mode\n");
 +		rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_VGA, 0x1f0);
 +		rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL, 0x02);
 +		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
@@ -248,8 +244,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +		rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2, 0x0e);
 +	}
 +	else {
-+		DEBUGP("entering QVGA mode\n");
-+
 +		rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_QVGA, 0x00ff);
 +		rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL_QVGA, 0x02);
 +		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV_QVGA, 0x0804);
@@ -269,8 +263,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	int rc;
 +
-+	DEBUGP("entering\n");
-+
 +	/* three times command zero */
 +	rc = jbt_reg_write_nodata(jbt, 0x00);
 +	mdelay(1);
@@ -288,7 +280,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static int sleep_to_normal(struct jbt_info *jbt)
 +{
 +	int rc;
-+	DEBUGP("entering\n");
 +
 +	/* RGB I/F on, RAM wirte off, QVGA through, SIGCON enable */
 +	rc = jbt_reg_write(jbt, JBT_REG_DISPLAY_MODE, 0x80);
@@ -313,7 +304,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static int sleep_to_qvga_normal(struct jbt_info *jbt)
 +{
 +	int rc;
-+	DEBUGP("entering\n");
 +
 +	/* RGB I/F on, RAM wirte off, QVGA through, SIGCON enable */
 +	rc = jbt_reg_write(jbt, JBT_REG_DISPLAY_MODE, 0x81);
@@ -338,7 +328,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static int normal_to_sleep(struct jbt_info *jbt)
 +{
 +	int rc;
-+	DEBUGP("entering\n");
 +
 +	rc = jbt_reg_write_nodata(jbt, JBT_REG_DISPLAY_OFF);
 +	rc |= jbt_reg_write16(jbt, JBT_REG_OUTPUT_CONTROL, 0x8002);
@@ -349,7 +338,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +static int sleep_to_standby(struct jbt_info *jbt)
 +{
-+	DEBUGP("entering\n");
 +	return jbt_reg_write(jbt, JBT_REG_POWER_ON_OFF, 0x00);
 +}
 +
@@ -358,7 +346,8 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	int rc = -EINVAL;
 +
-+	DEBUGP("entering(old_state=%u, new_state=%u)\n", jbt->state, new_state);
++	dev_dbg(&jbt->spi_dev->dev, "entering (old_state=%u, "
++		"new_state=%u)\n", jbt->state, new_state);
 +
 +	switch (jbt->state) {
 +	case JBT_STATE_DEEP_STANDBY:
@@ -457,17 +446,16 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +	return rc;
 +}
-+EXPORT_SYMBOL(jbt6k74_enter_state);
++EXPORT_SYMBOL_GPL(jbt6k74_enter_state);
 +
 +int jbt6k74_display_onoff(struct jbt_info *jbt, int on)
 +{
-+	DEBUGP("entering\n");
 +	if (on)
 +		return jbt_reg_write_nodata(jbt, JBT_REG_DISPLAY_ON);
 +	else
 +		return jbt_reg_write_nodata(jbt, JBT_REG_DISPLAY_OFF);
 +}
-+EXPORT_SYMBOL(jbt6k74_display_onoff);
++EXPORT_SYMBOL_GPL(jbt6k74_display_onoff);
 +
 +static ssize_t state_read(struct device *dev, struct device_attribute *attr,
 +			  char *buf)
@@ -489,7 +477,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	for (i = 0; i < ARRAY_SIZE(jbt_state_names); i++) {
 +		if (!strncmp(buf, jbt_state_names[i],
 +			     strlen(jbt_state_names[i]))) {
-+			DEBUGP("Switch to state: %u\n", i);
 +			jbt6k74_enter_state(jbt, i);
 +			switch (i) {
 +			case JBT_STATE_NORMAL:
@@ -564,7 +551,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	int rc;
 +	struct jbt_info *jbt;
-+	DEBUGP("entering\n");
 +
 +	jbt = kzalloc(sizeof(*jbt), GFP_KERNEL);
 +	if (!jbt)
@@ -582,7 +568,8 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +	rc = spi_setup(spi);
 +	if (rc < 0) {
-+		printk(KERN_ERR "error during spi_setup of jbt6k74 driver\n");
++		dev_err(&spi->dev,
++			"error during spi_setup of jbt6k74 driver\n");
 +		dev_set_drvdata(&spi->dev, NULL);
 +		kfree(jbt);
 +		return rc;
@@ -590,7 +577,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +	rc = jbt6k74_enter_state(jbt, JBT_STATE_NORMAL);
 +	if (rc < 0)
-+		printk(KERN_WARNING "jbt6k74: cannot enter NORMAL state\n");
++		dev_warn(&spi->dev, "cannot enter NORMAL state\n");
 +
 +	jbt6k74_display_onoff(jbt, 1);
 +
@@ -608,8 +595,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
 +
-+	DEBUGP("entering\n");
-+
 +	sysfs_remove_group(&spi->dev.kobj, &jbt_attr_group);
 +	kfree(jbt);
 +
@@ -620,7 +605,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static int jbt_suspend(struct spi_device *spi, pm_message_t state)
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
-+	DEBUGP("entering\n");
 +
 +	switch (state.event) {
 +	case PM_EVENT_SUSPEND:
@@ -637,7 +621,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static int jbt_resume(struct spi_device *spi)
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
-+	DEBUGP("entering\n");
 +
 +	jbt6k74_enter_state(jbt, jbt->last_state);
 +	jbt6k74_display_onoff(jbt, 1);
@@ -663,16 +646,15 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +static int __init jbt_init(void)
 +{
-+	DEBUGP("entering\n");
 +	return spi_register_driver(&jbt6k74_driver);
 +}
 +
 +static void __exit jbt_exit(void)
 +{
-+	DEBUGP("entering\n");
 +	spi_unregister_driver(&jbt6k74_driver);
 +}
 +
++MODULE_DESCRIPTION("SPI driver for tpo JBT6K74-AS LCM control interface");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_LICENSE("GPL");
 +

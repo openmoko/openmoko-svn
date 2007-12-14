@@ -1,3 +1,10 @@
+[PATCH] Add Kconfig option to enable NAND bad-block-table support for s3c2410
+
+This patch adds a new CONFIG_MTD_NAND_S3C2410_BBT which, if enabled,
+asks the mtd NAND core to use a bad-block table.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c
 ===================================================================
 --- linux-2.6.17.14-fic4.test.orig/drivers/mtd/nand/s3c2410.c	2007-02-02 13:02:10.000000000 +0100
