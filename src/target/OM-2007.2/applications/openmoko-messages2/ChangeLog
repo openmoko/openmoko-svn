@@ -1,5 +1,20 @@
 2007-12-14  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (delete_clicked_cb):
+	Hook up the delete button to delete all messages from currently selected
+	contact
+
+	* src/sms-notes.c: (delete_all_clicked_cb):
+	Hook up the delete-all button to delete all messages from the currently
+	selected contact.
+
+	* src/sms-utils.c: (sms_delete_selected_contact_messages):
+	* src/sms-utils.h:
+	Add function to delete all messages from a contact, or from unknown
+	contacts
+
+2007-12-14  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-compose.c: (page_shown), (page_hidden):
 	Connect to delete/delete-all button clicks (doesn't do anything yet)
 

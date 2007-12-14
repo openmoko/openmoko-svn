@@ -51,6 +51,75 @@ sms_get_selected_contact (SmsData *data)
 	return contact;
 }
 
+void
+sms_delete_selected_contact_messages (SmsData *data)
+{
+	EContact *contact;
+	GtkWidget *dialog;
+	
+	contact = sms_get_selected_contact (data);
+	dialog = gtk_message_dialog_new (GTK_WINDOW (data->window),
+		GTK_DIALOG_MODAL,
+		GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
+		"Delete all messages from %s?", contact ? (const gchar *)
+		e_contact_get_const (contact, E_CONTACT_FULL_NAME) :
+		"unknown contacts");
+	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL,
+		GTK_RESPONSE_CANCEL, GTK_STOCK_DELETE, GTK_RESPONSE_YES, NULL);
+	
+	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_YES) {
+		gtk_widget_destroy (dialog);
+		return;
+	}
+	
+	gtk_widget_destroy (dialog);
+
+	if (contact) {
+		gint i, j;
+		
+		for (i = E_CONTACT_FIRST_PHONE_ID;
+		     i <= E_CONTACT_LAST_PHONE_ID; i++) {
+			SmsNoteCountData *ncdata;
+			const gchar *number = e_contact_get_const (
+				contact, (EContactField)i);
+			if (!number) continue;
+			
+			ncdata = g_hash_table_lookup (data->note_count, number);
+			if (!ncdata) continue;
+			
+			for (j = 0; j < 2; j++) {
+				GList *uids = j ? ncdata->read : ncdata->unread;
+				for (; uids; uids = uids->next) {
+					/* TODO: Add
+					 * jana_store_remove_component_from_uid
+					 * to libjana?
+					 */
+					JanaComponent *comp =
+						jana_store_get_component (
+							data->notes,
+							uids->data);
+					jana_store_remove_component (
+						data->notes, comp);
+					g_object_unref (comp);
+				}
+			}
+			
+			g_hash_table_remove (data->note_count, number);
+		}
+		
+		g_object_unref (contact);
+	} else {
+		while (data->unassigned_notes) {
+			JanaComponent *comp = jana_store_get_component (
+				data->notes, data->unassigned_notes->data);
+			jana_store_remove_component (data->notes, comp);
+			g_object_unref (comp);
+			data->unassigned_notes = g_list_delete_link (
+				data->unassigned_notes, data->unassigned_notes);
+		}
+	}
+}
+
 /* Following two functions taken from pimlico Contacts and modified slightly */
 static void
 contact_photo_size (GdkPixbufLoader * loader, gint width, gint height,

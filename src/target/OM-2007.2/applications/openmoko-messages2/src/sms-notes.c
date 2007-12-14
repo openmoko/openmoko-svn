@@ -498,6 +498,8 @@ static void
 delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
 {
 	if (hidden) return;
+	
+	sms_delete_selected_contact_messages (data);
 }
 
 GtkWidget *
