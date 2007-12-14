@@ -1,2 +1,2 @@
-data/openmoko-calculator.desktop
+data/openmoko-calculator.desktop.in
 src/calc-main.c
