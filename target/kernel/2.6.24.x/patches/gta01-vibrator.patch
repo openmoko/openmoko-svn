@@ -109,7 +109,7 @@ Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 +
 +static struct gta01_vib_priv gta01_vib_led = {
 +	.cdev = {
-+		.name = "gta01:vibrator",
++		.name = "neo1973:vibrator",
 +		.brightness_set = gta01vib_vib_set,
 +	},
 +};
