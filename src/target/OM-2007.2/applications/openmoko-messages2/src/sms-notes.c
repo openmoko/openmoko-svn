@@ -491,7 +491,43 @@ free_count_data (SmsNoteCountData *data)
 static void
 delete_clicked_cb (GtkToolButton *button, SmsData *data)
 {
+	gchar *uid;
+	gint response;
+	GtkTreeIter iter;
+	GtkWidget *dialog;
+	GtkTreeModel *model;
+	JanaComponent *comp;
+	GtkTreeSelection *selection;
+	
 	if (hidden) return;
+	
+	dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW (data->window),
+		GTK_DIALOG_MODAL,
+		GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
+		"Delete selected message?");
+	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL,
+		GTK_RESPONSE_CANCEL, GTK_STOCK_DELETE, GTK_RESPONSE_YES, NULL);
+	
+	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
+	if (response != GTK_RESPONSE_YES) return;
+
+	selection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->notes_treeview));
+	if (!selection ||
+	    !gtk_tree_selection_get_selected (selection, &model, &iter))
+		return;
+	
+	gtk_tree_model_get (model, &iter,
+		JANA_GTK_NOTE_STORE_COL_UID, &uid, -1);
+	if (!uid) return;
+	
+	comp = jana_store_get_component (data->notes, uid);
+	if (!comp) return;
+	
+	jana_store_remove_component (data->notes, comp);
+	g_object_unref (comp);
+	g_free (uid);
 }
 
 static void

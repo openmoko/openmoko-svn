@@ -1,5 +1,11 @@
 2007-12-17  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (delete_clicked_cb):
+	Implement delete functionality in notes view (allows deleting of
+	individual messages)
+
+2007-12-17  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-contacts.c: (delete_all_added_cb),
 	(delete_all_progress_cb), (delete_all_clicked_cb):
 	Implement delete-all functionality in the contacts view
