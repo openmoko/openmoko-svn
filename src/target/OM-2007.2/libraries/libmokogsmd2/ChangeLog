@@ -1,3 +1,9 @@
+2007-12-17	Michael Lauer	<mickey@openmoko.org>
+
+	* libmokogsmd/moko-gsmd-connection.[c|h]:
+	Register and emit gobject signal for when
+	"cipher-status" changes.
+
 2007-11-29	Michael Lauer	<mickey@openmoko.org>
 
 	* libmokogsmd/moko-gsmd-connection.[c|h]:

@@ -52,6 +52,7 @@ struct _MokoGsmdConnectionClass {
     void (*network_registration) (MokoGsmdConnection* self, int type, int lac, int cell);
     void (*signal_strength_changed) (MokoGsmdConnection* self, int strength);
     void (*network_current_operator) (MokoGsmdConnection* self, const gchar* name );
+    void (*cipher_status_changed) (MokoGsmdConnection* self, int status );
 
     /* Misc */
     void (*gsmd_connection_status) (MokoGsmdConnection* self, gboolean status);

@@ -259,7 +259,20 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
     //TODO add SIGNAL_GSMD_EVT_CALL_WAIT      = 10, /* Call Waiting */
     //TODO add SIGNAL_GSMD_EVT_TIMEZONE       = 11, /* Timezone change */
     //TODO add SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12, /* To which events are we subscribed to */
-    //TODO add SIGNAL_GSMD_EVT_CIPHER         = 13, /* Chiphering Information */
+
+    moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER] = g_signal_new
+        ("cipher-status-changed",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, cipher_status_changed ),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__INT,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_INT,
+        NULL );
+
     //TODO add SIGNAL_GSMD_EVT_IN_CBM         = 14, /* Incoming Cell Broadcast message */
     //TODO add SIGNAL_GSMD_EVT_IN_DS          = 15, /* SMS Status Report */
 
@@ -495,9 +508,9 @@ _moko_gsmd_connection_eventhandler (struct lgsm_handle *lh, int evt_type, struct
             break;
         case GSMD_EVT_OUT_STATUS:
             g_signal_emit( G_OBJECT(self),
-                moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS],
-                0, 
-                aux->u.call_status.prog );
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS],
+                           0,
+                           aux->u.call_status.prog );
             break;
         case GSMD_EVT_OUT_COLP:
             /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_COLP]; */
@@ -512,6 +525,12 @@ _moko_gsmd_connection_eventhandler (struct lgsm_handle *lh, int evt_type, struct
             /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SUBSCRIPTIONS]; */
             break;
         case GSMD_EVT_CIPHER:
+            g_debug( "CIPHER event: data = %d, %d, %d", aux->u.cipher.flags, aux->u.cipher.net_state_gsm, aux->u.cipher.net_state_gprs );
+            g_signal_emit( G_OBJECT(self),
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER],
+                           0,
+                           aux->u.cipher.flags );
+            //TODO check whether the net states are important, if so, change signal
             /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER]; */
             break;
         case GSMD_EVT_IN_CBM:
