@@ -17,14 +17,15 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "sms-contacts.h"
 #include "sms-utils.h"
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
 #include <string.h>
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 static const gchar *clear_numbers_uid;
 

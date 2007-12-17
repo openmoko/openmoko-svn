@@ -53,7 +53,7 @@ typedef struct {
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;
 
-	GtkWidget *notes_combo;
+	GtkWidget *notes_search;
 	GdkPixbuf *author_icon;
 	GdkPixbuf *recipient_icon;
 	gchar *recipient_number;

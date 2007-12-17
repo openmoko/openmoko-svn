@@ -1,5 +1,19 @@
 2007-12-17  Chris Lord  <chris@openedhand.com>
 
+	* configure.ac:
+	Add AC_GNU_SOURCE for strcasestr
+
+	* src/sms-contacts.c:
+	Include config.h first
+
+	* src/sms-notes.c: (search_toggled_cb), (search_text_changed_cb),
+	(search_combo_changed_cb), (notes_visible_func),
+	(sms_notes_page_new):
+	* src/sms.h:
+	Add notes filtering via search string
+
+2007-12-17  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-contacts.c: (search_toggled_cb),
 	(search_text_changed_cb), (search_combo_changed_cb),
 	(contacts_visible_func), (sms_contacts_page_new):

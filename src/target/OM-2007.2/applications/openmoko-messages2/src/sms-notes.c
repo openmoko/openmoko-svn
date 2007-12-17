@@ -17,6 +17,10 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "sms-notes.h"
 #include "sms-utils.h"
 #include <libjana/jana.h>
@@ -538,10 +542,64 @@ delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
 	sms_delete_selected_contact_messages (data);
 }
 
+static void
+search_toggled_cb (MokoSearchBar *bar, gboolean search_visible, SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->note_filter));
+}
+
+static void
+search_text_changed_cb (MokoSearchBar *bar, GtkEditable *editable,
+			SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->note_filter));
+}
+
+static void
+search_combo_changed_cb (MokoSearchBar *bar, GtkComboBox *combo_box,
+			 SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->note_filter));
+}
+
+static
+gboolean notes_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
+				SmsData *data)
+{
+	if (moko_search_bar_search_visible (
+	    MOKO_SEARCH_BAR (data->notes_search))) {
+		const gchar *search;
+		gboolean result;
+		gchar *body;
+
+		search = gtk_entry_get_text (moko_search_bar_get_entry (
+			MOKO_SEARCH_BAR (data->notes_search)));
+		
+		if ((!search) || (search[0] == '\0')) return TRUE;
+		
+		/* Filter on search query */
+		gtk_tree_model_get (model, iter, JANA_GTK_NOTE_STORE_COL_BODY,
+			&body, -1);
+		if (!body) return FALSE;
+		
+		/* FIXME: Use a proper UTF-8 casefold comparison here */
+		result = strcasestr (body, search) ? TRUE : FALSE;
+		g_free (body);
+		
+		return result;
+	} else {
+		/* Filter on selected category */
+		return TRUE;
+	}
+}
+
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
-	GtkWidget *scroll, *vbox, *searchbar;
+	GtkWidget *scroll, *vbox, *notes_combo;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
@@ -563,6 +621,9 @@ sms_notes_page_new (SmsData *data)
 	/* Create model and filter */
 	data->note_store = jana_gtk_note_store_new ();
 	data->note_filter = gtk_tree_model_filter_new (data->note_store, NULL);
+	gtk_tree_model_filter_set_visible_func ((GtkTreeModelFilter *)
+		data->note_filter, (GtkTreeModelFilterVisibleFunc)
+		notes_visible_func, data, NULL);
 	
 	/* Create a category-colour hash for the cell renderer */
 	colours_hash = g_hash_table_new (g_str_hash, g_str_equal);
@@ -580,16 +641,22 @@ sms_notes_page_new (SmsData *data)
 		(GtkTreeCellDataFunc)sms_notes_data_func, data, NULL);
 	
 	/* Create search bar */
-	data->notes_combo = gtk_combo_box_new_text ();
-	searchbar = moko_search_bar_new_with_combo (
-		GTK_COMBO_BOX (data->notes_combo));
+	notes_combo = gtk_combo_box_new_text ();
+	data->notes_search = moko_search_bar_new_with_combo (
+		GTK_COMBO_BOX (notes_combo));
+	g_signal_connect (data->notes_search, "toggled",
+		G_CALLBACK (search_toggled_cb), data);
+	g_signal_connect (data->notes_search, "text_changed",
+		G_CALLBACK (search_text_changed_cb), data);
+	g_signal_connect (data->notes_search, "combo_changed",
+		G_CALLBACK (search_combo_changed_cb), data);
 	
 	/* Pack widgets */
 	scroll = moko_finger_scroll_new ();
 	gtk_container_add (GTK_CONTAINER (scroll), data->notes_treeview);
 	
 	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data->notes_search, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	
