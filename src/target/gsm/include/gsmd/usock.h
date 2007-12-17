@@ -42,6 +42,7 @@ enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_VOL_SET	= 5,
 	GSMD_VOICECALL_VOL_GET	= 6,
 	GSMD_VOICECALL_GET_STAT	= 7,
+	GSMD_VOICECALL_CTRL	= 8,
 };
 
 
@@ -79,6 +80,23 @@ enum gsmd_call_mode {
 enum gsmd_call_mpty {
 	GSMD_CALL_MPTY_NO	= 0,
 	GSMD_CALL_MPTY_YES	= 1,
+};
+
+/* 
+ * call related supplementary services from 3GPP TS 02.30 4.5.5.1 
+ * R - Release
+ * A - Accept
+ * H - Hold
+ * M - Multiparty
+ */
+enum gsmd_call_ctrl_proc {
+	GSMD_CALL_CTRL_R_HLDS			= 0,	// 0
+	GSMD_CALL_CTRL_UDUB			= 1,	// 0
+	GSMD_CALL_CTRL_R_ACTS_A_HLD_WAIT	= 2,	// 1	
+	GSMD_CALL_CTRL_R_ACT_X			= 3,	// 1x
+	GSMD_CALL_CTRL_H_ACTS_A_HLD_WAIT	= 4,	// 2
+	GSMD_CALL_CTRL_H_ACTS_EXCEPT_X		= 5,	// 2x
+	GSMD_CALL_CTRL_M_HELD			= 6,	// 3
 };
 
 /* Handset / MT related commands */
@@ -360,6 +378,12 @@ struct gsmd_call_status {
 	int is_last;	
 } __attribute__ ((packed));
 
+/* call status from 3GPP TS 07.07 clause 7.12 */
+struct gsmd_call_ctrl {
+	enum gsmd_call_ctrl_proc proc;	
+	u_int8_t idx;
+} __attribute__ ((packed));
+
 #define GSMD_PIN_MAXLEN		8
 struct gsmd_pin {
 	enum gsmd_pin_type type;
@@ -425,6 +449,12 @@ struct gsmd_evt_auxdata {
 		struct {
 			enum gsm0705_cms_error number;
 		} cms_err;
+		struct {
+			struct gsmd_addr addr;
+			u_int8_t classx;
+			char	alpha[16];
+			u_int8_t cli; 
+		} ccwa;
 	} u;
 	u_int8_t data[0];        
 } __attribute__ ((packed));

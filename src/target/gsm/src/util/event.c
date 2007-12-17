@@ -194,6 +194,12 @@ static int sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata
 	return 0;
 }
 
+static int ccwa_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	printf("EVENT: Call Waiting: %s,%d\n", aux->u.ccwa.addr.number, aux->u.ccwa.addr.type);
+	return 0;
+}
+
 static const char *cprog_names[] = {
 	[GSMD_CALLPROG_SETUP]		= "SETUP",
 	[GSMD_CALLPROG_DISCONNECT]	= "DISCONNECT",
@@ -257,6 +263,7 @@ int event_init(struct lgsm_handle *lh)
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_STATUS, &cprog_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_ERROR, &error_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_CALL_WAIT, &ccwa_handler);
 	return rc;
 }
 

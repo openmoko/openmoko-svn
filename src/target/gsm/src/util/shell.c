@@ -398,6 +398,7 @@ static int pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 static int call_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	struct gsmd_call_status *gcs;
+	int *ret;
 
 	switch (gmh->msg_subtype) {
 	case GSMD_VOICECALL_GET_STAT:
@@ -419,10 +420,14 @@ static int call_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		if (gcs->is_last)
 			pending_responses --;
 		break;
+	case GSMD_VOICECALL_CTRL:
+		ret = (int*)((char *)gmh + sizeof(*gmh));
+		 (*ret)? printf("+CME ERROR %d\n", *ret) : printf("OK\n");
+		pending_responses --;
+		break;
 	default:
 		return -EINVAL;
 	}
-	pending_responses --;
 	return 0;
 }
 
@@ -479,6 +484,13 @@ static int shell_help(void)
 		"\tim\tGet imsi\n"
 		"\tcs\tGet Call status\n"
 		"\tgp\tGet PIN status\n"
+		"\tRh\tRelease all held calls (+CHLD=0)\n"
+		"\tUDUB\tUser Determined User Busy (+CHLD=0)\n"
+		"\tRa\tRelease all active calls (+CHLD=1)\n"
+		"\tRx\tRelease specific active call x (Rx=x)(+CHLD=1x)\n"
+		"\tHa\tHold all active calls and accept held or waiting call (+CHLD=2)\n"
+		"\tHx\tHold all active calls except call x (Hx=x)(+CHLD=2x)\n"
+		"\tMP\tAdd a held call to the conversation (+CHLD=3)\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -562,7 +574,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strcmp(buf, "r")) {
 				printf("Register\n");
 				lgsm_netreg_register(lgsmh, "\0     ");
-			} else if (buf[0] == 'R') {
+			} else if (!strcmp(buf,"R")) {
 				printf("Register to operator\n");
 				ptr = strchr(buf, '=');
 				if (!ptr || strlen(ptr) < 6)
@@ -600,7 +612,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("DTMF: %c\n", buf[1]);
 				lgsm_voice_dtmf(lgsmh, buf[1]);
 			} else if ( !strncmp(buf, "pd", 2)) {
-				printf("Delete Phonebook Entry\n");				
+				printf("Delete Phonebook Entry\n");			
 				ptr = strchr(buf, '=');
 				lgsm_pb_del_entry(lgsmh, atoi(ptr+1));
 			} else if ( !strncmp(buf, "prr", 3)) {	
@@ -642,7 +654,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				if ('+' == pb.numb[0])
 					pb.type = LGSM_PB_ATYPE_INTL;
 				else 
-					pb.type = LGSM_PB_ATYPE_OTHE;				
+					pb.type = LGSM_PB_ATYPE_OTHE;			
 				strncpy(pb.text, lcomma + 1, strlen(lcomma + 1));
 				pb.text[strlen(lcomma + 1)] = '\0';
 
@@ -758,7 +770,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("Get imsi\n");
 				lgsm_get_imsi(lgsmh);
 				pending_responses ++;
-			} else if (!strncmp(buf, "M", 1)) {
+			} else if ( strlen(buf)==1 && !strncmp(buf, "M", 1)) {
 				printf("Modem Power On\n");
 				lgsm_modem_power(lgsmh, 1);
 				pending_responses ++;
@@ -773,6 +785,53 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if ( !strncmp(buf, "gp", 2)) {
 				printf("Get PIN status\n");
 				lgsm_pin_status(lgsmh);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "Rh", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_R_HLDS; 
+				printf("Release all held calls\n");
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "UDUB", 4)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_UDUB; 
+				printf("User Determined User Busy\n");
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "Ra", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_R_ACTS_A_HLD_WAIT; 
+				printf("Release all active calls\n");
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "Rx", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_R_ACT_X; 
+				printf("Release specific active call x\n");
+				ptr = strchr(buf, '=');
+				ctrl.idx = atoi(ptr+1);
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "Ha", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_H_ACTS_A_HLD_WAIT; 
+				printf("Hold all active calls and accept held or waiting"
+				        " call\n");
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "Hx", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;	
+				ctrl.proc = LGSM_VOICECALL_CTRL_H_ACTS_EXCEPT_X; 
+				printf("Hold all active calls except call x\n");
+				ptr = strchr(buf, '=');
+				ctrl.idx = atoi(ptr+1);
+				lgsm_voice_ctrl(lgsmh, &ctrl);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "MP", 2)) {
+				struct lgsm_voicecall_ctrl ctrl;
+				ctrl.proc = LGSM_VOICECALL_CTRL_M_HELD; 
+				printf("Add a held call to the conversation\n");
+				lgsm_voice_ctrl(lgsmh, &ctrl);
 				pending_responses ++;
 			} else {
 				printf("Unknown command `%s'\n", buf);

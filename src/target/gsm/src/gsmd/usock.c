@@ -200,6 +200,23 @@ static int voicecall_get_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(gcs), &gcs);
 }
 
+static int voicecall_ctrl_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
+{
+	struct gsmd_user *gu = ctx;
+	int ret = 0;
+	
+	DEBUGP("resp: %s\n", resp);
+	
+	if ( !strncmp(resp, "+CME", 4) ) {
+		/* +CME ERROR: <err> */
+		DEBUGP("+CME error\n");
+		ret = atoi(strpbrk(resp, "0123456789"));
+	}
+
+	return gsmd_ucmd_submit(gu, GSMD_MSG_VOICECALL, GSMD_VOICECALL_CTRL,
+			cmd->id, sizeof(ret), &ret);
+}
+
 static int usock_ringing_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
         struct gsmd_user *gu = ctx;
@@ -217,6 +234,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	struct gsmd_atcmd *cmd = NULL;
 	struct gsmd_addr *ga;
 	struct gsmd_dtmf *gd;
+	struct gsmd_call_ctrl *gcc; 
 	int atcmd_len;
 		
 	switch (gph->msg_subtype) {
@@ -274,6 +292,44 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		if (!cmd)
 			return -ENOMEM;
 		break;
+	case GSMD_VOICECALL_CTRL:
+		if (len < sizeof(*gph) + sizeof(*gcc))
+			return -EINVAL;
+
+		gcc = (struct gsmd_call_ctrl *) ((void *)gph + sizeof(*gph));
+
+		atcmd_len = 1 + strlen("AT+CHLD=") + 2;
+		cmd = atcmd_fill("AT+CHLD=", atcmd_len, &voicecall_ctrl_cb,
+				 gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+
+		switch (gcc->proc) {
+			case GSMD_CALL_CTRL_R_HLDS:			
+			case GSMD_CALL_CTRL_UDUB:			
+				sprintf(cmd->buf, "AT+CHLD=%d", 0);
+				break;
+			case GSMD_CALL_CTRL_R_ACTS_A_HLD_WAIT:	
+				sprintf(cmd->buf, "AT+CHLD=%d", 1);
+				break;
+			case GSMD_CALL_CTRL_R_ACT_X:
+				sprintf(cmd->buf, "AT+CHLD=%d%d", 1, gcc->idx);
+				break;
+			case GSMD_CALL_CTRL_H_ACTS_A_HLD_WAIT:
+				sprintf(cmd->buf, "AT+CHLD=%d", 2);
+				break;
+			case GSMD_CALL_CTRL_H_ACTS_EXCEPT_X:
+				sprintf(cmd->buf, "AT+CHLD=%d%d", 2, gcc->idx);
+				break;
+			case GSMD_CALL_CTRL_M_HELD:
+				sprintf(cmd->buf, "AT+CHLD=%d", 3);
+				break;
+			default:
+				return -EINVAL;
+		}
+
+		break;
+	
 	default:
 		return -EINVAL;
 	}

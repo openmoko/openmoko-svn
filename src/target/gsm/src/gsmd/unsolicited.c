@@ -253,33 +253,57 @@ static int creg_parse(char *buf, int len, const char *param,
 static int ccwa_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	const char *token;
-	unsigned int type;
+	struct gsmd_evt_auxdata *aux;
+	struct gsm_extrsp *er;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_CALL_WAIT,
-					     sizeof(struct gsmd_addr));
-	struct gsmd_addr *gaddr;
-
+					     sizeof(struct gsmd_evt_auxdata));
+	
 	if (!ucmd)
 		return -ENOMEM;
 
-	gaddr = (struct gsmd_addr *) ucmd->buf;
-	memset(gaddr, 0, sizeof(*gaddr));
+	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
+	
+	er = extrsp_parse(gsmd_tallocs, param);
 
-	/* parse address (phone number) */
-	token = strtok(buf, ",");
-	if (!token)
+	if ( !er ) 
+		return -ENOMEM;
+
+	if ( er->num_tokens == 5 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[3].type == GSMD_ECMD_RTT_EMPTY &&
+			er->tokens[4].type == GSMD_ECMD_RTT_NUMERIC ) {
+		/*
+		 * <number>,<type>,<class>,[<alpha>][,<CLI validity>]
+		 */
+		
+		strcpy(aux->u.ccwa.addr.number, er->tokens[0].u.string);
+		aux->u.ccwa.addr.type = er->tokens[1].u.numeric;
+		aux->u.ccwa.classx = er->tokens[2].u.numeric;
+		aux->u.ccwa.alpha[0] = '\0';
+		aux->u.ccwa.cli = er->tokens[4].u.numeric; 
+	} 
+	else if ( er->num_tokens == 5 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[3].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[4].type == GSMD_ECMD_RTT_NUMERIC ) {
+		/*
+		 * <number>,<type>,<class>,[<alpha>][,<CLI validity>]
+		 */
+		
+		strcpy(aux->u.ccwa.addr.number, er->tokens[0].u.string);
+		aux->u.ccwa.addr.type = er->tokens[1].u.numeric;
+		aux->u.ccwa.classx = er->tokens[2].u.numeric;
+		strcpy(aux->u.ccwa.alpha, er->tokens[3].u.string);
+		aux->u.ccwa.cli = er->tokens[4].u.numeric; 
+	}
+	else {
+		DEBUGP("Invalid Input : Parse error\n");
 		return -EINVAL;
-	strncpy(gaddr->number, token, GSMD_ADDR_MAXLEN);
-
-	/* parse type */
-	token = strtok(NULL, ",");
-	if (!token)
-		return -EINVAL;
-	type = atoi(token) & 0xff;
-	gaddr->type = type;
-
-	/* FIXME: parse class */
-	token = strtok(NULL, ",");
+	}
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_CALL_WAIT);
 }

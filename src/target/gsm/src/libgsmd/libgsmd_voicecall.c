@@ -100,3 +100,28 @@ int lgsm_voice_get_status(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_VOICECALL, GSMD_VOICECALL_GET_STAT);
 }
+
+int lgsm_voice_ctrl(struct lgsm_handle *lh, const struct lgsm_voicecall_ctrl *ctrl)
+{
+	struct gsmd_msg_hdr *gmh;
+	struct gsmd_call_ctrl *gcc;
+	int rc;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_VOICECALL,
+			    GSMD_VOICECALL_CTRL, sizeof(*gcc));
+	if (!gmh)
+		return -ENOMEM;
+	gcc = (struct gsmd_call_ctrl *) gmh->data;
+	gcc->proc = ctrl->proc;
+	gcc->idx = ctrl->idx;
+
+	rc = lgsm_send(lh, gmh);
+	if (rc < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);;
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+
+	return 0;
+}
