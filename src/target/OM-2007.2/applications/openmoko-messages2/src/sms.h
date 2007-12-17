@@ -62,7 +62,7 @@ typedef struct {
 	guint notes_scroll_idle;
 
 	GtkWidget *contacts_treeview;
-	GtkWidget *contacts_combo;
+	GtkWidget *contacts_search;
 	GdkPixbuf *no_photo;
 	
 	GtkWidget *sms_textview;

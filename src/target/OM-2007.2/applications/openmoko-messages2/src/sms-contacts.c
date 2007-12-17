@@ -299,11 +299,64 @@ delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
 	jana_store_view_start (notes_view);
 }
 
+static void
+search_toggled_cb (MokoSearchBar *bar, gboolean search_visible, SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->contacts_filter));
+}
+
+static void
+search_text_changed_cb (MokoSearchBar *bar, GtkEditable *editable,
+			SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->contacts_filter));
+}
+
+static void
+search_combo_changed_cb (MokoSearchBar *bar, GtkComboBox *combo_box,
+			 SmsData *data)
+{
+	gtk_tree_model_filter_refilter (
+		GTK_TREE_MODEL_FILTER (data->contacts_filter));
+}
+
+static
+gboolean contacts_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
+				SmsData *data)
+{
+	if (moko_search_bar_search_visible (
+	    MOKO_SEARCH_BAR (data->contacts_search))) {
+		const gchar *search;
+		gboolean result;
+		gchar *name;
+
+		search = gtk_entry_get_text (moko_search_bar_get_entry (
+			MOKO_SEARCH_BAR (data->contacts_search)));
+		
+		if ((!search) || (search[0] == '\0')) return TRUE;
+		
+		/* Filter on search query */
+		gtk_tree_model_get (model, iter, COL_NAME, &name, -1);
+		if (!name) return FALSE;
+		
+		/* FIXME: Use a proper UTF-8 casefold comparison here */
+		result = strcasestr (name, search) ? TRUE : FALSE;
+		g_free (name);
+		
+		return result;
+	} else {
+		/* Filter on selected category */
+		return TRUE;
+	}
+}
+
 GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
 	EBookQuery *qrys[(E_CONTACT_LAST_PHONE_ID-E_CONTACT_FIRST_PHONE_ID)+1];
-	GtkWidget *searchbar, *scroll, *vbox;
+	GtkWidget *contacts_combo, *scroll, *vbox;
 	GtkCellRenderer *renderer;
 	EBookQuery *tel_query;
 	EBookView *view;
@@ -383,13 +436,22 @@ sms_contacts_page_new (SmsData *data)
 		(GType []){G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_BOOLEAN },
 		(GtkTreeModelFilterModifyFunc)nophoto_filter_func, data, NULL);
+	gtk_tree_model_filter_set_visible_func ((GtkTreeModelFilter *)
+		data->contacts_filter, (GtkTreeModelFilterVisibleFunc)
+		contacts_visible_func, data, NULL);
 	
 	/* Create groups model */
-	data->contacts_combo = gtk_combo_box_new_text ();
+	contacts_combo = gtk_combo_box_new_text ();
 	
 	/* Create search box */
-	searchbar = moko_search_bar_new_with_combo (
-		GTK_COMBO_BOX (data->contacts_combo));
+	data->contacts_search = moko_search_bar_new_with_combo (
+		GTK_COMBO_BOX (contacts_combo));
+	g_signal_connect (data->contacts_search, "toggled",
+		G_CALLBACK (search_toggled_cb), data);
+	g_signal_connect (data->contacts_search, "text_changed",
+		G_CALLBACK (search_text_changed_cb), data);
+	g_signal_connect (data->contacts_search, "combo_changed",
+		G_CALLBACK (search_combo_changed_cb), data);
 	
 	/* Create tree view */
 	data->contacts_treeview = gtk_tree_view_new_with_model (
@@ -419,7 +481,7 @@ sms_contacts_page_new (SmsData *data)
 	
 	/* Pack widgets into vbox and return */
 	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_search, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	

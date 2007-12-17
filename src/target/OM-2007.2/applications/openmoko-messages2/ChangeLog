@@ -1,5 +1,13 @@
 2007-12-17  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (search_toggled_cb),
+	(search_text_changed_cb), (search_combo_changed_cb),
+	(contacts_visible_func), (sms_contacts_page_new):
+	* src/sms.h:
+	Add contacts filtering via search string
+
+2007-12-17  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (delete_clicked_cb):
 	Implement delete functionality in notes view (allows deleting of
 	individual messages)
