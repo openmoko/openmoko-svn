@@ -237,7 +237,7 @@ char drives_opt[MAX_DRIVES][1024];
 
 static CPUState *cur_cpu;
 static CPUState *next_cpu;
-static int event_pending;
+static int event_pending = 1;
 
 #define TFR(expr) do { if ((expr) != -1) break; } while (errno == EINTR)
 
@@ -828,6 +828,7 @@ struct qemu_alarm_timer {
 };
 
 #define ALARM_FLAG_DYNTICKS  0x1
+#define ALARM_FLAG_MODIFIED  0x2
 
 static inline int alarm_has_dynticks(struct qemu_alarm_timer *t)
 {
@@ -838,6 +839,11 @@ static void qemu_rearm_alarm_timer(struct qemu_alarm_timer *t)
 {
     if (!alarm_has_dynticks(t))
         return;
+
+    if (!(t->flags & ALARM_FLAG_MODIFIED))
+        return;
+
+    t->flags &= ~(ALARM_FLAG_MODIFIED);
 
     t->rearm(t);
 }
@@ -1012,6 +1018,8 @@ void qemu_del_timer(QEMUTimer *ts)
 {
     QEMUTimer **pt, *t;
 
+    alarm_timer->flags |= ALARM_FLAG_MODIFIED;
+
     /* NOTE: this code must be signal safe because
        qemu_timer_expired() can be called from a signal. */
     pt = &active_timers[ts->clock->type];
@@ -1092,7 +1100,6 @@ static void qemu_run_timers(QEMUTimer **ptimer_head, int64_t current_time)
         /* run the callback (the timer list can be modified) */
         ts->cb(ts->opaque);
     }
-    qemu_rearm_alarm_timer(alarm_timer);
 }
 
 int64_t qemu_get_clock(QEMUClock *clock)
@@ -1144,9 +1151,9 @@ static void timer_save(QEMUFile *f, void *opaque)
     if (cpu_ticks_enabled) {
         hw_error("cannot save state if virtual timers are running");
     }
-    qemu_put_be64s(f, &cpu_ticks_offset);
-    qemu_put_be64s(f, &ticks_per_sec);
-    qemu_put_be64s(f, &cpu_clock_offset);
+    qemu_put_be64(f, cpu_ticks_offset);
+    qemu_put_be64(f, ticks_per_sec);
+    qemu_put_be64(f, cpu_clock_offset);
 }
 
 static int timer_load(QEMUFile *f, void *opaque, int version_id)
@@ -1156,10 +1163,10 @@ static int timer_load(QEMUFile *f, void *opaque, int version_id)
     if (cpu_ticks_enabled) {
         return -EINVAL;
     }
-    qemu_get_be64s(f, &cpu_ticks_offset);
-    qemu_get_be64s(f, &ticks_per_sec);
+    cpu_ticks_offset=qemu_get_be64(f);
+    ticks_per_sec=qemu_get_be64(f);
     if (version_id == 2) {
-        qemu_get_be64s(f, &cpu_clock_offset);
+        cpu_clock_offset=qemu_get_be64(f);
     }
     return 0;
 }
@@ -1215,13 +1222,16 @@ static void host_alarm_handler(int host_signum)
         if (!alarm_has_dynticks(alarm_timer) && !cpu_single_env)
             return;
 
-        /* stop the currently executing cpu because a timer occured */
-        cpu_interrupt(env, CPU_INTERRUPT_EXIT);
+        if (env) {
+            alarm_timer->flags |= ALARM_FLAG_MODIFIED;
+            /* stop the currently executing cpu because a timer occured */
+            cpu_interrupt(env, CPU_INTERRUPT_EXIT);
 #ifdef USE_KQEMU
-        if (env->kqemu_enabled) {
-            kqemu_cpu_interrupt(env);
-        }
+            if (env->kqemu_enabled) {
+                kqemu_cpu_interrupt(env);
+            }
 #endif
+        }
         event_pending = 1;
     }
 }
@@ -1639,7 +1649,7 @@ void qemu_chr_printf(CharDriverState *s, const char *fmt, ...)
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(buf, sizeof(buf), fmt, ap);
-    qemu_chr_write(s, buf, strlen(buf));
+    qemu_chr_write(s, (uint8_t *)buf, strlen(buf));
     va_end(ap);
 }
 
@@ -1728,7 +1738,7 @@ static int mux_chr_write(CharDriverState *chr, const uint8_t *buf, int len)
                          (secs / 60) % 60,
                          secs % 60,
                          (int)((ti / 1000000) % 1000));
-                d->drv->chr_write(d->drv, buf1, strlen(buf1));
+                d->drv->chr_write(d->drv, (uint8_t *)buf1, strlen(buf1));
             }
         }
     }
@@ -1757,15 +1767,16 @@ static void mux_print_help(CharDriverState *chr)
         sprintf(cbuf,"\n\r");
         sprintf(ebuf,"C-%c", term_escape_char - 1 + 'a');
     } else {
-        sprintf(cbuf,"\n\rEscape-Char set to Ascii: 0x%02x\n\r\n\r", term_escape_char);
+        sprintf(cbuf,"\n\rEscape-Char set to Ascii: 0x%02x\n\r\n\r",
+            term_escape_char);
     }
-    chr->chr_write(chr, cbuf, strlen(cbuf));
+    chr->chr_write(chr, (uint8_t *)cbuf, strlen(cbuf));
     for (i = 0; mux_help[i] != NULL; i++) {
         for (j=0; mux_help[i][j] != '\0'; j++) {
             if (mux_help[i][j] == '%')
-                chr->chr_write(chr, ebuf, strlen(ebuf));
+                chr->chr_write(chr, (uint8_t *)ebuf, strlen(ebuf));
             else
-                chr->chr_write(chr, &mux_help[i][j], 1);
+                chr->chr_write(chr, (uint8_t *)&mux_help[i][j], 1);
         }
     }
 }
@@ -1784,7 +1795,7 @@ static int mux_proc_byte(CharDriverState *chr, MuxDriver *d, int ch)
         case 'x':
             {
                  char *term =  "QEMU: Terminated\n\r";
-                 chr->chr_write(chr,term,strlen(term));
+                 chr->chr_write(chr,(uint8_t *)term,strlen(term));
                  exit(0);
                  break;
             }
@@ -2905,7 +2916,7 @@ static CharDriverState *qemu_chr_open_win_file_out(const char *file_out)
 typedef struct {
     int fd;
     struct sockaddr_in daddr;
-    char buf[1024];
+    uint8_t buf[1024];
     int bufcnt;
     int bufptr;
     int max_size;
@@ -3063,7 +3074,7 @@ static int tcp_chr_read_poll(void *opaque)
 #define IAC_BREAK 243
 static void tcp_chr_process_IAC_bytes(CharDriverState *chr,
                                       TCPCharDriver *s,
-                                      char *buf, int *size)
+                                      uint8_t *buf, int *size)
 {
     /* Handle any telnet client's basic IAC options to satisfy char by
      * char mode with no echo.  All IAC options will be removed from
@@ -3481,18 +3492,33 @@ static void hex_dump(FILE *f, const uint8_t *buf, int size)
 static int parse_macaddr(uint8_t *macaddr, const char *p)
 {
     int i;
-    for(i = 0; i < 6; i++) {
-        macaddr[i] = strtol(p, (char **)&p, 16);
-        if (i == 5) {
-            if (*p != '\0')
-                return -1;
-        } else {
-            if (*p != ':')
-                return -1;
-            p++;
+    char *last_char;
+    long int offset;
+
+    errno = 0;
+    offset = strtol(p, &last_char, 0);    
+    if (0 == errno && '\0' == *last_char &&
+            offset >= 0 && offset <= 0xFFFFFF) {
+        macaddr[3] = (offset & 0xFF0000) >> 16;
+        macaddr[4] = (offset & 0xFF00) >> 8;
+        macaddr[5] = offset & 0xFF;
+        return 0;
+    } else {
+        for(i = 0; i < 6; i++) {
+            macaddr[i] = strtol(p, (char **)&p, 16);
+            if (i == 5) {
+                if (*p != '\0')
+                    return -1;
+            } else {
+                if (*p != ':' && *p != '-')
+                    return -1;
+                p++;
+            }
         }
+        return 0;    
     }
-    return 0;
+
+    return -1;
 }
 
 static int get_str_sep(char *buf, int buf_size, const char **pp, int sep)
@@ -6033,7 +6059,7 @@ static int qemu_savevm_state(QEMUFile *f)
         /* ID string */
         len = strlen(se->idstr);
         qemu_put_byte(f, len);
-        qemu_put_buffer(f, se->idstr, len);
+        qemu_put_buffer(f, (uint8_t *)se->idstr, len);
 
         qemu_put_be32(f, se->instance_id);
         qemu_put_be32(f, se->version_id);
@@ -6094,7 +6120,7 @@ static int qemu_loadvm_state(QEMUFile *f)
         if (qemu_ftell(f) >= end_pos)
             break;
         len = qemu_get_byte(f);
-        qemu_get_buffer(f, idstr, len);
+        qemu_get_buffer(f, (uint8_t *)idstr, len);
         idstr[len] = '\0';
         instance_id = qemu_get_be32(f);
         version_id = qemu_get_be32(f);
@@ -7601,6 +7627,8 @@ void main_loop_wait(int timeout)
     qemu_run_timers(&active_timers[QEMU_TIMER_REALTIME],
                     qemu_get_clock(rt_clock));
 
+    qemu_rearm_alarm_timer(alarm_timer);
+
     /* Check bottom-halves last in case any of the earlier events triggered
        them.  */
     qemu_bh_poll();
@@ -8096,6 +8124,7 @@ static void register_machines(void)
     qemu_register_machine(&ss5_machine);
     qemu_register_machine(&ss10_machine);
     qemu_register_machine(&ss600mp_machine);
+    qemu_register_machine(&ss20_machine);
 #endif
 #elif defined(TARGET_ARM)
     qemu_register_machine(&integratorcp_machine);
@@ -8526,7 +8555,7 @@ int main(int argc, char **argv)
                 /* We just do some generic consistency checks */
                 {
                     /* Could easily be extended to 64 devices if needed */
-                    const unsigned char *p;
+                    const char *p;
                     
                     boot_devices_bitmap = 0;
                     for (p = boot_devices; *p != '\0'; p++) {
@@ -8995,7 +9024,7 @@ int main(int argc, char **argv)
     }
 
 #ifdef TARGET_I386
-    /* XXX: this should be moved in the PC machine instanciation code */
+    /* XXX: this should be moved in the PC machine instantiation code */
     if (net_boot != 0) {
         int netroms = 0;
 	for (i = 0; i < nb_nics && i < 4; i++) {
