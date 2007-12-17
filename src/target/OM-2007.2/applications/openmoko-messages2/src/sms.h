@@ -35,7 +35,6 @@ typedef struct {
 
 typedef struct {
 	JanaStore *notes;
-	JanaStoreView *notes_view;
 	GtkTreeModel *note_store;
 	GtkTreeModel *note_filter;
 	GHashTable *note_count;

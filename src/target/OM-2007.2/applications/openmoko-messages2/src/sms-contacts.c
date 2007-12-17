@@ -253,9 +253,50 @@ delete_clicked_cb (GtkToolButton *button, SmsData *data)
 }
 
 static void
+delete_all_added_cb (JanaStoreView *store_view, GList *components,
+		     SmsData *data)
+{
+	for (; components; components = components->next) {
+		JanaComponent *comp = JANA_COMPONENT (components->data);
+		jana_store_remove_component (
+			jana_store_view_get_store (store_view), comp);
+	}
+}
+
+static void
+delete_all_progress_cb (JanaStoreView *store_view, gint percent,
+			SmsData *data)
+{
+	if (percent == 100) g_object_unref (store_view);
+}
+
+static void
 delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
 {
+	JanaStoreView *notes_view;
+	GtkWidget *dialog;
+	gint response;
+
 	if (hidden) return;
+	
+	dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW (data->window),
+		GTK_DIALOG_MODAL,
+		GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
+		"Delete <b>all</b> messages?");
+	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL,
+		GTK_RESPONSE_CANCEL, GTK_STOCK_DELETE, GTK_RESPONSE_YES, NULL);
+	
+	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
+	if (response != GTK_RESPONSE_YES) return;
+	
+	/* Delete all messages */
+	notes_view = jana_store_get_view (data->notes);
+	g_signal_connect (notes_view, "added",
+		G_CALLBACK (delete_all_added_cb), data);
+	g_signal_connect (notes_view, "progress",
+		G_CALLBACK (delete_all_progress_cb), data);
+	jana_store_view_start (notes_view);
 }
 
 GtkWidget *

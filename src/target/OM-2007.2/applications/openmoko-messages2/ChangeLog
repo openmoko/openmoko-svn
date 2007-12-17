@@ -1,3 +1,12 @@
+2007-12-17  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-contacts.c: (delete_all_added_cb),
+	(delete_all_progress_cb), (delete_all_clicked_cb):
+	Implement delete-all functionality in the contacts view
+
+	* src/sms.h:
+	Remove unused variable
+
 2007-12-14  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-contacts.c: (delete_clicked_cb):
