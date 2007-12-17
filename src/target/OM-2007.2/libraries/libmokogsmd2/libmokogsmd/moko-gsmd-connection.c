@@ -27,8 +27,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#define DEBUG_THIS_FILE
-//#undef DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
