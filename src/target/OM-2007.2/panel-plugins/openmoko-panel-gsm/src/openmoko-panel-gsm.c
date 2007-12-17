@@ -22,6 +22,8 @@
 #include <gtk/gtkimage.h>
 #include <gtk/gtkbox.h>
 #include <gtk/gtk.h>
+
+#include <string.h>
 #include <time.h>
 
 /* Just change this is gsmd changes */
@@ -37,6 +39,7 @@ typedef struct {
     int cell;
     char operator_name[255];
     GtkMenuItem* information;
+    gboolean cipher;
 } GsmApplet;
 
 static GsmApplet* theApplet = NULL;
@@ -122,6 +125,12 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
     g_free( image );
 }
 
+static void gsm_applet_update_cipher_status(MokoGsmdConnection* self, int status)
+{
+    g_debug( "gsm_applet_update_cipher_status: status = %d", status );
+    gsm_applet_show_status( 0, theApplet );
+}
+
 static void gsm_applet_network_current_operator_cb(MokoGsmdConnection *self, const gchar* name)
 {
     if ( strcmp( name, theApplet->operator_name ) != 0 )
@@ -180,7 +189,7 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
 
         case 1:
             summary = g_strdup_printf( "Connected to '%s'", applet->operator_name );
-            details = g_strdup_printf( "Type: Home Network\nCell ID: %04x : %04x\nSignal: %i dbM", applet->lac, applet->cell, -113 + applet->strength*2 );
+            details = g_strdup_printf( "Type: Home Network\nCell ID: %04x : %04x\nSignal: %i dbM\nCipher Status: %s", applet->lac, applet->cell, -113 + applet->strength*2, applet->cipher ? "Encrypted" : "No Encryption" );
         break;
 
         case 2: summary = g_strdup( "Searching for Service" );
@@ -231,6 +240,7 @@ G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     GsmApplet* applet = g_slice_new0(GsmApplet);
+    applet->cipher = TRUE; // default GSM is ciphered
     theApplet = applet; // nasty global variable
     strcpy( applet->operator_name, "<unknown>" );
     MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
@@ -250,6 +260,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 #ifdef GSM_APPLET_HANDLES_PIN_DIALOG
     g_signal_connect( G_OBJECT(applet->gsm), "pin-requested", G_CALLBACK(gsm_applet_sim_pin_requested), applet );
 #endif
+    g_signal_connect( G_OBJECT(applet->gsm), "cipher-status-changed", G_CALLBACK(gsm_applet_update_cipher_status), applet );
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());
