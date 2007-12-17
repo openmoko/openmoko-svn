@@ -1,6 +1,7 @@
 /*
- *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  neod - buttonactions.c
  *
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *  Copyright (C) 2007 OpenMoko, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -222,6 +223,9 @@ gboolean is_desktop_window( Window window )
             gdk_x11_get_xatom_by_name("_NET_WM_WINDOW_TYPE"), 0, 1, False,
             XA_ATOM, &actual_type, &actual_format, &nitems, &bytesafter,
             (unsigned char **) &window_type);
+
+    if ( !window_type )
+        return FALSE;
 
     if (strcmp(XGetAtomName(display, *window_type), "_NET_WM_WINDOW_TYPE_DESKTOP") == 0)
         return TRUE;

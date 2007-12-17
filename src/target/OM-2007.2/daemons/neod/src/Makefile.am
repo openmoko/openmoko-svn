@@ -4,7 +4,7 @@ AM_CPPFLAGS  = -DPKGDATADIR=\"$(pkgdatadir)\" \
                -DNEOD_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
                -DDATADIR=\""$(datadir)"\" -D_GNU_SOURCE
 
-AM_CFLAGS    = -Wall -pedantic -std=c99 @NEOD_CFLAGS@
+AM_CFLAGS    = -Wall -g3 -pedantic -std=c99 @NEOD_CFLAGS@
 
 bin_PROGRAMS = neod
 
