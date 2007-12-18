@@ -33,6 +33,7 @@ enum {
 };
 
 GtkWidget *sms_contacts_page_new (SmsData *data);
+void sms_contacts_update_delete_all (SmsData *data);
 
 #endif
 

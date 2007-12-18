@@ -94,12 +94,14 @@ main (int argc, char **argv)
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_all_button, 1);
 	/*gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 3);*/
+	gtk_widget_set_sensitive (GTK_WIDGET (data.delete_all_button), FALSE);
 	
 	/* Delete button */
 	data.delete_button = gtk_tool_button_new_from_stock (
 		GTK_STOCK_DELETE);
 	gtk_tool_item_set_expand (data.delete_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_button, 2);
+	gtk_widget_set_sensitive (GTK_WIDGET (data.delete_button), FALSE);
 	
 	/* Create notebook */
 	data.notebook = gtk_notebook_new ();

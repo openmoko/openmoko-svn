@@ -61,7 +61,7 @@ sms_get_selected_contact (SmsData *data)
 	return contact;
 }
 
-void
+gboolean
 sms_delete_selected_contact_messages (SmsData *data)
 {
 	EContact *contact;
@@ -79,7 +79,7 @@ sms_delete_selected_contact_messages (SmsData *data)
 	
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_YES) {
 		gtk_widget_destroy (dialog);
-		return;
+		return FALSE;
 	}
 	
 	gtk_widget_destroy (dialog);
@@ -128,6 +128,8 @@ sms_delete_selected_contact_messages (SmsData *data)
 				data->unassigned_notes, data->unassigned_notes);
 		}
 	}
+	
+	return TRUE;
 }
 
 /* Following two functions taken from pimlico Contacts and modified slightly */
@@ -215,6 +217,9 @@ sms_contacts_note_count_update (SmsData *data)
 	GtkTreeIter iter, unknown_iter;
 	
 	data->note_count_idle = 0;
+
+	/* Update the delete-all button if we're on the contacts page */
+	sms_contacts_update_delete_all (data);
 
 	/* Change sort column so changing priorities doesn't break iterating 
 	 * through the model.

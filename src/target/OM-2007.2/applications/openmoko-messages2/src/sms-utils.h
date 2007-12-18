@@ -26,6 +26,6 @@ void sms_clear_combo_box_text (GtkComboBox *combo);
 EContact *sms_get_selected_contact (SmsData *data);
 GdkPixbuf *sms_contact_load_photo (EContact *contact);
 gboolean sms_contacts_note_count_update (SmsData *data);
-void sms_delete_selected_contact_messages (SmsData *data);
+gboolean sms_delete_selected_contact_messages (SmsData *data);
 
 #endif /* SMS_UTILS_H */

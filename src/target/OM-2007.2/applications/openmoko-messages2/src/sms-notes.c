@@ -142,6 +142,8 @@ page_shown (SmsData *data)
 	gboolean found_match = FALSE;
 	EContact *contact = NULL;
 	
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
+	
 	if (!open) return;
 	
 	/* Attach to scrolling signals so we can mark messages as read */
@@ -622,6 +624,38 @@ gboolean notes_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
 	}
 }
 
+static void
+row_inserted_cb (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
+		 SmsData *data)
+{
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), TRUE);
+}
+
+static void
+row_deleted_cb (GtkTreeModel *model, GtkTreePath *path, SmsData *data)
+{
+	GtkTreeIter iter;
+	
+	if (!gtk_tree_model_get_iter_first (model, &iter))
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->delete_all_button), FALSE);
+}
+
+static void
+selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
+{
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	
+	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->delete_button), FALSE);
+	} else {
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->delete_button), TRUE);
+	}
+}
+
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
@@ -650,6 +684,10 @@ sms_notes_page_new (SmsData *data)
 	gtk_tree_model_filter_set_visible_func ((GtkTreeModelFilter *)
 		data->note_filter, (GtkTreeModelFilterVisibleFunc)
 		notes_visible_func, data, NULL);
+	g_signal_connect (data->note_filter, "row-inserted",
+		G_CALLBACK (row_inserted_cb), data);
+	g_signal_connect (data->note_filter, "row-deleted",
+		G_CALLBACK (row_deleted_cb), data);
 	
 	/* Create a category-colour hash for the cell renderer */
 	colours_hash = g_hash_table_new (g_str_hash, g_str_equal);
@@ -665,6 +703,9 @@ sms_notes_page_new (SmsData *data)
 	gtk_tree_view_insert_column_with_data_func (
 		GTK_TREE_VIEW (data->notes_treeview), 0, "Messages", renderer,
 		(GtkTreeCellDataFunc)sms_notes_data_func, data, NULL);
+	g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (
+		data->notes_treeview)), "changed",
+		G_CALLBACK (selection_changed_cb), data);
 	
 	/* Create search bar */
 	notes_combo = gtk_combo_box_new_text ();

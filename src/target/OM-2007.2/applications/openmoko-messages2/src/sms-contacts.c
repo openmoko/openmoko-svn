@@ -31,9 +31,17 @@ static const gchar *clear_numbers_uid;
 
 static gboolean hidden = FALSE;
 
+static void selection_changed_cb (GtkTreeSelection *selection, SmsData *data);
+
 static void
 page_shown (SmsData *data)
 {
+	GtkTreeSelection *selection;
+	
+	/* Update delete/delete-all buttons */
+	sms_contacts_update_delete_all (data);
+	selection = gtk_tree_view_get_selection (data->contacts_treeview);
+	selection_changed_cb (selection, data);
 }
 
 static void
@@ -362,7 +370,10 @@ delete_clicked_cb (GtkToolButton *button, SmsData *data)
 {
 	if (hidden) return;
 	
-	sms_delete_selected_contact_messages (data);
+	if (sms_delete_selected_contact_messages (data)) {
+		gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button),
+			FALSE);
+	}
 }
 
 static void
@@ -521,11 +532,60 @@ malloc_list_free (GList *list) {
 	}
 }
 
+static void
+selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
+{
+	GtkTreeModel *model;
+	gboolean sensitive;
+	GtkTreeIter iter;
+	gchar *detail;
+	
+	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->delete_button), FALSE);
+		return;
+	}
+	
+	/* Not the nicest way to know if there are messages, but better than 
+	 * doing multiple look-ups on the hash-tables
+	 */
+	gtk_tree_model_get (model, &iter, COL_DETAIL, &detail, -1);
+	if (!detail) {
+		sensitive = FALSE;
+	} else {
+		sensitive = TRUE;
+		if (detail[0] == '0') {
+			const gchar *next_line = strchr (detail, '\n') + 1;
+			if ((!next_line) || (next_line[0] == '0'))
+				sensitive = FALSE;
+		}
+		g_free (detail);
+	}
+
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), sensitive);
+}
+
+void
+sms_contacts_update_delete_all (SmsData *data)
+{
+	if (gtk_notebook_get_current_page (data->notebook) == SMS_PAGE_CONTACTS)
+	{
+		if (g_hash_table_size (data->note_count) > 0) {
+			gtk_widget_set_sensitive (GTK_WIDGET (
+				data->delete_all_button), TRUE);
+		} else {
+			gtk_widget_set_sensitive (GTK_WIDGET (
+				data->delete_all_button), FALSE);
+		}
+	}
+}
+
 GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
 	EBookQuery *qrys[(E_CONTACT_LAST_PHONE_ID-E_CONTACT_FIRST_PHONE_ID)+1];
 	GtkWidget *contacts_combo, *scroll, *vbox;
+	GtkTreeSelection *selection;
 	GtkCellRenderer *renderer;
 	EBookQuery *tel_query;
 	EBookView *view;
@@ -635,6 +695,11 @@ sms_contacts_page_new (SmsData *data)
 		data->contacts_treeview), TRUE);
 	gtk_tree_view_set_headers_visible (
 		GTK_TREE_VIEW (data->contacts_treeview), FALSE);
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (
+		data->contacts_treeview));
+	gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
+	g_signal_connect (selection, "changed",
+		G_CALLBACK (selection_changed_cb), data);
 	
 	/* Create renderer and column */
 	/* Slight abuse of the note cell renderer I suppose... */
