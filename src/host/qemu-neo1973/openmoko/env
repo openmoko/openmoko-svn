@@ -14,6 +14,9 @@ echo=echo
 which gecho && echo=gecho
 export make echo
 
+qemu_monitor="$HOME/.qemu_monitor"
+qemu_cmd () { $script_dir/qemu-cmd.pl "$qemu_monitor" "$*"; }
+
 kernel_addr=0x30800000
 splash_addr=0x36000000
 splash_size=0x5000
