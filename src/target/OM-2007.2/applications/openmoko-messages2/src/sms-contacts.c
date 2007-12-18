@@ -687,6 +687,9 @@ sms_contacts_page_new (SmsData *data)
 		G_CALLBACK (search_text_changed_cb), data);
 	g_signal_connect (data->contacts_search, "combo_changed",
 		G_CALLBACK (search_combo_changed_cb), data);
+
+	/* Update categories, in case there are no contacts */
+	update_categories (data);
 	
 	/* Create tree view */
 	data->contacts_treeview = gtk_tree_view_new_with_model (
@@ -749,7 +752,7 @@ sms_contacts_page_new (SmsData *data)
 		G_CALLBACK (notify_visible_cb), data);
 	g_signal_connect (vbox, "unmap",
 		G_CALLBACK (unmap_cb), data);
-	
+
 	return vbox;
 }
 

@@ -1,5 +1,10 @@
 2007-12-18  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (sms_contacts_page_new):
+	Update categories on start-up, in case there are no contacts
+
+2007-12-18  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-compose.c: (page_hidden):
 	* src/sms-contacts.c: (page_shown), (delete_clicked_cb),
 	(selection_changed_cb), (sms_contacts_update_delete_all),
