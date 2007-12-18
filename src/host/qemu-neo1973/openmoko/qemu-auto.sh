@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-# Basically just runs qemu, in a way that qemu-upload.pl works.
+# Basically just runs qemu, in a way that qemu-cmd.pl works.
 #
 # Copyright (C) 2007 OpenMoko, Inc.
 # Written by Andrzej Zaborowski <andrew@openedhand.com>
@@ -34,4 +34,4 @@ $qemu -mtdblock "$script_dir/$flash_image"		\
 	-snapshot -usb -show-cursor -parallel none	\
 	-usbdevice keyboard -usbgadget -serial stdio	\
 	-monitor unix:$qemu_monitor,server,nowait	\
-	$@
+	"$@"

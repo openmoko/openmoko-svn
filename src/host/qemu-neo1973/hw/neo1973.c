@@ -261,8 +261,7 @@ static void neo_gpio_setup(struct neo_board_s *s)
 
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
-    sd_set_cb(s->mmc, 0, qemu_irq_invert(s3c_gpio_in_get(
-                                    s->cpu->io)[GTA01_IRQ_nSD_DETECT]));
+    sd_set_cb(s->mmc, 0, s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_nSD_DETECT]);
 }
 
 /* PMB 2520 Hammerhead A-GPS chip */
