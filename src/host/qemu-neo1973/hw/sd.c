@@ -1216,13 +1216,11 @@ static int _sd_do_command(SDState *sd, struct sd_request_s *req,
 
     case sd_r2_i:
         memcpy(response, sd->cid, sizeof(sd->cid));
-        response[7] |= 1;
         rsplen = 16;
         break;
 
     case sd_r2_s:
         memcpy(response, sd->csd, sizeof(sd->csd));
-        response[7] |= 1;
         rsplen = 16;
         break;
 

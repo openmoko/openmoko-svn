@@ -130,7 +130,7 @@ static void s3c_mmci_cmd_submit(struct s3c_mmci_state_s *s)
 {
     int rsplen, i;
     struct sd_request_s request;
-    char response[16];
+    uint8_t response[16];
 
     request.cmd = s->ccontrol & 0x3f;
     request.arg = s->arg;
