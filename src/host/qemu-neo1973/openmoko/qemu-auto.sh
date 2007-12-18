@@ -22,16 +22,16 @@
 
 . openmoko/env
 
-if [ -e $qemu_monitor ]; then
+if [ -e "$qemu_monitor" ]; then
 	echo A QEMU session appears to be already active
 	exit -1
 fi
 
-trap "rm -rf $qemu_monitor; stty sane" INT EXIT
+trap "rm -rf \"$qemu_monitor\" \"$dump_dir\"; stty sane" INT EXIT
 
 $qemu -mtdblock "$script_dir/$flash_image"		\
 	-kernel "$script_dir/openmoko-kernel.bin"	\
 	-snapshot -usb -show-cursor -parallel none	\
 	-usbdevice keyboard -usbgadget -serial stdio	\
-	-monitor unix:$qemu_monitor,server,nowait	\
+	-monitor unix:"$qemu_monitor",server,nowait	\
 	"$@"

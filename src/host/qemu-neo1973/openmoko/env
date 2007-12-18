@@ -13,6 +13,7 @@ which gmake && make=gmake
 echo=echo
 which gecho && echo=gecho
 export make echo
+dump_dir="$script_dir/vvfat"
 
 qemu_monitor="$HOME/.qemu_monitor"
 qemu_cmd () { $script_dir/qemu-cmd.pl "$qemu_monitor" "$*"; }

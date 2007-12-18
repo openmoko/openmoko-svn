@@ -22,8 +22,15 @@
 
 . openmoko/env
 
+if [ ! -e "$qemu_monitor" ]; then
+	echo No applicable QEMU session found
+	exit -1
+fi
+
 if [[ "$1" == "" ]]; then
 	qemu_cmd eject
 else
-	qemu_cmd change sd0 fat:$1
+	rm -rf "$dump_dir"; mkdir -p "$dump_dir"
+	cp -fR "$@" "$dump_dir"	# TODO: Use symlinks perhaps
+	qemu_cmd change sd0 "fat:$dump_dir"
 fi
