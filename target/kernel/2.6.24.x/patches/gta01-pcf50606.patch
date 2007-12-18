@@ -1936,7 +1936,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +{
 +	int rc;
 +
-+	rc = platform_driver_register(&pcf50606_plat_driver)
++	rc = platform_driver_register(&pcf50606_plat_driver);
 +	if (!rc)
 +		rc = i2c_add_driver(&pcf50606_driver);
 +
