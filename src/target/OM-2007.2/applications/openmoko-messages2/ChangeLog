@@ -1,5 +1,14 @@
 2007-12-18  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (page_shown),
+	(sms_contacts_update_delete_all):
+	Fix warnings
+
+	* src/sms-notes.c: (notes_visible_func):
+	Don't allow NULL argument for author uid in strcmp
+
+2007-12-18  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-contacts.c: (sms_contacts_page_new):
 	Update categories on start-up, in case there are no contacts
 

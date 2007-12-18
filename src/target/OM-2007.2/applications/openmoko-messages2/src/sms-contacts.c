@@ -40,7 +40,8 @@ page_shown (SmsData *data)
 	
 	/* Update delete/delete-all buttons */
 	sms_contacts_update_delete_all (data);
-	selection = gtk_tree_view_get_selection (data->contacts_treeview);
+	selection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->contacts_treeview));
 	selection_changed_cb (selection, data);
 }
 
@@ -568,8 +569,8 @@ selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 void
 sms_contacts_update_delete_all (SmsData *data)
 {
-	if (gtk_notebook_get_current_page (data->notebook) == SMS_PAGE_CONTACTS)
-	{
+	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
+	    SMS_PAGE_CONTACTS) {
 		if (g_hash_table_size (data->note_count) > 0) {
 			gtk_widget_set_sensitive (GTK_WIDGET (
 				data->delete_all_button), TRUE);
