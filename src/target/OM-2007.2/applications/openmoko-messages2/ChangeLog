@@ -1,5 +1,10 @@
 2007-12-18  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-compose.c: (text_changed_cb), (sms_compose_page_new):
+	Add a message length indicator to the composition page
+
+2007-12-18  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (notes_visible_func), (sms_notes_page_new):
 	Add all/sent/received filter to notes page
 

@@ -194,6 +194,29 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 	}
 }
 
+static void
+text_changed_cb (GtkTextBuffer *buffer, SmsData *data)
+{
+	GtkTextIter start, end;
+	gchar *text, *markup;
+	gint length;
+	
+	gtk_text_buffer_get_start_iter (buffer, &start);
+	gtk_text_buffer_get_end_iter (buffer, &end);
+	text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+	
+	length = g_utf8_strlen (text, -1);
+	if (length > 160)
+		markup = g_strdup_printf ("<small><span foreground='#FF0000'>"
+			"%d / 160</span></small>", length);
+	else
+		markup = g_strdup_printf ("<small>%d / 160</small>", length);
+	gtk_label_set_markup (GTK_LABEL (data->length_label), markup);
+	
+	g_free (markup);
+	g_free (text);
+}
+
 GtkWidget *
 sms_compose_page_new (SmsData *data)
 {
@@ -212,13 +235,18 @@ sms_compose_page_new (SmsData *data)
 	data->contact_label = gtk_label_new (NULL);
 	gtk_label_set_use_markup (GTK_LABEL (data->contact_label), TRUE);
 	gtk_misc_set_alignment (GTK_MISC (data->contact_label), 0, 0.5);
+	data->length_label = gtk_label_new (NULL);
+	gtk_label_set_use_markup (GTK_LABEL (data->length_label), TRUE);
+	gtk_misc_set_alignment (GTK_MISC (data->length_label), 1.0, 0.5);
 	data->number_combo = gtk_combo_box_entry_new_text ();
 	gtk_table_attach (GTK_TABLE (contact_table), data->contact_image,
 		0, 1, 0, 2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach (GTK_TABLE (contact_table), data->contact_label,
 		1, 2, 0, 1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_table_attach (GTK_TABLE (contact_table), data->length_label,
+		2, 3, 0, 1, GTK_EXPAND | GTK_SHRINK | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_table_attach (GTK_TABLE (contact_table), data->number_combo,
-		1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+		1, 3, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	
 	/* Create sms entry bits */
 	data->sms_textview = gtk_text_view_new ();
@@ -227,6 +255,11 @@ sms_compose_page_new (SmsData *data)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
 	gtk_container_add (GTK_CONTAINER (frame), data->sms_textview);
+	g_signal_connect (gtk_text_view_get_buffer (
+		GTK_TEXT_VIEW (data->sms_textview)), "changed",
+		G_CALLBACK (text_changed_cb), data);
+	text_changed_cb (gtk_text_view_get_buffer (
+		GTK_TEXT_VIEW (data->sms_textview)), data);
 	
 	/* Pack widgets */
 	vbox = gtk_vbox_new (FALSE, 0);
