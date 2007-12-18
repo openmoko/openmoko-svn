@@ -34,6 +34,12 @@ static GdkColor alt_color;
 static gboolean hidden = TRUE;
 static gboolean open = FALSE;
 
+enum {
+	ALL_NOTES,
+	SENT_NOTES,
+	RECV_NOTES,
+};
+
 static void
 note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
 {
@@ -591,8 +597,28 @@ gboolean notes_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
 		
 		return result;
 	} else {
+		gchar *author_uid;
+		gboolean result;
+		
 		/* Filter on selected category */
-		return TRUE;
+		gint type = gtk_combo_box_get_active (
+			moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (
+				data->notes_search))); 
+		
+		if (type <= ALL_NOTES) return TRUE;
+		
+		gtk_tree_model_get (model, iter,
+			JANA_GTK_NOTE_STORE_COL_UID, &author_uid, -1);
+		if (!author_uid) return FALSE;
+		
+		if (strcmp (author_uid, data->author_uid) == 0)
+			result = (type == SENT_NOTES) ? TRUE : FALSE;
+		else
+			result = (type == SENT_NOTES) ? FALSE : TRUE;
+		
+		g_free (author_uid);
+		
+		return result;
 	}
 }
 
@@ -642,6 +668,11 @@ sms_notes_page_new (SmsData *data)
 	
 	/* Create search bar */
 	notes_combo = gtk_combo_box_new_text ();
+	gtk_combo_box_append_text (GTK_COMBO_BOX (notes_combo), "All");
+	gtk_combo_box_append_text (GTK_COMBO_BOX (notes_combo), "Sent");
+	gtk_combo_box_append_text (GTK_COMBO_BOX (notes_combo), "Received");
+	gtk_combo_box_set_active (GTK_COMBO_BOX (notes_combo), 0);
+	
 	data->notes_search = moko_search_bar_new_with_combo (
 		GTK_COMBO_BOX (notes_combo));
 	g_signal_connect (data->notes_search, "toggled",

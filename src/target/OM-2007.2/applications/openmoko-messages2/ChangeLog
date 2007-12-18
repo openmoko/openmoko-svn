@@ -1,5 +1,10 @@
 2007-12-18  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (notes_visible_func), (sms_notes_page_new):
+	Add all/sent/received filter to notes page
+
+2007-12-18  Chris Lord  <chris@openedhand.com>
+
 	* src/sms.h:
 	* src/sms-contacts.c: (update_categories), (ref_category),
 	(categories_to_list), (contacts_added_cb), (contacts_changed_cb),
