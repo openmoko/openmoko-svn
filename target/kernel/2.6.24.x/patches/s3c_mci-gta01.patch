@@ -1,0 +1,96 @@
+Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -59,6 +59,7 @@
+ 
+ #include <asm/arch/regs-gpio.h>
+ #include <asm/arch/fb.h>
++#include <asm/arch/mci.h>
+ #include <asm/arch/spi.h>
+ #include <asm/arch/spi-gpio.h>
+ #include <asm/arch/usb-control.h>
+@@ -381,6 +382,70 @@
+ 	.sets		= gta01_nand_sets,
+ };
+ 
++static unsigned int mmc_millivolts[] = {
++	[MMC_VDD_165_195]	= 1700,
++	[MMC_VDD_20_21]		= 2100,
++	[MMC_VDD_21_22]		= 2200,
++	[MMC_VDD_22_23]		= 2300,
++	[MMC_VDD_23_24]		= 2400,
++	[MMC_VDD_24_25]		= 2500,
++	[MMC_VDD_25_26]		= 2600,
++	[MMC_VDD_26_27]		= 2700,
++	[MMC_VDD_27_28]		= 2800,
++	[MMC_VDD_28_29]		= 2900,
++	[MMC_VDD_29_30]		= 3000,
++	[MMC_VDD_30_31]		= 3100,
++	[MMC_VDD_31_32]		= 3200,
++	[MMC_VDD_32_33]		= 3300,
++};
++
++static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
++{
++	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
++	       power_mode, vdd);
++
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++		switch (power_mode) {
++		case MMC_POWER_OFF:
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 0);
++			break;
++		case MMC_POWER_ON:
++			pcf50606_voltage_set(pcf50606_global,
++					     PCF50606_REGULATOR_D2REG,
++					     mmc_millivolts[vdd]);
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 1);
++			break;
++		}
++		break;
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
++	case GTA01Bv4_SYSTEM_REV:
++		switch (power_mode) {
++		case MMC_POWER_OFF:
++			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 1);
++			break;
++		case MMC_POWER_ON:
++			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 0);
++			break;
++		}
++		break;
++	}
++}
++
++static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
++	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
++	.set_power	= &gta01_mmc_set_power,
++	.ocr_avail	= MMC_VDD_165_195|MMC_VDD_20_21|
++			  MMC_VDD_21_22|MMC_VDD_22_23|MMC_VDD_23_24|
++			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
++			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
++			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
++};
++
+ static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
+ {
+ 	printk(KERN_DEBUG "%s(%d)\n", __func__, cmd);
+@@ -597,10 +662,12 @@
+ 	    system_rev == GTA01Bv3_SYSTEM_REV ||
+ 	    system_rev == GTA01Bv4_SYSTEM_REV) {
+ 		gta01_udc_cfg.udc_command = gta01_udc_command;
++		gta01_mmc_cfg.ocr_avail = MMC_VDD_32_33;
+ 	}
+ 
+ 	s3c_device_usb.dev.platform_data = &gta01_usb_info;
+ 	s3c_device_nand.dev.platform_data = &gta01_nand_info;
++	s3c_device_sdi.dev.platform_data = &gta01_mmc_cfg;
+ 
+ 	s3c24xx_fb_set_platdata(&gta01_lcd_cfg);
+ 

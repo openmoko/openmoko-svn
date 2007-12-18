@@ -7,7 +7,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.orig/arch/arm/mach-s3c2410/Kconfig
 +++ linux-2.6/arch/arm/mach-s3c2410/Kconfig
-@@ -116,5 +116,13 @@
+@@ -110,5 +110,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
@@ -25,7 +25,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/Makefile
 ===================================================================
 --- linux-2.6.orig/arch/arm/mach-s3c2410/Makefile
 +++ linux-2.6/arch/arm/mach-s3c2410/Makefile
-@@ -30,3 +30,4 @@
+@@ -29,3 +29,4 @@
  obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
  obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
@@ -34,7 +34,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,740 @@
+@@ -0,0 +1,657 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -80,6 +80,8 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +#include <linux/mtd/nand_ecc.h>
 +#include <linux/mtd/partitions.h>
 +
++#include <linux/mmc/host.h>
++
 +#include <linux/pcf50606.h>
 +
 +#include <asm/mach/arch.h>
@@ -93,8 +95,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/fb.h>
-+#include <asm/arch/mci.h>
-+#include <asm/arch/ts.h>
 +#include <asm/arch/spi.h>
 +#include <asm/arch/spi-gpio.h>
 +#include <asm/arch/usb-control.h>
@@ -399,7 +399,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	&s3c_device_sdi,
 +	&s3c_device_usbgadget,
 +	&s3c_device_nand,
-+	&s3c_device_ts,
 +};
 +
 +static struct s3c2410_nand_set gta01_nand_sets[] = {
@@ -415,79 +414,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	.twrph1		= 20,
 +	.nr_sets	= ARRAY_SIZE(gta01_nand_sets),
 +	.sets		= gta01_nand_sets,
-+};
-+
-+static unsigned int mmc_millivolts[] = {
-+	[MMC_VDD_145_150]	= 1500,
-+	[MMC_VDD_150_155]	= 1500,
-+	[MMC_VDD_155_160]	= 1600,
-+	[MMC_VDD_160_165]	= 1600,
-+	[MMC_VDD_165_170]	= 1700,
-+	[MMC_VDD_17_18]		= 1800,
-+	[MMC_VDD_18_19]		= 1900,
-+	[MMC_VDD_19_20]		= 2000,
-+	[MMC_VDD_20_21]		= 2100,
-+	[MMC_VDD_21_22]		= 2200,
-+	[MMC_VDD_22_23]		= 2300,
-+	[MMC_VDD_23_24]		= 2400,
-+	[MMC_VDD_24_25]		= 2500,
-+	[MMC_VDD_25_26]		= 2600,
-+	[MMC_VDD_26_27]		= 2700,
-+	[MMC_VDD_27_28]		= 2800,
-+	[MMC_VDD_28_29]		= 2900,
-+	[MMC_VDD_29_30]		= 3000,
-+	[MMC_VDD_30_31]		= 3100,
-+	[MMC_VDD_31_32]		= 3200,
-+	[MMC_VDD_32_33]		= 3300,
-+};
-+
-+static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
-+{
-+	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
-+	       power_mode, vdd);
-+
-+	switch (system_rev) {
-+	case GTA01v3_SYSTEM_REV:
-+		switch (power_mode) {
-+		case MMC_POWER_OFF:
-+			pcf50606_onoff_set(pcf50606_global,
-+					   PCF50606_REGULATOR_D2REG, 0);
-+			break;
-+		case MMC_POWER_ON:
-+			pcf50606_voltage_set(pcf50606_global,
-+					     PCF50606_REGULATOR_D2REG,
-+					     mmc_millivolts[vdd]);
-+			pcf50606_onoff_set(pcf50606_global,
-+					   PCF50606_REGULATOR_D2REG, 1);
-+			break;
-+		}
-+		break;
-+	case GTA01v4_SYSTEM_REV:
-+	case GTA01Bv2_SYSTEM_REV:
-+	case GTA01Bv3_SYSTEM_REV:
-+	case GTA01Bv4_SYSTEM_REV:
-+		switch (power_mode) {
-+		case MMC_POWER_OFF:
-+			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 1);
-+			break;
-+		case MMC_POWER_ON:
-+			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 0);
-+			break;
-+		}
-+		break;
-+	}
-+}
-+
-+static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
-+	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
-+	.set_power	= &gta01_mmc_set_power,
-+	.ocr_avail	= MMC_VDD_145_150|MMC_VDD_150_155|MMC_VDD_155_160|
-+			  MMC_VDD_160_165| MMC_VDD_165_170|MMC_VDD_17_18|
-+			  MMC_VDD_18_19|MMC_VDD_19_20|MMC_VDD_20_21|
-+			  MMC_VDD_21_22|MMC_VDD_22_23|MMC_VDD_23_24|
-+			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
-+			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
-+			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
 +};
 +
 +static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
@@ -542,12 +468,6 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static struct s3c2410_udc_mach_info gta01_udc_cfg = {
 +	.vbus_draw	= gta01_udc_vbus_draw,
-+};
-+
-+static struct s3c2410_ts_mach_info gta01_ts_cfg = {
-+	.delay = 10000,
-+	.presc = 65,
-+	.oversampling_shift = 5,
 +};
 +
 +/* SPI */
@@ -706,18 +626,15 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	    system_rev == GTA01Bv3_SYSTEM_REV ||
 +	    system_rev == GTA01Bv4_SYSTEM_REV) {
 +		gta01_udc_cfg.udc_command = gta01_udc_command;
-+		gta01_mmc_cfg.ocr_avail = MMC_VDD_32_33;
 +	}
 +
 +	s3c_device_usb.dev.platform_data = &gta01_usb_info;
 +	s3c_device_nand.dev.platform_data = &gta01_nand_info;
-+	s3c_device_sdi.dev.platform_data = &gta01_mmc_cfg;
 +
 +	s3c24xx_fb_set_platdata(&gta01_lcd_cfg);
 +
 +	INIT_WORK(&gta01_udc_vbus_drawer.work, __gta01_udc_vbus_draw);
 +	s3c24xx_udc_set_platdata(&gta01_udc_cfg);
-+	set_s3c2410ts_info(&gta01_ts_cfg);
 +
 +	/* Set LCD_RESET / XRES to high */
 +	s3c2410_gpio_cfgpin(S3C2410_GPC6, S3C2410_GPIO_OUTPUT);

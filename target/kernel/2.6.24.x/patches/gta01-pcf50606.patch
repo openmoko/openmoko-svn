@@ -8,7 +8,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1935 @@
+@@ -0,0 +1,1943 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1189,6 +1189,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	struct pcf50606_time pcf_tm;
++	u_int8_t int1m;
 +
 +	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
 +		tm->tm_mday, tm->tm_mon, tm->tm_year,
@@ -1199,7 +1200,11 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +		pcf_tm.hour, pcf_tm.min, pcf_tm.sec);
 +
 +	mutex_lock(&pcf->lock);
-+	/* FIXME: disable second interrupt */
++
++	/* disable SECOND interrupt */
++	int1m = __reg_read(pcf, PCF50606_REG_INT1M);
++	__reg_write(pcf, PCF50606_REG_INT1M, int1m | PCF50606_INT1_SECOND);
++
 +	__reg_write(pcf, PCF50606_REG_RTCSC, pcf_tm.sec);
 +	__reg_write(pcf, PCF50606_REG_RTCMN, pcf_tm.min);
 +	__reg_write(pcf, PCF50606_REG_RTCHR, pcf_tm.hour);
@@ -1207,7 +1212,10 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	__reg_write(pcf, PCF50606_REG_RTCDT, pcf_tm.day);
 +	__reg_write(pcf, PCF50606_REG_RTCMT, pcf_tm.month);
 +	__reg_write(pcf, PCF50606_REG_RTCYR, pcf_tm.year);
-+	/* FIXME: re-enable second interrupt */
++
++	/* restore INT1M, potentially re-enable SECOND interrupt */
++	__reg_write(pcf, PCF50606_REG_INT1M, int1m);
++
 +	mutex_unlock(&pcf->lock);
 +
 +	return 0;
