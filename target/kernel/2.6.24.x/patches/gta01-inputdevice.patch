@@ -39,13 +39,15 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/input/keyboard/neo1973kbd.c
-@@ -0,0 +1,252 @@
+@@ -0,0 +1,236 @@
 +/*
 + * Keyboard driver for FIC Neo1973 GSM phone
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
 + * All rights reserved.
++ *
++ * inspired by corkgbd.c by Richard Purdie
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -107,9 +109,11 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +
 +	/* FIXME: use GPIO from platform_dev resources */
 +	if (s3c2410_gpio_getpin(GTA01_GPIO_JACK_INSERT))
-+		input_report_switch(neo1973kbd_data->input, SW_HEADPHONE_INSERT, 1);
++		input_report_switch(neo1973kbd_data->input,
++				    SW_HEADPHONE_INSERT, 1);
 +	else
-+		input_report_switch(neo1973kbd_data->input, SW_HEADPHONE_INSERT, 0);
++		input_report_switch(neo1973kbd_data->input,
++				    SW_HEADPHONE_INSERT, 0);
 +
 +	input_sync(neo1973kbd_data->input);
 +
@@ -172,21 +176,6 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +
 +	neo1973kbd->input = input_dev;
 +
-+#if 0
-+	spin_lock_init(&neo1973kbd->lock);
-+	/* Init Keyboard rescan timer */
-+	init_timer(&corgikbd->timer);
-+	corgikbd->timer.function = corgikbd_timer_callback;
-+	corgikbd->timer.data = (unsigned long) corgikbd;
-+
-+	/* Init Hinge Timer */
-+	init_timer(&corgikbd->htimer);
-+	corgikbd->htimer.function = corgikbd_hinge_timer;
-+	corgikbd->htimer.data = (unsigned long) corgikbd;
-+
-+	corgikbd->suspend_jiffies=jiffies;
-+#endif
-+
 +	input_dev->name = "Neo1973 Buttons";
 +	input_dev->phys = "neo1973kbd/input0";
 +	input_dev->id.bustype = BUS_HOST;
@@ -228,9 +217,7 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +		goto out_jack;
 +	}
 +	enable_irq_wake(irq_jack);
-+#if 0
-+	mod_timer(&corgikbd->htimer, jiffies + msecs_to_jiffies(HINGE_SCAN_INTERVAL));
-+#endif
++
 +	return 0;
 +
 +out_jack:
@@ -254,10 +241,7 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +	free_irq(s3c2410_gpio_getirq(pdev->resource[2].start), neo1973kbd);
 +	free_irq(s3c2410_gpio_getirq(pdev->resource[1].start), neo1973kbd);
 +	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), neo1973kbd);
-+#if 0
-+	del_timer_sync(&corgikbd->htimer);
-+	del_timer_sync(&corgikbd->timer);
-+#endif
++
 +	input_unregister_device(neo1973kbd->input);
 +	input_free_device(neo1973kbd->input);
 +	platform_set_drvdata(pdev, NULL);

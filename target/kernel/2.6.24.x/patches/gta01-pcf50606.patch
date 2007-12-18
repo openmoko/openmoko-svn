@@ -8,7 +8,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1943 @@
+@@ -0,0 +1,1946 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -158,7 +158,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 + * Low-Level routines
 + ***********************************************************************/
 +
-+static inline int __reg_write(struct pcf50606_data *pcf, u_int8_t reg, u_int8_t val)
++static inline int __reg_write(struct pcf50606_data *pcf, u_int8_t reg,
++			      u_int8_t val)
 +{
 +	return i2c_smbus_write_byte_data(&pcf->client, reg, val);
 +}
@@ -407,11 +408,11 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	/* PWREN1 = 1, PWREN2 = 1, see table 16 of datasheet */
 +	switch (val) {
-+		case 0:
-+		case 5:
-+			return 0;
-+		default:
-+			return 1;
++	case 0:
++	case 5:
++		return 0;
++	default:
++		return 1;
 +	}
 +}
 +EXPORT_SYMBOL_GPL(pcf50606_onoff_get);
@@ -630,7 +631,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +				/* Ask init to do 'ctrlaltdel' */
 +				DEBUGPC("SIGINT(init) ");
 +				kill_proc(1, SIGINT, 1);
-+				/* FIXME: what if userspace doesn't shut down? */
++				/* FIXME: what to do if userspace doesn't
++				 * shut down? Do we want to force it? */
 +			}
 +		}
 +	}
@@ -1071,11 +1073,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 + * APM emulation
 + ***********************************************************************/
 +
-+extern void (*apm_get_power_status)(struct apm_power_info *);
-+
 +static void pcf50606_get_power_status(struct apm_power_info *info)
 +{
-+        struct pcf50606_data *pcf = pcf50606_global;
++	struct pcf50606_data *pcf = pcf50606_global;
 +	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
 +	u_int8_t chgmod = mbcc1 & PCF50606_MBCC1_CHGMOD_MASK;
 +	u_int16_t battvolt = pcf50606_battvolt(pcf);
@@ -1408,7 +1408,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +static const char *pwm_dc_table[] = {
 +	"0/16", "1/16", "2/16", "3/16",
 +	"4/16", "5/16", "6/16", "7/16",
-+	"8/16", "9/16", "10/16","11/16",
++	"8/16", "9/16", "10/16", "11/16",
 +	"12/16", "13/16", "14/16", "15/16",
 +};
 +
@@ -1596,7 +1596,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +		return -EBUSY;
 +	}
 +
-+	if (!(data = kzalloc(sizeof(*data), GFP_KERNEL)))
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
 +		return -ENOMEM;
 +
 +	mutex_init(&data->lock);
@@ -1617,7 +1618,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	/* now we try to detect the chip */
 +
 +	/* register with i2c core */
-+	if ((err = i2c_attach_client(new_client))) {
++	err = i2c_attach_client(new_client);
++	if (err) {
 +		dev_err(&new_client->dev,
 +			"error during i2c_attach_client()\n");
 +		goto exit_free;
@@ -1669,7 +1671,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	if (enable_irq_wake(irq) < 0)
 +		dev_err(&new_client->dev, "IRQ %u cannot be enabled as wake-up"
-+		        "source in this hardware revision!", irq);
++			"source in this hardware revision!", irq);
 +
 +	pcf50606_global = data;
 +
@@ -1894,9 +1896,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +static struct i2c_driver pcf50606_driver = {
 +	.driver = {
-+		.name	= "pcf50606",
-+		.suspend= pcf50606_suspend,
-+		.resume	= pcf50606_resume,
++		.name	 = "pcf50606",
++		.suspend = pcf50606_suspend,
++		.resume	 = pcf50606_resume,
 +	},
 +	.id		= I2C_DRIVERID_PCF50606,
 +	.attach_adapter	= pcf50606_attach_adapter,
@@ -1934,7 +1936,8 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +{
 +	int rc;
 +
-+	if (!(rc = platform_driver_register(&pcf50606_plat_driver)))
++	rc = platform_driver_register(&pcf50606_plat_driver)
++	if (!rc)
 +		rc = i2c_add_driver(&pcf50606_driver);
 +
 +	return rc;

@@ -37,7 +37,7 @@ Index: linux-2.6/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/video/backlight/gta01_bl.c
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,255 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -120,7 +120,7 @@ Index: linux-2.6/drivers/video/backlight/gta01_bl.c
 +	if (gta01bl_flags & GTA01BL_BATTLOW)
 +		intensity &= bl_machinfo->limit_mask;
 +
-+ 	mutex_lock(&gta01bl.mutex);
++	mutex_lock(&gta01bl.mutex);
 +#ifdef GTA01_BACKLIGHT_ONOFF_ONLY
 +	if (intensity)
 +		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
@@ -250,7 +250,6 @@ Index: linux-2.6/drivers/video/backlight/gta01_bl.c
 +	       &gta01bl_prop, sizeof(gta01bl_prop));
 +	gta01bl_send_intensity(gta01_backlight_device);
 +
-+	printk("GTA01 Backlight Driver Initialized.\n");
 +	return 0;
 +}
 +
@@ -262,7 +261,6 @@ Index: linux-2.6/drivers/video/backlight/gta01_bl.c
 +	backlight_device_unregister(gta01_backlight_device);
 +	mutex_destroy(&gta01bl.mutex);
 +
-+	printk("GTA01 Backlight Driver Unloaded, constant backlight\n");
 +	s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
 +

@@ -871,8 +871,8 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 -					     3100);
 +		switch (machine_arch_type) {
 +		case MACH_TYPE_NEO1973_GTA01:
-+			/* if we are powering up, assert reset, then power, then
-+			 * release reset */
++			/* if we are powering up, assert reset, then power,
++			 * then release reset */
 +			if (on) {
 +				s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
 +				pcf50606_voltage_set(pcf50606_global,
@@ -895,13 +895,13 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 -		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on);
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		/* reset is low-active, so we need to invert */
--		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
+-		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1);
 +		switch (machine_arch_type) {
 +		case MACH_TYPE_NEO1973_GTA01:
-+			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
++			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1);
 +			break;
 +		case MACH_TYPE_NEO1973_GTA02:
-+			s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, on ? 0 : 1 );
++			s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, on ? 0 : 1);
 +			break;
 +		}
  	}
@@ -1001,21 +1001,21 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
 @@ -158,8 +184,14 @@
- 			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
- 			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
- 			break;
+ 		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
+ 		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
+ 		break;
 +#ifdef CONFIG_MACH_NEO1973_GTA02
-+		case GTA02v1_SYSTEM_REV:
-+		case GTA02v2_SYSTEM_REV:
-+			gta01_gsm.gpio_ngsm_en = 0;
-+			break;
++	case GTA02v1_SYSTEM_REV:
++	case GTA02v2_SYSTEM_REV:
++		gta01_gsm.gpio_ngsm_en = 0;
++		break;
 +#endif
- 		default:
--			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
-+			dev_warn(&pdev->dev, "Unknown Neo1973 Revision 0x%x, "
- 				 "some PM features not available!!!\n",
- 				 system_rev);
- 			break;
+ 	default:
+-		dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
++		dev_warn(&pdev->dev, "Unknown Neo1973 Revision 0x%x, "
+ 			 "some PM features not available!!!\n",
+ 			 system_rev);
+ 		break;
 @@ -175,9 +207,13 @@
  		break;
  	}
@@ -1037,7 +1037,7 @@ Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- linux-2.6.orig/drivers/leds/leds-neo1973-vibrator.c
 +++ linux-2.6/drivers/leds/leds-neo1973-vibrator.c
-@@ -110,7 +110,7 @@
+@@ -107,7 +107,7 @@
  	struct resource *r;
  	int rc;
  
@@ -1050,7 +1050,7 @@ Index: linux-2.6/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.orig/sound/soc/s3c24xx/neo1973_wm8753.c
 +++ linux-2.6/sound/soc/s3c24xx/neo1973_wm8753.c
-@@ -670,6 +670,12 @@
+@@ -672,6 +672,12 @@
  {
  	int ret;
  
@@ -1063,7 +1063,7 @@ Index: linux-2.6/sound/soc/s3c24xx/neo1973_wm8753.c
  	neo1973_snd_device = platform_device_alloc("soc-audio", -1);
  	if (!neo1973_snd_device)
  		return -ENOMEM;
-@@ -698,5 +704,5 @@
+@@ -700,5 +706,5 @@
  
  /* Module information */
  MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");

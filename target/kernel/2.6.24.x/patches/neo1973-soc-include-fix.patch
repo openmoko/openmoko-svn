@@ -1,3 +1,7 @@
+[PATCH] Fix s3c24xx include file path changes in asoc driver
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c

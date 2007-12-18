@@ -385,7 +385,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
 +	.displays	= gta01_displays,
 +	.num_displays	= ARRAY_SIZE(gta01_displays),
-+	.default_display= 0,
++	.default_display = 0,
 +
 +	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
 +};
