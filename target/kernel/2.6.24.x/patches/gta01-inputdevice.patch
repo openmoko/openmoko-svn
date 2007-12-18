@@ -19,7 +19,7 @@ Index: linux-2.6/drivers/input/keyboard/Kconfig
 +	  GSM phone.
 +
 +	  To compile this driver as a module, choose M here: the
-+	  module will be called gta01kbd.
++	  module will be called neo1973kbd.
 +
 +
  endif
