@@ -1,3 +1,16 @@
+2007-12-18  Chris Lord  <chris@openedhand.com>
+
+	* src/sms.h:
+	* src/sms-contacts.c: (update_categories), (ref_category),
+	(categories_to_list), (contacts_added_cb), (contacts_changed_cb),
+	(contacts_removed_cb), (contacts_visible_func), (malloc_list_free),
+	(sms_contacts_page_new):
+	Add category filtering to contacts pane
+
+	* src/sms-utils.c: (sms_clear_combo_box_text):
+	* src/sms-utils.h:
+	Add function to clear a text GtkComboBox
+
 2007-12-17  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:

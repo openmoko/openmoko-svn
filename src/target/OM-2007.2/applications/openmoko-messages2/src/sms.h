@@ -47,6 +47,11 @@ typedef struct {
 	GHashTable *contacts;
 	GHashTable *numbers;
 	
+	/* For keeping track of groups contacts are in */
+	GHashTable *contact_groups;
+	GHashTable *group_refs;
+	guint contact_category_idle;
+	
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkToolItem *new_button;

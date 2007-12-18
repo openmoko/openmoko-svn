@@ -23,6 +23,16 @@
 #  include <config.h>
 #endif
 
+void
+sms_clear_combo_box_text (GtkComboBox *combo)
+{
+	GtkTreeIter iter;
+	GtkTreeModel *model = gtk_combo_box_get_model (combo);
+
+	while (gtk_tree_model_get_iter_first (model, &iter))
+		gtk_combo_box_remove_text (combo, 0);
+}
+
 EContact *
 sms_get_selected_contact (SmsData *data)
 {

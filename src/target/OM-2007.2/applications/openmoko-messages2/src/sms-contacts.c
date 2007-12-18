@@ -93,6 +93,80 @@ clear_numbers (SmsData *data, const gchar *uid)
 	g_list_free (numbers);
 }
 
+static gboolean
+update_categories (SmsData *data)
+{
+	GList *categories, *c;
+	GtkComboBox *combo;
+	gchar *old_cat;
+	gint i;
+	
+	gboolean cat_set = FALSE;
+
+	data->contact_category_idle = 0;
+	
+	combo = moko_search_bar_get_combo_box (
+		MOKO_SEARCH_BAR (data->contacts_search));
+	old_cat = gtk_combo_box_get_active_text (combo);
+	sms_clear_combo_box_text (combo);
+	
+	gtk_combo_box_append_text (combo, "All");
+	
+	categories = g_hash_table_get_keys (data->group_refs);
+	categories = g_list_sort (categories, (GCompareFunc)strcmp);
+	
+	for (c = categories, i = 1; c; c = c->next, i++) {
+		gtk_combo_box_append_text (combo, (const gchar *)c->data);
+		if ((!cat_set) && (old_cat) &&
+		    (strcmp (old_cat, (const gchar *)c->data) == 0)) {
+			cat_set = TRUE;
+			gtk_combo_box_set_active (combo, i);
+		}
+	}
+	if (!cat_set) gtk_combo_box_set_active (combo, 0);
+	
+	g_list_free (categories);
+	g_free (old_cat);
+	
+	return FALSE;
+}
+
+static void
+ref_category (SmsData *data, const gchar *category, gint count)
+{
+	gint ref_count = GPOINTER_TO_INT (g_hash_table_lookup (
+		data->group_refs, category));
+	ref_count += count;
+	if (ref_count == 0) g_hash_table_remove (data->group_refs, category);
+	else g_hash_table_replace (data->group_refs,
+		g_strdup (category), GINT_TO_POINTER (ref_count));
+}
+
+static GList *
+categories_to_list (SmsData *data, const gchar *category_string)
+{
+	gint i, off;
+	GList *categories = NULL, *c;
+	
+	if (!category_string) return NULL;
+	
+	for (i = 0, off = 0; category_string[i] != '\0'; i++) {
+		if (category_string[i] == ',') {
+			categories = g_list_prepend (categories, g_strndup (
+				category_string + off, i - off));
+			off = i + 1;
+		}
+	}
+	categories = g_list_prepend (categories, g_strndup (
+		category_string + off, i - off));
+	
+	for (c = categories; c; c = c->next) {
+		ref_category (data, (const gchar *)c->data, 1);
+	}
+	
+	return categories;
+}
+
 static void
 contacts_store (SmsData *data, GtkTreeIter *iter, EContact *contact)
 {
@@ -122,6 +196,8 @@ contacts_added_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 	for (; contacts; contacts = contacts->next) {
 		GtkTreeIter *iter;
 		EContact *contact = (EContact *)contacts->data;
+		const gchar *category_string;
+		GList *categories;
 		
 		if (!contact) continue;
 		
@@ -131,18 +207,27 @@ contacts_added_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 		contacts_store (data, iter, contact);
 		g_hash_table_insert (data->contacts,
 			e_contact_get (contact, E_CONTACT_UID), iter);
+
+		category_string = e_contact_get_const (
+			contact, E_CONTACT_CATEGORIES);
+		categories = categories_to_list (data, category_string);
+		g_hash_table_insert (data->contact_groups,
+			e_contact_get (contact, E_CONTACT_UID), categories);
 	}
 
 	if (!data->note_count_idle) data->note_count_idle =
 		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+	if (!data->contact_category_idle) data->contact_category_idle =
+		g_idle_add ((GSourceFunc)update_categories, data);
 }
 
 static void
 contacts_changed_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 {
 	for (; contacts; contacts = contacts->next) {
+		GList *categories, *c;
 		GtkTreeIter *iter;
-		const gchar *uid;
+		const gchar *uid, *category_string;
 		
 		EContact *contact = (EContact *)contacts->data;
 		
@@ -154,16 +239,30 @@ contacts_changed_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 			clear_numbers (data, uid);
 			contacts_store (data, iter, contact);
 		}
+		
+		/* Unref possibly old groups and ref possibly new ones */
+		categories = g_hash_table_lookup (data->contact_groups, uid);
+		if (categories)
+			for (c = categories; c; c = c->next)
+				ref_category (data, (const gchar *)c->data, -1);
+		category_string = e_contact_get_const (
+			contact, E_CONTACT_CATEGORIES);
+		categories = categories_to_list (data, category_string);
+		g_hash_table_insert (data->contact_groups,
+			g_strdup (uid), categories);
 	}
 
 	if (!data->note_count_idle) data->note_count_idle =
 		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+	if (!data->contact_category_idle) data->contact_category_idle =
+		g_idle_add ((GSourceFunc)update_categories, data);
 }
 
 static void
 contacts_removed_cb (EBookView *ebookview, GList *uids, SmsData *data)
 {
 	for (; uids; uids = uids->next) {
+		GList *categories;
 		GtkTreeIter *iter = g_hash_table_lookup (
 			data->contacts, uids->data);
 
@@ -173,10 +272,23 @@ contacts_removed_cb (EBookView *ebookview, GList *uids, SmsData *data)
 		gtk_list_store_remove ((GtkListStore *)
 			data->contacts_store, iter);
 		g_hash_table_remove (data->contacts, uids->data);
+		
+		categories = g_hash_table_lookup (
+			data->contact_groups, uids->data);
+		if (categories) {
+			GList *c;
+			
+			/* Unref groups */
+			for (c = categories; c; c = c->next)
+				ref_category (data, (const gchar *)c->data, -1);
+			g_hash_table_remove (data->contact_groups, uids->data);
+		}
 	}
 
 	if (!data->note_count_idle) data->note_count_idle =
 		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+	if (!data->contact_category_idle) data->contact_category_idle =
+		g_idle_add ((GSourceFunc)update_categories, data);
 }
 
 static void
@@ -348,8 +460,64 @@ gboolean contacts_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
 		
 		return result;
 	} else {
+		gint i, len, off;
+		GtkComboBox *combo;
+		gchar *category, *uid;
+		const gchar *category_string;
+		
+		EContact *contact = NULL;
+		
 		/* Filter on selected category */
-		return TRUE;
+		combo = moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (
+			data->contacts_search));
+		if (gtk_combo_box_get_active (combo) <= 0) return TRUE;
+		
+		category = gtk_combo_box_get_active_text (combo);
+		if (!category) return TRUE;
+		
+		gtk_tree_model_get (model, iter, COL_UID, &uid, -1);
+		if (!uid) return FALSE;
+		e_book_get_contact (data->ebook, uid, &contact, NULL);
+		g_free (uid);
+		if (!contact) {
+			g_free (category);
+			return FALSE;
+		}
+		
+		category_string = e_contact_get_const (
+			contact, E_CONTACT_CATEGORIES);
+		if (!category_string) {
+			g_free (category);
+			return FALSE;
+		}
+		
+		/* FIXME: UTF-8? */
+		len = strlen (category);
+		for (i = 1, off = 0; category_string[i-1] != '\0'; i++) {
+			if ((category_string[i] == ',') ||
+			    (category_string[i] == '\0')) {
+				if (strncmp (category_string + off,
+				    category, i - off) == 0) {
+					g_object_unref (contact);
+					g_free (category);
+					return TRUE;
+				}
+				off = i + 1;
+			}
+		}
+
+		g_object_unref (contact);
+		g_free (category);
+		
+		return FALSE;
+	}
+}
+
+static void
+malloc_list_free (GList *list) {
+	while (list) {
+		g_free (list->data);
+		list = g_list_delete_link (list, list);
 	}
 }
 
@@ -364,6 +532,12 @@ sms_contacts_page_new (SmsData *data)
 	gint i, width;
 
 	GError *error = NULL;
+	
+	data->contact_groups = g_hash_table_new_full (g_str_hash, g_str_equal,
+		(GDestroyNotify)g_free, (GDestroyNotify)malloc_list_free);
+	data->group_refs = g_hash_table_new_full (g_str_hash, g_str_equal,
+		(GDestroyNotify)g_free, NULL);
+	data->contact_category_idle = 0;
 	
 	/* Create query for all contacts with telephone numbers */
 	/* FIXME: This query doesn't seem to work? */
