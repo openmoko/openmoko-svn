@@ -28,11 +28,6 @@ g_ether-vendor_product.patch
 
 # SD/MMC for S3C24xx
 s3c_mci.patch
-s3cmci_dbg.patch
-s3cmci-dma-free.patch
-s3cmci-stop-fix.patch
-s3cmci-unfinished-write-fix.patch
-s3c_mci_platform.patch
 s3c_mci-gta01.patch
 qt2410-s3c_mci-pdata.patch
 
