@@ -284,21 +284,17 @@ static void
 moko_finger_scroll_refresh (MokoFingerScroll *scroll)
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
-	GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
 	GtkWidget *widget = GTK_BIN (priv->align)->child;
 	gboolean vscroll, hscroll;
-	GtkRequisition req;
-	guint border;
 	
 	if (!widget) return;
 	
 	/* Calculate if we need scroll indicators */
-	border = gtk_container_get_border_width (GTK_CONTAINER (scroll));
-	gtk_widget_size_request (widget, &req);
-	if (req.width + (border * 2) > allocation->width) hscroll = TRUE;
-	else hscroll = FALSE;
-	if (req.height + (border * 2) > allocation->height) vscroll = TRUE;
-	else vscroll = FALSE;
+	gtk_widget_size_request (widget, NULL);
+	hscroll = (priv->hadjust->upper - priv->hadjust->lower >
+		priv->hadjust->page_size) ? TRUE : FALSE;
+	vscroll = (priv->vadjust->upper - priv->vadjust->lower >
+		priv->vadjust->page_size) ? TRUE : FALSE;
 	
 	/* TODO: Read ltr settings to decide which corner gets scroll
 	 * indicators?
@@ -729,12 +725,9 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 static void
 moko_finger_scroll_dispose (GObject * object)
 {
-	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);
+	/*MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);*/
 	
-	if (priv->idle_id) {
-		g_source_remove (priv->idle_id);
-		priv->idle_id = 0;
-	}
+	while (g_source_remove_by_user_data (object));
 	
 	if (G_OBJECT_CLASS (moko_finger_scroll_parent_class)->dispose)
 		G_OBJECT_CLASS (moko_finger_scroll_parent_class)->
