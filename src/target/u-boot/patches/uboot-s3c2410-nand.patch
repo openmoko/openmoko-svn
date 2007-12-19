@@ -20,7 +20,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 ===================================================================
 --- /dev/null
 +++ u-boot/cpu/arm920t/s3c24x0/nand.c
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,179 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -111,54 +111,6 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 +{
 +	DEBUGN("dev_ready\n");
 +	return (NFSTAT & 0x01);
-+}
-+
-+static void s3c2410_cmdfunc(struct mtd_info *mtd, unsigned cmd,
-+			    int column, int page_addr)
-+{
-+	DEBUGN("cmdfunc(): 0x%02x, col=%d, page=%d\n", cmd, column, page_addr);
-+
-+	switch (cmd) {
-+	case NAND_CMD_READ0:
-+	case NAND_CMD_READ1:
-+	case NAND_CMD_READOOB:
-+		NFCMD = cmd;
-+		NFADDR = column & 0xff;
-+		NFADDR = page_addr & 0xff;
-+		NFADDR = (page_addr >> 8) & 0xff;
-+		NFADDR = (page_addr >> 16) & 0xff;
-+		break;
-+	case NAND_CMD_READID:
-+		NFCMD = cmd;
-+		NFADDR = 0;
-+		break;
-+	case NAND_CMD_PAGEPROG:
-+		NFCMD = cmd;
-+		printf("PAGEPROG not implemented\n");
-+		break;
-+	case NAND_CMD_ERASE1:
-+		NFCMD = cmd;
-+		NFADDR = page_addr & 0xff;
-+		NFADDR = (page_addr >> 8) & 0xff;
-+		NFADDR = (page_addr >> 16) & 0xff;
-+		break;
-+	case NAND_CMD_ERASE2:
-+		NFCMD = cmd;
-+		break;
-+	case NAND_CMD_SEQIN:
-+		printf("SEQIN not implemented\n");
-+		break;
-+	case NAND_CMD_STATUS:
-+		NFCMD = cmd;
-+		break;
-+	case NAND_CMD_RESET:
-+		NFCMD = cmd;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	while (!s3c2410_dev_ready(mtd));
 +}
 +
 +#ifdef CONFIG_S3C2410_NAND_HWECC
