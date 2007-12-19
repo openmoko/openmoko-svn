@@ -1,5 +1,11 @@
 2007-12-19  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (moko_sms_dispose),
+	(stop_notify_timeout), (update_notification), (moko_sms_init):
+	Add tone/vibration notification
+
+2007-12-19  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	Add AC_GNU_SOURCE for basename(), add libnotify
 

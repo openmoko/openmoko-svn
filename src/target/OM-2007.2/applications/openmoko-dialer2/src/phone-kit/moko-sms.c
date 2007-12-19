@@ -33,6 +33,7 @@
 #include "moko-sms.h"
 #include "moko-network.h"
 #include "moko-listener.h"
+#include "moko-notify.h"
 
 static void
 listener_interface_init (gpointer g_iface, gpointer iface_data);
@@ -70,6 +71,7 @@ struct _MokoSmsPrivate
   
   GList              *unread_uids;
   NotifyNotification *notification;
+  MokoNotify         *notify;
 };
 
 static void start_handling_sms (MokoSms *sms);
@@ -148,6 +150,8 @@ moko_sms_dispose (GObject *object)
 
   sms = MOKO_SMS (object);
   priv = sms->priv;
+  
+  while (g_source_remove_by_user_data (object)) moko_notify_stop (priv->notify);
 
   if (priv->sms_store) {
     g_object_unref (priv->sms_store);
@@ -406,6 +410,14 @@ listener_interface_init (gpointer g_iface, gpointer iface_data)
   iface->on_send_sms = on_send_sms;
 }
 
+static gboolean
+stop_notify_timeout (MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  moko_notify_stop (priv->notify);
+  return FALSE;
+}
+
 static void
 update_notification (MokoSms *sms, gboolean show)
 {
@@ -423,7 +435,11 @@ update_notification (MokoSms *sms, gboolean show)
   g_free (body);
   
   /* Show notification */
-  if (show) notify_notification_show (priv->notification, NULL);
+  if (show) {
+    notify_notification_show (priv->notification, NULL);
+    moko_notify_start (priv->notify);
+    g_timeout_add (1000, (GSourceFunc)stop_notify_timeout, sms);
+  }
 }
 
 static void
@@ -548,6 +564,7 @@ moko_sms_init (MokoSms *sms)
                                                 "",
                                                 MOKO_STOCK_SMS_NEW,
                                                 NULL);
+  priv->notify = moko_notify_get_default ();
 
   /* Get the SMS note store */
   priv->sms_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
