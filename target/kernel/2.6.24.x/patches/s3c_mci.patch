@@ -1,5 +1,15 @@
-This is the latest S3C MMC/SD driver by Thomas Kleffel
+This is a MMC/SD driver for the Samsung S3C24xx SD/MMC controller, originally
+developed years ago by Thomas Kleffel <tk@maintech.de>.
 
+Due to time restraints, he had no time to further maintain the driver and
+follow the mainline Linux changes in the SD/MMC stack.
+
+With his authorization, I have taken over the task of making it compliant to
+the current mainline SD/MMC API and take care of the mainline kernel merge.
+
+After a potential kernel inclusion, we would co-maintain the driver.
+
+Acked-by: Thomas Kleffel <tk@maintech.de>
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
@@ -1572,11 +1582,11 @@ Index: linux-2.6/drivers/mmc/host/Kconfig
  	  If unsure, or if your system has no SPI master driver, say N.
  
 +config MMC_S3C
-+	tristate "Samsung S3C SD/MMC Card Interface support"
++	tristate "Samsung S3C24xx SD/MMC Card Interface support"
 +	depends on ARCH_S3C2410 && MMC
 +	help
 +	  This selects a driver for the MCI interface found in
-+          Samsung's S3C2410, S3C2412, S3C2440, S3C2442 CPUs.
++	  Samsung's S3C2410, S3C2412, S3C2440, S3C2442 CPUs.
 +	  If you have a board based on one of those and a MMC/SD
 +	  slot, say Y or M here.
 +
