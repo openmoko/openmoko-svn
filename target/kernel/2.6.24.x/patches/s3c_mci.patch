@@ -1,5 +1,7 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
 --- linux-2.6.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
@@ -71,85 +73,11 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6/drivers/mmc/host/mmc_debug.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/mmc/host/mmc_debug.c
-@@ -0,0 +1,57 @@
-+/*
-+ *  linux/drivers/mmc/mmc_debug.c
-+ *
-+ *  Copyright (C) 2003 maintech GmbH, Thomas Kleffel <tk@maintech.de>
-+ *
-+ * This file contains debug helper functions for the MMC/SD stack
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/mmc/core.h>
-+#include <linux/mmc/mmc.h>
-+#include "mmc_debug.h"
-+
-+char *mmc_cmd2str(int cmd)
-+{
-+	switch(cmd) {
-+		case  0: return "GO_IDLE_STATE";
-+		case  1: return "ALL_SEND_OCR";
-+		case  2: return "ALL_SEND_CID";
-+		case  3: return "ALL_SEND_RELATIVE_ADD";
-+		case  6: return "ACMD: SD_SET_BUSWIDTH";
-+		case  7: return "SEL_DESEL_CARD";
-+		case  9: return "SEND_CSD";
-+		case 10: return "SEND_CID";
-+		case 11: return "READ_UNTIL_STOP";
-+		case 12: return "STOP_TRANSMISSION";
-+		case 13: return "SEND_STATUS";
-+		case 15: return "GO_INACTIVE_STATE";
-+		case 16: return "SET_BLOCKLEN";
-+		case 17: return "READ_SINGLE_BLOCK";
-+		case 18: return "READ_MULTIPLE_BLOCK";
-+		case 24: return "WRITE_SINGLE_BLOCK";
-+		case 25: return "WRITE_MULTIPLE_BLOCK";
-+		case 41: return "ACMD: SD_APP_OP_COND";
-+		case 55: return "APP_CMD";
-+		default: return "UNKNOWN";
-+	}
-+}
-+EXPORT_SYMBOL(mmc_cmd2str);
-+
-+char *mmc_err2str(int err)
-+{
-+	switch(err) {
-+		case 0:	return "OK";
-+		case -ETIMEDOUT:	return "TIMEOUT";
-+		case -EILSEQ: 		return "BADCRC";
-+		case -EINVAL: 		return "EINVAL";
-+		case -ENOMEDIUM: 	return "NOMEDIUM";
-+		default: return "UNKNOWN";
-+	}
-+}
-+EXPORT_SYMBOL(mmc_err2str);
-Index: linux-2.6/drivers/mmc/host/mmc_debug.h
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/mmc/host/mmc_debug.h
-@@ -0,0 +1,7 @@
-+#ifndef MMC_DEBUG_H
-+#define MMC_DEBUG_H
-+
-+char *mmc_cmd2str(int err);
-+char *mmc_err2str(int err);
-+
-+#endif /* MMC_DEBUG_H */
 Index: linux-2.6/drivers/mmc/host/s3cmci.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/mmc/host/s3cmci.c
-@@ -0,0 +1,1384 @@
+@@ -0,0 +1,1409 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -177,7 +105,6 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/mci.h>
 +
-+#include "mmc_debug.h"
 +#include "s3cmci.h"
 +
 +#define DRIVER_NAME "s3c-mci"
@@ -199,12 +126,14 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +static const int dbgmap_debug = dbg_debug;
 +
 +#define dbg(host, channels, args...)		 \
++	do {					 \
 +	if (dbgmap_err & channels) 		 \
 +		dev_err(&host->pdev->dev, args); \
 +	else if (dbgmap_info & channels)	 \
 +		dev_info(&host->pdev->dev, args);\
 +	else if (dbgmap_debug & channels)	 \
-+		dev_dbg(&host->pdev->dev, args);
++		dev_dbg(&host->pdev->dev, args); \
++	} while (0)
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
 +
@@ -217,6 +146,44 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +static void s3cmci_reset(struct s3cmci_host *host);
 +
 +#ifdef CONFIG_MMC_DEBUG
++
++static char *mmc_cmd2str(int cmd)
++{
++	switch (cmd) {
++	case  0: return "GO_IDLE_STATE";
++	case  1: return "ALL_SEND_OCR";
++	case  2: return "ALL_SEND_CID";
++	case  3: return "ALL_SEND_RELATIVE_ADD";
++	case  6: return "ACMD: SD_SET_BUSWIDTH";
++	case  7: return "SEL_DESEL_CARD";
++	case  9: return "SEND_CSD";
++	case 10: return "SEND_CID";
++	case 11: return "READ_UNTIL_STOP";
++	case 12: return "STOP_TRANSMISSION";
++	case 13: return "SEND_STATUS";
++	case 15: return "GO_INACTIVE_STATE";
++	case 16: return "SET_BLOCKLEN";
++	case 17: return "READ_SINGLE_BLOCK";
++	case 18: return "READ_MULTIPLE_BLOCK";
++	case 24: return "WRITE_SINGLE_BLOCK";
++	case 25: return "WRITE_MULTIPLE_BLOCK";
++	case 41: return "ACMD: SD_APP_OP_COND";
++	case 55: return "APP_CMD";
++	default: return "UNKNOWN";
++	}
++}
++
++static char *mmc_err2str(int err)
++{
++	switch (err) {
++	case 0:			return "OK";
++	case -ETIMEDOUT:	return "TIMEOUT";
++	case -EILSEQ: 		return "BADCRC";
++	case -EINVAL: 		return "EINVAL";
++	case -ENOMEDIUM: 	return "NOMEDIUM";
++	default:		return "UNKNOWN";
++	}
++}
 +
 +static inline void dbg_dumpregs(struct s3cmci_host *host, char *prefix)
 +{
@@ -258,7 +225,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +static void prepare_dbgmsg(struct s3cmci_host *host, struct mmc_command *cmd,
 +								int stop)
 +{
-+ 	snprintf(host->dbgmsg_cmd, 300,
++	snprintf(host->dbgmsg_cmd, 300,
 +		"#%u%s op:%s(%i) arg:0x%08x flags:0x08%x retries:%u",
 +		host->ccnt, (stop?" (STOP)":""), mmc_cmd2str(cmd->opcode),
 +		cmd->opcode, cmd->arg, cmd->flags, cmd->retries);
@@ -311,7 +278,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	u32 newmask;
 +
 +	newmask = readl(host->base + host->sdiimsk);
-+	newmask|= imask;
++	newmask |= imask;
 +
 +	writel(newmask, host->base + host->sdiimsk);
 +
@@ -323,7 +290,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	u32 newmask;
 +
 +	newmask = readl(host->base + host->sdiimsk);
-+	newmask&= ~imask;
++	newmask &= ~imask;
 +
 +	writel(newmask, host->base + host->sdiimsk);
 +
@@ -336,7 +303,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +}
 +
 +static inline int get_data_buffer(struct s3cmci_host *host,
-+			volatile u32 *words, volatile u32 **pointer)
++				  u32 *words, u32 **pointer)
 +{
 +	struct scatterlist *sg;
 +
@@ -353,8 +320,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	}
 +	sg = &host->mrq->data->sg[host->pio_sgptr];
 +
-+	*words	= sg->length >> 2;
-+	*pointer= page_address(sg_page(sg)) + sg->offset;
++	*words = sg->length >> 2;
++	*pointer = page_address(sg_page(sg)) + sg->offset;
 +
 +	host->pio_sgptr++;
 +
@@ -364,8 +331,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	return 0;
 +}
 +
-+#define FIFO_FILL(host) ((readl(host->base + S3C2410_SDIFSTA) & S3C2410_SDIFSTA_COUNTMASK) >> 2)
-+#define FIFO_FREE(host) ((63 - (readl(host->base + S3C2410_SDIFSTA) & S3C2410_SDIFSTA_COUNTMASK)) >> 2)
++#define FIFO_FILL(host) ((readl(host->base + S3C2410_SDIFSTA) & 	\
++				S3C2410_SDIFSTA_COUNTMASK) >> 2)
++#define FIFO_FREE(host) ((63 - (readl(host->base + S3C2410_SDIFSTA) 	\
++				& S3C2410_SDIFSTA_COUNTMASK)) >> 2)
 +
 +static inline void do_pio_read(struct s3cmci_host *host)
 +{
@@ -373,7 +342,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	u32 fifo;
 +	void __iomem *from_ptr;
 +
-+	//write real prescaler to host, it might be set slow to fix
++	/* write real prescaler to host, it might be set slow to fix */
 +	writel(host->prescaler, host->base + S3C2410_SDIPRE);
 +
 +	from_ptr = host->base + host->sdidata;
@@ -387,35 +356,33 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +				host->complete_what = COMPLETION_FINALIZE;
 +
 +				dbg(host, dbg_pio, "pio_read(): "
-+					"complete (no more data).\n");
++				    "complete (no more data).\n");
 +				return;
 +			}
 +
-+			dbg(host, dbg_pio, "pio_read(): new target: [%i]@[%p]\n",
-+			       host->pio_words, host->pio_ptr);
++			dbg(host, dbg_pio, "pio_read(): new target: "
++			    "[%i]@[%p]\n", host->pio_words, host->pio_ptr);
 +		}
 +
 +		dbg(host, dbg_pio, "pio_read(): fifo:[%02i] "
-+				   "buffer:[%03i] dcnt:[%08X]\n",
-+				   fifo, host->pio_words,
-+				   readl(host->base + S3C2410_SDIDCNT));
++		    "buffer:[%03i] dcnt:[%08X]\n", fifo, host->pio_words,
++		    readl(host->base + S3C2410_SDIDCNT));
 +
 +		if (fifo > host->pio_words)
 +			fifo = host->pio_words;
 +
-+		host->pio_words-= fifo;
-+		host->pio_count+= fifo;
++		host->pio_words -= fifo;
++		host->pio_count += fifo;
 +
-+		while(fifo--) {
++		while (fifo--)
 +			*(host->pio_ptr++) = readl(from_ptr);
-+		}
 +	}
 +
 +	if (!host->pio_words) {
 +		res = get_data_buffer(host, &host->pio_words, &host->pio_ptr);
 +		if (res) {
 +			dbg(host, dbg_pio, "pio_read(): "
-+				"complete (no more buffers).\n");
++			    "complete (no more buffers).\n");
 +			host->pio_active = XFER_NONE;
 +			host->complete_what = COMPLETION_FINALIZE;
 +
@@ -423,7 +390,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		}
 +	}
 +
-+	enable_imask(host, S3C2410_SDIIMSK_RXFIFOHALF | S3C2410_SDIIMSK_RXFIFOLAST);
++	enable_imask(host, S3C2410_SDIIMSK_RXFIFOHALF
++						| S3C2410_SDIIMSK_RXFIFOLAST);
 +}
 +
 +static inline void do_pio_write(struct s3cmci_host *host)
@@ -456,12 +424,11 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		if (fifo > host->pio_words)
 +			fifo = host->pio_words;
 +
-+		host->pio_words-= fifo;
-+		host->pio_count+= fifo;
++		host->pio_words -= fifo;
++		host->pio_count += fifo;
 +
-+		while(fifo--) {
++		while (fifo--)
 +			writel(*(host->pio_ptr++), to_ptr);
-+		}
 +	}
 +
 +	enable_imask(host, S3C2410_SDIIMSK_TXFIFOHALF);
@@ -499,7 +466,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 + * ISR for SDI Interface IRQ
 + * Communication between driver and ISR works as follows:
 + *   host->mrq 			points to current request
-+ *   host->complete_what	tells the ISR when the request is considered done
++ *   host->complete_what	tells ISR when the request is considered done
 + *     COMPLETION_CMDSENT	  when the command was sent
 + *     COMPLETION_RSPFIN          when a response was received
 + *     COMPLETION_XFERFINISH	  when the data transfer is finished
@@ -575,8 +542,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		if ((host->pio_active == XFER_READ) &&
 +				(mci_fsta & S3C2410_SDIFSTA_RFDET)) {
 +
-+			disable_imask(host,
-+				S3C2410_SDIIMSK_RXFIFOHALF | S3C2410_SDIIMSK_RXFIFOLAST);
++			disable_imask(host, S3C2410_SDIIMSK_RXFIFOHALF |
++						S3C2410_SDIIMSK_RXFIFOLAST);
 +
 +			tasklet_schedule(&host->pio_tasklet);
 +			host->status = "pio rx";
@@ -670,9 +637,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +			goto close_transfer;
 +		}
 +
-+		if (host->complete_what == COMPLETION_XFERFINISH_RSPFIN) {
++		if (host->complete_what == COMPLETION_XFERFINISH_RSPFIN)
 +			host->complete_what = COMPLETION_RSPFIN;
-+		}
 +
 +		mci_dclear |= S3C2410_SDIDSTA_XFERFINISH;
 +	}
@@ -798,13 +764,13 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		}
 +	}
 +
-+	// Read response
++	/* Read response */
 +	cmd->resp[0] = readl(host->base + S3C2410_SDIRSP0);
 +	cmd->resp[1] = readl(host->base + S3C2410_SDIRSP1);
 +	cmd->resp[2] = readl(host->base + S3C2410_SDIRSP2);
 +	cmd->resp[3] = readl(host->base + S3C2410_SDIRSP3);
 +
-+	// reset clock speed, as it could still be set low for
++	/* reset clock speed, as it could still be set low for */
 +	writel(host->prescaler, host->base + S3C2410_SDIPRE);
 +
 +	if (cmd->error)
@@ -813,12 +779,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	if (cmd->data && cmd->data->error)
 +		debug_as_failure = 1;
 +
-+	//if(cmd->flags & MMC_RSP_MAYFAIL) debug_as_failure = 0;
-+
 +#ifdef CONFIG_MMC_DEBUG
 +	dbg_dumpcmd(host, cmd, debug_as_failure);
 +#endif
-+	//Cleanup controller
++	/* Cleanup controller */
 +	writel(0, host->base + S3C2410_SDICMDARG);
 +	writel(S3C2410_SDIDCON_STOP, host->base + S3C2410_SDIDCON);
 +	writel(0, host->base + S3C2410_SDICMDCON);
@@ -833,36 +797,35 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		return;
 +	}
 +
-+	// If we have no data transfer we are finished here
++	/* If we have no data transfer we are finished here */
 +	if (!mrq->data)
 +		goto request_done;
 +
-+	// Calulate the amout of bytes transfer, but only if there was
-+	// no error
-+	if (mrq->data->error == 0) {
++	/* Calulate the amout of bytes transfer, but only if there was
++	 * no error */
++	if (mrq->data->error == 0)
 +		mrq->data->bytes_xfered =
 +			(mrq->data->blocks * mrq->data->blksz);
-+	} else {
++	else
 +		mrq->data->bytes_xfered = 0;
-+	}
 +
-+	// If we had an error while transfering data we flush the
-+	// DMA channel and the fifo to clear out any garbage
++	/* If we had an error while transfering data we flush the
++	 * DMA channel and the fifo to clear out any garbage */
 +	if (mrq->data->error) {
 +		if (host->dodma)
 +			s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_FLUSH);
 +
 +		if (host->is2440) {
-+			//Clear failure register and reset fifo
++			/* Clear failure register and reset fifo */
 +			writel(S3C2440_SDIFSTA_FIFORESET |
 +			       S3C2440_SDIFSTA_FIFOFAIL,
 +			       host->base + S3C2410_SDIFSTA);
 +		} else {
 +			u32 mci_con;
 +
-+			//reset fifo
++			/* reset fifo */
 +			mci_con = readl(host->base + S3C2410_SDICON);
-+			mci_con|= S3C2410_SDICON_FIFORESET;
++			mci_con |= S3C2410_SDICON_FIFORESET;
 +
 +			writel(mci_con, host->base + S3C2410_SDICON);
 +		}
@@ -877,7 +840,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +void s3cmci_dma_setup(struct s3cmci_host *host, enum s3c2410_dmasrc source)
 +{
-+	static int setup_ok = 0;
++	static int setup_ok;
 +	static enum s3c2410_dmasrc last_source = -1;
 +
 +	if (last_source == source)
@@ -891,7 +854,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	if (!setup_ok) {
 +		s3c2410_dma_config(host->dma, 4,
 +			(S3C2410_DCON_HWTRIG | S3C2410_DCON_CH0_SDI));
-+		s3c2410_dma_set_buffdone_fn(host->dma, s3cmci_dma_done_callback);
++		s3c2410_dma_set_buffdone_fn(host->dma,
++					    s3cmci_dma_done_callback);
 +		s3c2410_dma_setflags(host->dma, S3C2410_DMAF_AUTOSTART);
 +		setup_ok = 1;
 +	}
@@ -908,31 +872,30 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	enable_imask(host, imsk);
 +
-+	if (cmd->data) {
++	if (cmd->data)
 +		host->complete_what = COMPLETION_XFERFINISH_RSPFIN;
-+	} else if (cmd->flags & MMC_RSP_PRESENT) {
++	else if (cmd->flags & MMC_RSP_PRESENT)
 +		host->complete_what = COMPLETION_RSPFIN;
-+	} else {
++	else
 +		host->complete_what = COMPLETION_CMDSENT;
-+	}
 +
 +	writel(cmd->arg, host->base + S3C2410_SDICMDARG);
 +
 +	ccon = cmd->opcode & S3C2410_SDICMDCON_INDEX;
-+	ccon|= S3C2410_SDICMDCON_SENDERHOST | S3C2410_SDICMDCON_CMDSTART;
++	ccon |= S3C2410_SDICMDCON_SENDERHOST | S3C2410_SDICMDCON_CMDSTART;
 +
 +	if (cmd->flags & MMC_RSP_PRESENT)
 +		ccon |= S3C2410_SDICMDCON_WAITRSP;
 +
 +	if (cmd->flags & MMC_RSP_136)
-+		ccon|= S3C2410_SDICMDCON_LONGRSP;
++		ccon |= S3C2410_SDICMDCON_LONGRSP;
 +
 +	writel(ccon, host->base + S3C2410_SDICMDCON);
 +}
 +
 +static int s3cmci_setup_data(struct s3cmci_host *host, struct mmc_data *data)
 +{
-+	u32 dcon, imsk, stoptries=3;
++	u32 dcon, imsk, stoptries = 3;
 +
 +	/* write DCON register */
 +
@@ -941,11 +904,11 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		return 0;
 +	}
 +
-+	while(readl(host->base + S3C2410_SDIDSTA) &
++	while (readl(host->base + S3C2410_SDIDSTA) &
 +		(S3C2410_SDIDSTA_TXDATAON | S3C2410_SDIDSTA_RXDATAON)) {
 +
 +		dbg(host, dbg_err,
-+			"mci_setup_data() transfer stillin progress.\n");
++		    "mci_setup_data() transfer stillin progress.\n");
 +
 +		writel(S3C2410_SDIDCON_STOP, host->base + S3C2410_SDIDCON);
 +		s3cmci_reset(host);
@@ -961,17 +924,14 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	dcon  = data->blocks & S3C2410_SDIDCON_BLKNUM_MASK;
 +
-+	if (host->dodma) {
++	if (host->dodma)
 +		dcon |= S3C2410_SDIDCON_DMAEN;
-+	}
 +
-+	if (host->bus_width == MMC_BUS_WIDTH_4) {
++	if (host->bus_width == MMC_BUS_WIDTH_4)
 +		dcon |= S3C2410_SDIDCON_WIDEBUS;
-+	}
 +
-+	if (!(data->flags & MMC_DATA_STREAM)) {
++	if (!(data->flags & MMC_DATA_STREAM))
 +		dcon |= S3C2410_SDIDCON_BLOCKMODE;
-+	}
 +
 +	if (data->flags & MMC_DATA_WRITE) {
 +		dcon |= S3C2410_SDIDCON_TXAFTERRESP;
@@ -1007,13 +967,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	} else {
 +		writel(0x0000FFFF, host->base + S3C2410_SDITIMER);
 +
-+		//FIX: set slow clock to prevent timeouts on read
-+		if (data->flags & MMC_DATA_READ) {
++		/* FIX: set slow clock to prevent timeouts on read */
++		if (data->flags & MMC_DATA_READ)
 +			writel(0xFF, host->base + S3C2410_SDIPRE);
-+		}
 +	}
-+
-+	//debug_dump_registers(host, "Data setup:");
 +
 +	return 0;
 +}
@@ -1078,7 +1035,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +			s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_FLUSH);
 +			return -EBUSY;
 +		}
-+ 	}
++	}
 +
 +	s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_START);
 +
@@ -1095,8 +1052,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +#ifdef CONFIG_MMC_DEBUG
 +	prepare_dbgmsg(host, cmd, host->cmd_is_stop);
 +#endif
-+	//Clear command, data and fifo status registers
-+	//Fifo clear only necessary on 2440, but doesn't hurt on 2410
++	/* clear command, data and fifo status registers;
++	 * Fifo clear only necessary on 2440, but doesn't hurt on 2410 */
 +	writel(0xFFFFFFFF, host->base + S3C2410_SDICMDSTAT);
 +	writel(0xFFFFFFFF, host->base + S3C2410_SDIDSTA);
 +	writel(0xFFFFFFFF, host->base + S3C2410_SDIFSTA);
@@ -1116,11 +1073,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		}
 +
 +
-+		if (host->dodma) {
++		if (host->dodma)
 +			res = s3cmci_prepare_dma(host, cmd->data);
-+		} else {
++		else
 +			res = s3cmci_prepare_pio(host, cmd->data);
-+		}
 +
 +		if (res) {
 +			cmd->error = -EIO;
@@ -1132,16 +1088,13 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	}
 +
-+	// Send command
 +	s3cmci_send_command(host, cmd);
-+
-+	// Enable Interrupt
 +	enable_irq(host->irq);
 +}
 +
 +static void s3cmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 +{
-+ 	struct s3cmci_host *host = mmc_priv(mmc);
++	struct s3cmci_host *host = mmc_priv(mmc);
 +
 +	host->cmd_is_stop = 0;
 +	host->mrq = mrq;
@@ -1154,70 +1107,71 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	struct s3cmci_host *host = mmc_priv(mmc);
 +	u32 mci_psc, mci_con;
 +
-+	//Set power
++	/* Set power */
 +	mci_con = readl(host->base + S3C2410_SDICON);
-+	switch(ios->power_mode) {
-+		case MMC_POWER_ON:
-+		case MMC_POWER_UP:
-+			s3c2410_gpio_cfgpin(S3C2410_GPE5, S3C2410_GPE5_SDCLK);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE6, S3C2410_GPE6_SDCMD);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE7, S3C2410_GPE7_SDDAT0);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE8, S3C2410_GPE8_SDDAT1);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE9, S3C2410_GPE9_SDDAT2);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE10, S3C2410_GPE10_SDDAT3);
++	switch (ios->power_mode) {
++	case MMC_POWER_ON:
++	case MMC_POWER_UP:
++		s3c2410_gpio_cfgpin(S3C2410_GPE5, S3C2410_GPE5_SDCLK);
++		s3c2410_gpio_cfgpin(S3C2410_GPE6, S3C2410_GPE6_SDCMD);
++		s3c2410_gpio_cfgpin(S3C2410_GPE7, S3C2410_GPE7_SDDAT0);
++		s3c2410_gpio_cfgpin(S3C2410_GPE8, S3C2410_GPE8_SDDAT1);
++		s3c2410_gpio_cfgpin(S3C2410_GPE9, S3C2410_GPE9_SDDAT2);
++		s3c2410_gpio_cfgpin(S3C2410_GPE10, S3C2410_GPE10_SDDAT3);
 +
-+			if (host->pdata->set_power)
-+				host->pdata->set_power(ios->power_mode, ios->vdd);
++		if (host->pdata->set_power)
++			host->pdata->set_power(ios->power_mode, ios->vdd);
 +
-+			if (!host->is2440)
-+				mci_con|=S3C2410_SDICON_FIFORESET;
++		if (!host->is2440)
++			mci_con |= S3C2410_SDICON_FIFORESET;
 +
-+			break;
++		break;
 +
-+		case MMC_POWER_OFF:
-+		default:
-+			s3c2410_gpio_setpin(S3C2410_GPE5, 0);
-+			s3c2410_gpio_cfgpin(S3C2410_GPE5, S3C2410_GPE5_OUTP);
++	case MMC_POWER_OFF:
++	default:
++		s3c2410_gpio_setpin(S3C2410_GPE5, 0);
++		s3c2410_gpio_cfgpin(S3C2410_GPE5, S3C2410_GPE5_OUTP);
 +
-+			if (host->pdata->set_power)
-+				host->pdata->set_power(ios->power_mode, ios->vdd);
++		if (host->pdata->set_power)
++			host->pdata->set_power(ios->power_mode, ios->vdd);
 +
-+			if (host->is2440)
-+				mci_con|=S3C2440_SDICON_SDRESET;
++		if (host->is2440)
++			mci_con |= S3C2440_SDICON_SDRESET;
 +
-+			break;
++		break;
 +	}
 +
-+	//Set clock
-+	for (mci_psc=0; mci_psc<255; mci_psc++) {
++	/* Set clock */
++	for (mci_psc = 0; mci_psc < 255; mci_psc++) {
 +		host->real_rate = host->clk_rate / (host->clk_div*(mci_psc+1));
 +
 +		if (host->real_rate <= ios->clock)
 +			break;
 +	}
 +
-+	if(mci_psc > 255) mci_psc = 255;
++	if (mci_psc > 255)
++		mci_psc = 255;
 +	host->prescaler = mci_psc;
 +
 +	writel(host->prescaler, host->base + S3C2410_SDIPRE);
 +
-+	//If requested clock is 0, real_rate will be 0, too
++	/* If requested clock is 0, real_rate will be 0, too */
 +	if (ios->clock == 0)
 +		host->real_rate = 0;
 +
-+	//Set CLOCK_ENABLE
++	/* Set CLOCK_ENABLE */
 +	if (ios->clock)
 +		mci_con |= S3C2410_SDICON_CLOCKTYPE;
 +	else
-+		mci_con &=~S3C2410_SDICON_CLOCKTYPE;
++		mci_con &= ~S3C2410_SDICON_CLOCKTYPE;
 +
 +	writel(mci_con, host->base + S3C2410_SDICON);
 +
-+	if ((ios->power_mode==MMC_POWER_ON)
-+		|| (ios->power_mode==MMC_POWER_UP)) {
++	if ((ios->power_mode == MMC_POWER_ON)
++		|| (ios->power_mode == MMC_POWER_UP)) {
 +
 +		dbg(host, dbg_conf, "running at %lukHz (requested: %ukHz).\n",
-+			host->real_rate/1000, ios->clock/1000);
++		    host->real_rate/1000, ios->clock/1000);
 +	} else {
 +		dbg(host, dbg_conf, "powered down.\n");
 +	}
@@ -1370,7 +1324,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		goto probe_free_host;
 +	}
 +
-+	if ((ret = clk_enable(host->clk))) {
++	ret = clk_enable(host->clk);
++	if (ret) {
 +		dev_err(&pdev->dev, "failed to enable clock source.\n");
 +		goto clk_free;
 +	}
@@ -1391,18 +1346,19 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	mmc->max_phys_segs	= 128;
 +	mmc->max_hw_segs	= 128;
 +
-+	dbg(host, dbg_debug, "probe: mode:%s mapped mci_base:%p irq:%u irq_cd:%u dma:%u.\n",
-+		(host->is2440?"2440":""),
-+		host->base, host->irq, host->irq_cd, host->dma);
++	dbg(host, dbg_debug, "probe: mode:%s mapped mci_base:%p irq:%u "
++	    "irq_cd:%u dma:%u.\n", (host->is2440?"2440":""),
++	    host->base, host->irq, host->irq_cd, host->dma);
 +
-+	if ((ret = mmc_add_host(mmc))) {
++	ret = mmc_add_host(mmc);
++	if (ret) {
 +		dev_err(&pdev->dev, "failed to add mmc host.\n");
 +		goto free_dmabuf;
 +	}
 +
 +	platform_set_drvdata(pdev, mmc);
 +
-+	dev_info(&pdev->dev,"initialisation done.\n");
++	dev_info(&pdev->dev, "initialisation done.\n");
 +	return 0;
 +
 + free_dmabuf:
@@ -1412,10 +1368,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	clk_put(host->clk);
 +
 + probe_free_irq_cd:
-+ 	free_irq(host->irq_cd, host);
++	free_irq(host->irq_cd, host);
 +
 + probe_free_irq:
-+ 	free_irq(host->irq, host);
++	free_irq(host->irq, host);
 +
 + probe_iounmap:
 +	iounmap(host->base);
@@ -1438,8 +1394,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	clk_disable(host->clk);
 +	clk_put(host->clk);
 +	s3c2410_dma_free(S3CMCI_DMA, &s3cmci_dma_client);
-+ 	free_irq(host->irq_cd, host);
-+ 	free_irq(host->irq, host);
++	free_irq(host->irq_cd, host);
++	free_irq(host->irq, host);
 +	iounmap(host->base);
 +	release_mem_region(host->mem->start, RESSIZE(host->mem));
 +	mmc_free_host(mmc);
@@ -1484,8 +1440,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +#endif /* CONFIG_PM */
 +
 +
-+static struct platform_driver s3cmci_driver_2410 =
-+{
++static struct platform_driver s3cmci_driver_2410 = {
 +	.driver.name	= "s3c2410-sdi",
 +	.probe		= s3cmci_probe_2410,
 +	.remove		= s3cmci_remove,
@@ -1493,8 +1448,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	.resume		= s3cmci_resume,
 +};
 +
-+static struct platform_driver s3cmci_driver_2412 =
-+{
++static struct platform_driver s3cmci_driver_2412 = {
 +	.driver.name	= "s3c2412-sdi",
 +	.probe		= s3cmci_probe_2412,
 +	.remove		= s3cmci_remove,
@@ -1502,8 +1456,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	.resume		= s3cmci_resume,
 +};
 +
-+static struct platform_driver s3cmci_driver_2440 =
-+{
++static struct platform_driver s3cmci_driver_2440 = {
 +	.driver.name	= "s3c2440-sdi",
 +	.probe		= s3cmci_probe_2440,
 +	.remove		= s3cmci_remove,
@@ -1538,7 +1491,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/mmc/host/s3cmci.h
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -1549,7 +1502,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.h
 + * published by the Free Software Foundation.
 + */
 +
-+//FIXME: DMA Resource management ?!
++/* FIXME: DMA Resource management ?! */
 +#define S3CMCI_DMA 0
 +
 +enum s3cmci_waitfor {
@@ -1582,31 +1535,30 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.h
 +	unsigned		sdidata;
 +	int			dodma;
 +
-+	volatile int		dmatogo;
++	int			dmatogo;
 +
 +	struct mmc_request	*mrq;
 +	int			cmd_is_stop;
 +
 +	spinlock_t		complete_lock;
-+	volatile enum s3cmci_waitfor
-+				complete_what;
++	enum s3cmci_waitfor	complete_what;
 +
-+	volatile int		dma_complete;
++	int			dma_complete;
 +
-+	volatile u32		pio_sgptr;
-+	volatile u32		pio_words;
-+	volatile u32		pio_count;
-+	volatile u32		*pio_ptr;
++	u32			pio_sgptr;
++	u32			pio_words;
++	u32			pio_count;
++	u32			*pio_ptr;
 +#define XFER_NONE 0
 +#define XFER_READ 1
 +#define XFER_WRITE 2
-+	volatile u32		pio_active;
++	u32			pio_active;
 +
 +	int			bus_width;
 +
 +	char 			dbgmsg_cmd[301];
 +	char 			dbgmsg_dat[301];
-+	volatile char		*status;
++	char			*status;
 +
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
@@ -1634,10 +1586,9 @@ Index: linux-2.6/drivers/mmc/host/Makefile
 ===================================================================
 --- linux-2.6.orig/drivers/mmc/host/Makefile
 +++ linux-2.6/drivers/mmc/host/Makefile
-@@ -17,4 +17,5 @@
+@@ -17,4 +17,4 @@
  obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
  obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
  obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
 -
 +obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
-+obj-$(CONFIG_MMC)		+= mmc_debug.o
