@@ -1,5 +1,8 @@
-This driver adds support for LCM initialization of the JBT6K74 LCM
-as found on the FIC GTA01 hardware
+This driver adds support for the SPI-based control interface of the LCM (LCD
+Panel) found on the FIC GTA01 hardware.  
+
+The specific panel in this hardware is a TPO TD028TTEC1, but the driver should
+be able to drive any other diplay based on the JBT6K74-AS controller ASIC.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
@@ -7,28 +10,36 @@ Index: linux-2.6/drivers/spi/Kconfig
 ===================================================================
 --- linux-2.6.orig/drivers/spi/Kconfig
 +++ linux-2.6/drivers/spi/Kconfig
-@@ -237,5 +237,11 @@
+@@ -231,6 +231,17 @@
+ 	  sysfs interface, with each line presented as a kind of GPIO
+ 	  exposing both switch control and diagnostic feedback.
  
- # (slave support would go here)
- 
-+config SPI_SLAVE_JBT6K74
-+	tristate "tpo JP6K74 LCM ASIC control interface"
++config SPI_JBT6K74
++	tristate "TPO JBT6K74-AS TFT display ASIC control interface"
 +	depends on SPI_MASTER && SYSFS
 +	help
-+	  Driver for the tpo JP6K74-AS LCM SPI control interface.
++	  SPI driver for the control interface of TFT panels containing
++	  the TPO JBT6K74-AS controller ASIC, such as the TPO TD028TTEC1
++	  TFT diplay module used in the FIC/OpenMoko Neo1973 GSM phones.
 +
- endmenu # "SPI support"
- 
++	  The control interface is required for display operation, as it
++	  controls power management, display timing and gamma calibration.
++
+ #
+ # Add new SPI protocol masters in alphabetical order above this line
+ #
 Index: linux-2.6/drivers/spi/Makefile
 ===================================================================
 --- linux-2.6.orig/drivers/spi/Makefile
 +++ linux-2.6/drivers/spi/Makefile
-@@ -39,4 +39,5 @@
+@@ -33,6 +33,7 @@
+ obj-$(CONFIG_SPI_AT25)		+= at25.o
+ obj-$(CONFIG_SPI_SPIDEV)	+= spidev.o
+ obj-$(CONFIG_SPI_TLE62X0)	+= tle62x0.o
++obj-$(CONFIG_SPI_JBT6K74)	+= jbt6k74.o
  # 	... add above this line ...
  
- # SPI slave drivers (protocol for that link)
-+obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
- # 	... add above this line ...
+ # SPI slave controller drivers (upstream link)
 Index: linux-2.6/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
@@ -670,7 +681,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
  config MACH_QT2410
  	bool "QT2410"
  	select CPU_S3C2410
-+	select SPI_SLAVE_JBT6K74
++	select SPI_JBT6K74
  	help
  	   Say Y here if you are using the Armzone QT2410
  
