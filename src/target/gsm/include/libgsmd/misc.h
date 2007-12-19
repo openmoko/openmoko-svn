@@ -34,14 +34,6 @@ extern int lgsm_pin_auth(struct lgsm_handle *lh, const char *pin);
 /* Get Signal Strehngth (Chapter 8.5) */
 extern int lgsm_signal_quality(struct lgsm_handle *h);
 
-/* Set voice mail number */
-extern int lgsm_voicemail_set(struct lgsm_handle *lh,
-			      struct lgsm_addr *addr);
-
-/* Get currently configured voice mail number */
-extern int lgsm_voicemail_get(struct lgsm_handle *lh,
-			      struct lgsm_addr *addr);
-
 /* Operator Selection, Network Registration */
 extern int lgsm_oper_get(struct lgsm_handle *lh);
 extern int lgsm_opers_get(struct lgsm_handle *lh);

@@ -79,6 +79,8 @@ extern int lgsm_sms_get_storage(struct lgsm_handle *lh);
 extern int lgsm_sms_set_storage(struct lgsm_handle *lh,
 		enum ts0705_mem_type mem1, enum ts0705_mem_type mem2,
 		enum ts0705_mem_type mem3);
+extern int lgsm_number2addr(struct gsmd_addr *dst, const char *src,
+	int skipplus);
 
 /* Retrieve current default service centre address */
 extern int lgsm_sms_get_smsc(struct lgsm_handle *lh);

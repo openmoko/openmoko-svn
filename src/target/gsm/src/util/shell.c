@@ -285,6 +285,9 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		((void *) gmh + sizeof(*gmh));
 	const struct gsmd_own_number *num = (struct gsmd_own_number *)
 		((void *) gmh + sizeof(*gmh));
+	const struct gsmd_voicemail *vmail = (struct gsmd_voicemail *)
+		((void *) gmh + sizeof(*gmh));
+	int result = *(int *) gmh->data;
 	static const char *oper_stat[] = {
 		[GSMD_OPER_UNKNOWN] = "of unknown status",
 		[GSMD_OPER_AVAILABLE] = "available",
@@ -339,6 +342,18 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 				"" : srvname[num->service],
 				(num->service == GSMD_SERVICE_UNKNOWN) ?
 				"" : " services");
+		pending_responses --;
+		break;
+	case GSMD_NETWORK_VMAIL_SET:
+		if (result)
+			printf("Set voicemail error %i\n", result);
+		else
+			printf("Set voicemail OK \n");
+		pending_responses --;
+		break;
+	case GSMD_NETWORK_VMAIL_GET:
+		if(vmail->addr.number)
+			printf ("voicemail number is %s \n",vmail->addr.number);
 		pending_responses --;
 		break;
 	default:
@@ -481,6 +496,8 @@ static int shell_help(void)
 		"\tsM\tSMS Set preferred storage (sM=mem1,mem2,mem3)\n"
 		"\tsc\tSMS Show Service Centre\n"
 		"\tsC\tSMS Set Service Centre (sC=number)\n"
+		"\tgvm\tGet Voicemail number\n"
+		"\tsvm\tSet Voicemail number(svm=number)\n"
 		"\tim\tGet imsi\n"
 		"\tcs\tGet Call status\n"
 		"\tgp\tGet PIN status\n"
@@ -765,6 +782,18 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 					lgsm_sms_set_smsc(lgsmh, ptr + 1);
 			} else if (!strcmp(buf, "n")) {
 				lgsm_get_subscriber_num(lgsmh);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "gvm", 3)) {
+				printf("Get Voicemail Number\n");
+				lgsm_voicemail_get(lgsmh);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "svm", 3)) {
+				printf("Set Voicemail Number\n");
+				ptr = strchr(buf, '=');
+				if (!ptr || strlen(ptr) < 3)
+					printf("No.\n");
+				else
+					lgsm_voicemail_set(lgsmh, ptr + 1);
 				pending_responses ++;
 			} else if (!strncmp(buf, "im", 2)) {
 				printf("Get imsi\n");
