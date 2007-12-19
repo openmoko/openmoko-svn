@@ -453,7 +453,9 @@ note_added_cb (JanaStoreView *store_view, GList *components, MokoSms *sms)
     
     if (!comp) continue;
     
-    if (!jana_utils_component_has_category (comp, "Read")) {
+    if ((!jana_utils_component_has_category (comp, "Read")) &&
+	(!(jana_utils_component_has_category (comp, "Sending") ||
+	 jana_utils_component_has_category (comp, "Sent")))) {
       gchar *uid = jana_component_get_uid (comp);
       priv->unread_uids = g_list_prepend (priv->unread_uids, uid);
       update = TRUE;
@@ -486,7 +488,9 @@ note_modified_cb (JanaStoreView *store_view, GList *components, MokoSms *sms)
         priv->unread_uids = g_list_delete_link (priv->unread_uids, found);
         update = TRUE;
       }
-    } else if (!jana_utils_component_has_category (comp, "Read")) {
+    } else if ((!jana_utils_component_has_category (comp, "Read")) &&
+	(!(jana_utils_component_has_category (comp, "Sending") ||
+	 jana_utils_component_has_category (comp, "Sent")))) {
       priv->unread_uids = g_list_prepend (priv->unread_uids, uid);
       update = TRUE;
     } else {

@@ -1,5 +1,10 @@
 2007-12-19  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (note_added_cb), (note_modified_cb):
+	Don't notify on sent messages
+
+2007-12-19  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-sms.c: (moko_sms_dispose),
 	(stop_notify_timeout), (update_notification), (moko_sms_init):
 	Add tone/vibration notification
