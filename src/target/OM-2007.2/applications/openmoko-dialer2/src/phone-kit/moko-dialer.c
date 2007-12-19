@@ -811,7 +811,7 @@ moko_dialer_init (MokoDialer *dialer)
   priv->contacts = moko_contacts_get_default ();
 
   /* Load the notification object */
-  priv->notify = moko_notify_new ();
+  priv->notify = moko_notify_get_default ();
 
 
   /* Talking: This is the object that handles interaction with the user */

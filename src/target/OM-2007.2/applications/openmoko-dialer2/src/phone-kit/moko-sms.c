@@ -26,6 +26,10 @@
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
 
+#include <libnotify/notification.h>
+
+#include <libmokoui2/moko-stock.h>
+
 #include "moko-sms.h"
 #include "moko-network.h"
 #include "moko-listener.h"
@@ -63,6 +67,9 @@ struct _MokoSmsPrivate
   JanaStore          *sms_store;
   gboolean           sms_store_open;
   JanaNote           *last_msg;
+  
+  GList              *unread_uids;
+  NotifyNotification *notification;
 };
 
 static void start_handling_sms (MokoSms *sms);
@@ -400,6 +407,100 @@ listener_interface_init (gpointer g_iface, gpointer iface_data)
 }
 
 static void
+update_notification (MokoSms *sms, gboolean show)
+{
+  gchar *body;
+  MokoSmsPrivate *priv = sms->priv;
+  
+  if (!priv->unread_uids) {
+    notify_notification_close (priv->notification, NULL);
+    return;
+  }
+  
+  body = g_strdup_printf ("%d unread message(s)",
+                          g_list_length (priv->unread_uids));
+  g_object_set (G_OBJECT (priv->notification), "body", body, NULL);
+  g_free (body);
+  
+  /* Show notification */
+  if (show) notify_notification_show (priv->notification, NULL);
+}
+
+static void
+note_added_cb (JanaStoreView *store_view, GList *components, MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  gboolean update = FALSE;
+  
+  for (; components; components = components->next) {
+    JanaComponent *comp = JANA_COMPONENT (components->data);
+    
+    if (!comp) continue;
+    
+    if (!jana_utils_component_has_category (comp, "Read")) {
+      gchar *uid = jana_component_get_uid (comp);
+      priv->unread_uids = g_list_prepend (priv->unread_uids, uid);
+      update = TRUE;
+    }
+  }
+  
+  /* TODO: Put this in an idle? */
+  if (update) update_notification (sms, TRUE);
+}
+
+static void
+note_modified_cb (JanaStoreView *store_view, GList *components, MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  gboolean update = FALSE;
+  
+  for (; components; components = components->next) {
+    gchar *uid;
+    GList *found;
+    JanaComponent *comp = JANA_COMPONENT (components->data);
+    
+    if (!comp) continue;
+    
+    uid = jana_component_get_uid (comp);
+    if ((found = g_list_find_custom (
+         priv->unread_uids, uid, (GCompareFunc)strcmp))) {
+      g_free (uid);
+      if (jana_utils_component_has_category (comp, "Read")) {
+        g_free (found->data);
+        priv->unread_uids = g_list_delete_link (priv->unread_uids, found);
+        update = TRUE;
+      }
+    } else if (!jana_utils_component_has_category (comp, "Read")) {
+      priv->unread_uids = g_list_prepend (priv->unread_uids, uid);
+      update = TRUE;
+    } else {
+      g_free (uid);
+    }
+  }
+  
+  if (update) update_notification (sms, FALSE);
+}
+
+static void
+note_removed_cb (JanaStoreView *store_view, GList *uids, MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  gboolean update = FALSE;
+  
+  for (; uids; uids = uids->next) {
+    GList *found = g_list_find_custom (priv->unread_uids, uids->data,
+                                       (GCompareFunc)strcmp);
+    if (found) {
+      g_free (found->data);
+      priv->unread_uids = g_list_delete_link (priv->unread_uids, found);
+      update = TRUE;
+    }
+  }
+  
+  if (update) update_notification (sms, FALSE);
+}
+
+static void
 start_handling_sms (MokoSms *sms)
 {
   MokoSmsPrivate *priv = sms->priv;
@@ -421,8 +522,16 @@ start_handling_sms (MokoSms *sms)
 static void
 sms_store_opened_cb (JanaStore *store, MokoSms *self)
 {
+  JanaStoreView *view;
   MokoSmsPrivate *priv = self->priv;
   priv->sms_store_open = TRUE;
+
+  /* Hook onto added/modified/removed signals for SMS notification */
+  view = jana_store_get_view (store);
+  g_signal_connect (view, "added", G_CALLBACK (note_added_cb), self);
+  g_signal_connect (view, "modified", G_CALLBACK (note_modified_cb), self);
+  g_signal_connect (view, "removed", G_CALLBACK (note_removed_cb), self);
+  jana_store_view_start (view);
 
   if (!priv->handling_sms) start_handling_sms (self);
   if (priv->got_subscriber_number)
@@ -435,6 +544,10 @@ moko_sms_init (MokoSms *sms)
   MokoSmsPrivate *priv;
 
   priv = sms->priv = MOKO_SMS_GET_PRIVATE (sms);
+  priv->notification = notify_notification_new ("New SMS message",
+                                                "",
+                                                MOKO_STOCK_SMS_NEW,
+                                                NULL);
 
   /* Get the SMS note store */
   priv->sms_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);

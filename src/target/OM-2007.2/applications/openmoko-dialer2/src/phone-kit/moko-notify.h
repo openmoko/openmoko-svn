@@ -66,6 +66,9 @@ GType moko_notify_get_type (void) G_GNUC_CONST;
 MokoNotify*        
 moko_notify_new (void);
 
+MokoNotify*
+moko_notify_get_default (void);
+
 void
 moko_notify_start (MokoNotify *notify);
 

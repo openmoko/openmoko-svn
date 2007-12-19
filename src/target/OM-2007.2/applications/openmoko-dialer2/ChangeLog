@@ -1,3 +1,27 @@
+2007-12-19  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	Add AC_GNU_SOURCE for basename(), add libnotify
+
+	* src/phone-kit/Makefile.am:
+	Add libnotify
+
+	* src/phone-kit/dialer-main.c: (main):
+	Initialise libnotify
+
+	* src/phone-kit/moko-dialer.c: (moko_dialer_init):
+	Use moko_notify_get_default()
+
+	* src/phone-kit/moko-notify.c: (moko_notify_start),
+	(moko_notify_stop), (moko_notify_init), (moko_notify_get_default):
+	* src/phone-kit/moko-notify.h:
+	Add moko_notify_get_default() to share MokoNotify with other objects
+
+	* src/phone-kit/moko-sms.c: (update_notification), (note_added_cb),
+	(note_modified_cb), (note_removed_cb), (sms_store_opened_cb),
+	(moko_sms_init):
+	Add notifications with libnotify
+
 2007-12-04  Thomas Wood  <thomas@openedhand.com>
 
 	* src/phone-kit/moko-network.c: (on_network_registered),

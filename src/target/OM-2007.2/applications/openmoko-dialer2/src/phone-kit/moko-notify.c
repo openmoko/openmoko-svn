@@ -42,7 +42,7 @@ G_DEFINE_TYPE (MokoNotify, moko_notify, G_TYPE_OBJECT)
 
 struct _MokoNotifyPrivate
 {
-  gboolean    started;
+  int    started;
 
   /* Sound stuff */
   pa_context *pac;
@@ -254,9 +254,9 @@ moko_notify_start (MokoNotify *notify)
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
 
-  if (priv->started)
+  priv->started ++;
+  if (priv->started != 1)
     return;
-  priv->started = TRUE;
 
   moko_notify_check_brightness ();
   moko_notify_start_vibrate ();
@@ -274,10 +274,12 @@ moko_notify_stop (MokoNotify *notify)
 
   if (!priv->started)
     return;
-  priv->started = FALSE;
+  priv->started --;
 
-  moko_notify_stop_vibrate ();
-  moko_notify_stop_ringtone (notify);
+  if (!priv->started) {
+    moko_notify_stop_vibrate ();
+    moko_notify_stop_ringtone (notify);
+  }
 }
 
 /* GObject functions */
@@ -313,7 +315,7 @@ moko_notify_init (MokoNotify *notify)
 
   priv = notify->priv = MOKO_NOTIFY_GET_PRIVATE (notify);
 
-  priv->started = FALSE;
+  priv->started = 0;
   priv->pac = NULL;
 
   /* Start up pulse audio */
@@ -341,6 +343,16 @@ moko_notify_new (void)
 
   notify = g_object_new (MOKO_TYPE_NOTIFY, NULL);
 
+  return notify;
+}
+
+MokoNotify*
+moko_notify_get_default (void)
+{
+  static MokoNotify *notify = NULL;
+  
+  if (!notify) notify = moko_notify_new ();
+  
   return notify;
 }
 

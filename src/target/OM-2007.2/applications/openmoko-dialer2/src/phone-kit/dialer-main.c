@@ -13,12 +13,18 @@
  *  GNU Lesser Public License for more details.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <glib-object.h>
+#include <libnotify/notify.h>
 
 #include "moko-network.h"
 #include "moko-dialer.h"
@@ -64,6 +70,7 @@ main (int argc, char **argv)
   DBusGProxy *proxy;
   GError *error = NULL;
   guint32 ret;
+  char *prog;
 
   /* initialise type system */
   g_type_init ();
@@ -110,6 +117,9 @@ main (int argc, char **argv)
 
   /* Initialize Threading & GTK+ */
   gtk_init (&argc, &argv);
+  
+  /* Initialise libnotify */
+  notify_init (basename (argv[0]));
 
   /* Create the PhoneKit objects */
   network = moko_network_get_default ();
