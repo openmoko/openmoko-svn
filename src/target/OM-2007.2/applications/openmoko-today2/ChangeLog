@@ -1,3 +1,8 @@
+2007-12-19  Chris Lord  <chris@openedhand.com>
+
+	* src/today-pim-journal.c: (today_pim_journal_box_new):
+        Attach the messages app launcher to the correct box
+
 2007-12-06  Chris Lord  <chris@openedhand.com>
 
 	* src/today-main.c: (set_time_idle), (clock_clicked_cb),

@@ -268,7 +268,7 @@ today_pim_journal_box_new (TodayData *data)
 	gtk_container_add (GTK_CONTAINER (data->unread_messages_box), hbox);
 	gtk_widget_add_events (data->unread_messages_box,
 		GDK_BUTTON_PRESS_MASK);
-	g_signal_connect (data->missed_calls_box, "button-press-event",
+	g_signal_connect (data->unread_messages_box, "button-press-event",
 		G_CALLBACK (unread_messages_button_press_cb), data);
 
 	/* Events box */
