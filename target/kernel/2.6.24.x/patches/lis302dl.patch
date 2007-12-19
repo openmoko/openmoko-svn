@@ -722,26 +722,34 @@ Index: linux-2.6/drivers/spi/Kconfig
 ===================================================================
 --- linux-2.6.orig/drivers/spi/Kconfig
 +++ linux-2.6/drivers/spi/Kconfig
-@@ -243,5 +243,9 @@
- 	help
- 	  Driver for the tpo JP6K74-AS LCM SPI control interface.
+@@ -242,6 +242,15 @@
+ 	  The control interface is required for display operation, as it
+ 	  controls power management, display timing and gamma calibration.
  
-+config SPI_SLAVE_LIS302DL
++config SPI_LIS302DL
 +	tristate "STmicro LIS302DL 3-axis accelerometer"
 +	depends on SPI_MASTER && MACH_NEO1973_GTA02
++	help
++	  SPI driver for the STmicro LIS302DL 3-axis accelerometer.
 +
- endmenu # "SPI support"
- 
++	  The userspece interface is a 3-axis (X/Y/Z) relative movement
++	  Linux input device, reporting REL_[XYZ] events.
++
+ #
+ # Add new SPI protocol masters in alphabetical order above this line
+ #
 Index: linux-2.6/drivers/spi/Makefile
 ===================================================================
 --- linux-2.6.orig/drivers/spi/Makefile
 +++ linux-2.6/drivers/spi/Makefile
-@@ -40,4 +40,5 @@
- 
- # SPI slave drivers (protocol for that link)
- obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
-+obj-$(CONFIG_SPI_SLAVE_LIS302DL)	+= lis302dl.o
+@@ -34,6 +34,7 @@
+ obj-$(CONFIG_SPI_SPIDEV)	+= spidev.o
+ obj-$(CONFIG_SPI_TLE62X0)	+= tle62x0.o
+ obj-$(CONFIG_SPI_JBT6K74)	+= jbt6k74.o
++obj-$(CONFIG_SPI_LIS302DL)	+= lis302dl.o
  # 	... add above this line ...
+ 
+ # SPI slave controller drivers (upstream link)
 Index: linux-2.6/include/linux/lis302dl.h
 ===================================================================
 --- /dev/null
