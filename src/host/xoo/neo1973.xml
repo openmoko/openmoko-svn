@@ -1,0 +1,18 @@
+<neo1973>
+<device width='695' height='1297' 
+        display_width='480' display_height='640' 
+        display_x='75' display_y='300' 
+        img='neo1973.jpg' />
+
+<!--
+<button x='94' y='111' width='53' height='35' key='Up'/> 
+<button x='94' y='199' width='53' height='35' key='Down'/> 
+<button x='62' y='146' width='35' height='53' key='Left'/> 
+<button x='147' y='146' width='35' height='53' key='Right'/> 
+<button x='93' y='146' width='54' height='54' key='Return'/> 
+<button x='62' y='276' width='110' height='45' key='Escape'/> 
+<button x='62' y='333' width='110' height='45' key='F4'/> 
+<button x='62' y='390' width='110' height='45' key='F5'/> 
+-->
+
+</neo1973>
