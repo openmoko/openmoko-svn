@@ -89,7 +89,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/mmc/host/s3cmci.c
-@@ -0,0 +1,1389 @@
+@@ -0,0 +1,1411 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -486,6 +486,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	u32 mci_csta, mci_dsta, mci_fsta, mci_dcnt, mci_imsk;
 +	u32 mci_cclear, mci_dclear;
 +	unsigned long iflags;
++	int cardint = 0;
 +
 +	host = (struct s3cmci_host *)dev_id;
 +
@@ -633,6 +634,11 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		mci_dclear |= S3C2410_SDIDSTA_XFERFINISH;
 +	}
 +
++	if (mci_dsta & S3C2410_SDIDSTA_SDIOIRQDETECT) {
++		cardint = 1;
++		mci_dclear |= S3C2410_SDIDSTA_SDIOIRQDETECT;
++	}
++		
 +clear_status_bits:
 +	writel(mci_cclear, host->base + S3C2410_SDICMDSTAT);
 +	writel(mci_dclear, host->base + S3C2410_SDIDSTA);
@@ -657,6 +663,11 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +				mci_dcnt, host->status);
 +
 +	spin_unlock_irqrestore(&host->complete_lock, iflags);
++
++	/* We have to delay this as it calls back into the driver */
++	if (cardint)
++		mmc_signal_sdio_irq(host->mmc);
++
 +	return IRQ_HANDLED;
 +
 +}
@@ -1189,10 +1200,21 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	return s3c2410_gpio_getpin(host->pdata->gpio_wprotect);
 +}
 +
++static void s3cmci_enable_sdio_irq(struct mmc_host *mmc, int enable)
++{
++	struct s3cmci_host *host = mmc_priv(mmc);
++
++	if (enable)
++		enable_imask(host, S3C2410_SDIIMSK_SDIOIRQ);
++	else
++		disable_imask(host, S3C2410_SDIIMSK_SDIOIRQ);
++}
++
 +static struct mmc_host_ops s3cmci_ops = {
 +	.request	= s3cmci_request,
 +	.set_ios	= s3cmci_set_ios,
 +	.get_ro		= s3cmci_get_ro,
++	.enable_sdio_irq = s3cmci_enable_sdio_irq,
 +};
 +
 +static struct s3c24xx_mci_pdata s3cmci_def_pdata = {
@@ -1327,7 +1349,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	mmc->ops 	= &s3cmci_ops;
 +	mmc->ocr_avail	= host->pdata->ocr_avail;
-+	mmc->caps	= MMC_CAP_4_BIT_DATA;
++	mmc->caps	= MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
 +	mmc->f_min 	= host->clk_rate / (host->clk_div * 256);
 +	mmc->f_max 	= host->clk_rate / host->clk_div;
 +
