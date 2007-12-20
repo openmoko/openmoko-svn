@@ -1,5 +1,10 @@
 2007-12-20  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (sms_notes_data_func):
+	Display contact names instead of phone numbers (fixes bug #1143)
+
+2007-12-20  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (note_changed_cb), (page_shown),
 	(sms_notes_data_func), (global_note_added_cb),
 	(notes_visible_func):

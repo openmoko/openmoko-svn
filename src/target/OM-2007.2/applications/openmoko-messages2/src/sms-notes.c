@@ -22,6 +22,7 @@
 #endif
 
 #include "sms-notes.h"
+#include "sms-contacts.h"
 #include "sms-utils.h"
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
@@ -303,6 +304,7 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 	gchar *author, *recipient, *body, **categories;
 	JanaTime *created, *modified;
 	gboolean outgoing;
+	gint i;
 	
 	gtk_tree_model_get (model, iter,
 		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author,
@@ -315,7 +317,6 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 
 	outgoing = FALSE;
 	if (categories) {
-		gint i;
 		for (i = 0; categories[i]; i++) {
 			if ((strcmp (categories[i], "Sent") == 0) ||
 			    (strcmp (categories[i], "Sending") == 0)) {
@@ -324,6 +325,30 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 			}
 		}
 		g_strfreev (categories);
+	}
+	
+	/* Replace numbers with contact names */
+	for (i = 0; i < 2; i++) {
+		const gchar *uid;
+		GtkTreeIter *iter;
+		gchar *number = i ? author : recipient;
+		gchar *name;
+		
+		if (!number) continue;
+		
+		uid = g_hash_table_lookup (data->numbers, number);
+		if (!uid) continue;
+		
+		iter = g_hash_table_lookup (data->contacts, uid);
+		if (!iter) continue;
+		
+		gtk_tree_model_get (data->contacts_store, iter,
+			COL_NAME, &name, -1);
+		if (name) {
+			g_free (number);
+			if (i) author = name;
+			else recipient = name;
+		}
 	}
 	
 	g_object_set (cell,
