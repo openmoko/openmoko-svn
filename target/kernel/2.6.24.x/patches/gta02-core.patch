@@ -2,7 +2,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,679 @@
+@@ -0,0 +1,709 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -48,6 +48,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +#include <linux/mtd/nand.h>
 +#include <linux/mtd/nand_ecc.h>
 +#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
 +
 +#include <linux/pcf50633.h>
 +
@@ -309,6 +310,34 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +};
 +
++
++/* NOR Flash */
++
++#define GTA02_FLASH_BASE	0x18000000 /* GCS3 */
++#define GTA02_FLASH_SIZE	0x200000 /* 2MBytes */
++
++static struct physmap_flash_data gta02_nor_flash_data = {
++	.width		= 2,
++};
++
++static struct resource gta02_nor_flash_resource = {
++	.start		= GTA02_FLASH_BASE,
++	.end		= GTA02_FLASH_BASE + GTA02_FLASH_SIZE - 1,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device gta02_nor_flash = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.dev		= {
++				.platform_data	= &gta02_nor_flash_data,
++			},
++	.resource	= &gta02_nor_flash_resource,
++	.num_resources	= 1,
++};
++
++
++
 +static struct platform_device *gta02_devices[] __initdata = {
 +	&s3c_device_usb,
 +	&s3c_device_wdt,
@@ -320,6 +349,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +	&s3c_device_ts,
 +	&s3c_device_spi0,
 +	&s3c_device_spi1,
++	&gta02_nor_flash,
 +};
 +
 +static struct s3c2410_nand_set gta02_nand_sets[] = {
