@@ -44,7 +44,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/spi/jbt6k74.c
-@@ -0,0 +1,628 @@
+@@ -0,0 +1,673 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -157,56 +157,67 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +struct jbt_info {
 +	enum jbt_state state, last_state;
-+	u_int16_t tx_buf[8];
 +	struct spi_device *spi_dev;
-+	u_int16_t reg_cache[0xEE];
++	struct mutex lock;		/* protects tx_buf and reg_cache */
++	u16 tx_buf[8];
++	u16 reg_cache[0xEE];
 +};
 +
 +#define JBT_COMMAND	0x000
 +#define JBT_DATA	0x100
 +
-+static int jbt_reg_write_nodata(struct jbt_info *jbt, u_int8_t reg)
++static int jbt_reg_write_nodata(struct jbt_info *jbt, u8 reg)
 +{
 +	int rc;
 +
-+	jbt->tx_buf[0] = JBT_COMMAND | reg;
++	mutex_lock(&jbt->lock);
 +
-+	rc = spi_write(jbt->spi_dev, (u_int8_t *)jbt->tx_buf,
-+		       1*sizeof(u_int16_t));
++	jbt->tx_buf[0] = JBT_COMMAND | reg;
++	rc = spi_write(jbt->spi_dev, (u8 *)jbt->tx_buf,
++		       1*sizeof(u16));
 +	if (rc == 0)
 +		jbt->reg_cache[reg] = 0;
 +
++	mutex_unlock(&jbt->lock);
++
 +	return rc;
 +}
 +
 +
-+static int jbt_reg_write(struct jbt_info *jbt, u_int8_t reg, u_int8_t data)
++static int jbt_reg_write(struct jbt_info *jbt, u8 reg, u8 data)
 +{
 +	int rc;
++
++	mutex_lock(&jbt->lock);
 +
 +	jbt->tx_buf[0] = JBT_COMMAND | reg;
 +	jbt->tx_buf[1] = JBT_DATA | data;
-+
-+	rc = spi_write(jbt->spi_dev, (u_int8_t *)jbt->tx_buf,
-+		       2*sizeof(u_int16_t));
++	rc = spi_write(jbt->spi_dev, (u8 *)jbt->tx_buf,
++		       2*sizeof(u16));
 +	if (rc == 0)
 +		jbt->reg_cache[reg] = data;
++	
++	mutex_unlock(&jbt->lock);
 +
 +	return rc;
 +}
 +
-+static int jbt_reg_write16(struct jbt_info *jbt, u_int8_t reg, u_int16_t data)
++static int jbt_reg_write16(struct jbt_info *jbt, u8 reg, u16 data)
 +{
 +	int rc;
++
++	mutex_lock(&jbt->lock);
 +
 +	jbt->tx_buf[0] = JBT_COMMAND | reg;
 +	jbt->tx_buf[1] = JBT_DATA | (data >> 8);
 +	jbt->tx_buf[2] = JBT_DATA | (data & 0xff);
 +
-+	rc = spi_write(jbt->spi_dev, (u_int8_t *)jbt->tx_buf,
-+		       3*sizeof(u_int16_t));
++	rc = spi_write(jbt->spi_dev, (u8 *)jbt->tx_buf,
++		       3*sizeof(u16));
 +	if (rc == 0)
 +		jbt->reg_cache[reg] = data;
++
++	mutex_unlock(&jbt->lock);
 +
 +	return rc;
 +}
@@ -269,7 +280,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +		rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2_QVGA, 0x0a);
 +	}
 +
-+	return rc;
++	return rc ? -EIO : 0;
 +}
 +
 +static int standby_to_sleep(struct jbt_info *jbt)
@@ -279,15 +290,15 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	/* three times command zero */
 +	rc = jbt_reg_write_nodata(jbt, 0x00);
 +	mdelay(1);
-+	rc = jbt_reg_write_nodata(jbt, 0x00);
++	rc |= jbt_reg_write_nodata(jbt, 0x00);
 +	mdelay(1);
-+	rc = jbt_reg_write_nodata(jbt, 0x00);
++	rc |= jbt_reg_write_nodata(jbt, 0x00);
 +	mdelay(1);
 +
 +	/* deep standby out */
 +	rc |= jbt_reg_write(jbt, JBT_REG_POWER_ON_OFF, 0x17);
 +
-+	return rc;
++	return rc ? -EIO : 0;
 +}
 +
 +static int sleep_to_normal(struct jbt_info *jbt)
@@ -311,7 +322,8 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +	/* initialize register set */
 +	rc |= jbt_init_regs(jbt, 0);
-+	return rc;
++
++	return rc ? -EIO : 0;
 +}
 +
 +static int sleep_to_qvga_normal(struct jbt_info *jbt)
@@ -335,7 +347,8 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +
 +	/* initialize register set for qvga*/
 +	rc |= jbt_init_regs(jbt, 1);
-+	return rc;
++
++	return rc ? -EIO : 0;
 +}
 +
 +static int normal_to_sleep(struct jbt_info *jbt)
@@ -346,7 +359,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write16(jbt, JBT_REG_OUTPUT_CONTROL, 0x8002);
 +	rc |= jbt_reg_write_nodata(jbt, JBT_REG_SLEEP_IN);
 +
-+	return rc;
++	return rc ? -EIO : 0;
 +}
 +
 +static int sleep_to_standby(struct jbt_info *jbt)
@@ -485,17 +498,21 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +			   const char *buf, size_t count)
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(dev);
-+	int i;
++	int i, rc;
 +
 +	for (i = 0; i < ARRAY_SIZE(jbt_state_names); i++) {
 +		if (!strncmp(buf, jbt_state_names[i],
 +			     strlen(jbt_state_names[i]))) {
-+			jbt6k74_enter_state(jbt, i);
++			rc = jbt6k74_enter_state(jbt, i);
++			if (rc)
++				return rc;
 +			switch (i) {
 +			case JBT_STATE_NORMAL:
 +			case JBT_STATE_QVGA_NORMAL:
 +				/* Enable display again after deep-standby */
-+				jbt6k74_display_onoff(jbt, 1);
++				rc = jbt6k74_display_onoff(jbt, 1);
++				if (rc)
++					return rc;
 +				break;
 +			default:
 +				break;
@@ -524,7 +541,15 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +static ssize_t gamma_read(struct device *dev, struct device_attribute *attr,
 +			  char *buf)
 +{
-+	return strlcpy(buf, "N/A\n", PAGE_SIZE);
++	struct jbt_info *jbt = dev_get_drvdata(dev);
++	int reg = reg_by_string(attr->attr.name);
++	u16 val;
++
++	mutex_lock(&jbt->lock);
++	val = jbt->reg_cache[reg];
++	mutex_unlock(&jbt->lock);
++
++	return sprintf(buf, "0x%04x\n", val);
 +}
 +
 +static ssize_t gamma_write(struct device *dev, struct device_attribute *attr,
@@ -565,16 +590,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	int rc;
 +	struct jbt_info *jbt;
 +
-+	jbt = kzalloc(sizeof(*jbt), GFP_KERNEL);
-+	if (!jbt)
-+		return -ENOMEM;
-+
-+	jbt->spi_dev = spi;
-+	jbt->state = JBT_STATE_DEEP_STANDBY;
-+
-+	/* since we don't have MISO connected, we can't do detection */
-+
-+	dev_set_drvdata(&spi->dev, jbt);
++	/* the controller doesn't have a MISO pin; we can't do detection */
 +
 +	spi->mode = SPI_CPOL | SPI_CPHA;
 +	spi->bits_per_word = 9;
@@ -583,32 +599,58 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	if (rc < 0) {
 +		dev_err(&spi->dev,
 +			"error during spi_setup of jbt6k74 driver\n");
-+		dev_set_drvdata(&spi->dev, NULL);
-+		kfree(jbt);
 +		return rc;
 +	}
 +
-+	rc = jbt6k74_enter_state(jbt, JBT_STATE_NORMAL);
-+	if (rc < 0)
-+		dev_warn(&spi->dev, "cannot enter NORMAL state\n");
++	jbt = kzalloc(sizeof(*jbt), GFP_KERNEL);
++	if (!jbt)
++		return -ENOMEM;
 +
-+	jbt6k74_display_onoff(jbt, 1);
++	jbt->spi_dev = spi;
++	jbt->state = JBT_STATE_DEEP_STANDBY;
++
++	dev_set_drvdata(&spi->dev, jbt);
++
++	rc = jbt6k74_enter_state(jbt, JBT_STATE_NORMAL);
++	if (rc < 0) {
++		dev_err(&spi->dev, "cannot enter NORMAL state\n");
++		goto err_free_drvdata;
++	}
++
++	rc = jbt6k74_display_onoff(jbt, 1);
++	if (rc < 0) {
++		dev_err(&spi->dev, "cannot switch display on\n");
++		goto err_standby;
++	}
 +
 +	rc = sysfs_create_group(&spi->dev.kobj, &jbt_attr_group);
-+	if (rc) {
-+		dev_set_drvdata(&spi->dev, NULL);
-+		kfree(jbt);
-+		return rc;
++	if (rc < 0) {
++		dev_err(&spi->dev, "cannot create sysfs group\n");
++		goto err_off;
 +	}
 +
 +	return 0;
++
++err_off:
++	jbt6k74_display_onoff(jbt, 0);
++err_standby:
++	jbt6k74_enter_state(jbt, JBT_STATE_DEEP_STANDBY);
++err_free_drvdata:
++	dev_set_drvdata(&spi->dev, NULL);
++	kfree(jbt);
++
++	return rc;
 +}
 +
 +static int __devexit jbt_remove(struct spi_device *spi)
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
 +
++	/* We don't want to switch off the display in case the user
++	 * accidentially onloads the module (whose use count normally is 0) */
++
 +	sysfs_remove_group(&spi->dev.kobj, &jbt_attr_group);
++	dev_set_drvdata(&spi->dev, NULL);
 +	kfree(jbt);
 +
 +	return 0;
@@ -619,16 +661,11 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +{
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
 +
-+	switch (state.event) {
-+	case PM_EVENT_SUSPEND:
-+	case 3:
-+		/* Save mode for resume */
-+		jbt->last_state = jbt->state;
-+		jbt6k74_enter_state(jbt, JBT_STATE_DEEP_STANDBY);
-+		return 0;
-+	default:
-+		return -1;
-+	}
++	/* Save mode for resume */
++	jbt->last_state = jbt->state;
++	jbt6k74_enter_state(jbt, JBT_STATE_DEEP_STANDBY);
++
++	return 0;
 +}
 +
 +static int jbt_resume(struct spi_device *spi)
@@ -636,7 +673,15 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	struct jbt_info *jbt = dev_get_drvdata(&spi->dev);
 +
 +	jbt6k74_enter_state(jbt, jbt->last_state);
-+	jbt6k74_display_onoff(jbt, 1);
++
++	switch (jbt->last_state) {
++	case JBT_STATE_NORMAL:
++	case JBT_STATE_QVGA_NORMAL:
++		jbt6k74_display_onoff(jbt, 1);
++		break;
++	default:
++		break;
++	}
 +
 +	return 0;
 +}
