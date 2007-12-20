@@ -2,7 +2,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,667 @@
+@@ -0,0 +1,679 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -581,6 +581,18 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +	default:
 +		gta02_glamo_resources[2].start = GTA02_GPIO_3D_RESET;
 +		gta02_glamo_resources[2].end = GTA02_GPIO_3D_RESET;
++		break;
++	}
++
++	switch (system_rev) {
++	case GTA02v1_SYSTEM_REV:
++	case GTA02v2_SYSTEM_REV:
++	case GTA02v3_SYSTEM_REV:
++	case GTA02v4_SYSTEM_REV:
++		/* The hardware is missing a pull-up resistor and thus can't
++		 * support the Smedia Glamo IRQ */
++		gta02_glamo_resources[1].start = 0;
++		gta02_glamo_resources[1].end = 0;
 +		break;
 +	}
 +}

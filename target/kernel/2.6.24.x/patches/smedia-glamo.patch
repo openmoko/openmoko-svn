@@ -1,78 +1,41 @@
-Index: linux-2.6/drivers/video/Kconfig
+This is a Linux kernel driver for the Smedia Glamo336x / Glamo337x
+multi-function peripheral device.
+
+Signedo-off-by: Harald Welte <laforge@openmoko.org>
+
+Index: linux-2.6/drivers/mfd/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/video/Kconfig
-+++ linux-2.6/drivers/video/Kconfig
-@@ -1880,6 +1880,38 @@
- 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
- 	  ML403 uses a standard DB15 VGA connector.
+--- linux-2.6.orig/drivers/mfd/Kconfig
++++ linux-2.6/drivers/mfd/Kconfig
+@@ -15,6 +15,8 @@
+ 	  interface. The device may be connected by PCI or local bus with
+ 	  varying functions enabled.
  
-+config GLAMO
-+	bool
++source "drivers/mfd/glamo/Kconfig"
 +
-+config FB_GLAMO
-+	tristate "Smedia Glamo 336x/337x framebuffer support"
-+	depends on FB
-+	select GLAMO
-+	help
-+	  Frame buffer driver for the LCD controller in the Smedia Glamo
-+	  336x/337x.
-+
-+	  This driver is also available as a module ( = code which can be
-+	  inserted and removed from the running kernel whenever you want). The
-+	  module will be called glamofb. If you want to compile it as a module,
-+	  say M here and read <file:Documentation/modules.txt>.
-+
-+	  If unsure, say N.
-+
-+config GLAMO_SPI_GPIO
-+       bool "Glamo GPIO SPI bitbang support"
-+       depends on GLAMO
-+       help
-+         Enable a bitbanging SPI adapter driver for the Smedia Glamo.
-+
-+config FB_GLAMO_SPI
-+       bool "Glamo LCM control channel SPI support"
-+       depends on FB_GLAMO
-+       help
-+         Enable a bitbanging SPI adapter driver for the Smedia Glamo LCM
-+	 control channel.  This SPI interface is frequently used to
-+	 interconnect the LCM control interface.
-+
- config FB_VIRTUAL
- 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
- 	depends on FB
-Index: linux-2.6/drivers/video/Makefile
-===================================================================
---- linux-2.6.orig/drivers/video/Makefile
-+++ linux-2.6/drivers/video/Makefile
-@@ -113,6 +113,7 @@
- obj-$(CONFIG_FB_SM501)            += sm501fb.o
- obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
-+obj-$(CONFIG_GLAMO)               += glamo/
+ endmenu
  
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_UVESA)            += uvesafb.o
-Index: linux-2.6/drivers/video/glamo/Makefile
+ menu "Multimedia Capabilities Port drivers"
+Index: linux-2.6/drivers/mfd/glamo/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/Makefile
++++ linux-2.6/drivers/mfd/glamo/Makefile
 @@ -0,0 +1,11 @@
 +#
 +# Makefile for the Smedia Glamo framebuffer driver
 +#
 +
-+obj-$(CONFIG_GLAMO)		+= glamo-core.o glamo-gpio.o
-+obj-$(CONFIG_GLAMO_SPI)		+= glamo-spi.o
-+obj-$(CONFIG_GLAMO_SPI_GPIO) 	+= glamo-spi-gpio.o
++obj-$(CONFIG_MFD_GLAMO)			+= glamo-core.o glamo-gpio.o
++obj-$(CONFIG_MFD_GLAMO_SPI)		+= glamo-spi.o
++obj-$(CONFIG_MFD_GLAMO_SPI_GPIO) 	+= glamo-spi-gpio.o
 +
-+obj-$(CONFIG_FB_GLAMO)		+= glamo-fb.o
-+obj-$(CONFIG_FB_GLAMO_SPI)	+= glamo-lcm-spi.o
++obj-$(CONFIG_MFD_GLAMO_FB)		+= glamo-fb.o
++obj-$(CONFIG_MFD_GLAMO_SPI_FB)		+= glamo-lcm-spi.o
 +
-Index: linux-2.6/drivers/video/glamo/glamo-regs.h
+Index: linux-2.6/drivers/mfd/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-regs.h
++++ linux-2.6/drivers/mfd/glamo/glamo-regs.h
 @@ -0,0 +1,467 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
@@ -541,11 +504,11 @@ Index: linux-2.6/drivers/video/glamo/glamo-regs.h
 +};
 +
 +#endif /* _GLAMO_REGS_H */
-Index: linux-2.6/drivers/video/glamo/glamo-core.c
+Index: linux-2.6/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-core.c
-@@ -0,0 +1,1067 @@
++++ linux-2.6/drivers/mfd/glamo/glamo-core.c
+@@ -0,0 +1,1072 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -793,7 +756,7 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +
 +/* we only allocate the minimum possible size for the framebuffer to make
 + * sure we have sufficient memory for other functions of the chip */
-+//#define GLAMO_FB_SIZE	(640*480*4)	/* == 0x12c000 */
++/*#define GLAMO_FB_SIZE	(640*480*4)*/	/* == 0x12c000 */
 +#define GLAMO_FB_SIZE	0x800000
 +
 +static struct resource glamo_fb_resources[] = {
@@ -1119,7 +1082,8 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 + * script support
 + ***********************************************************************/
 +
-+int glamo_run_script(struct glamo_core *glamo, struct glamo_script *script, int len)
++int glamo_run_script(struct glamo_core *glamo, struct glamo_script *script,
++		     int len)
 +{
 +	int i;
 +
@@ -1442,8 +1406,8 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +	glamo->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +	glamo->irq = platform_get_irq(pdev, 0);
 +	glamo->pdata = pdev->dev.platform_data;
-+	if (!glamo->irq || !glamo->mem || !glamo->pdata) {
-+		dev_err(&pdev->dev, "platform device with no IRQ/MEM ?\n");
++	if (!glamo->mem || !glamo->pdata) {
++		dev_err(&pdev->dev, "platform device with no MEM/PDATA ?\n");
 +		rc = -ENOENT;
 +		goto out_free;
 +	}
@@ -1518,7 +1482,7 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +
 +	platform_set_drvdata(pdev, glamo);
 +
-+	printk("running init script\n");
++	dev_dbg(&glamo->pdev->dev, "running init script\n");
 +	glamo_run_script(glamo, glamo_init_script, ARRAY_SIZE(glamo_init_script));
 +
 +	dev_info(&glamo->pdev->dev, "Glamo core now %uHz CPU / %uHz Memory)\n",
@@ -1526,18 +1490,22 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +		 glamo_pll_rate(glamo, GLAMO_PLL2));
 +
 +	/* FIXME: do we need to request_irq() it ? */
-+	printk("interrupts\n");
++
++	dev_dbg(&glamo->pdev->dev, "interrupts\n");
 +	for (irq = IRQ_GLAMO(0); irq <= IRQ_GLAMO(8); irq++) {
 +		set_irq_chip(irq, &glamo_irq_chip);
 +		set_irq_handler(irq, handle_level_irq);
 +		set_irq_flags(irq, IRQF_VALID);
 +	}
-+#if 0 /* temporarily disabled since it creates endless loop on GTA02v2 */
-+	printk("chained\n");
-+	set_irq_chained_handler(glamo->irq, glamo_irq_demux_handler);
-+	printk("type\n");
-+	set_irq_type(glamo->irq, IRQT_FALLING);
-+#endif
++
++	if (!glamo->irq)
++		dev_warn(&glamo->pdev->dev, "No IRQ support on this hardware!\n");
++	else {
++		dev_dbg(&glamo->pdev->dev, "chained\n");
++		set_irq_chained_handler(glamo->irq, glamo_irq_demux_handler);
++		dev_dbg(&glamo->pdev->dev, "type\n");
++		set_irq_type(glamo->irq, IRQT_FALLING);
++	}
 +
 +	return 0;
 +
@@ -1657,10 +1625,10 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
 +#define IRQ_GLAMO_RISC		IRQ_GLAMO(8)
 +
  #endif /* __ASM_ARCH_IRQ_H */
-Index: linux-2.6/drivers/video/glamo/glamo-fb.c
+Index: linux-2.6/drivers/mfd/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-fb.c
++++ linux-2.6/drivers/mfd/glamo/glamo-fb.c
 @@ -0,0 +1,658 @@
 +/* Smedia Glamo 336x/337x driver
 + *
@@ -2385,16 +2353,16 @@ Index: linux-2.6/include/linux/spi/glamo.h
 +	unsigned int 		pin_cs;
 +
 +	unsigned int		board_size;
-+	struct spi_board_info*	board_info;
++	struct spi_board_info	*board_info;
 +	struct glamo_core	*glamo;
 +};
 +
 +
 +#endif
-Index: linux-2.6/drivers/video/glamo/glamo-core.h
+Index: linux-2.6/drivers/mfd/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-core.h
++++ linux-2.6/drivers/mfd/glamo/glamo-core.h
 @@ -0,0 +1,53 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
@@ -2449,10 +2417,10 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.h
 +			 enum glamo_engine engine, int ps);
 +
 +#endif /* __GLAMO_CORE_H */
-Index: linux-2.6/drivers/video/glamo/glamo-gpio.c
+Index: linux-2.6/drivers/mfd/glamo/glamo-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-gpio.c
++++ linux-2.6/drivers/mfd/glamo/glamo-gpio.c
 @@ -0,0 +1,62 @@
 +
 +#include <linux/kernel.h>
@@ -2516,10 +2484,10 @@ Index: linux-2.6/drivers/video/glamo/glamo-gpio.c
 +}
 +EXPORT_SYMBOL(glamo_gpio_cfgpin);
 +
-Index: linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
+Index: linux-2.6/drivers/mfd/glamo/glamo-lcm-spi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
++++ linux-2.6/drivers/mfd/glamo/glamo-lcm-spi.c
 @@ -0,0 +1,241 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2737,23 +2705,23 @@ Index: linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
 +
 +static struct platform_driver glamo_spi_drv = {
 +	.probe		= glamo_spi_probe,
-+        .remove		= glamo_spi_remove,
-+        .suspend	= glamo_spi_suspend,
-+        .resume		= glamo_spi_resume,
-+        .driver		= {
++	.remove		= glamo_spi_remove,
++	.suspend	= glamo_spi_suspend,
++	.resume		= glamo_spi_resume,
++	.driver		= {
 +		.name	= "glamo-lcm-spi",
 +		.owner	= THIS_MODULE,
-+        },
++	},
 +};
 +
 +static int __init glamo_spi_init(void)
 +{
-+        return platform_driver_register(&glamo_spi_drv);
++	return platform_driver_register(&glamo_spi_drv);
 +}
 +
 +static void __exit glamo_spi_exit(void)
 +{
-+        platform_driver_unregister(&glamo_spi_drv);
++	platform_driver_unregister(&glamo_spi_drv);
 +}
 +
 +module_init(glamo_spi_init);
@@ -2762,11 +2730,11 @@ Index: linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
+Index: linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
-@@ -0,0 +1,251 @@
++++ linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
+@@ -0,0 +1,250 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2809,7 +2777,6 @@ Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 +	struct spi_master		*master;
 +	struct glamo_spigpio_info	*info;
 +	struct glamo_core		*glamo;
-+	//struct device			*dev;
 +};
 +
 +static inline struct glamo_spigpio *to_sg(struct spi_device *spi)
@@ -2869,7 +2836,8 @@ Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 +
 +
 +#if 0
-+static int glamo_spigpio_setupxfer(struct spi_device *spi, struct spi_transfer *t)
++static int glamo_spigpio_setupxfer(struct spi_device *spi,
++				   struct spi_transfer *t)
 +{
 +	struct glamo_spi *gs = to_sg(spi);
 +	unsigned int bpw;
@@ -2920,7 +2888,6 @@ Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 +	}
 +
 +
-+	//memset(sp, 0, sizeof(struct glamo_spigpio));
 +	master->bus_num = 2; /* FIXME: use dynamic number */
 +
 +	sp->master = spi_master_get(master);
@@ -2993,23 +2960,23 @@ Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 +
 +static struct platform_driver glamo_spi_drv = {
 +	.probe		= glamo_spigpio_probe,
-+        .remove		= glamo_spigpio_remove,
-+        .suspend	= glamo_spigpio_suspend,
-+        .resume		= glamo_spigpio_resume,
-+        .driver		= {
++	.remove		= glamo_spigpio_remove,
++	.suspend	= glamo_spigpio_suspend,
++	.resume		= glamo_spigpio_resume,
++	.driver		= {
 +		.name	= "glamo-spi-gpio",
 +		.owner	= THIS_MODULE,
-+        },
++	},
 +};
 +
 +static int __init glamo_spi_init(void)
 +{
-+        return platform_driver_register(&glamo_spi_drv);
++	return platform_driver_register(&glamo_spi_drv);
 +}
 +
 +static void __exit glamo_spi_exit(void)
 +{
-+        platform_driver_unregister(&glamo_spi_drv);
++	platform_driver_unregister(&glamo_spi_drv);
 +}
 +
 +module_init(glamo_spi_init);
@@ -3022,7 +2989,7 @@ Index: linux-2.6/include/linux/glamo-gpio.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6/include/linux/glamo-gpio.h
-@@ -0,0 +1,98 @@
+@@ -0,0 +1,99 @@
 +#ifndef __GLAMO_GPIO_H
 +#define __GLAMO_GPIO_H
 +
@@ -3070,24 +3037,24 @@ Index: linux-2.6/include/linux/glamo-gpio.h
 +#define GLAMO_GPIO5_nLCS1	(GLAMO_GPIO5 | GLAMO_GPIO_F_FUNC)
 +
 +#define GLAMO_GPIO6		GLAMO_GPIONO(GLAMO_GPIO_BANKB, 2)
-+#define GLAMO_GPIO6_INPUT
-+#define GLAMO_GPIO6_OUTPUT
-+#define GLAMO_GPIO6_LDCLK
++#define GLAMO_GPIO6_INPUT	(GLAMO_GPIO6 | GLAMO_GPIO_F_IN)
++#define GLAMO_GPIO6_OUTPUT	(GLAMO_GPIO6 | GLAMO_GPIO_F_OUT)
++#define GLAMO_GPIO6_LDCLK	(GLAMO_GPIO6 | GLAMO_GPIO_F_FUNC)
 +
 +#define GLAMO_GPIO7		GLAMO_GPIONO(GLAMO_GPIO_BANKB, 3)
-+#define GLAMO_GPIO7_INPUT
-+#define GLAMO_GPIO7_OUTPUT
-+#define GLAMO_GPIO7_nLDE
++#define GLAMO_GPIO7_INPUT	(GLAMO_GPIO7 | GLAMO_GPIO_F_IN)
++#define GLAMO_GPIO7_OUTPUT	(GLAMO_GPIO7 | GLAMO_GPIO_F_OUT)
++#define GLAMO_GPIO7_nLDE	(GLAMO_GPIO7 | GLAMO_GPIO_F_FUNC)
 +
 +#define GLAMO_GPIO8		GLAMO_GPIONO(GLAMO_GPIO_BANKC, 0)
-+#define GLAMO_GPIO8_INPUT
-+#define GLAMO_GPIO8_OUTPUT
-+#define GLAMO_GPIO8_LD16
++#define GLAMO_GPIO8_INPUT	(GLAMO_GPIO8 | GLAMO_GPIO_F_IN)
++#define GLAMO_GPIO8_OUTPUT	(GLAMO_GPIO8 | GLAMO_GPIO_F_OUT)
++#define GLAMO_GPIO8_LD16	(GLAMO_GPIO8 | GLAMO_GPIO_F_FUNC)
 +
 +#define GLAMO_GPIO9		GLAMO_GPIONO(GLAMO_GPIO_BANKC, 1)
-+#define GLAMO_GPIO9_INPUT
-+#define GLAMO_GPIO9_OUTPUT
-+#define GLAMO_GPIO9_LD17
++#define GLAMO_GPIO9_INPUT	(GLAMO_GPIO9 | GLAMO_GPIO_F_IN)
++#define GLAMO_GPIO9_OUTPUT	(GLAMO_GPIO9 | GLAMO_GPIO_F_OUT)
++#define GLAMO_GPIO9_LD17	(GLAMO_GPIO9 | GLAMO_GPIO_F_FUNC)
 +
 +#define GLAMO_GPIO10		GLAMO_GPIONO(GLAMO_GPIO_BANKC, 2)
 +#define GLAMO_GPIO10_INPUT	(GLAMO_GPIO10 | GLAMO_GPIO_F_IN)
@@ -3105,7 +3072,8 @@ Index: linux-2.6/include/linux/glamo-gpio.h
 +#define GLAMO_GPIO12_LSA0	(GLAMO_GPIO12 | GLAMO_GPIO_F_FUNC)
 +
 +
-+#define REG_OF_GPIO(gpio)	(((gpio & 0xf000) >> 12)*2 + GLAMO_REG_GPIO_GEN1)
++#define REG_OF_GPIO(gpio)	(((gpio & 0xf000) >> 12)*2 \
++						+ GLAMO_REG_GPIO_GEN1)
 +#define NUM_OF_GPIO(gpio)	((gpio & 0x0f00) >> 8)
 +#define GPIO_OUT_BIT(gpio)	(1 << (NUM_OF_GPIO(gpio) + 0))
 +#define OUTPUT_BIT(gpio)	(1 << (NUM_OF_GPIO(gpio) + 4))
@@ -3121,3 +3089,55 @@ Index: linux-2.6/include/linux/glamo-gpio.h
 +
 +
 +#endif /* _GLAMO_GPIO */
+Index: linux-2.6/drivers/mfd/glamo/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/mfd/glamo/Kconfig
+@@ -0,0 +1,35 @@
++config MFD_GLAMO
++	bool "Smedia Glamo 336x/337x support"
++	help
++	  This enables the core driver for the Smedia Glamo 336x/337x
++	  multi-function device.  It includes irq_chip demultiplex as
++	  well as clock / power management and GPIO support.
++
++config MFD_GLAMO_FB
++	tristate "Smedia Glamo 336x/337x framebuffer support"
++	depends on FB && MFD_GLAMO
++	help
++	  Frame buffer driver for the LCD controller in the Smedia Glamo
++	  336x/337x.
++
++	  This driver is also available as a module ( = code which can be
++	  inserted and removed from the running kernel whenever you want). The
++	  module will be called glamofb. If you want to compile it as a module,
++	  say M here and read <file:Documentation/modules.txt>.
++
++	  If unsure, say N.
++
++config MFD_GLAMO_SPI_GPIO
++       tristate "Glamo GPIO SPI bitbang support"
++       depends on MFD_GLAMO
++       help
++         Enable a bitbanging SPI adapter driver for the Smedia Glamo.
++
++config MFD_GLAMO_SPI_FB
++       tristate "Glamo LCM control channel SPI support"
++       depends on MFD_GLAMO_FB
++       help
++         Enable a bitbanging SPI adapter driver for the Smedia Glamo LCM
++	 control channel.  This SPI interface is frequently used to
++	 interconnect the LCM control interface.
++
+Index: linux-2.6/drivers/mfd/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/mfd/Makefile
++++ linux-2.6/drivers/mfd/Makefile
+@@ -3,6 +3,7 @@
+ #
+ 
+ obj-$(CONFIG_MFD_SM501)		+= sm501.o
++obj-$(CONFIG_MFD_GLAMO)		+= glamo/
+ 
+ obj-$(CONFIG_MCP)		+= mcp-core.o
+ obj-$(CONFIG_MCP_SA11X0)	+= mcp-sa11x0.o
