@@ -1,3 +1,11 @@
+2007-12-20  Chris Lord  <chris@openedhand.com>
+
+	* src/today-pim-journal.c: (today_pim_journal_entry_changed),
+	(note_added_cb), (note_modified_cb), (note_removed_cb),
+	(note_store_opened_cb), (event_store_opened_cb),
+	(today_pim_journal_box_new):
+        Use libjana to display unread SMS message count
+
 2007-12-19  Chris Lord  <chris@openedhand.com>
 
 	* src/today-pim-journal.c: (today_pim_journal_box_new):

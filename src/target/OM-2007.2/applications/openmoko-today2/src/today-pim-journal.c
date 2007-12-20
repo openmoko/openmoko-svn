@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include <glib/gi18n.h>
 #include <moko-stock.h>
 #include <libtaku/launcher-util.h>
@@ -101,11 +102,6 @@ today_pim_journal_entry_changed (MokoJournal *journal,
 	MessageDirection dir;
 	
 	switch (moko_journal_entry_get_entry_type (entry)) {
-	    case SMS_JOURNAL_ENTRY :
-	    case EMAIL_JOURNAL_ENTRY :
-		data->n_unread_messages += added;
-		today_pim_journal_update_messages (data);
-		break;
 	    case VOICE_JOURNAL_ENTRY :
 		moko_journal_entry_get_direction (entry, &dir);
 		if (dir == DIRECTION_IN) {
@@ -184,8 +180,103 @@ dates_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 	return FALSE;
 }
 
+/* Following three functions taken from phonekit/moko-sms.c */
+static GList *unread_uids;
+
 static void
-store_opened_cb (JanaStore *store, TodayData *data)
+note_added_cb (JanaStoreView *store_view, GList *components, TodayData *data)
+{
+  gboolean update = FALSE;
+  
+  for (; components; components = components->next) {
+    JanaComponent *comp = JANA_COMPONENT (components->data);
+    
+    if (!comp) continue;
+    
+    if ((!jana_utils_component_has_category (comp, "Read")) &&
+	(!(jana_utils_component_has_category (comp, "Sending") ||
+	 jana_utils_component_has_category (comp, "Sent")))) {
+      gchar *uid = jana_component_get_uid (comp);
+      unread_uids = g_list_prepend (unread_uids, uid);
+      update = TRUE;
+    }
+  }
+  
+  data->n_unread_messages = g_list_length (unread_uids);
+  if (update) today_pim_journal_update_messages (data);
+}
+
+static void
+note_modified_cb (JanaStoreView *store_view, GList *components, TodayData *data)
+{
+  gboolean update = FALSE;
+  
+  for (; components; components = components->next) {
+    gchar *uid;
+    GList *found;
+    JanaComponent *comp = JANA_COMPONENT (components->data);
+    
+    if (!comp) continue;
+    
+    uid = jana_component_get_uid (comp);
+    if ((found = g_list_find_custom (
+         unread_uids, uid, (GCompareFunc)strcmp))) {
+      g_free (uid);
+      if (jana_utils_component_has_category (comp, "Read")) {
+        g_free (found->data);
+        unread_uids = g_list_delete_link (unread_uids, found);
+        update = TRUE;
+      }
+    } else if ((!jana_utils_component_has_category (comp, "Read")) &&
+	(!(jana_utils_component_has_category (comp, "Sending") ||
+	 jana_utils_component_has_category (comp, "Sent")))) {
+      unread_uids = g_list_prepend (unread_uids, uid);
+      update = TRUE;
+    } else {
+      g_free (uid);
+    }
+  }
+  
+  data->n_unread_messages = g_list_length (unread_uids);
+  if (update) today_pim_journal_update_messages (data);
+}
+
+static void
+note_removed_cb (JanaStoreView *store_view, GList *uids, TodayData *data)
+{
+  gboolean update = FALSE;
+  
+  for (; uids; uids = uids->next) {
+    GList *found = g_list_find_custom (unread_uids, uids->data,
+                                       (GCompareFunc)strcmp);
+    if (found) {
+      g_free (found->data);
+      unread_uids = g_list_delete_link (unread_uids, found);
+      update = TRUE;
+    }
+  }
+  
+  data->n_unread_messages = g_list_length (unread_uids);
+  if (update) today_pim_journal_update_messages (data);
+}
+
+static void
+note_store_opened_cb (JanaStore *store, TodayData *data)
+{
+	JanaStoreView *view;
+	
+	view = jana_store_get_view (store);
+	g_signal_connect (view, "added",
+		G_CALLBACK (note_added_cb), data);
+	g_signal_connect (view, "modified",
+		G_CALLBACK (note_modified_cb), data);
+	g_signal_connect (view, "removed",
+		G_CALLBACK (note_removed_cb), data);
+	jana_store_view_start (view);
+}
+
+static void
+event_store_opened_cb (JanaStore *store, TodayData *data)
 {
 	JanaTime *start, *end;
 	
@@ -320,11 +411,8 @@ today_pim_journal_box_new (TodayData *data)
 		data->tasks_box, FALSE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	
-	/* Open up journal and connect to signals to find out about missed
-	 * calls and new messages.
-	 */
+	/* Open up journal and connect to signals for missed calls */
 	data->n_missed_calls = 0;
-	data->n_unread_messages = 0;
 	data->dates_view = NULL;
 	data->dates_model = NULL;
 	journal = moko_journal_open_default ();
@@ -341,7 +429,14 @@ today_pim_journal_box_new (TodayData *data)
 	/* Open up calendar store */
 	store = jana_ecal_store_new (JANA_COMPONENT_EVENT);
 	g_signal_connect (store, "opened",
-		G_CALLBACK (store_opened_cb), data);
+		G_CALLBACK (event_store_opened_cb), data);
+	jana_store_open (store);
+	
+	/* Open up notes store */
+	data->n_unread_messages = 0;
+	store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
+	g_signal_connect (store, "opened",
+		G_CALLBACK (note_store_opened_cb), data);
 	jana_store_open (store);
 	
 	/* Create tasks store */
