@@ -1604,3 +1604,69 @@ Index: linux-2.6/drivers/mmc/host/Makefile
  obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
 -
 +obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
+Index: linux-2.6/include/asm-arm/arch-s3c2410/mci.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/asm-arm/arch-s3c2410/mci.h
+@@ -0,0 +1,13 @@
++#ifndef _ARCH_MCI_H
++#define _ARCH_MCI_H
++
++struct s3c24xx_mci_pdata {
++	unsigned int	gpio_detect;
++	unsigned int	gpio_wprotect;
++	unsigned long	ocr_avail;
++	unsigned int	do_dma;
++	void		(*set_power)(unsigned char power_mode,
++				     unsigned short vdd);
++};
++
++#endif /* _ARCH_NCI_H */
+Index: linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2412/s3c2412.c
++++ linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+@@ -214,5 +214,8 @@
+ {
+ 	printk("S3C2412: Initialising architecture\n");
+ 
++	/* make sure SD/MMC driver can distinguish 2412 from 2410 */
++	s3c_device_sdi.name = "s3c2412-sdi";
++
+ 	return sysdev_register(&s3c2412_sysdev);
+ }
+Index: linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/s3c2440.c
++++ linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+@@ -46,6 +46,9 @@
+ 	s3c_device_wdt.resource[1].start = IRQ_S3C2440_WDT;
+ 	s3c_device_wdt.resource[1].end   = IRQ_S3C2440_WDT;
+ 
++	/* make sure SD/MMC driver can distinguish 2440 from 2410 */
++	s3c_device_sdi.name = "s3c2440-sdi";
++
+ 	/* register our system device for everything else */
+ 
+ 	return sysdev_register(&s3c2440_sysdev);
+Index: linux-2.6/arch/arm/mach-s3c2442/s3c2442.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2442/s3c2442.c
++++ linux-2.6/arch/arm/mach-s3c2442/s3c2442.c
+@@ -21,6 +21,7 @@
+ 
+ #include <asm/plat-s3c24xx/s3c2442.h>
+ #include <asm/plat-s3c24xx/cpu.h>
++#include <asm/plat-s3c24xx/devs.h>
+ 
+ static struct sys_device s3c2442_sysdev = {
+ 	.cls		= &s3c2442_sysclass,
+@@ -30,5 +31,8 @@
+ {
+ 	printk("S3C2442: Initialising architecture\n");
+ 
++	/* make sure SD/MMC driver can distinguish 2440 from 2410 */
++	s3c_device_sdi.name = "s3c2440-sdi";
++
+ 	return sysdev_register(&s3c2442_sysdev);
+ }
