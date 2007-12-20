@@ -80,10 +80,10 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
  	 * hot-pluggable, this is not required anyway */
-Index: linux-2.6/drivers/spi/lis302dl.c
+Index: linux-2.6/drivers/input/misc/lis302dl.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/spi/lis302dl.c
++++ linux-2.6/drivers/input/misc/lis302dl.c
 @@ -0,0 +1,633 @@
 +/* Linux kernel driver for the ST LIS302D 3-axis accelerometer
 + *
@@ -718,38 +718,33 @@ Index: linux-2.6/drivers/spi/lis302dl.c
 +
 +module_init(lis302dl_init);
 +module_exit(lis302dl_exit);
-Index: linux-2.6/drivers/spi/Kconfig
+Index: linux-2.6/drivers/input/misc/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/spi/Kconfig
-+++ linux-2.6/drivers/spi/Kconfig
-@@ -242,6 +242,15 @@
- 	  The control interface is required for display operation, as it
- 	  controls power management, display timing and gamma calibration.
+--- linux-2.6.orig/drivers/input/misc/Kconfig
++++ linux-2.6/drivers/input/misc/Kconfig
+@@ -183,4 +183,13 @@
+ 	  Say Y here if you want to support the built-in real time clock
+ 	  of the HP SDC controller.
  
-+config SPI_LIS302DL
++config INPUT_LIS302DL
 +	tristate "STmicro LIS302DL 3-axis accelerometer"
-+	depends on SPI_MASTER && MACH_NEO1973_GTA02
++	depends on SPI_MASTER
 +	help
 +	  SPI driver for the STmicro LIS302DL 3-axis accelerometer.
 +
 +	  The userspece interface is a 3-axis (X/Y/Z) relative movement
 +	  Linux input device, reporting REL_[XYZ] events.
 +
- #
- # Add new SPI protocol masters in alphabetical order above this line
- #
-Index: linux-2.6/drivers/spi/Makefile
+ endif
+Index: linux-2.6/drivers/input/misc/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/spi/Makefile
-+++ linux-2.6/drivers/spi/Makefile
-@@ -34,6 +34,7 @@
- obj-$(CONFIG_SPI_SPIDEV)	+= spidev.o
- obj-$(CONFIG_SPI_TLE62X0)	+= tle62x0.o
- obj-$(CONFIG_SPI_JBT6K74)	+= jbt6k74.o
-+obj-$(CONFIG_SPI_LIS302DL)	+= lis302dl.o
- # 	... add above this line ...
- 
- # SPI slave controller drivers (upstream link)
+--- linux-2.6.orig/drivers/input/misc/Makefile
++++ linux-2.6/drivers/input/misc/Makefile
+@@ -18,3 +18,4 @@
+ obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
+ obj-$(CONFIG_HP_SDC_RTC)		+= hp_sdc_rtc.o
+ obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
++obj-$(CONFIG_INPUT_LIS302DL)		+= lis302dl.o
 Index: linux-2.6/include/linux/lis302dl.h
 ===================================================================
 --- /dev/null
