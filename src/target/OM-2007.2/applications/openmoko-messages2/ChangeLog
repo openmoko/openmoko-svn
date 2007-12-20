@@ -1,5 +1,15 @@
 2007-12-20  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (note_changed_cb), (page_shown),
+	(sms_notes_data_func), (global_note_added_cb),
+	(notes_visible_func):
+	Only add messages once to the global note store, use Sent category to
+	decide whether to index on author/recipient (fixes incorrect unknown
+	messages count, bug #1144, #1142), fix avatar display, improve
+	sent/received filter.
+
+2007-12-20  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (note_changed_cb), (page_shown):
 	Fix avatars not appearing when viewing messages from unknown contacts
 
