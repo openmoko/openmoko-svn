@@ -1,3 +1,8 @@
+2007-12-20  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-notes.c: (note_changed_cb), (page_shown):
+	Fix avatars not appearing when viewing messages from unknown contacts
+
 2007-12-18  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-contacts.c: (page_shown),

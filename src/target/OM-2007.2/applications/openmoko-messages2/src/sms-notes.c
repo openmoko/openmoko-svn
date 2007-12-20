@@ -72,9 +72,6 @@ note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
 		} else {
 			data->recipient_icon =
 				sms_contact_load_photo (contact);
-			if ((!data->recipient_icon) && (data->no_photo))
-				data->recipient_icon =
-					g_object_ref (data->no_photo);
 			g_object_unref (contact);
 			break;
 		}
@@ -82,9 +79,13 @@ note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
 
 note_changed_cb_end:
 	/* Remove handlers */
-	if (data->recipient_number)
+	if (data->recipient_number) {
+		if ((!data->recipient_icon) && (data->no_photo))
+			data->recipient_icon =
+				g_object_ref (data->no_photo);
 		g_signal_handlers_disconnect_by_func (
 			store_view, note_changed_cb, data);
+	}
 }
 
 static gboolean
@@ -162,7 +163,14 @@ page_shown (SmsData *data)
 		GList *u, *components = NULL;
 		
 		/* Assume the 'unknown' contact was selected */
-		data->author_icon = g_object_ref (data->no_photo);
+		if (data->no_photo) {
+			data->author_icon = g_object_ref (data->no_photo);
+			
+			/* Without the author UID, we won't be able to 
+			 * identify the recipient - so set their photo here
+			 */
+			data->recipient_icon = g_object_ref (data->no_photo);
+		}
 		
 		/* Manually feed the notes in - this is a bit naughty as if 
 		 * they change, we won't be notified...
@@ -191,7 +199,7 @@ page_shown (SmsData *data)
 	}
 	
 	data->author_icon = sms_contact_load_photo (contact);
-	if (!data->author_icon)
+	if ((!data->author_icon) && (data->no_photo))
 		data->author_icon = g_object_ref (data->no_photo);
 	
 	store_view = jana_store_get_view (data->notes);
