@@ -10,7 +10,7 @@ the current mainline SD/MMC API and take care of the mainline kernel merge.
 After a potential kernel inclusion, we would co-maintain the driver.
 
 Acked-by: Thomas Kleffel <tk@maintech.de>
-Signed-off-by: Harald Welte <laforge@openmoko.org>
+Signed-off-by: Harald Welte <laforge@gnumonks.org>
 
 Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
@@ -94,7 +94,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
 + *  Copyright (C) 2004-2006 maintech GmbH, Thomas Kleffel <tk@maintech.de>
-+ *  Copyright (C) 2007 OpenMoko, Inc., Harald Welte <laforge@openmoko.org>
++ *  Copyright (C) 2007 Harald Welte <laforge@gnumonks.org>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -638,7 +638,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		cardint = 1;
 +		mci_dclear |= S3C2410_SDIDSTA_SDIOIRQDETECT;
 +	}
-+		
++
 +clear_status_bits:
 +	writel(mci_cclear, host->base + S3C2410_SDICMDSTAT);
 +	writel(mci_dclear, host->base + S3C2410_SDIDSTA);
