@@ -1,6 +1,11 @@
 2007-12-20  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-notes.c: (sms_notes_data_func):
+	Disable showing of recipient's name on the notes view page
+
+2007-12-20  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-notes.c: (sms_notes_data_func):
 	Display contact names instead of phone numbers (fixes bug #1143)
 
 2007-12-20  Chris Lord  <chris@openedhand.com>

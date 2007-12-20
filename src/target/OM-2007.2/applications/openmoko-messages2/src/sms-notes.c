@@ -301,14 +301,14 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 				 GtkTreeIter *iter,
 				 SmsData *data)
 {
-	gchar *author, *recipient, *body, **categories;
+	gchar *author, /**recipient,*/ *body, **categories;
 	JanaTime *created, *modified;
 	gboolean outgoing;
 	gint i;
 	
 	gtk_tree_model_get (model, iter,
 		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author,
-		JANA_GTK_NOTE_STORE_COL_RECIPIENT, &recipient,
+		/*JANA_GTK_NOTE_STORE_COL_RECIPIENT, &recipient,*/
 		JANA_GTK_NOTE_STORE_COL_BODY, &body,
 		JANA_GTK_NOTE_STORE_COL_CREATED, &created,
 		JANA_GTK_NOTE_STORE_COL_MODIFIED, &modified,
@@ -328,10 +328,10 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 	}
 	
 	/* Replace numbers with contact names */
-	for (i = 0; i < 2; i++) {
+	for (i = /*0*/ 1; i < 2; i++) {
 		const gchar *uid;
 		GtkTreeIter *iter;
-		gchar *number = i ? author : recipient;
+		gchar *number = i ? author : /*recipient*/ NULL;
 		gchar *name;
 		
 		if (!number) continue;
@@ -347,13 +347,13 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 		if (name) {
 			g_free (number);
 			if (i) author = name;
-			else recipient = name;
+			/*else recipient = name;*/
 		}
 	}
 	
 	g_object_set (cell,
 		"author", author,
-		"recipient", recipient,
+		"recipient", /*recipient*/ NULL,
 		"body", body,
 		"created", created,
 		"modified", modified,
@@ -364,7 +364,7 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 		NULL);
 	
 	g_free (author);
-	g_free (recipient);
+	/*g_free (recipient);*/
 	g_free (body);
 	if (created) g_object_unref (created);
 	if (modified) g_object_unref (modified);
