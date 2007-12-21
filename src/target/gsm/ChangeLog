@@ -1,6 +1,11 @@
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
 	* src/util/event.c: (inds_handler):
+	Back out change - sms->stat just contains junk (uninitialised?)
+
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
+	* src/util/event.c: (inds_handler):
 	Delivery status type is in sms->stat, not
 	sms->payload.coding_scheme (which is always zero)
 
