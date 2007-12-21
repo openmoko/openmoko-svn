@@ -1,5 +1,11 @@
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (on_incoming_ds):
+	Delivery status types were read correctly, seems gsmd always reports
+	REC_UNREAD, regardless of ds type?
+
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-network.c: (gsmd_eventhandler):
 	Send all delivery status events
 
