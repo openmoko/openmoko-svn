@@ -349,7 +349,10 @@ on_incoming_ds (MokoListener *listener, struct lgsm_handle *handle,
   MokoSms *moko_sms = MOKO_SMS (listener);
   MokoSmsPrivate *priv = moko_sms->priv;
 
-  if (sms->payload.coding_scheme == LGSM_SMS_STO_SENT) {
+  /* TODO: I'm not entirely sure of the spec when if 
+   *       storing an unsent message means it failed?
+   */
+  if (sms->stat == GSMD_SMS_STO_SENT) {
     gchar *ref = g_strdup_printf ("%d", sms->index);
     JanaStoreView *view = jana_store_get_view (priv->sms_store);
     MokoSmsStatusReport *sr = g_slice_new (MokoSmsStatusReport);
@@ -385,6 +388,8 @@ on_send_sms (MokoListener *listener, struct lgsm_handle *handle,
       g_debug ("Sent message accepted");
     } else {
       g_debug ("Sent message rejected");
+      jana_utils_component_remove_category (JANA_COMPONENT(priv->last_msg),
+                                            "Sent");
       jana_utils_component_remove_category (JANA_COMPONENT(priv->last_msg),
                                             "Sending");
       jana_utils_component_insert_category (JANA_COMPONENT(priv->last_msg),
@@ -602,7 +607,8 @@ moko_sms_get_status (MokoSms *sms)
 
 gboolean
 moko_sms_send (MokoSms *self, const gchar *number,
-               const gchar *message, gchar **uid, GError **error)
+               const gchar *message, gboolean report, gchar **uid,
+               GError **error)
 {
   PhoneKitNetworkStatus status;
   struct lgsm_handle *handle;
@@ -637,7 +643,7 @@ moko_sms_send (MokoSms *self, const gchar *number,
     return FALSE;
   
   /* Ask for delivery report */
-  sms.ask_ds = 1;
+  sms.ask_ds = report ? 1 : 0;
   
   /* Set destination number */
   if (strlen (number) > GSMD_ADDR_MAXLEN + 1) {
@@ -693,8 +699,13 @@ moko_sms_send (MokoSms *self, const gchar *number,
   g_free (sub_num);
   
   jana_note_set_body (note, message);
-  jana_component_set_categories (JANA_COMPONENT (note),
-    (const gchar *[]){ "Sending", NULL});
+  if (report) {
+    jana_component_set_categories (JANA_COMPONENT (note),
+                                   (const gchar *[]){ "Sending", NULL});
+  } else {
+    jana_component_set_categories (JANA_COMPONENT (note),
+                                   (const gchar *[]){ "Sent", NULL});
+  }
   
   jana_store_add_component (priv->sms_store,
     JANA_COMPONENT (note));
@@ -702,9 +713,8 @@ moko_sms_send (MokoSms *self, const gchar *number,
   
   if (priv->last_msg) {
     g_warning ("Confirmation not received for last sent SMS, "
-      "delivery report will be lost.");
+               "any delivery reports for this message will be lost.");
     g_object_unref (priv->last_msg);
-    priv->last_msg = NULL;
   }
   priv->last_msg = note;
   

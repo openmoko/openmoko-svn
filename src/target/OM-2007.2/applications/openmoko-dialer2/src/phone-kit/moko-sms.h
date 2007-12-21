@@ -96,7 +96,8 @@ moko_sms_get_status (MokoSms *sms);
 /* SMS interface */
 gboolean
 moko_sms_send (MokoSms *self, const gchar *number,
-               const gchar *message, gchar **uid, GError **error);
+               const gchar *message, gboolean report, gchar **uid,
+               GError **error);
 
 G_END_DECLS
 

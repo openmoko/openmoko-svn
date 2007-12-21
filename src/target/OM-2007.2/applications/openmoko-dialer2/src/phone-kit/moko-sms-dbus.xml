@@ -8,6 +8,7 @@
   <method name="Send">
     <arg type="s" name="number" />
     <arg type="s" name="message" />
+    <arg type="b" name="report" />
     <arg type="s" name="uid" direction="out" />
   </method>
 

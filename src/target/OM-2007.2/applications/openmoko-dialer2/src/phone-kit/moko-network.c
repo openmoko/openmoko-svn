@@ -383,14 +383,9 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
     if (aux->u.ds.inlined) {
       struct gsmd_sms_list *sms = (struct gsmd_sms_list *) aux->data;
       
-      /* TODO: I'm not entirely sure of the spec when if 
-       *       storing an unsent message means it failed?
-       */
-      if (sms->payload.coding_scheme == LGSM_SMS_STO_SENT) {
-        for (l = priv->listeners; l; l = l->next) {
-          moko_listener_on_incoming_ds (MOKO_LISTENER (l->data), priv->handle,
-                                        sms);
-        }
+      for (l = priv->listeners; l; l = l->next) {
+        moko_listener_on_incoming_ds (MOKO_LISTENER (l->data), priv->handle,
+                                      sms);
       }
     } else {
       g_warning ("Delivery status report not in-line, left unhandled");

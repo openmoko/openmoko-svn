@@ -1,3 +1,17 @@
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-network.c: (gsmd_eventhandler):
+	Send all delivery status events
+
+	* src/phone-kit/moko-sms-dbus.xml:
+	Make delivery status report optional
+
+	* src/phone-kit/moko-sms.c: (on_incoming_ds), (on_send_sms),
+	(moko_sms_send):
+	* src/phone-kit/moko-sms.h:
+	Filter delivery status types correctly (hopefully), make delivery status
+	report optional
+
 2007-12-19  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-sms.c: (note_added_cb), (note_modified_cb):
