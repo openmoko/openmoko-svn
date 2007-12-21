@@ -167,11 +167,13 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 			buffer, &start, &end, FALSE);
 		
 		if (message && (message[0] != '\0')) {
+			gboolean sr = gtk_toggle_button_get_active (
+				GTK_TOGGLE_BUTTON (data->delivery_checkbox));
 			g_debug ("Sending message '%s' to %s", message, number);
 			if (!dbus_g_proxy_call (data->sms_proxy, "Send",
 			     &error, G_TYPE_STRING, number, G_TYPE_STRING,
-			     message, G_TYPE_INVALID, G_TYPE_STRING, NULL,
-			     G_TYPE_INVALID)) {
+			     message, G_TYPE_BOOLEAN, sr, G_TYPE_INVALID,
+			     G_TYPE_STRING, NULL, G_TYPE_INVALID)) {
 				g_warning ("Error sending message: %s",
 					error->message);
 				g_error_free (error);
@@ -218,7 +220,7 @@ text_changed_cb (GtkTextBuffer *buffer, SmsData *data)
 GtkWidget *
 sms_compose_page_new (SmsData *data)
 {
-	GtkWidget *vbox, *frame, *contact_table;
+	GtkWidget *vbox, *frame, *contact_table, *align;
 	
 	/* Connect to new/send button clicked */
 	g_signal_connect (data->new_button, "clicked",
@@ -259,10 +261,18 @@ sms_compose_page_new (SmsData *data)
 	text_changed_cb (gtk_text_view_get_buffer (
 		GTK_TEXT_VIEW (data->sms_textview)), data);
 	
+	align = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
+	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
+	data->delivery_checkbox = gtk_check_button_new_with_label (
+		"Request delivery report");
+	gtk_container_add (GTK_CONTAINER (align), data->delivery_checkbox);
+	
 	/* Pack widgets */
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), contact_table, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), align,
+		FALSE, TRUE, 0);
 
 	/* Add events for detecting whether the page has been hidden/shown */
 	gtk_widget_add_events (data->sms_textview, GDK_VISIBILITY_NOTIFY_MASK);

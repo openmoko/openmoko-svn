@@ -1,3 +1,13 @@
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
+	* src/sms.h:
+	* src/sms-compose.c: (send_clicked_cb), (sms_compose_page_new):
+	Add a check-box for delivery status reports, adapt to altered API in
+	phone-kit
+
+	* src/sms-notes.c: (mark_messages_read_idle):
+	Fix possible crash when marking messages as read
+
 2007-12-20  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-notes.c: (sms_notes_data_func):

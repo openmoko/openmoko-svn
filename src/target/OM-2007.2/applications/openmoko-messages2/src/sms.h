@@ -75,6 +75,7 @@ typedef struct {
 	GtkWidget *contact_image;
 	GtkWidget *contact_label;
 	GtkWidget *number_combo;
+	GtkWidget *delivery_checkbox;
 
 	DBusGProxy *sms_proxy;
 } SmsData;

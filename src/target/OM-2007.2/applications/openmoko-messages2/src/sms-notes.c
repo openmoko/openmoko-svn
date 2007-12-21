@@ -93,6 +93,7 @@ mark_messages_read_idle (SmsData *data)
 {
 	GtkTreePath *start_path, *end_path;
 	
+	data->notes_scroll_idle = 0;
 	if (gtk_tree_view_get_visible_range (
 	    GTK_TREE_VIEW (data->notes_treeview), &start_path, &end_path)) {
 		
@@ -101,8 +102,12 @@ mark_messages_read_idle (SmsData *data)
 			GtkTreeIter iter;
 			gchar *uid;
 
-			gtk_tree_model_get_iter (data->note_filter,
-				&iter, start_path);
+			if (!gtk_tree_model_get_iter (data->note_filter,
+			     &iter, start_path)) {
+				gtk_tree_path_next (start_path);
+				continue;
+			}
+			
 			gtk_tree_model_get (data->note_filter, &iter,
 				JANA_GTK_NOTE_STORE_COL_UID, &uid, -1);
 			
