@@ -134,7 +134,7 @@ static int inds_handler(struct lgsm_handle *lh, int evt,
 		struct gsmd_sms_list *sms;
 		sms = (struct gsmd_sms_list *) aux->data;
 		printf("EVENT: Incoming Status Report\n");
-		printf("message ref = %d, status = %d\n", sms->index,sms->payload.coding_scheme);
+		printf("message ref = %d, status = %d\n", sms->index,sms->stat);
 	}
 	else
 		printf("EVENT: Incoming Status Report stored at location %i\n",
