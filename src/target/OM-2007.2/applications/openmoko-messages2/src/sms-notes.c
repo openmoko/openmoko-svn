@@ -103,10 +103,7 @@ mark_messages_read_idle (SmsData *data)
 			gchar *uid;
 
 			if (!gtk_tree_model_get_iter (data->note_filter,
-			     &iter, start_path)) {
-				gtk_tree_path_next (start_path);
-				continue;
-			}
+			     &iter, start_path)) break;
 			
 			gtk_tree_model_get (data->note_filter, &iter,
 				JANA_GTK_NOTE_STORE_COL_UID, &uid, -1);

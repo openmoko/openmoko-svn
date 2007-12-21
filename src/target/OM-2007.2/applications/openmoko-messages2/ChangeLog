@@ -1,5 +1,10 @@
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (mark_messages_read_idle):
+	Fix to possible crash actually caused infinite loop. Fix properly.
+
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms.h:
 	* src/sms-compose.c: (send_clicked_cb), (sms_compose_page_new):
 	Add a check-box for delivery status reports, adapt to altered API in
