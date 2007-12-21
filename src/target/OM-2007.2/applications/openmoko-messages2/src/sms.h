@@ -40,6 +40,7 @@ typedef struct {
 	GHashTable *note_count;
 	guint note_count_idle;
 	GList *unassigned_notes;
+	GHashTable *note_emblems;
 	
 	EBook *ebook;
 	GtkTreeModel *contacts_store;

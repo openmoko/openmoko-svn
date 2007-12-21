@@ -1,5 +1,12 @@
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-main.c:
+	* src/sms-notes.c: (sms_notes_data_func), (sms_notes_page_new):
+	* src/sms.h:
+	Add emblem support for sent/sending/rejected messages
+
+2007-12-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (mark_messages_read_idle):
 	Fix to possible crash actually caused infinite loop. Fix properly.
 

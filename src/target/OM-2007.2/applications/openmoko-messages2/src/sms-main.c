@@ -21,7 +21,7 @@
 #include "sms-contacts.h"
 #include "sms-notes.h"
 #include "sms-compose.h"
-#include <moko-stock.h>
+#include <libmokoui2/moko-stock.h>
 
 static void
 notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,

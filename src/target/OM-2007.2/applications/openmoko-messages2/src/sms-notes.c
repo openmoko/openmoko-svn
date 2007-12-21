@@ -28,6 +28,7 @@
 #include <libjana-ecal/jana-ecal.h>
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
+#include <libmokoui2/moko-stock.h>
 #include <libebook/e-book.h>
 #include <string.h>
 
@@ -326,7 +327,6 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 				break;
 			}
 		}
-		g_strfreev (categories);
 	}
 	
 	/* Replace numbers with contact names */
@@ -362,9 +362,11 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 		"justify", outgoing ?
 		      GTK_JUSTIFY_LEFT : GTK_JUSTIFY_RIGHT,
 		"icon", outgoing ?
-		      data->recipient_icon : data->author_icon,
+		      data->author_icon : data->recipient_icon,
+		"categories", categories,
 		NULL);
 	
+	g_strfreev (categories);
 	g_free (author);
 	/*g_free (recipient);*/
 	g_free (body);
@@ -712,6 +714,8 @@ sms_notes_page_new (SmsData *data)
 	GtkWidget *scroll, *vbox, *notes_combo;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
+	GtkIconTheme *icon_theme;
+	gint size;
 	
 	data->author_uid = NULL;
 	data->author_icon = NULL;
@@ -722,6 +726,22 @@ sms_notes_page_new (SmsData *data)
 	data->note_count_idle = 0;
 	data->unassigned_notes = NULL;
 	data->notes_scroll_idle = 0;
+	
+	/* Create note emblem hash-table */
+	data->note_emblems = g_hash_table_new_full (g_str_hash, g_str_equal,
+		NULL, (GDestroyNotify)g_object_unref);
+	icon_theme = gtk_icon_theme_get_default ();
+	/* FIXME: These are temporary icons */
+	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &size, NULL);
+	g_hash_table_insert (data->note_emblems, "Sent",
+		gtk_icon_theme_load_icon (icon_theme, MOKO_STOCK_MAIL_SEND,
+			size, 0, NULL));
+	g_hash_table_insert (data->note_emblems, "Sending",
+		gtk_icon_theme_load_icon (icon_theme, MOKO_STOCK_SMS_NEW,
+			size, 0, NULL));
+	g_hash_table_insert (data->note_emblems, "Rejected",
+		gtk_icon_theme_load_icon (icon_theme, MOKO_STOCK_CALL_REJECT,
+			size, 0, NULL));
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
@@ -749,7 +769,8 @@ sms_notes_page_new (SmsData *data)
 	gtk_tree_view_set_headers_visible (
 		GTK_TREE_VIEW (data->notes_treeview), FALSE);
 	renderer = jana_gtk_cell_renderer_note_new ();
-	g_object_set (renderer, "draw_box", TRUE, "show_recipient", TRUE, NULL);
+	g_object_set (renderer, "draw_box", TRUE, "show_recipient", TRUE,
+		"category_icon_hash", data->note_emblems, NULL);
 	gtk_tree_view_insert_column_with_data_func (
 		GTK_TREE_VIEW (data->notes_treeview), 0, "Messages", renderer,
 		(GtkTreeCellDataFunc)sms_notes_data_func, data, NULL);
