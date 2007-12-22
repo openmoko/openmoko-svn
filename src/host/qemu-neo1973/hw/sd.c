@@ -61,7 +61,7 @@ struct SDState {
         sd_card_identification_mode,
         sd_data_transfer_mode,
     } mode;
-    enum st_state_e state;
+    enum sd_state_e state;
     uint32_t ocr;
     uint8_t scr[8];
     uint8_t cid[16];
@@ -111,6 +111,7 @@ static void sd_set_status(SDState *sd)
     case sd_receivingdata_state:
     case sd_programming_state:
     case sd_disconnect_state:
+    case sd_command_state:
         sd->mode = sd_data_transfer_mode;
         break;
     }
