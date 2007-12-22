@@ -27,6 +27,12 @@
 
 #define GTA01Bv4		1
 
+enum {
+    NEO1973_GTA01	= 1182,
+    NEO1973_GTA02	= 1304,
+    NEO1973_GTA02F	= 1555,
+};
+
 /* Wiring common to all revisions */
 #define GTA01_GPIO_BACKLIGHT	S3C_GPB(0)
 #define GTA01_GPIO_GPS_PWRON	S3C_GPB(1)
@@ -261,7 +267,9 @@ static void neo_gpio_setup(struct neo_board_s *s)
 
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
-    sd_set_cb(s->mmc, 0, s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_nSD_DETECT]);
+    if (s->id == NEO1973_GTA01)
+        sd_set_cb(s->mmc, 0,
+                        s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_nSD_DETECT]);
 }
 
 /* PMB 2520 Hammerhead A-GPS chip */
@@ -524,7 +532,7 @@ static void gta01_init(int ram_size, int vga_ram_size,
         sd = sd_init(drives_table[sd_idx].bdrv, 0);
 
     neo1973_init_common(ram_size, ds,
-                    kernel_filename, cpu_model, sd, 1304);
+                    kernel_filename, cpu_model, sd, NEO1973_GTA01);
 }
 
 static void gta02f_init(int ram_size, int vga_ram_size,
@@ -533,9 +541,10 @@ static void gta02f_init(int ram_size, int vga_ram_size,
                 const char *initrd_filename, const char *cpu_model)
 {
     struct neo_board_s *neo;
+    struct sd_card_s *sd = ar6k_init(&nd_table[0]);
 
     neo = neo1973_init_common(ram_size, ds,
-                    kernel_filename, cpu_model, 0, 1555);
+                    kernel_filename, cpu_model, sd, NEO1973_GTA02F);
 
     neo_gps_setup(neo);
     neo_machid_init(neo);

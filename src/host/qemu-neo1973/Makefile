@@ -59,7 +59,7 @@ OBJS+=ssd0303.o ssd0323.o ads7846.o pcf5060x.o stellaris_input.o
 OBJS+=scsi-disk.o cdrom.o
 OBJS+=usb.o usb-hub.o usb-linux.o usb-linux-gadget.o
 OBJS+=usb-hid.o usb-msd.o usb-wacom.o usb-net.o usb-bt.o
-OBJS+=sd.o ssi-sd.o
+OBJS+=sd.o ssi-sd.o ar6000.o
 
 ifdef CONFIG_WIN32
 OBJS+=tap-win32.o

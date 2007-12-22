@@ -149,39 +149,6 @@ static const int sd_cmd_class[64] = {
     7,  7, 10,  7,  9,  9,  9,  8,  8, 10,  8,  8,  8,  8,  8,  8,
 };
 
-static uint8_t sd_crc7(void *message, size_t width)
-{
-    int i, bit;
-    uint8_t shift_reg = 0x00;
-    uint8_t *msg = (uint8_t *) message;
-
-    for (i = 0; i < width; i ++, msg ++)
-        for (bit = 7; bit >= 0; bit --) {
-            shift_reg <<= 1;
-            if ((shift_reg >> 7) ^ ((*msg >> bit) & 1))
-                shift_reg ^= 0x89;
-        }
-
-    return shift_reg;
-}
-
-static uint16_t sd_crc16(void *message, size_t width)
-{
-    int i, bit;
-    uint16_t shift_reg = 0x0000;
-    uint16_t *msg = (uint16_t *) message;
-    width <<= 1;
-
-    for (i = 0; i < width; i ++, msg ++)
-        for (bit = 15; bit >= 0; bit --) {
-            shift_reg <<= 1;
-            if ((shift_reg >> 15) ^ ((*msg >> bit) & 1))
-                shift_reg ^= 0x1011;
-        }
-
-    return shift_reg;
-}
-
 static void sd_set_ocr(SDState *sd)
 {
     /* All voltages OK, card power-up OK, Standard Capacity SD Memory Card */

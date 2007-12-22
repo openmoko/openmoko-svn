@@ -28,9 +28,12 @@ struct pcmcia_card_s {
     void (*io_write)(void *state, uint32_t address, uint16_t value);
 };
 
+#define CISTPL_NULL		0x00	/* Null Tuple */
 #define CISTPL_DEVICE		0x01	/* 5V Device Information Tuple */
+#define CISTPL_CHECKSUM		0x10	/* Checksum Control Tuple */
 #define CISTPL_NO_LINK		0x14	/* No Link Tuple */
 #define CISTPL_VERS_1		0x15	/* Level 1 Version Tuple */
+#define CISTPL_ALTSTR		0x16	/* The Alternate Language String */
 #define CISTPL_JEDEC_C		0x18	/* JEDEC ID Tuple */
 #define CISTPL_JEDEC_A		0x19	/* JEDEC ID Tuple */
 #define CISTPL_CONFIG		0x1a	/* Configuration Tuple */
@@ -39,11 +42,15 @@ struct pcmcia_card_s {
 #define CISTPL_DEVICE_OA	0x1d	/* Additional Device Information */
 #define CISTPL_DEVICE_GEO	0x1e	/* Additional Device Information */
 #define CISTPL_DEVICE_GEO_A	0x1f	/* Additional Device Information */
-#define CISTPL_MANFID		0x20	/* Manufacture ID Tuple */
+#define CISTPL_MANFID		0x20	/* Manufacture ID String Tuple */
 #define CISTPL_FUNCID		0x21	/* Function ID Tuple */
 #define CISTPL_FUNCE		0x22	/* Function Extension Tuple */
-#define CISTPL_END		0xff	/* Tuple End */
+#define CISTPL_END		0xff	/* End-of-chain Tuple */
 #define CISTPL_ENDMARK		0xff
+
+/* SDIO Unique Tuples */
+#define CISTPL_SDIO_STD		0x91	/* Application Spec. Support Info */
+#define CISTPL_SDIO_EXT		0x92	/* SDIO Future-Use Reserved */
 
 /* dscm1xxxx.c */
 struct pcmcia_card_s *dscm1xxxx_init(BlockDriverState *bdrv);
