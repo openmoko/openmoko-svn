@@ -46,10 +46,16 @@
 #define WP_ERASE_SKIP		(1 << 15)
 #define CARD_ECC_DISABLED	(1 << 14)
 #define ERASE_RESET		(1 << 13)
-#define CURRENT_STATE		(7 << 9)
+#define CURRENT_STATE		(15 << 9)
 #define READY_FOR_DATA		(1 << 8)
 #define APP_CMD			(1 << 5)
 #define AKE_SEQ_ERROR		(1 << 3)
+
+#define CARD_STATUS_A		0x02004100
+#define CARD_STATUS_B		0x00c01e00
+#define CARD_STATUS_C		0xfd39a028
+
+#define CARD_STATUS_SDIO_MASK	0x80c81e04
 
 typedef enum {
     sd_none = -1,
@@ -63,6 +69,22 @@ struct sd_request_s {
     uint8_t cmd;
     uint32_t arg;
     uint8_t crc;
+};
+
+enum sd_state_e {
+    sd_inactive_state = -1,	/* No-exit state */
+    sd_idle_state = 0,
+    sd_ready_state,
+    sd_identification_state,
+    sd_standby_state,
+    sd_transfer_state,
+    sd_sendingdata_state,
+    sd_receivingdata_state,
+    sd_programming_state,
+    sd_disconnect_state,
+    /* SDIO only */
+    sd_command_state,
+    sd_initialization_state = sd_idle_state,
 };
 
 typedef struct sd_card_s {
@@ -103,5 +125,8 @@ void sd_set_cb(struct sd_card_s *sd, qemu_irq readonly, qemu_irq insert);
 /* ssi-sd.c */
 int ssi_sd_xfer(void *opaque, int val);
 void *ssi_sd_init(BlockDriverState *bs);
+
+/* ar6000.c */
+struct sd_card_s *ar6k_init(NICInfo *nd);
 
 #endif	/* __hw_sd_h */

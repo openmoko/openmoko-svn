@@ -51,6 +51,7 @@ typedef enum {
     sd_r2_s,      /* CSD register */
     sd_r3,        /* OCR register */
     sd_r6 = 6,    /* Published RCA response */
+    sd_r7,        /* Operating voltage */
     sd_r1b = -1,
 } sd_rsp_type_t;
 
@@ -60,18 +61,7 @@ struct SDState {
         sd_card_identification_mode,
         sd_data_transfer_mode,
     } mode;
-    enum {
-        sd_inactive_state = -1,
-        sd_idle_state = 0,
-        sd_ready_state,
-        sd_identification_state,
-        sd_standby_state,
-        sd_transfer_state,
-        sd_sendingdata_state,
-        sd_receivingdata_state,
-        sd_programming_state,
-        sd_disconnect_state,
-    } state;
+    enum st_state_e state;
     uint32_t ocr;
     uint8_t scr[8];
     uint8_t cid[16];
@@ -79,6 +69,7 @@ struct SDState {
     uint16_t rca;
     uint32_t card_status;
     uint8_t sd_status[64];
+    uint32_t vhs;
     int wp_switch;
     int *wp_groups;
     uint32_t size;
@@ -128,9 +119,9 @@ static void sd_set_status(SDState *sd)
     sd->card_status |= sd->state << 9;
 }
 
-const sd_cmd_type_t sd_cmd_type[64] = {
+static const sd_cmd_type_t sd_cmd_type[64] = {
     sd_bc,   sd_none, sd_bcr,  sd_bcr,  sd_none, sd_none, sd_none, sd_ac,
-    sd_none, sd_ac,   sd_ac,   sd_adtc, sd_ac,   sd_ac,   sd_none, sd_ac,
+    sd_bcr,  sd_ac,   sd_ac,   sd_adtc, sd_ac,   sd_ac,   sd_none, sd_ac,
     sd_ac,   sd_adtc, sd_adtc, sd_none, sd_none, sd_none, sd_none, sd_none,
     sd_adtc, sd_adtc, sd_adtc, sd_adtc, sd_ac,   sd_ac,   sd_adtc, sd_none,
     sd_ac,   sd_ac,   sd_none, sd_none, sd_none, sd_none, sd_ac,   sd_none,
@@ -139,7 +130,7 @@ const sd_cmd_type_t sd_cmd_type[64] = {
     sd_adtc, sd_none, sd_none, sd_none, sd_none, sd_none, sd_none, sd_none,
 };
 
-const sd_cmd_type_t sd_acmd_type[64] = {
+static const sd_cmd_type_t sd_acmd_type[64] = {
     sd_none, sd_none, sd_none, sd_none, sd_none, sd_none, sd_ac,   sd_none,
     sd_none, sd_none, sd_none, sd_none, sd_none, sd_adtc, sd_none, sd_none,
     sd_none, sd_none, sd_none, sd_none, sd_none, sd_none, sd_adtc, sd_ac,
@@ -192,6 +183,7 @@ static uint16_t sd_crc16(void *message, size_t width)
 
 static void sd_set_ocr(SDState *sd)
 {
+    /* All voltages OK, card power-up OK, Standard Capacity SD Memory Card */
     sd->ocr = 0x80ffff80;
 }
 
@@ -286,10 +278,6 @@ static void sd_set_rca(SDState *sd)
     sd->rca += 0x4567;
 }
 
-#define CARD_STATUS_A	0x02004100
-#define CARD_STATUS_B	0x00c01e00
-#define CARD_STATUS_C	0xfd39a028
-
 static void sd_set_cardstatus(SDState *sd)
 {
     sd->card_status = 0x00000100;
@@ -349,6 +337,14 @@ static void sd_response_r6_make(SDState *sd, uint8_t *response)
     response[1] = arg & 0xff;
     response[2] = (status >> 8) & 0xff;
     response[3] = status & 0xff;
+}
+
+static void sd_response_r7_make(SDState *sd, uint8_t *response)
+{
+    response[0] = (sd->vhs >> 24) & 0xff;
+    response[1] = (sd->vhs >> 16) & 0xff;
+    response[2] = (sd->vhs >>  8) & 0xff;
+    response[3] = (sd->vhs >>  0) & 0xff;
 }
 
 static void sd_reset(SDState *sd, BlockDriverState *bdrv)
@@ -656,6 +652,25 @@ static sd_rsp_type_t sd_normal_command(SDState *sd, struct sd_request_s req)
 
             sd->state = sd_disconnect_state;
             return sd_r1b;
+
+        default:
+            break;
+        }
+        break;
+
+    case 8:	/* CMD8:   SEND_IF_COND */
+        /* Physical Layer Specification Version 2.00 command */
+        switch (sd->state) {
+        case sd_idle_state:
+            sd->vhs = 0;
+
+            /* No response if not exactly one VHS bit is set.  */
+            if (!(req.arg >> 8) || (req.arg >> ffs(req.arg & ~0xff)))
+                return sd->spi ? sd_r7 : sd_r0;
+
+            /* Accept.  */
+            sd->vhs = req.arg;
+            return sd_r7;
 
         default:
             break;
@@ -1231,6 +1246,11 @@ static int _sd_do_command(SDState *sd, struct sd_request_s *req,
 
     case sd_r6:
         sd_response_r6_make(sd, response);
+        rsplen = 4;
+        break;
+
+    case sd_r7:
+        sd_response_r7_make(sd, response);
         rsplen = 4;
         break;
 
