@@ -8,6 +8,8 @@ Spotted by john cass <johnpcass@yahoo.com>
 
 Signed-off-by: Stefan Schmidt <stefan@openmoko.org>
 Signed-off-by: Harald Welte <laforge@openmoko.org>
+Acked-by: Ben Dooks <ben-linux@fluff.org>
+
 Index: linux-2.6/drivers/video/s3c2410fb.c
 ===================================================================
 --- linux-2.6.orig/drivers/video/s3c2410fb.c
