@@ -8,6 +8,7 @@ The board specific code can still manually override and provide a fixed
 partition table, so this patch will behave backwards compatible.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
+Acked-byt: Ben Dooks <ben-linux@fluff.org>
 
 --- linux-2.6.22.1.orig/drivers/mtd/nand/s3c2410.c
 +++ linux-2.6.22.1/drivers/mtd/nand/s3c2410.c
