@@ -1,0 +1,87 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef true ... ifdef true nested" <<EOF
+EOF
+
+edit -D foo -D bar -p <<EOF
+a=1
+#ifdef foo
+b=2
+#ifdef bar
+c=3
+#else
+d=4
+#endif # bar
+e=5
+#else
+f=6
+#endif # foo
+g=7
+EOF
+
+expect <<EOF
+a=1
+b=2
+c=3
+e=5
+g=7
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef true ... ifdef false nested" <<EOF
+EOF
+
+edit -D foo -p <<EOF
+a=1
+#ifdef foo
+b=2
+#ifdef bar
+c=3
+#else
+d=4
+#endif # bar
+e=5
+#else
+f=6
+#endif # foo
+g=7
+EOF
+
+expect <<EOF
+a=1
+b=2
+d=4
+e=5
+g=7
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef false ... ifdef true nested" <<EOF
+EOF
+
+edit -D bar -p <<EOF
+a=1
+#ifdef foo
+b=2
+#ifdef bar
+c=3
+#else
+d=4
+#endif # bar
+e=5
+#else
+f=6
+#endif # foo
+g=7
+EOF
+
+expect <<EOF
+a=1
+f=6
+g=7
+EOF

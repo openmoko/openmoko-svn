@@ -1,0 +1,42 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "concatenate prefix" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=foo##bar
+EOF
+
+expect <<EOF
+a=barbar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "concatenate suffix" <<EOF
+EOF
+
+edit -D bar=foo -p <<EOF
+a=foo##bar
+EOF
+
+expect <<EOF
+a=foofoo
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "concatenate embedded" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=x##foo##y
+EOF
+
+expect <<EOF
+a=xbary
+EOF
+

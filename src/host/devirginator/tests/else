@@ -1,0 +1,61 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "else if true" <<EOF
+EOF
+
+edit -D foo -p <<EOF
+a=1
+#ifdef foo
+b=2
+#else
+c=3
+#endif
+d=4
+EOF
+
+expect <<EOF
+a=1
+b=2
+d=4
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "else if false" <<EOF
+EOF
+
+edit -p <<EOF
+a=1
+#ifdef foo
+b=2
+#else
+c=3
+#endif
+d=4
+EOF
+
+expect <<EOF
+a=1
+c=3
+d=4
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "else without if" <<EOF
+EOF
+
+edit_fail -p <<EOF
+a=1
+#else
+b=2
+#endif
+c=3
+EOF
+
+expect <<EOF
+-:2: #else without #if...
+EOF

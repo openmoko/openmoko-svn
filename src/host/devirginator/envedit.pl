@@ -21,6 +21,26 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+#
+# Preprocessing operations:
+#
+# CPP-like conditionals:
+#
+# #ifdef VAR
+# #ifndef VAR
+# #else
+# #endif
+#
+# Macro expansion:
+#
+# MACRO
+# MACRO##TOKEN
+#
+# Note that #ifdef/#ifndef use both existing environment variables (i.e., those
+# present in the environment at the time of processing) and  preprocessing
+# variables (i.e., those set with -D), while macro expansion only uses
+# preprocessing variables.
+#
 
 $ENV_SIZE = 0x4000;
 
@@ -29,17 +49,20 @@ sub usage
 {
     print STDERR
 "usage: $0 [-I dir] [-s size] [-c] [-i file] [-o file|-p] [-f env_file]\n".
-"                  [var=[value] ...]\n".
-"  -c           ignore CRC errors in input environment\n".
-"  -i file      read environment from file (default: use empty environment)\n".
-"  -o file      write environment to file (default: write to stdout)\n".
-"  -p           print environment in human-readable form to stdout\n".
-"  -s bytes     environment size in bytes (default: 16384)\n".
-"  -f env_file  read changes from env_file\n".
-"  -I dir       add directory to INC path (to find crc32.pl)\n".
-"  var=         remove the specified variable\n".
-"  var=value    set the specified variable\n".
+"                  [-D var[=value]] [var=[value] ...]\n".
+"  -c             ignore CRC errors in input environment\n".
+"  -f env_file    read changes from env_file\n".
+"  -i file        read environment from file (default: use empty ".
+  "environment)\n".
+"  -o file        write environment to file (default: write to stdout)\n".
+"  -p             print environment in human-readable form to stdout\n".
+"  -s bytes       environment size in bytes (default: 16384)\n".
+"  -D var[=value] define a variable for env_file preprocessing only\n".
+"  -I dir         add directory to INC path (to find crc32.pl)\n".
+"  var=           remove the specified variable\n".
+"  var=value      set the specified variable\n".
 "The options -I, -c, and -s, if present, must precede all other options.\n";
+"The options -D, if present, must precede -f.\n";
     exit(1);
 }
 
@@ -166,6 +189,17 @@ while (@ARGV) {
 	shift(@ARGV);
 	push(@INC, shift @ARGV);
     }
+    elsif ($ARGV[0] eq "-D") {
+	&usage unless defined $ARGV[1];
+	shift(@ARGV);
+	if ($ARGV[0] =~ /=/) {
+	    $def{$`} = $';
+	}
+	else {
+	    $def{$ARGV[0]} = 1;
+	}
+	shift @ARGV;
+    }
     elsif ($ARGV[0] eq "-f") {
 	&usage unless defined $ARGV[1];
 	shift(@ARGV);
@@ -174,6 +208,51 @@ while (@ARGV) {
 	open(FILE, $file) || die "$file: $!";
 	while (<FILE>) {
 	    chop;
+	    if (/^\s*#if(n?)def\s+(\S+)/) {
+		if (!$false &&
+		  (defined $env{$2} || defined $def{$2}) == ($1 ne "n")) {
+		    $true++;
+		}
+		else {
+		    $false++;
+		}
+	    }
+	    elsif (/^\s*#else\b/) {
+		if (!$false && !$true) {
+		    print STDERR "$file:$.: #else without #if...\n";
+		    exit(1);
+		}
+		if (!$false) {
+		    $true--;
+		    $false++;
+		}
+		elsif ($false == 1) {
+		    $false--;
+		    $true++;
+		}
+	    }
+	    elsif (/^\s*#endif\b/) {
+		if (!$false && !$true) {
+		    print STDERR "$file:$.: #endif without #if...\n";
+		    exit(1);
+		}
+		if ($false) {
+		    $false--;
+		}
+		else {
+		    $true--;
+		}
+	    }
+	    next if $false;
+
+	    $tmp = "";
+	    for $def (keys %def) {
+		while (/(##)?\b$def\b(##)?/) {
+		    $tmp = $`.$def{$def};
+		    $_ = $';
+		}
+	    }
+	    $_ = $tmp.$_;
 	    s/#.*//;
 	    s/\s*$//;
 	    next if /^\s*$/;

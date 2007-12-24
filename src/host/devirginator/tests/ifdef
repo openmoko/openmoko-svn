@@ -1,0 +1,60 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef preprocessing variable" <<EOF
+EOF
+
+edit -D foo -p <<EOF
+one=1
+#ifdef foo
+two=2
+#endif
+three=3
+EOF
+
+expect <<EOF
+one=1
+three=3
+two=2
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef environment variable" <<EOF
+bar=foo
+EOF
+
+edit -p <<EOF
+alpha=a
+#ifdef bar
+beta=b
+#endif
+gamma=c
+EOF
+
+expect <<EOF
+alpha=a
+bar=foo
+beta=b
+gamma=c
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "ifdef undefined variable" <<EOF
+EOF
+
+edit -p <<EOF
+a=A
+#ifdef foo
+b=B
+#endif
+c=C
+EOF
+
+expect <<EOF
+a=A
+c=C
+EOF

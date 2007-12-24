@@ -1,0 +1,45 @@
+#!/bin/sh
+
+
+tests=0
+
+
+fail()
+{
+    echo FAILED "($SCRIPT)" 1>&2
+    cat _out 1>&2
+    exit 1
+}
+
+
+setup()
+{
+    echo -n "$1: " 1>&2
+    shift
+    ../envedit.pl -o _env "$@" -f - || fail
+}
+
+
+edit()
+{
+    ../envedit.pl -i _env "$@" -f - >_out 2>&1 || fail
+}
+
+
+edit_fail()
+{
+    ../envedit.pl -i _env "$@" -f - >_out 2>&1 && fail
+}
+
+
+expect()
+{
+    if ! diff -u - _out >_tmp; then
+	echo FAILED "($SCRIPT)" 1>&2
+	cat _tmp
+	exit
+    fi
+    rm -rf _env _out _tmp
+    echo PASSED 1>&2
+    passed=`expr ${passed:-0} + 1`
+}

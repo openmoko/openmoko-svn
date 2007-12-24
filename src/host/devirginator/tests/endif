@@ -1,0 +1,17 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "endif without if" <<EOF
+EOF
+
+edit_fail -p <<EOF
+a=1
+#endif
+b=2
+EOF
+
+expect <<EOF
+-:2: #endif without #if...
+EOF

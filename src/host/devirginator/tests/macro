@@ -1,0 +1,114 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "expand macro once" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=foo
+EOF
+
+expect <<EOF
+a=bar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "expand macro multiple times" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=foo
+b=foo
+EOF
+
+expect <<EOF
+a=bar
+b=bar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "no recursive expansion (same word)" <<EOF
+EOF
+
+edit -D foo=foo -p <<EOF
+a=foo
+EOF
+
+expect <<EOF
+a=foo
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "no recursive expansion (multiple words)" <<EOF
+EOF
+
+edit -D foo='a foo b' -p <<EOF
+a=foo
+EOF
+
+expect <<EOF
+a=a foo b
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "do not expand macro if prefix" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=foobar
+EOF
+
+expect <<EOF
+a=foobar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "do not expand macro if suffix" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=barfoo
+EOF
+
+expect <<EOF
+a=barfoo
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "do not expand macro if embedded" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=somefoobar
+EOF
+
+expect <<EOF
+a=somefoobar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "do not expand macro in #if" <<EOF
+EOF
+
+edit -D foo=bar -p <<EOF
+a=1
+#ifdef foo
+b=2
+#endif
+c=3
+EOF
+
+expect <<EOF
+a=1
+b=2
+c=3
+EOF
