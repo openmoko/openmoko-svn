@@ -489,7 +489,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +void pcf50633_gpio_set(struct pcf50633_data *pcf, enum pcf50633_gpio gpio,
 +			int on)
 +{
-+	u_int8_t reg = PCF50633_GPIO1-1 + gpio;
++	u_int8_t reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
 +
 +	if (on)
 +		reg_set_bit_mask(pcf, reg, 0x0f, 0x07);
@@ -500,7 +500,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +
 +int pcf50633_gpio_get(struct pcf50633_data *pcf, enum pcf50633_gpio gpio)
 +{
-+	u_int8_t reg = PCF50633_GPIO1-1 + gpio;
++	u_int8_t reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
 +	u_int8_t val = reg_read(pcf, reg) & 0x0f;
 +
 +	if (val == PCF50633_GPOCFG_GPOSEL_1 ||
