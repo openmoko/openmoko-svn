@@ -989,7 +989,7 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  struct gta01pm_priv {
  	int gpio_ngsm_en;
  	struct console *con;
-@@ -70,27 +76,47 @@
+@@ -70,27 +76,51 @@
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -1009,6 +1009,8 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			switch (system_rev) {
 +#ifdef CONFIG_MACH_NEO1973_GTA02
 +			case GTA02v2_SYSTEM_REV:
++			case GTA02v3_SYSTEM_REV:
++			case GTA02v4_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 1);
 +				break;
@@ -1022,6 +1024,8 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			switch (system_rev) {
 +#ifdef CONFIG_MACH_NEO1973_GTA02
 +			case GTA02v2_SYSTEM_REV:
++			case GTA02v3_SYSTEM_REV:
++			case GTA02v4_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 0);
 +				break;
@@ -1043,13 +1047,15 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -158,8 +184,14 @@
+@@ -158,8 +188,16 @@
  		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  		break;
 +#ifdef CONFIG_MACH_NEO1973_GTA02
 +	case GTA02v1_SYSTEM_REV:
 +	case GTA02v2_SYSTEM_REV:
++	case GTA02v3_SYSTEM_REV:
++	case GTA02v4_SYSTEM_REV:
 +		gta01_gsm.gpio_ngsm_en = 0;
 +		break;
 +#endif
@@ -1059,7 +1065,7 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  			 "some PM features not available!!!\n",
  			 system_rev);
  		break;
-@@ -175,9 +207,13 @@
+@@ -175,9 +213,13 @@
  		break;
  	}
  
