@@ -380,7 +380,7 @@ int bdrv_open2(BlockDriverState *bs, const char *filename, int flags,
     /* Note: for compatibility, we open disk image files as RDWR, and
        RDONLY as fallback */
     if (!(flags & BDRV_O_FILE))
-        open_flags = BDRV_O_RDWR;
+        open_flags = BDRV_O_RDWR | (flags & BDRV_O_DIRECT);
     else
         open_flags = flags & ~(BDRV_O_FILE | BDRV_O_SNAPSHOT);
     ret = drv->bdrv_open(bs, filename, open_flags);
@@ -717,7 +717,7 @@ int64_t bdrv_getlength(BlockDriverState *bs)
 }
 
 /* return 0 as number of sectors if no device present or error */
-void bdrv_get_geometry(BlockDriverState *bs, int64_t *nb_sectors_ptr)
+void bdrv_get_geometry(BlockDriverState *bs, uint64_t *nb_sectors_ptr)
 {
     int64_t length;
     length = bdrv_getlength(bs);
@@ -784,6 +784,11 @@ int bdrv_is_removable(BlockDriverState *bs)
 int bdrv_is_read_only(BlockDriverState *bs)
 {
     return bs->read_only;
+}
+
+int bdrv_is_sg(BlockDriverState *bs)
+{
+    return bs->sg;
 }
 
 /* XXX: no longer used */
@@ -1393,4 +1398,15 @@ void bdrv_set_locked(BlockDriverState *bs, int locked)
     if (drv && drv->bdrv_set_locked) {
         drv->bdrv_set_locked(bs, locked);
     }
+}
+
+/* needed for generic scsi interface */
+
+int bdrv_ioctl(BlockDriverState *bs, unsigned long int req, void *buf)
+{
+    BlockDriver *drv = bs->drv;
+
+    if (drv && drv->bdrv_ioctl)
+        return drv->bdrv_ioctl(bs, req, buf);
+    return -ENOTSUP;
 }
