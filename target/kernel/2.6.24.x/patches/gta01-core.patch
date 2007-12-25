@@ -34,7 +34,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,657 @@
+@@ -0,0 +1,658 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -405,6 +405,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	[0] = {
 +		.name		= "neo1973-nand",
 +		.nr_chips	= 1,
++		.flags		= S3C2410_NAND_BBT,
 +	},
 +};
 +

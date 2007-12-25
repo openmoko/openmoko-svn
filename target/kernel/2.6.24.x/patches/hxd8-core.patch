@@ -29,7 +29,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,378 @@
+@@ -0,0 +1,381 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -165,14 +165,17 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 +	[0] = {
 +		.name		= "hxd8-nand",
 +		.nr_chips	= 1,
++		.flags		= S3C2410_NAND_BBT,
 +	},
 +	[1] = {
 +		.name		= "hxd8-nand-1",
 +		.nr_chips	= 1,
++		.flags		= S3C2410_NAND_BBT,
 +	},
 +	[2] = {
 +		.name		= "hxd8-nand-2",
 +		.nr_chips	= 1,
++		.flags		= S3C2410_NAND_BBT,
 +	},
 +};
 +
