@@ -1074,6 +1074,143 @@ index 4e3eb53..e086095 100644
              end_request(pRequest, 0);
                  /* reset */
              outstandingReq = 1;
+diff --git a/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c b/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+index a1b8953..8dc88d2 100644
+--- a/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
++++ b/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+@@ -100,7 +100,7 @@ static void s3c24xx_dump_regs(struct s3c24xx_hcd_context * context)
+ 	datcnt 	= readl(context->base + S3C2410_SDIDCNT);
+ 	datsta 	= readl(context->base + S3C2410_SDIDSTA);
+ 	fsta 	= readl(context->base + S3C2410_SDIFSTA);
+-	imask   = readl(context->base + S3C2440_SDIIMSK);
++	imask   = readl(context->base + S3C2410_SDIIMSK);
+ 
+ 	printk("SDICON:    0x%08x\n", con);
+ 	printk("SDIPRE:    0x%08x\n", pre);
+@@ -127,15 +127,15 @@ static inline void s3c24xx_hcd_clear_imask(struct s3c24xx_hcd_context * context)
+ 
+ 	if (context->int_sdio) {
+ 		writel(S3C2410_SDIIMSK_SDIOIRQ | S3C2410_SDIIMSK_READWAIT,
+-		       context->base + S3C2440_SDIIMSK);
++		       context->base + S3C2410_SDIIMSK);
+ 	}  else {
+-		writel(0, context->base + S3C2440_SDIIMSK);
++		writel(0, context->base + S3C2410_SDIIMSK);
+ 	}
+ }
+ 
+ static inline void s3c24xx_hcd_set_imask(struct s3c24xx_hcd_context * context)
+ {
+-	writel(context->int_mask, context->base + S3C2440_SDIIMSK);
++	writel(context->int_mask, context->base + S3C2410_SDIIMSK);
+ }
+ 
+ 
+@@ -456,11 +456,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
+ 			req->DataRemaining -= fifo_count;
+ 			while (fifo_count > 0) {
+ 				if (context->data_size == 4)
+-					*(ptr) = readl(context->base + S3C2440_SDIDATA);
++					*(ptr) = readl(context->base + S3C2410_SDIDATA);
+ 				else if (context->data_size == 2)
+-					*(ptr) = readw(context->base + S3C2440_SDIDATA);
++					*(ptr) = readw(context->base + S3C2410_SDIDATA);
+ 				else
+-					*(ptr) = readb(context->base + S3C2440_SDIDATA);
++					*(ptr) = readb(context->base + S3C2410_SDIDATA);
+ 
+ 				ptr += context->data_size;
+ 				fifo_count -= context->data_size;
+@@ -524,11 +524,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
+ 
+ 				while (fifo_count > 0) {
+ 					if (context->data_size == 4)
+-						writel(*(ptr), context->base + S3C2440_SDIDATA);
++						writel(*(ptr), context->base + S3C2410_SDIDATA);
+ 					else if (context->data_size == 2)
+-						writew(*(ptr), context->base + S3C2440_SDIDATA);
++						writew(*(ptr), context->base + S3C2410_SDIDATA);
+ 					else
+-						writeb(*(ptr), context->base + S3C2440_SDIDATA);
++						writeb(*(ptr), context->base + S3C2410_SDIDATA);
+ 
+ 					ptr += context->data_size;
+ 					fifo_count -= context->data_size;
+@@ -691,7 +691,7 @@ static int s3c24xx_hcd_prepare_dma(struct s3c24xx_hcd_context * context)
+ 	}
+ 
+ 	s3c2410_dma_devconfig(context->dma_channel, source, hwcfg,
+-			      (unsigned long)context->mem->start + S3C2440_SDIDATA);
++			      (unsigned long)context->mem->start + S3C2410_SDIDATA);
+ 
+ 	s3c2410_dma_config(context->dma_channel, context->data_size,
+ 			   S3C2410_DCON_CH0_SDI);
+@@ -741,9 +741,9 @@ static irqreturn_t s3c24xx_hcd_irq(int irq, void *dev_id)
+ 
+ 			context->int_sdio = 0;
+ 
+-			imask = readl(context->base + S3C2440_SDIIMSK);
++			imask = readl(context->base + S3C2410_SDIIMSK);
+ 			imask &= ~S3C2410_SDIIMSK_SDIOIRQ;
+-			writel(imask, context->base + S3C2440_SDIIMSK);
++			writel(imask, context->base + S3C2410_SDIIMSK);
+ 			SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_SDIO_IRQ_PENDING);
+ 		}
+ 
+@@ -875,20 +875,20 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
+ 
+ 		if (int_data->SlotIRQEnable &
+ 		    (IRQ_DETECT_1_BIT | IRQ_DETECT_4_BIT | IRQ_DETECT_MULTI_BLK) ) {
+-			imsk = readl(context->base + S3C2440_SDIIMSK);
++			imsk = readl(context->base + S3C2410_SDIIMSK);
+ 
+ 			if (int_data->SlotIRQEnable) {
+ 				printk("SDIO_INT_CTRL enable IRQ\n");
+ 				DBG_PRINT(SDDBG_TRACE, ("SDIO_INT_CTRL enable IRQ\n"));
+ 				context->int_sdio = 1;
+ 				imsk |= S3C2410_SDIIMSK_SDIOIRQ;
+-				writel(imsk, context->base + S3C2440_SDIIMSK);
++				writel(imsk, context->base + S3C2410_SDIIMSK);
+ 			} else {
+ 				printk("SDIO_INT_CTRL disable IRQ\n");
+ 				DBG_PRINT(SDDBG_TRACE, ("SDIO_INT_CTRL disable IRQ\n"));
+ 				context->int_sdio = 0;
+ 				imsk &= ~S3C2410_SDIIMSK_SDIOIRQ;
+-				writel(imsk, context->base + S3C2440_SDIIMSK);
++				writel(imsk, context->base + S3C2410_SDIIMSK);
+ 			}
+ 		}
+ 		status = SDIO_STATUS_SUCCESS;
+@@ -898,9 +898,9 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
+ 		spin_lock_irqsave(&context->lock,flags);
+ 
+ 		context->int_sdio = 1;
+-		imsk = readl(context->base + S3C2440_SDIIMSK);
++		imsk = readl(context->base + S3C2410_SDIIMSK);
+ 		imsk |= S3C2410_SDIIMSK_SDIOIRQ;
+-		writel(imsk, context->base + S3C2440_SDIIMSK);
++		writel(imsk, context->base + S3C2410_SDIIMSK);
+ 
+ 		spin_unlock_irqrestore(&context->lock,flags);
+ 
+@@ -1090,7 +1090,7 @@ SDIO_STATUS s3c24xx_hcd_request(PSDHCD hcd)
+ 	if (context->int_sdio)
+ 		imask |= S3C2410_SDIIMSK_SDIOIRQ;
+ 	context->int_mask = imask;
+-	writel(imask, context->base + S3C2440_SDIIMSK);
++	writel(imask, context->base + S3C2410_SDIIMSK);
+ 	writel(req->Argument, context->base + S3C2410_SDICMDARG);
+ 	writel(cmdcon, context->base + S3C2410_SDICMDCON);
+ 
+@@ -1376,7 +1376,7 @@ static int s3c24xx_hcd_debugfs_show(struct seq_file *s, void *data)
+ 	datcnt 	= readl(context->base + S3C2410_SDIDCNT);
+ 	datsta 	= readl(context->base + S3C2410_SDIDSTA);
+ 	fsta 	= readl(context->base + S3C2410_SDIFSTA);
+-	imask   = readl(context->base + S3C2440_SDIIMSK);
++	imask   = readl(context->base + S3C2410_SDIIMSK);
+ 
+ 	seq_printf(s, "SDICON:    0x%08x\n", con);
+ 	seq_printf(s, "SDIPRE:    0x%08x\n", pre);
 diff --git a/include/asm-arm/plat-s3c24xx/pm.h b/include/asm-arm/plat-s3c24xx/pm.h
 index cc62366..20e03b3 100644
 --- a/include/asm-arm/plat-s3c24xx/pm.h
