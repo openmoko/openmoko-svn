@@ -37,6 +37,9 @@ struct s3c_mmci_state_s {
     uint16_t dtimer;
     uint32_t mask;
     uint8_t prescaler;
+
+    uint16_t model;
+    const target_phys_addr_t *map;
 };
 
 void s3c_mmci_reset(struct s3c_mmci_state_s *s)
@@ -202,11 +205,16 @@ timeout:
 #define S3C_SDIDAT	0x3c	/* SDI Data register */
 #define S3C_SDIMSK	0x40	/* SDI Interrupt Mask register */
 
+#define S3C_SDIMAX	0x40
+
 static uint32_t s3c_mmci_read(void *opaque, target_phys_addr_t addr)
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
     uint32_t ret;
     addr -= s->base;
+    if (addr > S3C_SDIMAX)
+        goto bad_reg;
+    addr = s->map[addr];
 
     switch (addr) {
     case S3C_SDICON:
@@ -274,6 +282,7 @@ static uint32_t s3c_mmci_read(void *opaque, target_phys_addr_t addr)
     case S3C_SDIMSK:
         return s->mask;
     default:
+    bad_reg:
         printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr);
         break;
     }
@@ -285,6 +294,9 @@ static void s3c_mmci_write(void *opaque, target_phys_addr_t addr,
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
     addr -= s->base;
+    if (addr > S3C_SDIMAX)
+        goto bad_reg;
+    addr = s->map[addr];
 
     switch (addr) {
     case S3C_SDICON:
@@ -344,6 +356,7 @@ static void s3c_mmci_write(void *opaque, target_phys_addr_t addr,
         s->mask = value & 0x3ffff;
         break;
     default:
+    bad_reg:
         printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr);
     }
 }
@@ -401,6 +414,48 @@ static void s3c_mmci_save(QEMUFile *f, void *opaque)
     qemu_put_8s(f, &s->prescaler);
 }
 
+static const target_phys_addr_t s3c2410_regmap[S3C_SDIMAX + 1] = {
+    [0 ... S3C_SDIMAX] = -1,
+    [0x00] = S3C_SDICON,
+    [0x04] = S3C_SDIPRE,
+    [0x08] = S3C_SDICARG,
+    [0x0c] = S3C_SDICCON,
+    [0x10] = S3C_SDICSTA,
+    [0x14] = S3C_SDIRSP0,
+    [0x18] = S3C_SDIRSP1,
+    [0x1c] = S3C_SDIRSP2,
+    [0x20] = S3C_SDIRSP3,
+    [0x24] = S3C_SDIDTIMER,
+    [0x28] = S3C_SDIBSIZE,
+    [0x2c] = S3C_SDIDCON,
+    [0x30] = S3C_SDICNT,
+    [0x34] = S3C_SDIDSTA,
+    [0x38] = S3C_SDIFSTA,
+    [0x3c] = S3C_SDIDAT,
+    [0x40] = S3C_SDIMSK,
+};
+
+static const target_phys_addr_t s3c2440_regmap[S3C_SDIMAX + 1] = {
+    [0 ... S3C_SDIMAX] = -1,
+    [0x00] = S3C_SDICON,
+    [0x04] = S3C_SDIPRE,
+    [0x08] = S3C_SDICARG,
+    [0x0c] = S3C_SDICCON,
+    [0x10] = S3C_SDICSTA,
+    [0x14] = S3C_SDIRSP0,
+    [0x18] = S3C_SDIRSP1,
+    [0x1c] = S3C_SDIRSP2,
+    [0x20] = S3C_SDIRSP3,
+    [0x24] = S3C_SDIDTIMER,
+    [0x28] = S3C_SDIBSIZE,
+    [0x2c] = S3C_SDIDCON,
+    [0x30] = S3C_SDICNT,
+    [0x34] = S3C_SDIDSTA,
+    [0x38] = S3C_SDIFSTA,
+    [0x3c] = S3C_SDIMSK,
+    [0x40] = S3C_SDIDAT,
+};
+
 static int s3c_mmci_load(QEMUFile *f, void *opaque, int version_id)
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
@@ -430,7 +485,7 @@ static int s3c_mmci_load(QEMUFile *f, void *opaque, int version_id)
     return 0;
 }
 
-struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
+struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base, uint16_t model,
                 struct sd_card_s *mmc, qemu_irq irq, qemu_irq *dma)
 {
     int iomemtype;
@@ -445,6 +500,19 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
     s->irq = irq;
     s->dma = dma;
     s->card = mmc;
+    s->model = model;
+    switch (model) {
+    case 0x2410:
+        s->map = s3c2410_regmap;
+        break;
+    case 0x2440:
+        s->map = s3c2440_regmap;
+        break;
+    default:
+        fprintf(stderr, "%s: unknown MMC/SD/SDIO HC model %04x\n",
+                        __FUNCTION__, model);
+        exit(-1);
+    }
 
     mmc->irq = qemu_allocate_irqs(s3c_mmci_cardirq, s, 1)[0];
 

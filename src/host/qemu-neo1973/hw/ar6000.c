@@ -156,6 +156,8 @@ static void sd_response_r4_make(struct sdio_s *sd, uint8_t *response)
     response[1] = (sd->ioocr >> 16) & 0xff;
     response[2] = (sd->ioocr >> 8) & 0xff;
     response[3] = (sd->ioocr >> 0) & 0xff;
+    if (sd->sdio_ok)
+        response[0] |= 1 << 7;
 }
 
 static void sd_response_r5_make(struct sdio_s *sd, uint8_t *response)

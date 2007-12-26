@@ -157,7 +157,7 @@ void s3c_lcd_reset(struct s3c_lcd_state_s *s);
 
 /* s3c24xx_mmci.c */
 struct s3c_mmci_state_s;
-struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
+struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base, uint16_t model,
                 struct sd_card_s *mmc, qemu_irq irq, qemu_irq *dma);
 void s3c_mmci_reset(struct s3c_mmci_state_s *s);
 
