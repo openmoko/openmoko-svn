@@ -303,7 +303,7 @@ static sd_rsp_type_t sdio_normal_command(struct sdio_s *sd,
         case sd_initialization_state:
             /* We accept any voltage.  10000 V is nothing.  */
             if (req.arg) {
-                sd->state = sd_ready_state;
+                sd->state = sd_initialization_state;
                 sd->sdio_ok = 1;
             }
 
@@ -456,7 +456,7 @@ static int sdio_do_command(struct sdio_s *sd, struct sd_request_s *req,
         return 0;
     }
 
-    sd->card_status &= ~CARD_STATUS_B;
+    sd->card_status &= ~(COM_CRC_ERROR | ILLEGAL_COMMAND);	/* B type */
 
     rtype = sdio_normal_command(sd, *req);
 
@@ -587,6 +587,8 @@ static int sdio_data_ready(struct sdio_s *sd)
     return sd->state == sd_transfer_state;
 }
 
+#define SDIO_CIS_START	0x1000
+
 static void sdio_cccr_write(struct sdio_s *sd, uint32_t offset, uint8_t value)
 {
     switch (offset) {
@@ -660,7 +662,7 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
 {
     switch (offset) {
     case 0x00:	/* CCCR/SDIO Revison */
-        return 0x32;
+        return 0x32;	/* SDIO Specification Version 2.00, CCCR/FBR V 1.20 */
 
     case 0x01:	/* SD Specification Revision */
         return 0x02;	/* SD Physical Specification Version 2.00 (May 2006) */
@@ -682,12 +684,15 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
 
     case 0x08:	/* Card Capability */
         /* XXX: set SDC (01) when CMD52 learns to preserve current_cmd */
+        /* XXX: need to addr ReadWait support too (RWC (04)) */
         return 0x12 | sd->cccr.e4mi;	/* SMB | S4MI | E4MI | Full-Speed */
 
     case 0x09:	/* Common CIS Pointer */
+        return (SDIO_CIS_START >>  0) & 0xff;
     case 0x0a:	/* Common CIS Pointer */
+        return (SDIO_CIS_START >>  8) & 0xff;
     case 0x0b:	/* Common CIS Pointer */
-        return 0x00;	/* Starts at 0x1000 */
+        return (SDIO_CIS_START >> 16) & 0xff;
 
     case 0x1c:	/* Bus Suspend */
         return 0x00;
@@ -768,16 +773,16 @@ static void sdio_cia_read(struct sdio_s *sd,
         *data ++ = sdio_fbr_read(sd, addr >> 8, addr & 0xff);
 
     /* RFU */
-    if (len && unlikely(addr < 0x1000)) {
-        llen = sd->transfer.step ? MIN(len, 0x1000 - addr) : len;
+    if (len && unlikely(addr < SDIO_CIS_START)) {
+        llen = sd->transfer.step ? MIN(len, SDIO_CIS_START - addr) : len;
         memset(data, 0, llen);
         data += llen;
         len -= llen;
-        addr = 0x1000;
+        addr = SDIO_CIS_START;
     }
 
     /* CIS */
-    addr -= 0x1000;
+    addr -= SDIO_CIS_START;
     if (len && addr < sd->cislen) {
         llen = MIN(len, sd->cislen - addr);
         memcpy(data, sd->cis + addr, llen);
@@ -855,13 +860,21 @@ static void ar6k_reset(struct ar6k_s *s)
 
 /* TODO: dump real values from an Atheros AR6001 - need hw access! */
 const static uint8_t ar6k_cis[] = {
+    CISTPL_DEVICE, 3,		/* Not SDIO standard */
+    0x00, 0x00, 0x00,		/* TODO */
+
     CISTPL_MANFID, 4,
-    0x0a, 0x01,			/* SDIO Card manufacturer code */
-    0x71, 0x02,			/* Manufacturer information (Part No, Rev) */
+    0x71, 0x02,			/* SDIO Card manufacturer code */
+    0x0a, 0x01,			/* Manufacturer information (Part No, Rev) */
 
     CISTPL_FUNCID, 2,
     0x0c,			/* Card funcion code: SDIO */
     0x00,			/* System initialization mask */
+
+    CISTPL_FUNCE, 4,
+    0x00,			/* Type of extended data: Function 0 */
+    0x00, 0x08,			/* Max. block size/byte count for Fn0: 2048 */
+    0x32,			/* Max. transfer rate per line: 25 Mb/Sec */
 
     CISTPL_END, 0xff,
 };
