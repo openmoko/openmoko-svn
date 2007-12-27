@@ -33,6 +33,7 @@
 #
 # Macro expansion:
 #
+# #define MACRO TEXT ...
 # MACRO
 # MACRO##TOKEN
 #
@@ -245,14 +246,33 @@ while (@ARGV) {
 	    }
 	    next if $false;
 
-	    $tmp = "";
-	    for $def (keys %def) {
-		while (/(##)?\b$def\b(##)?/) {
-		    $tmp = $`.$def{$def};
-		    $_ = $';
+	    if (/^\s*#define\s+(\S+)(\s*(.*?))?\s*$/) {
+		if (defined $def{$1} && $def{$1} ne $3) {
+		    print STDERR "$file:$.: redefinition of macro \"$1\"\n";
+		    exit(1);
 		}
+		$def{$1} = $3;
 	    }
-	    $_ = $tmp.$_;
+
+	    $tmp = "";
+	    while (length $_) {
+		$pre = $_;
+		$exp = "";
+		$post = "";
+		for $def (keys %def) {
+		    if (/(##)?\b$def\b(##)?/) {
+			if (length $` < length $pre) {
+			    $pre = $`;
+			    $exp = $def{$def};
+			    $post = $';
+			}
+		    }
+		}
+		$tmp .= $pre.$exp;
+		$_ = $post;
+	    }
+	    $_ = $tmp;
+
 	    s/#.*//;
 	    s/\s*$//;
 	    next if /^\s*$/;

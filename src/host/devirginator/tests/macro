@@ -112,3 +112,16 @@ a=1
 b=2
 c=3
 EOF
+
+# -----------------------------------------------------------------------------
+
+setup "expand multiple macros" <<EOF
+EOF
+
+edit -D foo=bar -D x=y -p <<EOF
+foo=x
+EOF
+
+expect <<EOF
+bar=y
+EOF
