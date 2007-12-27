@@ -414,7 +414,7 @@ static sd_rsp_type_t sdio_normal_command(struct sdio_s *sd,
             }
 
             sd->transfer.dir = (req.arg >> 31) & 1;		/* R/W */
-            sd->transfer.step = (req.arg >> 27) & 1;		/* OPCode */
+            sd->transfer.step = (req.arg >> 26) & 1;		/* OPCode */
             sd->transfer.func = fun;
             sd->transfer.data_start = addr;
             sd->transfer.data_offset = 0;
@@ -944,8 +944,310 @@ struct sd_card_s *sdio_init(struct sdio_s *s)
 struct ar6k_s {
     struct sdio_s sd;
     NICInfo *nd;
+    struct {
+        uint8_t host_int_stat;
+        uint8_t cpu_int_stat;
+        uint8_t error_int_stat;
+        uint8_t counter_int_stat;
+        uint8_t mbox_frame;
+        uint8_t rx_la_valid;
+        uint8_t rx_la[4];
+        uint8_t int_stat_ena;
+        uint8_t cpu_int_stat_ena;
+        uint8_t err_int_stat_ena;
+        uint8_t cnt_int_stat_ena;
+        uint8_t cnt[8];
+        uint32_t cnt_dec[8];
+        uint8_t scratch[8];
+
+        uint8_t mbox[0x800 * 4];
+        int mbox_count[4];
+    } hif;
+    struct {
+        int done;
+    } bmi;
     uint8_t cis[0];
 };
+
+static void ar6k_bmi_reset(struct ar6k_s *s)
+{
+    int i;
+
+    for (i = 0; i < 8; i ++) {
+        s->hif.cnt[i] = 0x00;
+        s->hif.cnt_dec[i] = 0xff;
+    }
+
+    for (i = 0; i < 4; i ++)
+        s->hif.mbox_count[i] = 0;
+
+    s->bmi.done = 0;
+}
+
+enum {
+    bmi_no_command = 0,
+    bmi_done,			/* Host is done using BMI */
+    bmi_read_memory,		/* Host reads AR6K memory */
+    bmi_write_memory,		/* Host writes AR6K memory */
+    bmi_execute,		/* Causes AR6K to execute code */
+    bmi_set_app_start,		/* Set Target application starting address */
+    bmi_read_soc_register,	/* Read a 32-bit Target SOC register */
+    bmi_Write_soc_register,	/* Write a 32-bit Target SOC register */
+    bmi_get_target_id,		/* Fetch the 4-byte Target information */
+    bmi_rompatch_install,	/* Install a ROM Patch */
+    bmi_rompatch_uninstall,	/* Uninstall a previously-installed ROM Patch */
+    bmi_rompatch_activate,	/* Activate a list of installed ROM Patches */
+    bmi_rompatch_deactivate,	/* Deactivate a list of active ROM Patches */
+};
+
+#define BMI_TARGET_VERSION_SENTINAL	0xffffffff
+#define BMI_TARGET_VERSION_ID		0x11000044
+#define BMI_TARGET_TYPE_AR6001		1
+#define BMI_TARGET_TYPE_AR6002		2
+
+static void ar6k_bmi_write(struct ar6k_s *s, uint8_t *data, int len)
+{
+    uint32_t cmd;
+    uint32_t *cmdp, *resp;
+    int rlen = 0;
+
+    if (len < 4) {
+        fprintf(stderr, "%s: short command (%ib)\n", __FUNCTION__, len);
+        return;
+    }
+
+    cmdp = (void *) data + 0x800 - len;
+    cmd = le32_to_cpup(cmdp ++);
+
+    switch (cmd) {
+    case bmi_no_command:
+        break;
+    case bmi_done:
+        s->bmi.done = 1;
+        break;
+    case bmi_get_target_id:
+#ifndef NEW_FIRMWARE
+        rlen = 4;
+        resp = (void *) data + 0x800 - rlen;
+        cpu_to_le32wu(resp, BMI_TARGET_VERSION_ID);
+#else
+        rlen = 16;
+        resp = (void *) data + 0x800 - rlen;
+        cpu_to_le32wu(resp ++, BMI_TARGET_VERSION_SENTINAL);
+        cpu_to_le32wu(resp ++, 0x0000000c);	/* target_info_byte_count */
+        cpu_to_le32wu(resp ++, BMI_TARGET_VERSION_ID);	/* target_ver */
+        cpu_to_le32wu(resp ++, BMI_TARGET_TYPE_AR6001);	/* target_type */
+#endif
+        break;
+    default:
+        fprintf(stderr, "%s: bad command (%i)\n", __FUNCTION__, cmd);
+        return;
+    }
+
+    s->hif.cnt_dec[4] = 0xff;
+    s->hif.cnt[4] = rlen;
+}
+
+#define AR6K_HOST_INT_STAT		0x400
+#define AR6K_CPU_INT_STAT		0x401
+#define AR6K_ERROR_INT_STAT		0x402
+#define AR6K_COUNTER_INT_STAT		0x403
+#define AR6K_MBOX_FRAME			0x404
+#define AR6K_RX_LOOKAHEAD_VALID		0x405
+#define AR6K_RX_LOOKAHEAD0		0x408
+#define AR6K_RX_LOOKAHEAD1		0x40c
+#define AR6K_RX_LOOKAHEAD2		0x410
+#define AR6K_RX_LOOKAHEAD3		0x414
+#define AR6K_INT_STAT_ENABLE		0x418
+#define AR6K_CPU_INT_STAT_ENABLE	0x419
+#define AR6K_ERROR_STAT_ENABLE		0x41a
+#define AR6K_COUNTER_INT_STAT_ENABLE	0x41b
+#define AR6K_COUNT			0x420
+#define AR6K_COUNT_DEC			0x440
+#define AR6K_SCRATCH			0x460
+#define AR6K_FIFO_TIMEOUT		0x468
+#define AR6K_FIFO_TIMEOUT_ENABLE	0x469
+#define AR6K_DISABLE_SLEEP		0x46a
+#define AR6K_LOCAL_BUS_ENDIAN		0x46e
+#define AR6K_LOCAL_BUS			0x470
+#define AR6K_INT_WLAN			0x472
+#define AR6K_WINDOW_DATA		0x474
+#define AR6K_WRITE_ADDR			0x478
+#define AR6K_READ_ADDR			0x47c
+#define AR6K_SPI_CONFIG			0x480
+#define AR6K_SPI_STATUS			0x481
+#define AR6K_CIS_WINDOW			0x600
+#define AR6K_HIF_MBOX_BASE		0x800
+#define AR6K_HIF_MBOX0_BASE		0x800
+#define AR6K_HIF_MBOX1_BASE		0x1000
+#define AR6K_HIF_MBOX2_BASE		0x1800
+#define AR6K_HIF_MBOX3_BASE		0x2000
+#define AR6K_HIF_MBOX_END		0x27ff
+
+static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
+{
+    int mbox;
+
+    switch (addr) {
+    case AR6K_MBOX_FRAME:
+        s->hif.mbox_frame = value;
+        break;
+    case AR6K_RX_LOOKAHEAD_VALID:
+        s->hif.rx_la_valid = value;
+        break;
+    case AR6K_RX_LOOKAHEAD0:
+        s->hif.rx_la[0] = value;
+        break;
+    case AR6K_RX_LOOKAHEAD1:
+        s->hif.rx_la[1] = value;
+        break;
+    case AR6K_RX_LOOKAHEAD2:
+        s->hif.rx_la[2] = value;
+        break;
+    case AR6K_RX_LOOKAHEAD3:
+        s->hif.rx_la[3] = value;
+        break;
+    case AR6K_INT_STAT_ENABLE:
+        s->hif.int_stat_ena = value;
+        break;
+    case AR6K_CPU_INT_STAT_ENABLE:
+        s->hif.cpu_int_stat_ena = value;
+        break;
+    case AR6K_ERROR_STAT_ENABLE:
+        s->hif.err_int_stat_ena = value;
+        break;
+    case AR6K_COUNTER_INT_STAT_ENABLE:
+        s->hif.cnt_int_stat_ena = value;
+        break;
+    case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
+        s->hif.scratch[addr - AR6K_SCRATCH] = value;
+        break;
+    case AR6K_FIFO_TIMEOUT:
+    case AR6K_FIFO_TIMEOUT_ENABLE:
+    case AR6K_DISABLE_SLEEP:
+    case AR6K_LOCAL_BUS_ENDIAN:
+    case AR6K_LOCAL_BUS:
+    case AR6K_INT_WLAN:
+    case AR6K_WINDOW_DATA:
+    case AR6K_WRITE_ADDR:
+    case AR6K_READ_ADDR:
+    case AR6K_SPI_CONFIG:
+        goto bad_reg;
+    case AR6K_HIF_MBOX_BASE ... AR6K_HIF_MBOX_END:
+        mbox = (addr - AR6K_HIF_MBOX_BASE) >> 11;
+        s->hif.mbox[addr - AR6K_HIF_MBOX_BASE] = value;
+        s->hif.mbox_count[mbox] ++;
+        /* XXX how do we know when a BMI command is executed?  */
+        if (mbox == 0 && !s->bmi.done) {
+            s->hif.cnt_dec[4] = 0x00;
+            s->hif.cnt[4] = 0x00;
+            if ((addr & 0x7ff) == 0x7ff) {
+                ar6k_bmi_write(s, s->hif.mbox + (mbox << 11),
+                                s->hif.mbox_count[0]);
+                s->hif.mbox_count[mbox] = 0;
+            }
+        }
+        break;
+    default:
+    bad_reg:
+        printf("%s: unknown register %02x\n", __FUNCTION__, addr);
+        break;
+    }
+}
+
+static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
+{
+    switch (addr) {
+    case AR6K_HOST_INT_STAT:
+        return s->hif.host_int_stat;
+    case AR6K_CPU_INT_STAT:
+        return s->hif.cpu_int_stat;
+    case AR6K_ERROR_INT_STAT:
+        return s->hif.error_int_stat;
+    case AR6K_COUNTER_INT_STAT:
+        return s->hif.counter_int_stat;
+    case AR6K_MBOX_FRAME:
+        return s->hif.mbox_frame;
+    case AR6K_RX_LOOKAHEAD_VALID:
+        return s->hif.rx_la_valid;
+    case AR6K_RX_LOOKAHEAD0:
+        return s->hif.rx_la[0];
+    case AR6K_RX_LOOKAHEAD1:
+        return s->hif.rx_la[1];
+    case AR6K_RX_LOOKAHEAD2:
+        return s->hif.rx_la[2];
+    case AR6K_RX_LOOKAHEAD3:
+        return s->hif.rx_la[3];
+    case AR6K_INT_STAT_ENABLE:
+        return s->hif.int_stat_ena;
+    case AR6K_CPU_INT_STAT_ENABLE:
+        return s->hif.cpu_int_stat_ena;
+    case AR6K_ERROR_STAT_ENABLE:
+        return s->hif.err_int_stat_ena;
+    case AR6K_COUNTER_INT_STAT_ENABLE:
+        return s->hif.cnt_int_stat_ena;
+    case AR6K_COUNT ... (AR6K_COUNT + 0x7):
+        return s->hif.cnt[addr - AR6K_COUNT];
+    case AR6K_COUNT_DEC + 0x00:
+    case AR6K_COUNT_DEC + 0x04:
+    case AR6K_COUNT_DEC + 0x08:
+    case AR6K_COUNT_DEC + 0x0c:
+    case AR6K_COUNT_DEC + 0x10:
+    case AR6K_COUNT_DEC + 0x14:
+    case AR6K_COUNT_DEC + 0x18:
+    case AR6K_COUNT_DEC + 0x1c:
+        return s->hif.cnt_dec[(addr - AR6K_COUNT_DEC) >> 2];
+    case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
+        return s->hif.scratch[addr - AR6K_SCRATCH];
+    case AR6K_FIFO_TIMEOUT:
+    case AR6K_FIFO_TIMEOUT_ENABLE:
+    case AR6K_DISABLE_SLEEP:
+    case AR6K_LOCAL_BUS_ENDIAN:
+    case AR6K_LOCAL_BUS:
+    case AR6K_INT_WLAN:
+    case AR6K_WINDOW_DATA:
+    case AR6K_WRITE_ADDR:
+    case AR6K_READ_ADDR:
+    case AR6K_SPI_CONFIG:
+    case AR6K_SPI_STATUS:
+        goto bad_reg;
+
+    case AR6K_CIS_WINDOW ... (AR6K_CIS_WINDOW + 0x1ff):
+        if (addr >= AR6K_CIS_WINDOW + s->sd.cislen)
+            goto bad_reg;
+
+        return s->sd.cis[addr - AR6K_CIS_WINDOW];
+
+    case AR6K_HIF_MBOX_BASE ... AR6K_HIF_MBOX_END:
+        return s->hif.mbox[addr - AR6K_HIF_MBOX_BASE];
+    default:
+    bad_reg:
+        printf("%s: unknown register %02x\n", __FUNCTION__, addr);
+        break;
+    }
+
+    return 0;
+}
+
+static void ar6k_fn1_write(struct sdio_s *sd,
+                uint32_t addr, uint8_t *data, int len)
+{
+    struct ar6k_s *s = (void *) sd;
+
+    fprintf(stderr, "%s: writing %i bytes at %x\n", __FUNCTION__, len, addr);
+    for (; len; len --, addr += sd->transfer.step)
+        ar6k_hif_write(s, addr, *data ++);
+}
+
+static void ar6k_fn1_read(struct sdio_s *sd,
+                uint32_t addr, uint8_t *data, int len)
+{
+    struct ar6k_s *s = (void *) sd;
+
+    fprintf(stderr, "%s: reading %i bytes at %x\n", __FUNCTION__, len, addr);
+    for (; len; len --, addr += sd->transfer.step)
+        *data ++ = ar6k_hif_read(s, addr);
+}
 
 static void ar6k_set_ioocr(struct sdio_s *sd)
 {
@@ -956,6 +1258,7 @@ static void ar6k_set_ioocr(struct sdio_s *sd)
 static void ar6k_reset(struct ar6k_s *s)
 {
     ar6k_set_ioocr(&s->sd);
+    ar6k_bmi_reset(s);
 }
 
 /* TODO: dump real values from an Atheros AR6001 - need hw access! */
@@ -1035,6 +1338,9 @@ struct sd_card_s *ar6k_init(NICInfo *nd)
     memcpy(s->cis + 0, ar6k_cis, sizeof(ar6k_cis));
     memcpy(s->cis + s->sd.fbr[0].cis_offset,
                     ar6k_fn1_cis, sizeof(ar6k_fn1_cis));
+
+    s->sd.write[1] = ar6k_fn1_write;
+    s->sd.read[1]  = ar6k_fn1_read;
 
     ar6k_reset(s);
 
