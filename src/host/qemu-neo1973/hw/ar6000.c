@@ -410,7 +410,7 @@ static sd_rsp_type_t sdio_normal_command(struct sdio_s *sd,
 
             if (unlikely(fun > ((sd->ioocr >> 28) & 7))) {
                 sd->card_status |= ADDRESS_ERROR;
-                return sd_r1b;
+                return sd_r5;
             }
 
             sd->transfer.dir = (req.arg >> 31) & 1;		/* R/W */
@@ -418,18 +418,22 @@ static sd_rsp_type_t sdio_normal_command(struct sdio_s *sd,
             sd->transfer.func = fun;
             sd->transfer.data_start = addr;
             sd->transfer.data_offset = 0;
-            if ((req.arg >> 28) & 1) {				/* BlockMode */
+            if ((req.arg >> 27) & 1) {				/* BlockMode */
                 if (sd->blk_len[fun] < 1 || sd->blk_len[fun] > 2048)
-                    return sd_r1b;
+                    return sd_r1;
 
                 sd->transfer.blk_len = sd->blk_len[fun];
             } else
                 sd->transfer.blk_len = 1;
             sd->transfer.blk_num = ((req.arg >> 0) & 0x1ff) ?:
-                    ((req.arg >> 28) & 1) ? -1 : 0x200;		/* BlockMode */
+                    ((req.arg >> 27) & 1) ? -1 : 0x200;		/* BlockMode */
 
+            /* XXX The R5 on real cards indicates command state for some
+             * reason.  Is that because the transfer hasn't started yet or
+             * because it has already finished when the response is made?  */
             sd->state = sd_transfer_state;
-            return sd_r1b;
+            sd->transfer.data[0] = 0x00;
+            return sd_r5;
 
         default:
             break;
@@ -553,7 +557,7 @@ static uint8_t sdio_read_data(struct sdio_s *sd)
     /* TODO: Append CRCs */
     uint8_t ret;
 
-    if (sd->state != sd_receivingdata_state) {
+    if (sd->state != sd_transfer_state) {
         printf("%s: not in Transfer state\n", __FUNCTION__);
         return 0x00;
     }

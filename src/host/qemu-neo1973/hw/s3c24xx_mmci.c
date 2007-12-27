@@ -207,7 +207,7 @@ timeout:
 
 #define S3C_SDIMAX	0x40
 
-static uint32_t s3c_mmci_read(void *opaque, target_phys_addr_t addr)
+static uint32_t s3c_mmci_readw(void *opaque, target_phys_addr_t addr)
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
     uint32_t ret;
@@ -262,7 +262,6 @@ static uint32_t s3c_mmci_read(void *opaque, target_phys_addr_t addr)
         else
             return s->fifolen;					/* FFCNT */
     case S3C_SDIDAT:
-        /* TODO: 8/16-bit access */
         ret = 0;
         if (s->fifolen >= 4) {
             ret |= s->fifo[s->fifostart ++] << 0;
@@ -289,7 +288,7 @@ static uint32_t s3c_mmci_read(void *opaque, target_phys_addr_t addr)
     return 0;
 }
 
-static void s3c_mmci_write(void *opaque, target_phys_addr_t addr,
+static void s3c_mmci_writew(void *opaque, target_phys_addr_t addr,
                 uint32_t value)
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
@@ -345,7 +344,6 @@ static void s3c_mmci_write(void *opaque, target_phys_addr_t addr,
         s->dstatus &= ~(value & 0x3f8);
         break;
     case S3C_SDIDAT:
-        /* TODO: 8/16-bit access */
         s->fifo[(s->fifostart + s->fifolen ++) & 63] = (value >> 0) & 0xff;
         s->fifo[(s->fifostart + s->fifolen ++) & 63] = (value >> 8) & 0xff;
         s->fifo[(s->fifostart + s->fifolen ++) & 63] = (value >> 16) & 0xff;
@@ -361,16 +359,85 @@ static void s3c_mmci_write(void *opaque, target_phys_addr_t addr,
     }
 }
 
+static uint32_t s3c_mmci_readh(void *opaque, target_phys_addr_t addr)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+    uint16_t ret = 0;
+
+    if (s->map[addr - s->base] == S3C_SDIDAT) {
+        if (s->fifolen >= 2) {
+            ret |= s->fifo[s->fifostart ++] << 0;
+            s->fifostart &= 63;
+            ret |= s->fifo[s->fifostart ++] << 8;
+            s->fifostart &= 63;
+            s->fifolen -= 2;
+            s3c_mmci_fifo_run(s);
+        } else
+            printf("%s: FIFO underrun\n", __FUNCTION__);
+
+        return ret;
+    }
+
+    printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr - s->base);
+    return 0;
+}
+
+static void s3c_mmci_writeh(void *opaque, target_phys_addr_t addr,
+                uint32_t value)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+
+    if (s->map[addr - s->base] == S3C_SDIDAT) {
+        s->fifo[(s->fifostart + s->fifolen ++) & 63] = (value >> 0) & 0xff;
+        s->fifo[(s->fifostart + s->fifolen ++) & 63] = (value >> 8) & 0xff;
+        s3c_mmci_fifo_run(s);
+    } else
+        printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr - s->base);
+}
+
+static uint32_t s3c_mmci_readb(void *opaque, target_phys_addr_t addr)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+    uint8_t ret = 0;
+
+    if (s->map[addr - s->base] == S3C_SDIDAT) {
+        if (s->fifolen > 0) {
+            ret = s->fifo[s->fifostart ++];
+            s->fifostart &= 63;
+            s->fifolen --;
+            s3c_mmci_fifo_run(s);
+        } else
+            printf("%s: FIFO underrun\n", __FUNCTION__);
+
+        return ret;
+    }
+
+    printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr - s->base);
+    return 0;
+}
+
+static void s3c_mmci_writeb(void *opaque, target_phys_addr_t addr,
+                uint32_t value)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+
+    if (s->map[addr - s->base] == S3C_SDIDAT) {
+        s->fifo[(s->fifostart + s->fifolen ++) & 63] = value;
+        s3c_mmci_fifo_run(s);
+    } else
+        printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr - s->base);
+}
+
 static CPUReadMemoryFunc *s3c_mmci_readfn[] = {
-    s3c_mmci_read,
-    s3c_mmci_read,
-    s3c_mmci_read,
+    s3c_mmci_readb,
+    s3c_mmci_readh,
+    s3c_mmci_readw,
 };
 
 static CPUWriteMemoryFunc *s3c_mmci_writefn[] = {
-    s3c_mmci_write,
-    s3c_mmci_write,
-    s3c_mmci_write,
+    s3c_mmci_writeb,
+    s3c_mmci_writeh,
+    s3c_mmci_writew,
 };
 
 static void s3c_mmci_cardirq(void *opaque, int line, int level)
