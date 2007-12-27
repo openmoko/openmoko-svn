@@ -1,0 +1,95 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "#define foo bar" <<EOF
+EOF
+
+edit -p <<EOF
+#define foo bar
+foo=1
+EOF
+
+expect <<EOF
+bar=1
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "#define foo" <<EOF
+EOF
+
+edit -p <<EOF
+#define foo
+bar##foo=2
+EOF
+
+expect <<EOF
+bar=2
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "re-#define foo to different value" <<EOF
+EOF
+
+edit_fail -p <<EOF
+#define foo a
+#define foo b
+EOF
+
+expect <<EOF
+-:2: redefinition of macro "foo"
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "re-#define foo to same value" <<EOF
+EOF
+
+edit -p <<EOF
+#define foo a
+#define foo a
+foo=bar
+EOF
+
+expect <<EOF
+a=bar
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "#define with conditionals (1)" <<EOF
+EOF
+
+edit -D foo=x -p <<EOF
+#ifdef foo
+#define bar a
+#else
+#define bar b
+#endif
+foo=bar
+EOF
+
+expect <<EOF
+x=a
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "#define with conditionals (2)" <<EOF
+EOF
+
+edit -p <<EOF
+#ifdef foo
+#define bar a
+#else
+#define bar b
+#endif
+foo=bar
+EOF
+
+expect <<EOF
+foo=b
+EOF
