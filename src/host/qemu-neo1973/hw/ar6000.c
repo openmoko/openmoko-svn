@@ -58,6 +58,13 @@ struct sdio_s {
         uint8_t speed;
     } cccr;
     struct {
+        uint8_t stdfn;
+        uint8_t ext_stdfn;
+        uint8_t power;
+        int cis_offset;
+        uint32_t csa_addr;
+        void (*csa_wr)(struct sdio_s *sd, uint8_t data);
+        uint8_t (*csa_rd)(struct sdio_s *sd);
     } fbr[7];
     const uint8_t *cis;
     int cislen;
@@ -250,6 +257,10 @@ static void sdio_reset(struct sdio_s *sd)
     memset(&sd->fbr,  0, sizeof(sd->fbr));
     for (i = 0; i < 8; i ++)
         sd->blk_len[i] = 0;
+    for (i = 0; i < 7; i ++) {
+        sd->fbr[i].stdfn &= 0x4f;
+        sd->fbr[i].power = 0;
+    }
     if (sd->reset)
         sd->reset(sd);
 
@@ -639,7 +650,6 @@ static void sdio_cccr_write(struct sdio_s *sd, uint32_t offset, uint8_t value)
         sd->blk_len[0] &= 0xff << 8;
         sd->blk_len[0] |= value;
         break;
-
     case 0x11:	/* Fn0 Block Size MSB */
         sd->blk_len[0] &= 0xff;
         sd->blk_len[0] |= value << 8;
@@ -708,7 +718,6 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
 
     case 0x10:	/* Fn0 Block Size LSB */
         return (sd->blk_len[0] >> 0) & 0xff;
-
     case 0x11:	/* Fn0 Block Size MSB */
         return (sd->blk_len[0] >> 8) & 0xff;
 
@@ -727,8 +736,53 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
 static void sdio_fbr_write(struct sdio_s *sd,
                 int fn, uint32_t offset, uint8_t value)
 {
+    typeof(*sd->fbr) *func = &sd->fbr[fn - 1];
+
     switch (offset) {
+    case 0x00:	/* Standard SDIO Function interface code */
+        if ((func->stdfn & (1 << 6)) && (value & (1 << 7)))	/* CSASupport */
+            func->stdfn |= 1 << 7;				/* CSAEnable */
+        else
+            func->stdfn &= ~(1 << 7);				/* CSAEnable */
+        break;
+
+    case 0x02:	/* Power Selection */
+        sd->cccr.power |= value & 0x02;				/* EPS */
+        break;
+
+    case 0x0c:	/* Function CSA Pointer */
+        func->csa_addr &= 0xffff00;
+        func->csa_addr |= value <<  0;
+        break;
+    case 0x0d:	/* Function CSA Pointer */
+        func->csa_addr &= 0xff00ff;
+        func->csa_addr |= value <<  8;
+        break;
+    case 0x0e:	/* Function CSA Pointer */
+        func->csa_addr &= 0x00ffff;
+        func->csa_addr |= value << 16;
+        break;
+
+    case 0x0f:	/* Data access window to function's CSA */
+        if (func->stdfn & (1 << 7)) {				/* CSAEnable */
+            if (func->csa_wr)
+                func->csa_wr(sd, value);
+            func->csa_addr ++;
+            break;
+        }
+        goto bad_reg;
+
+    case 0x10:	/* I/O Block Size LSB */
+        sd->blk_len[fn] &= 0xff << 8;
+        sd->blk_len[fn] |= value;
+        break;
+    case 0x11:	/* I/O Block Size MSB */
+        sd->blk_len[fn] &= 0xff;
+        sd->blk_len[fn] |= value << 8;
+        break;
+
     default:
+    bad_reg:
         printf("%s: unknown register %02x\n", __FUNCTION__, offset);
     }
 }
@@ -736,7 +790,44 @@ static void sdio_fbr_write(struct sdio_s *sd,
 static uint8_t sdio_fbr_read(struct sdio_s *sd,
                 int fn, uint32_t offset)
 {
+    typeof(*sd->fbr) *func = &sd->fbr[fn - 1];
+
     switch (offset) {
+    case 0x00:	/* Standard SDIO Function interface code */
+        return func->stdfn;
+
+    case 0x01:	/* Extended standard SDIO Function interface code */
+        return func->ext_stdfn;
+
+    case 0x02:	/* Power Selection */
+        return func->power | 0x01;
+
+    case 0x09:	/* Function CIS Pointer */
+        return ((SDIO_CIS_START + func->cis_offset) >>  0) & 0xff;
+    case 0x0a:	/* Function CIS Pointer */
+        return ((SDIO_CIS_START + func->cis_offset) >>  8) & 0xff;
+    case 0x0b:	/* Function CIS Pointer */
+        return ((SDIO_CIS_START + func->cis_offset) >> 16) & 0xff;
+
+    case 0x0c:	/* Function CSA Pointer */
+        return (func->csa_addr >>  0) & 0xff;
+    case 0x0d:	/* Function CSA Pointer */
+        return (func->csa_addr >>  8) & 0xff;
+    case 0x0e:	/* Function CSA Pointer */
+        return (func->csa_addr >> 16) & 0xff;
+
+    case 0x0f:	/* Data access window to function's CSA */
+        if ((func->stdfn & (1 << 7)) && func->csa_rd)		/* CSAEnable */
+            return func->csa_rd(sd);
+        if (func->stdfn & (1 << 7))
+            func->csa_addr ++;
+        return 0x00;
+
+    case 0x10:	/* I/O Block Size LSB */
+        return (sd->blk_len[fn] >> 0) & 0xff;
+    case 0x11:	/* I/O Block Size MSB */
+        return (sd->blk_len[fn] >> 8) & 0xff;
+
     default:
         printf("%s: unknown register %02x\n", __FUNCTION__, offset);
         return 0;
@@ -845,6 +936,7 @@ struct sd_card_s *sdio_init(struct sdio_s *s)
 struct ar6k_s {
     struct sdio_s sd;
     NICInfo *nd;
+    uint8_t cis[0];
 };
 
 static void ar6k_set_ioocr(struct sdio_s *sd)
@@ -879,15 +971,61 @@ const static uint8_t ar6k_cis[] = {
     CISTPL_END, 0xff,
 };
 
+const static uint8_t ar6k_fn1_cis[] = {
+    CISTPL_MANFID, 4,
+    0x71, 0x02,			/* SDIO Card manufacturer code */
+    0x0a, 0x01,			/* Manufacturer information (Part No, Rev) */
+
+    CISTPL_FUNCID, 2,
+    0x0c,			/* TODO Card funcion code: SDIO */
+    0x00,			/* TODO System initialization mask */
+
+    CISTPL_FUNCE, 42,
+    0x01,			/* Type of extended data: Function 1-7 */
+    0x01,			/* Function information bitmask: has Wake-up */
+    0x11,			/* Application Specification version level */
+    0x00, 0x00, 0x00, 0x00,	/* Product Serial Number: unsupported */
+    0x00, 0x00, 0x00, 0x00,	/* CSA space size: no CSA */
+    0x00,			/* CSA space properties: no CSA */
+    0x00, 0x08,			/* Maximum block size/byte count: 2048 */
+    0x00, 0x00, 0xff, 0x00,	/* OCR value: 2.8 - 3.6 V */
+    0x00,			/* Minimum required current: above 200mA */
+    0x00,			/* Average required current: above 200mA */
+    0x00,			/* Maximum required current: above 200mA */
+    0x00,			/* Minimum standby current: none */
+    0x01,			/* Average standby current: 1mA */
+    0x0a,			/* Maximum standby current: 10mA */
+    0x00, 0x00,			/* Minimum transfer bandwidth: no minimum */
+    0x00, 0x00,			/* Optimum transfer bandwidth: no optimum */
+    0x00, 0x00,			/* Ready timeout: no timeout */
+    0x00, 0x00,			/* Average required current: above 200mA */
+    0x00, 0x00,			/* Maximum required current: above 200mA */
+    0x01, 0x01,			/* Average HC-mode current: 256mA */
+    0x00, 0x01,			/* Maximum HC-mode current: 256mA */
+    0x00, 0x01,			/* Average LC-mode current: 256mA */
+    0x00, 0x01,			/* Maximum LC-mode current: 256mA */
+
+    CISTPL_END, 0xff,
+};
+
 struct sd_card_s *ar6k_init(NICInfo *nd)
 {
-    struct ar6k_s *s = (struct ar6k_s *) qemu_mallocz(sizeof(struct ar6k_s));
+    struct ar6k_s *s = (struct ar6k_s *) qemu_mallocz(sizeof(struct ar6k_s) +
+			    sizeof(ar6k_cis) + sizeof(ar6k_fn1_cis));
     struct sd_card_s *ret = sdio_init(&s->sd);
 
     s->nd = nd;
     s->sd.reset = (void *) ar6k_reset;
-    s->sd.cis = ar6k_cis;
-    s->sd.cislen = sizeof(ar6k_cis);
+    s->sd.fbr[0].stdfn = 0 | sdio_fn_none;
+    s->sd.fbr[0].ext_stdfn = sdio_ext_fn_none;
+
+    s->sd.cis = s->cis;
+    s->sd.cislen = sizeof(ar6k_cis) + sizeof(ar6k_fn1_cis);
+    s->sd.fbr[0].cis_offset = sizeof(ar6k_cis);
+
+    memcpy(s->cis + 0, ar6k_cis, sizeof(ar6k_cis));
+    memcpy(s->cis + s->sd.fbr[0].cis_offset,
+                    ar6k_fn1_cis, sizeof(ar6k_fn1_cis));
 
     ar6k_reset(s);
 

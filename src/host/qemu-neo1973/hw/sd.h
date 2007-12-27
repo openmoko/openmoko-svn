@@ -87,6 +87,22 @@ enum sd_state_e {
     sd_initialization_state = sd_idle_state,
 };
 
+enum sdio_stdfn_e {
+    sdio_fn_none = 0,
+    sdio_fn_uart,	/* Standard UART */
+    sdio_fn_bt_a,	/* Type A for Bluetooth standard interface */
+    sdio_fn_bt_b,	/* Type B for Bluetooth standard interface */
+    sdio_fn_gps,
+    sdio_fn_camera,
+    sdio_fn_phs,
+    sdio_fn_wlan,
+    sdio_fn_ext = 0xf,	/* Extended SDIO Standard Function (below) */
+};
+
+enum sdio_ext_stdfn_e {
+    sdio_ext_fn_none = 0,
+};
+
 typedef struct sd_card_s {
     void *opaque;
     int (*do_command)(void *opaque, struct sd_request_s *req,
