@@ -49,6 +49,7 @@ struct sdio_s {
     uint32_t card_status;
 
     struct {
+        uint8_t revision;
         uint8_t io_enable;
         uint8_t intr_enable;
         uint8_t intr;
@@ -672,7 +673,7 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
 {
     switch (offset) {
     case 0x00:	/* CCCR/SDIO Revison */
-        return 0x32;	/* SDIO Specification Version 2.00, CCCR/FBR V 1.20 */
+        return sd->cccr.revision;
 
     case 0x01:	/* SD Specification Revision */
         return 0x02;	/* SD Physical Specification Version 2.00 (May 2006) */
@@ -922,6 +923,9 @@ struct sd_card_s *sdio_init(struct sdio_s *s)
 
     s->func_irq = qemu_allocate_irqs(sdio_set_irq, s, 7);
 
+    /* Default: SDIO Specification Version 2.00, CCCR/FBR V 1.20 */
+    s->cccr.revision = 0x32;
+
     s->card.opaque = s;
     s->card.do_command = (void *) sdio_do_command;
     s->card.write_data = (void *) sdio_write_data;
@@ -1018,6 +1022,7 @@ struct sd_card_s *ar6k_init(NICInfo *nd)
     s->sd.reset = (void *) ar6k_reset;
     s->sd.fbr[0].stdfn = 0 | sdio_fn_none;
     s->sd.fbr[0].ext_stdfn = sdio_ext_fn_none;
+    s->sd.cccr.revision = 0x11;	/* Dumb down to 1.10 */
 
     s->sd.cis = s->cis;
     s->sd.cislen = sizeof(ar6k_cis) + sizeof(ar6k_fn1_cis);
