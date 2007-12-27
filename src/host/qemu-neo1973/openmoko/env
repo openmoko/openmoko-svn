@@ -27,6 +27,6 @@ kernel_wildcard="uImage-2.6.*-neo1973.bin"
 rootfs_wildcard="OpenMoko-openmoko-*image*.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01bv4-1*.bin"
 
-download_dir="http://buildhost.openmoko.org/OM2007.2/tmp/deploy/glibc/images/neo1973/"
+download_dir="http://buildhost.openmoko.org/daily/tmp/deploy/glibc/images/neo1973/"
 dev_download_dir="http://buildhost.openmoko.org/snapshots/2007.08/images/"
 backup_download_dir="http://buildhost.automated.it/OM2007.2/"
