@@ -1,0 +1,94 @@
+Add support for NEO1973 NOR flash to MTD
+
+From: warmcat <andy@warmcat.com>
+
+You will need an updated default config from svn (work in progress)
+
+http://svn.openmoko.org/trunk/src/target/kernel/config/
+
+in the top level of your kernel dir to apply this patch -- and
+you need to use the patched config to build the kernel
+
+Whether the NOR flash is present at 0x18000000 or not (it
+varies according to GTA revision... -02 A3 and A4 should work
+fine and A2 if booted from NOR only) the whole 2MByte NOR
+region appears as /dev/mtdblock0 and the NAND partitions start
+from /dev/mtdblock1 up.
+
+/dev/mtdblock0  2MB NOR
+/dev/mtdblock1  U-Boot
+/dev/mtdblock2  U-Boot env
+/dev/mtdblock3  Kernel
+/dev/mtdblock4  Splash
+/dev/mtdblock5  rootfs
+
+After applying this patch, you need to adjust the kernel cmdline
+to identify root=/dev/mtdblock5 in order to boot into the rootfs
+
+Once booted, you can do, eg
+
+# mount -t jffs2 /dev/mtdblock0 /mnt
+
+to mount the NOR 2MB partition on /mnt
+
+Signed-off-by: Andy Green <andy@openmoko.org>
+Reviewed-by: Werner Almesberger <werner@openmoko.org>
+
+---
+
+Index: linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- linux-2.6.22.5.orig/arch/arm/mach-s3c2440/mach-gta02.c	2007-12-27 08:33:37.000000000 -0300
++++ linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c	2007-12-27 08:39:24.000000000 -0300
+@@ -67,6 +67,8 @@
+ #include <asm/arch/spi-gpio.h>
+ #include <asm/arch/usb-control.h>
+ 
++#include <linux/mtd/physmap.h>
++
+ #include <asm/arch/gta01.h>
+ #include <asm/arch/gta02.h>
+ 
+@@ -304,6 +306,34 @@
+ 	},
+ };
+ 
++
++/* NOR Flash */
++
++#define GTA02_FLASH_BASE	0x18000000 /* GCS3 */
++#define GTA02_FLASH_SIZE	0x200000 /* 2MBytes */
++
++static struct physmap_flash_data gta02_nor_flash_data = {
++	.width		= 2,
++};
++
++static struct resource gta02_nor_flash_resource = {
++	.start		= GTA02_FLASH_BASE,
++	.end		= GTA02_FLASH_BASE + GTA02_FLASH_SIZE - 1,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device gta02_nor_flash = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.dev		= {
++				.platform_data	= &gta02_nor_flash_data,
++			},
++	.resource	= &gta02_nor_flash_resource,
++	.num_resources	= 1,
++};
++
++
++
+ static struct platform_device *gta02_devices[] __initdata = {
+ 	&s3c_device_usb,
+ 	&s3c_device_wdt,
+@@ -315,6 +345,7 @@
+ 	&s3c_device_ts,
+ 	&s3c_device_spi0,
+ 	&s3c_device_spi1,
++	&gta02_nor_flash,
+ };
+ 
+ static struct s3c2410_nand_set gta02_nand_sets[] = {
