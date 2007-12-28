@@ -26,6 +26,7 @@
 
 #include "hw.h"
 #include "net.h"
+#include "qemu-timer.h"
 #include "sd.h"
 #include "pcmcia.h"
 
@@ -944,6 +945,7 @@ struct sd_card_s *sdio_init(struct sdio_s *s)
 struct ar6k_s {
     struct sdio_s sd;
     NICInfo *nd;
+
     struct {
         uint8_t host_int_stat;
         uint8_t cpu_int_stat;
@@ -956,9 +958,10 @@ struct ar6k_s {
         uint8_t cpu_int_stat_ena;
         uint8_t err_int_stat_ena;
         uint8_t cnt_int_stat_ena;
-        uint8_t cnt[8];
-        uint32_t cnt_dec[8];
+        uint8_t cnt[4];
+        uint32_t cnt_tx[4];
         uint8_t scratch[8];
+        uint8_t wlan_int;
 
         uint8_t mbox[0x800 * 4];
         int mbox_count[4];
@@ -966,22 +969,94 @@ struct ar6k_s {
     struct {
         int done;
     } bmi;
+
+    QEMUTimer *cnt_irq_update;
+
     uint8_t cis[0];
 };
+
+static inline void ar6k_hif_intr_update(struct ar6k_s *s)
+{
+    qemu_set_irq(s->sd.func_irq[0],
+                    !!(s->hif.host_int_stat & s->hif.int_stat_ena));
+}
+
+static void ar6k_hif_error_intr_update(struct ar6k_s *s)
+{
+    uint8_t orig = s->hif.host_int_stat;
+
+    if (s->hif.error_int_stat & s->hif.err_int_stat_ena)
+        s->hif.host_int_stat |= 1 << 7;			/* STATUS_ERROR */
+    else
+        s->hif.host_int_stat &= ~(1 << 7);		/* STATUS_ERROR */
+
+    if (orig != s->hif.host_int_stat)
+        ar6k_hif_intr_update(s);
+}
+
+static void ar6k_hif_cpu_intr_update(struct ar6k_s *s)
+{
+    uint8_t orig = s->hif.host_int_stat;
+
+    if (s->hif.cpu_int_stat & s->hif.cpu_int_stat_ena)
+        s->hif.host_int_stat |= 1 << 6;			/* STATUS_CPU */
+    else
+        s->hif.host_int_stat &= ~(1 << 6);		/* STATUS_CPU */
+
+    if (orig != s->hif.host_int_stat)
+        ar6k_hif_intr_update(s);
+}
+
+static void ar6k_hif_counter_intr_update(struct ar6k_s *s)
+{
+    uint8_t orig = s->hif.host_int_stat;
+
+    if (s->hif.counter_int_stat & s->hif.cnt_int_stat_ena)
+        s->hif.host_int_stat |= 1 << 4;			/* STATUS_COUNTER */
+    else
+        s->hif.host_int_stat &= ~(1 << 4);		/* STATUS_COUNTER */
+
+    if (orig != s->hif.host_int_stat)
+        ar6k_hif_intr_update(s);
+}
+
+static void ar6k_hif_counter_intr_sched(struct ar6k_s *s)
+{
+    qemu_mod_timer(s->cnt_irq_update, qemu_get_clock(vm_clock) +
+                    (ticks_per_sec >> 6));
+}
+
+static void ar6k_hif_cnt_irq_tick(void *opaque)
+{
+    struct ar6k_s *s = (void *) opaque;
+
+    ar6k_hif_counter_intr_update(s);
+}
 
 static void ar6k_bmi_reset(struct ar6k_s *s)
 {
     int i;
 
-    for (i = 0; i < 8; i ++) {
+    for (i = 0; i < 4; i ++) {
         s->hif.cnt[i] = 0x00;
-        s->hif.cnt_dec[i] = 0xff;
+        s->hif.cnt_tx[i] = 0xff;
+        s->hif.mbox_count[i] = 0;
     }
 
-    for (i = 0; i < 4; i ++)
-        s->hif.mbox_count[i] = 0;
-
     s->bmi.done = 0;
+
+    s->hif.host_int_stat = 0x00;
+    s->hif.cpu_int_stat = 0x00;
+    s->hif.error_int_stat = 0x00;
+    s->hif.counter_int_stat = 0xf0;
+    s->hif.int_stat_ena = 0x00;
+    s->hif.cpu_int_stat_ena = 0x00;
+    s->hif.err_int_stat_ena = 0x00;
+    s->hif.cnt_int_stat_ena = 0x00;
+
+    ar6k_hif_cpu_intr_update(s);
+    ar6k_hif_error_intr_update(s);
+    ar6k_hif_counter_intr_update(s);
 }
 
 enum {
@@ -1044,8 +1119,25 @@ static void ar6k_bmi_write(struct ar6k_s *s, uint8_t *data, int len)
         return;
     }
 
-    s->hif.cnt_dec[4] = 0xff;
-    s->hif.cnt[4] = rlen;
+    s->hif.cnt[0] = rlen;
+}
+
+static void ar6k_hif_txcredit_reset(struct ar6k_s *s, int mbox)
+{
+    s->hif.cnt_tx[mbox] = 0;
+    if (!(s->hif.counter_int_stat & (1 << mbox))) {
+        s->hif.counter_int_stat |= 1 << mbox;
+        ar6k_hif_counter_intr_sched(s);
+    }
+}
+
+static void ar6k_hif_txcredit_grant(struct ar6k_s *s, int mbox)
+{
+    s->hif.cnt_tx[mbox] = 0xff;
+    if (!(s->hif.counter_int_stat & (1 << (mbox + 4)))) {
+        s->hif.counter_int_stat |= 1 << (mbox + 4);
+        ar6k_hif_counter_intr_sched(s);
+    }
 }
 
 #define AR6K_HOST_INT_STAT		0x400
@@ -1063,7 +1155,8 @@ static void ar6k_bmi_write(struct ar6k_s *s, uint8_t *data, int len)
 #define AR6K_ERROR_STAT_ENABLE		0x41a
 #define AR6K_COUNTER_INT_STAT_ENABLE	0x41b
 #define AR6K_COUNT			0x420
-#define AR6K_COUNT_DEC			0x440
+#define AR6K_COUNT_RESET		0x440
+#define AR6K_COUNT_DEC			0x450
 #define AR6K_SCRATCH			0x460
 #define AR6K_FIFO_TIMEOUT		0x468
 #define AR6K_FIFO_TIMEOUT_ENABLE	0x469
@@ -1089,6 +1182,30 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
     int mbox;
 
     switch (addr) {
+    case AR6K_HOST_INT_STAT:
+        if (s->hif.host_int_stat & value) {
+            s->hif.host_int_stat &= ~value;
+            ar6k_hif_intr_update(s);
+        }
+        break;
+    case AR6K_CPU_INT_STAT:
+        if (s->hif.cpu_int_stat & value) {
+            s->hif.cpu_int_stat &= ~value;
+            ar6k_hif_cpu_intr_update(s);
+        }
+        break;
+    case AR6K_ERROR_INT_STAT:
+        if (s->hif.error_int_stat & value) {
+            s->hif.error_int_stat &= ~value;
+            ar6k_hif_error_intr_update(s);
+        }
+        break;
+    case AR6K_COUNTER_INT_STAT:
+        if (s->hif.counter_int_stat & value) {
+            s->hif.counter_int_stat &= ~value;
+            ar6k_hif_counter_intr_update(s);
+        }
+        break;
     case AR6K_MBOX_FRAME:
         s->hif.mbox_frame = value;
         break;
@@ -1108,16 +1225,28 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
         s->hif.rx_la[3] = value;
         break;
     case AR6K_INT_STAT_ENABLE:
-        s->hif.int_stat_ena = value;
+        if (s->hif.int_stat_ena ^ value) {
+            s->hif.int_stat_ena = value;
+            ar6k_hif_intr_update(s);
+        }
         break;
     case AR6K_CPU_INT_STAT_ENABLE:
-        s->hif.cpu_int_stat_ena = value;
+        if (s->hif.cpu_int_stat_ena ^ value) {
+            s->hif.cpu_int_stat_ena = value;
+            ar6k_hif_cpu_intr_update(s);
+        }
         break;
     case AR6K_ERROR_STAT_ENABLE:
-        s->hif.err_int_stat_ena = value;
+        if (s->hif.err_int_stat_ena ^ value) {
+            s->hif.err_int_stat_ena = value;
+            ar6k_hif_error_intr_update(s);
+        }
         break;
     case AR6K_COUNTER_INT_STAT_ENABLE:
-        s->hif.cnt_int_stat_ena = value;
+        if (s->hif.cnt_int_stat_ena ^ value) {
+            s->hif.cnt_int_stat_ena = value;
+            ar6k_hif_counter_intr_sched(s);
+        }
         break;
     case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
         s->hif.scratch[addr - AR6K_SCRATCH] = value;
@@ -1127,25 +1256,35 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
     case AR6K_DISABLE_SLEEP:
     case AR6K_LOCAL_BUS_ENDIAN:
     case AR6K_LOCAL_BUS:
+        goto bad_reg;
+
     case AR6K_INT_WLAN:
+        s->hif.wlan_int = value;
+        if (value)
+            fprintf(stderr, "%s: WLAN interrupt\n", __FUNCTION__);
+        break;
+
     case AR6K_WINDOW_DATA:
     case AR6K_WRITE_ADDR:
     case AR6K_READ_ADDR:
     case AR6K_SPI_CONFIG:
         goto bad_reg;
+
     case AR6K_HIF_MBOX_BASE ... AR6K_HIF_MBOX_END:
         mbox = (addr - AR6K_HIF_MBOX_BASE) >> 11;
         s->hif.mbox[addr - AR6K_HIF_MBOX_BASE] = value;
         s->hif.mbox_count[mbox] ++;
-        /* XXX how do we know when a BMI command is executed?  */
-        if (mbox == 0 && !s->bmi.done) {
-            s->hif.cnt_dec[4] = 0x00;
-            s->hif.cnt[4] = 0x00;
-            if ((addr & 0x7ff) == 0x7ff) {
+        /* XXX how else do we know when a command is executed?  */
+        if ((addr & 0x7ff) == 0x7ff) {
+            ar6k_hif_txcredit_reset(s, mbox);
+            if (mbox == 0 && !s->bmi.done) {
                 ar6k_bmi_write(s, s->hif.mbox + (mbox << 11),
-                                s->hif.mbox_count[0]);
-                s->hif.mbox_count[mbox] = 0;
+                                s->hif.mbox_count[mbox]);
+            } else {
+                /* TODO */
             }
+            s->hif.mbox_count[mbox] = 0;
+            ar6k_hif_txcredit_grant(s, mbox);
         }
         break;
     default:
@@ -1157,6 +1296,8 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
 
 static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
 {
+    int mbox = 0;
+
     switch (addr) {
     case AR6K_HOST_INT_STAT:
         return s->hif.host_int_stat;
@@ -1166,8 +1307,10 @@ static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
         return s->hif.error_int_stat;
     case AR6K_COUNTER_INT_STAT:
         return s->hif.counter_int_stat;
+
     case AR6K_MBOX_FRAME:
         return s->hif.mbox_frame;
+
     case AR6K_RX_LOOKAHEAD_VALID:
         return s->hif.rx_la_valid;
     case AR6K_RX_LOOKAHEAD0:
@@ -1178,6 +1321,7 @@ static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
         return s->hif.rx_la[2];
     case AR6K_RX_LOOKAHEAD3:
         return s->hif.rx_la[3];
+
     case AR6K_INT_STAT_ENABLE:
         return s->hif.int_stat_ena;
     case AR6K_CPU_INT_STAT_ENABLE:
@@ -1186,25 +1330,41 @@ static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
         return s->hif.err_int_stat_ena;
     case AR6K_COUNTER_INT_STAT_ENABLE:
         return s->hif.cnt_int_stat_ena;
-    case AR6K_COUNT ... (AR6K_COUNT + 0x7):
-        return s->hif.cnt[addr - AR6K_COUNT];
-    case AR6K_COUNT_DEC + 0x00:
-    case AR6K_COUNT_DEC + 0x04:
-    case AR6K_COUNT_DEC + 0x08:
-    case AR6K_COUNT_DEC + 0x0c:
-    case AR6K_COUNT_DEC + 0x10:
-    case AR6K_COUNT_DEC + 0x14:
-    case AR6K_COUNT_DEC + 0x18:
-    case AR6K_COUNT_DEC + 0x1c:
-        return s->hif.cnt_dec[(addr - AR6K_COUNT_DEC) >> 2];
+
+    case (AR6K_COUNT + 0x4) ... (AR6K_COUNT + 0x7):
+        /* XXX What's at (AR6K_COUNT + 0x0) ... (AR6K_COUNT + 0x3)? */
+        /* FIXME clear some interrupts etc */
+        return s->hif.cnt[addr - AR6K_COUNT - 4];
+
+    case AR6K_COUNT_RESET + 0xc: mbox ++;
+    case AR6K_COUNT_RESET + 0x8: mbox ++;
+    case AR6K_COUNT_RESET + 0x4: mbox ++;
+    case AR6K_COUNT_RESET + 0x0:
+        if (s->hif.counter_int_stat & (1 << mbox)) {
+            s->hif.counter_int_stat &= ~(1 << mbox);
+            ar6k_hif_counter_intr_update(s);
+        }
+        return s->hif.cnt_tx[mbox];
+
+    case AR6K_COUNT_DEC + 0xc: mbox ++;
+    case AR6K_COUNT_DEC + 0x8: mbox ++;
+    case AR6K_COUNT_DEC + 0x4: mbox ++;
+    case AR6K_COUNT_DEC + 0x0:
+        return s->hif.cnt_tx[mbox];
+
     case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
         return s->hif.scratch[addr - AR6K_SCRATCH];
+
     case AR6K_FIFO_TIMEOUT:
     case AR6K_FIFO_TIMEOUT_ENABLE:
     case AR6K_DISABLE_SLEEP:
     case AR6K_LOCAL_BUS_ENDIAN:
     case AR6K_LOCAL_BUS:
+        goto bad_reg;
+
     case AR6K_INT_WLAN:
+        return s->hif.wlan_int;
+
     case AR6K_WINDOW_DATA:
     case AR6K_WRITE_ADDR:
     case AR6K_READ_ADDR:
@@ -1326,6 +1486,7 @@ struct sd_card_s *ar6k_init(NICInfo *nd)
     struct sd_card_s *ret = sdio_init(&s->sd);
 
     s->nd = nd;
+    s->cnt_irq_update = qemu_new_timer(vm_clock, ar6k_hif_cnt_irq_tick, s);
     s->sd.reset = (void *) ar6k_reset;
     s->sd.fbr[0].stdfn = 0 | sdio_fn_none;
     s->sd.fbr[0].ext_stdfn = sdio_ext_fn_none;
