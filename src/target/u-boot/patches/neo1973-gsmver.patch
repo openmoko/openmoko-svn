@@ -10,7 +10,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/common/cmd_neo1973.c
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -77,8 +77,10 @@
+@@ -85,8 +85,10 @@
  			goto out_help;
  		if (!strcmp(argv[2], "on"))
  			neo1973_gsm(1);
@@ -22,9 +22,9 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
  	} else if (!strcmp(argv[1], "gps")) {
  		if (argc < 3)
  			goto out_help;
-@@ -121,7 +123,7 @@
- 	"neo1973 charger off - disable charging\n"
+@@ -130,7 +132,7 @@
  	"neo1973 backlight (on|off) - switch backlight on or off\n"
+ 	"neo1973 led num (on|off) - switch LED number 'num' on or off\n"
  	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
 -	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
 +	"neo1973 gsm (on|off|version) - switch GSM Modem on/off or print firmware version\n"
@@ -133,12 +133,11 @@ Index: u-boot/board/neo1973/gta02/Makefile
 ===================================================================
 --- u-boot.orig/board/neo1973/gta02/Makefile
 +++ u-boot/board/neo1973/gta02/Makefile
-@@ -25,7 +25,7 @@
- 
+@@ -26,6 +26,7 @@
  LIB	= lib$(BOARD).a
  
--OBJS	:= gta02.o pcf50633.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
-+OBJS	:= gta02.o pcf50633.o ../common/cmd_neo1973.o ../common/gsmver.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
+ OBJS	:= gta02.o pcf50633.o nand.o ../common/cmd_neo1973.o \
++	   ../common/gsmver.o \
+ 	   ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
  SOBJS	:= ../common/lowlevel_init.o
  
- .PHONY:	all
