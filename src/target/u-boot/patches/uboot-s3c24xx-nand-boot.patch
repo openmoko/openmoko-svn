@@ -124,7 +124,21 @@ Index: u-boot/cpu/arm920t/start.S
  #include <status_led.h>
  
  /*
-@@ -178,9 +183,10 @@
+@@ -116,8 +121,13 @@
+ 	orr	r0,r0,#0xd3
+ 	msr	cpsr,r0
+ 
++	/* in case we run from the s3c24xx NAND stepping stone, the symbols
++	 * for LED support are in lib_arm/board.o, i.e. outside of the
++	 * steppingstone */
++#ifndef CONFIG_S3C2410_NAND_BOOT
+ 	bl coloured_LED_init
+ 	bl red_LED_on
++#endif
+ 
+ #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK) || defined(CONFIG_AT91RM9200DF)
+ 	/*
+@@ -178,9 +188,10 @@
  	bl	cpu_init_crit
  #endif
  
@@ -136,7 +150,7 @@ Index: u-boot/cpu/arm920t/start.S
  relocate:				/* relocate U-Boot to RAM	    */
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
-@@ -197,6 +203,87 @@
+@@ -197,6 +208,87 @@
  	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
  	cmp	r0, r2			/* until source end addreee [r2]    */
  	ble	copy_loop
@@ -286,21 +300,3 @@ Index: u-boot/cpu/arm920t/s3c24x0/Makefile
  
  SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
-Index: u-boot/cpu/arm920t/start.S
-===================================================================
---- u-boot.orig/cpu/arm920t/start.S
-+++ u-boot/cpu/arm920t/start.S
-@@ -141,8 +141,13 @@
- 	orr	r0,r0,#0xd3
- 	msr	cpsr,r0
- 
-+	/* in case we run from the s3c24xx NAND stepping stone, the symbols
-+	 * for LED support are in lib_arm/board.o, i.e. outside of the
-+	 * steppingstone */
-+#ifndef CONFIG_S3C2410_NAND_BOOT
- 	bl coloured_LED_init
- 	bl red_LED_on
-+#endif
- 
- #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK) || defined(CONFIG_AT91RM9200DF)
- 	/*
