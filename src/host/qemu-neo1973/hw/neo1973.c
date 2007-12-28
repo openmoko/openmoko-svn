@@ -87,6 +87,7 @@ struct neo_board_s {
     i2c_slave *pmu;
     i2c_slave *wm;
     i2c_slave *lcm;
+    i2c_slave *accel[2];
     CharDriverState *modem;
     CharDriverState *gps;
     QEMUTimer *modem_timer;
@@ -344,9 +345,207 @@ i2c_slave *lm4857_init(i2c_bus *bus)
     return &s->i2c;
 }
 
+/* LIS302DL "piccolo" motion sensor/accelerometer */
+struct piccolo_s {
+    i2c_slave i2c;
+    int firstbyte;
+
+    qemu_irq intr[2];
+
+    uint8_t regs[0x40];
+    int reg;
+
+    QEMUTimer *sample;
+};
+
+void piccolo_reset(i2c_slave *i2c)
+{
+    struct piccolo_s *s = (struct piccolo_s *) i2c;
+
+    memset(s->regs, 0, sizeof(s->regs));
+    s->regs[0x0f] = 0x3b;	/* Who_Am_I */
+    s->regs[0x20] = 0x07;	/* Ctrl_Reg1 */
+}
+
+static void piccolo_sample_sched(struct piccolo_s *s)
+{
+    int rate = (s->regs[0x20] & (1 << 7)) ? 400 : 100;	/* DR */
+
+    qemu_mod_timer(s->sample,
+                    qemu_get_clock(vm_clock) + ticks_per_sec / rate);
+}
+
+static void piccolo_sample_tick(void *opaque)
+{
+    struct piccolo_s *s = (struct piccolo_s *) opaque;
+
+    /* TODO */
+    piccolo_sample_sched(s);
+}
+
+static void piccolo_sample_update(struct piccolo_s *s)
+{
+    if (!(s->regs[0x20] & 7))				/* Xen | Yen | Zen */
+        qemu_del_timer(s->sample);
+    else if (!qemu_timer_pending(s->sample))
+        piccolo_sample_sched(s);
+}
+
+static void piccolo_event(i2c_slave *i2c, enum i2c_event event)
+{
+    struct piccolo_s *s = (struct piccolo_s *) i2c;
+
+    if (event == I2C_START_SEND)
+        s->firstbyte = 1;
+}
+
+static int piccolo_rx(i2c_slave *i2c)
+{
+    struct piccolo_s *s = (struct piccolo_s *) i2c;
+    int reg = s->reg;
+
+    if (reg >= 0x80) {
+        reg -= 0x80;
+        s->reg ++;
+    } else
+        s->reg = -1;
+
+    switch (reg) {
+    case 0x00 ... 0x0e:
+    case 0x10 ... 0x1f:
+    case 0x2e ... 0x2f:
+    case 0x0f:	/* Who_Am_I */
+    case 0x20:	/* Ctrl_Reg1 */
+    case 0x21:	/* Ctrl_Reg2 */
+    case 0x22:	/* Ctrl_Reg3 */
+    case 0x23:	/* HP_filter_reset */
+    case 0x27:	/* Status_Reg */
+    case 0x29:	/* OutX */
+    case 0x2b:	/* OutY */
+    case 0x2d:	/* OutZ */
+    case 0x30:	/* FF_WU_CFG_1 */
+    case 0x31:	/* FF_WU_SRC_1 */
+    case 0x32:	/* FF_WU_THS_1 */
+    case 0x33:	/* FF_WU_DURATION_1 */
+    case 0x34:	/* FF_WU_CFG_2 */
+    case 0x35:	/* FF_WU_SRC_2 */
+    case 0x36:	/* FF_WU_THS_2 */
+    case 0x37:	/* FF_WU_DURATION_2 */
+    case 0x38:	/* CLICK_CFG */
+    case 0x39:	/* CLICK_SRC */
+    case 0x3b:	/* CLICK_THSY_X */
+    case 0x3c:	/* CLICK_THSZ */
+    case 0x3d:	/* CLICK_timelimit */
+    case 0x3e:	/* CLICK_latency */
+    case 0x3f:	/* CLICK_window */
+        break;
+    default:
+        fprintf(stderr, "%s: unknown register %02x\n", __FUNCTION__, reg);
+        return 0x00;
+    }
+
+    return s->regs[reg];
+}
+
+static int piccolo_tx(i2c_slave *i2c, uint8_t data)
+{
+    struct piccolo_s *s = (struct piccolo_s *) i2c;
+    int reg = s->reg;
+
+    if (s->firstbyte) {
+        s->firstbyte = 0;
+        s->reg = data;
+        return 0;
+    }
+
+    if (reg >= 0x80) {
+        reg -= 0x80;
+        s->reg ++;
+    }
+
+    switch (reg) {
+    case 0x00 ... 0x0e:
+    case 0x10 ... 0x1f:
+    case 0x2e ... 0x2f:
+        fprintf(stderr, "%s: write to a \"do not modify\" register %02x\n",
+                        __FUNCTION__, s->reg);
+        fprintf(stderr, "%s: may cause permanent damage!\n", __FUNCTION__);
+        s->regs[reg] = data;
+        break;
+    case 0x20:	/* Ctrl_Reg1 */
+        s->regs[reg] = data;
+        if (data & (3 << 3))
+            fprintf(stderr, "%s: Self-Test Enable attempt\n", __FUNCTION__);
+        piccolo_sample_update(s);
+        break;
+
+    case 0x21:	/* Ctrl_Reg2 */
+    case 0x22:	/* Ctrl_Reg3 */
+    case 0x30:	/* FF_WU_CFG_1 */
+    case 0x32:	/* FF_WU_THS_1 */
+    case 0x33:	/* FF_WU_DURATION_1 */
+    case 0x34:	/* FF_WU_CFG_2 */
+    case 0x36:	/* FF_WU_THS_2 */
+    case 0x37:	/* FF_WU_DURATION_2 */
+    case 0x38:	/* CLICK_CFG */
+    case 0x39:	/* CLICK_SRC */
+    case 0x3b:	/* CLICK_THSY_X */
+    case 0x3c:	/* CLICK_THSZ */
+    case 0x3d:	/* CLICK_timelimit */
+    case 0x3e:	/* CLICK_latency */
+    case 0x3f:	/* CLICK_window */
+        /* TODO */
+        s->regs[reg] = data;
+        break;
+
+    default:
+        fprintf(stderr, "%s: unknown register %02x\n", __FUNCTION__, reg);
+        return 1;
+    }
+
+    return 0;
+}
+
+static void piccolo_save(QEMUFile *f, void *opaque)
+{
+    struct piccolo_s *s = (struct piccolo_s *) opaque;
+
+    qemu_put_buffer(f, s->regs, sizeof(s->regs));
+    i2c_slave_save(f, &s->i2c);
+}
+
+static int piccolo_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct piccolo_s *s = (struct piccolo_s *) opaque;
+
+    qemu_get_buffer(f, s->regs, sizeof(s->regs));
+    i2c_slave_load(f, &s->i2c);
+    return 0;
+}
+
+i2c_slave *lis302dl_init(i2c_bus *bus, qemu_irq int1, qemu_irq int2)
+{
+    struct piccolo_s *s = (struct piccolo_s *)
+            i2c_slave_init(bus, 0, sizeof(struct piccolo_s));
+    s->i2c.event = piccolo_event;
+    s->i2c.send = piccolo_tx;
+    s->i2c.recv = piccolo_rx;
+
+    s->intr[0] = int1;
+    s->intr[1] = int2;
+    s->sample = qemu_new_timer(vm_clock, piccolo_sample_tick, s);
+
+    piccolo_reset(&s->i2c);
+    register_savevm("lis302dl", 0, 0, piccolo_save, piccolo_load, s);
+
+    return &s->i2c;
+}
+
 /* I2C bus */
 #define NEO_PMU_ADDR	0x08
 #define NEO_WM_ADDR	0x1a
+#define NEO_ACCEL_ADDR0	0x1c
+#define NEO_ACCEL_ADDR1	0x1d
 #define NEO_AMP_ADDR	0x7c	/* ADR wired to low */
 
 static void neo_i2c_setup(struct neo_board_s *s)
@@ -369,6 +568,14 @@ static void neo_i2c_setup(struct neo_board_s *s)
     /* Attach a LM4857 to the bus */
     s->lcm = lm4857_init(bus);
     i2c_set_slave_address(s->lcm, NEO_AMP_ADDR);
+
+    /* Attach two LIS302DL slaves to the bus */
+    if (s->id == NEO1973_GTA02 || s->id == NEO1973_GTA02F) {
+        s->accel[0] = lis302dl_init(bus, 0, 0);	/* TODO: connect IRQs */
+        s->accel[1] = lis302dl_init(bus, 0, 0);	/* TODO: connect IRQs */
+        i2c_set_slave_address(s->accel[0], NEO_ACCEL_ADDR0);
+        i2c_set_slave_address(s->accel[1], NEO_ACCEL_ADDR1);
+    }
 
 #ifdef HAS_AUDIO
     audio = AUD_init();
