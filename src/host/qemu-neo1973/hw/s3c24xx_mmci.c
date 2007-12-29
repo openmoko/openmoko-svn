@@ -170,6 +170,7 @@ complete:
     s->blklen_cnt = s->blklen;
     s->blknum_cnt = s->blknum;
 
+    s->data = 0;
     if (((s->dcontrol >> 12) & 3) == 1) {			/* DatMode */
         if (s->dcontrol & (1 << 18))				/* BACMD */
             s->data = 1;
@@ -179,6 +180,7 @@ complete:
     } else if (((s->dcontrol >> 12) & 3) == 3)			/* DatMode */
         if (s->dcontrol & (1 << 20))				/* RACMD */
             s->data = 1;
+    s->data &= s->ccontrol >> 11;				/* WithData */
     return;
 
 timeout:

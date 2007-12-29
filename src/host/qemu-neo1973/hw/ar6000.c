@@ -76,6 +76,7 @@ struct sdio_s {
     int spi;
     int sdio_ok;
     int current_cmd;
+    int next_cmd;
     uint16_t blk_len[8];
     struct {
         uint8_t func;
@@ -370,10 +371,13 @@ static sd_rsp_type_t sdio_normal_command(struct sdio_s *sd,
 
     /* I/O mode commands (Class 9) */
     case 52:	/* CMD52:  IO_RW_DIRECT */
-        /* XXX In some situations this must preserve cmdNo and restore later */
         switch (sd->state) {
-        case sd_command_state:
         case sd_transfer_state:
+            /* A transfer is active on DAT lines, don't break it.  */
+            sd->next_cmd = sd->current_cmd;
+
+            /* Fall through.  */
+        case sd_command_state:
             fun = (req.arg >> 28) & 7;
             addr = (req.arg >> 9) & SDIO_ADDR_MASK;
             sd->transfer.data_offset = 0;
@@ -475,9 +479,10 @@ static int sdio_do_command(struct sdio_s *sd, struct sd_request_s *req,
 
     sd->card_status &= ~(COM_CRC_ERROR | ILLEGAL_COMMAND);	/* B type */
 
+    sd->next_cmd = req->cmd;
     rtype = sdio_normal_command(sd, *req);
 
-    sd->current_cmd = req->cmd;
+    sd->current_cmd = sd->next_cmd;
 
     switch (rtype) {
     case sd_r1:
@@ -699,9 +704,10 @@ static uint8_t sdio_cccr_read(struct sdio_s *sd, uint32_t offset)
         return sd->cccr.bus;
 
     case 0x08:	/* Card Capability */
-        /* XXX: set SDC (01) when CMD52 learns to preserve current_cmd */
-        /* XXX: need to addr ReadWait support too (RWC (04)) */
-        return 0x12 | sd->cccr.e4mi;	/* SMB | S4MI | E4MI | Full-Speed */
+        /* XXX: need to add ReadWait support too (RWC (04)) */
+
+        /* SDC | SMB | S4MI | E4MI | Full-Speed */
+        return 0x13 | sd->cccr.e4mi;
 
     case 0x09:	/* Common CIS Pointer */
         return (SDIO_CIS_START >>  0) & 0xff;
@@ -1022,6 +1028,8 @@ static void wmi_alive_tick(void *opaque)
 {
     struct wmi_s *s = (void *) opaque;
 
+    /* TODO: reschedule if we're in the middle of a transfer or other
+     * activity.  Do the same for other timers we may need in WMI.  */
     qemu_free_timer(s->alive);
 
     /* Send the initial event */
@@ -1498,7 +1506,7 @@ static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
     case AR6K_COUNT_DEC + 0x8: mbox ++;
     case AR6K_COUNT_DEC + 0x4: mbox ++;
     case AR6K_COUNT_DEC + 0x0:
-        return s->hif.cnt_tx[mbox];
+        return s->hif.cnt_tx[mbox] --;
 
     case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
         return s->hif.scratch[addr - AR6K_SCRATCH];
