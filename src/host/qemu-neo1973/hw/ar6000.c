@@ -1,5 +1,5 @@
 /*
- * Atheros AR600X Wireless Ethernet SDIO cards.  Firmware 1.3.
+ * ROCm Atheros AR600X Wireless Ethernet SDIO cards.  Firmware 1.3.
  *
  * Copyright (c) 2007 OpenMoko, Inc.
  * Author: Andrzej Zaborowski <andrew@openedhand.com>
@@ -942,6 +942,115 @@ struct sd_card_s *sdio_init(struct sdio_s *s)
     return &s->card;
 }
 
+/* WMI (Wireless Module Interface) */
+
+struct wmi_s {
+    NICInfo *nd;
+
+    void (*send)(void *opaque, const uint8_t *buffer, int len);
+    void *opaque;
+
+    QEMUTimer *alive;
+};
+
+#define WMI_MSG	__attribute__((packed))
+
+struct wmi_msg_s {
+    uint16_t id;
+    uint8_t data[128];
+} WMI_MSG;
+
+static void wmi_make_event(struct wmi_s *s, uint16_t id,
+		uint8_t *data, int len)
+{
+    struct wmi_msg_s msg;
+
+    msg.id = id;
+    memcpy(msg.data, data, len);
+
+    s->send(s->opaque, (void *) &msg, sizeof(msg.id) + len);
+}
+
+enum {
+    WMI_READY_EVENTID		= 0x1001,
+    WMI_CONNECT_EVENTID,
+    WMI_DISCONNECT_EVENTID,
+    WMI_BSSINFO_EVENTID,
+    WMI_CMDERROR_EVENTID,
+    WMI_REGDOMAIN_EVENTID,
+    WMI_PSTREAM_TIMEOUT_EVENTID,
+    WMI_NEIGHBOR_REPORT_EVENTID,
+    WMI_TKIP_MICERR_EVENTID,
+    WMI_SCAN_COMPLETE_EVENTID,
+    WMI_REPORT_STATISTICS_EVENTID,
+    WMI_RSSI_THRESHOLD_EVENTID,
+    WMI_ERROR_REPORT_EVENTID,
+    WMI_OPT_RX_FRAME_EVENTID,
+    WMI_REPORT_ROAM_TBL_EVENTID,
+    WMI_EXTENSION_EVENTID,
+    WMI_CAC_EVENTID,
+    WMI_SNR_THRESHOLD_EVENTID,
+    WMI_LQ_THRESHOLD_EVENTID,
+    WMI_TX_RETRY_ERR_EVENTID,
+    WMI_REPORT_ROAM_DATA_EVENTID,
+};
+
+enum {
+    WMI_11A_CAPABILITY	= 1,
+    WMI_11G_CAPABILITY	= 2,
+    WMI_11AG_CAPABILITY	= 3,
+};
+
+struct wmi_ready_event_s {
+    uint8_t macaddr[6];
+    uint8_t phy_capability;
+} WMI_MSG;
+
+static void wmi_ready_event(struct wmi_s *s)
+{
+    struct wmi_ready_event_s ev;
+
+    memcpy(ev.macaddr, s->nd->macaddr, 6);
+    ev.phy_capability = WMI_11AG_CAPABILITY;
+
+    /* TODO: request buf, fill in, submit */
+    wmi_make_event(s, WMI_READY_EVENTID, (void *) &ev, sizeof(ev));
+}
+
+/* The interface is alive */
+static void wmi_alive_tick(void *opaque)
+{
+    struct wmi_s *s = (void *) opaque;
+
+    qemu_free_timer(s->alive);
+
+    /* Send the initial event */
+    wmi_ready_event(s);
+}
+
+static __attribute__((malloc)) struct wmi_s *wmi_init(NICInfo *nd,
+                void *opaque,
+                void (*send)(void *opaque, const uint8_t *buffer, int len))
+{
+    struct wmi_s *s = qemu_mallocz(sizeof(*s));
+
+    s->nd = nd;
+    s->opaque = opaque;
+    s->send = send;
+
+    s->alive = qemu_new_timer(vm_clock, wmi_alive_tick, s);
+    qemu_mod_timer(s->alive, qemu_get_clock(vm_clock) + (ticks_per_sec << 1));
+
+    return s;
+}
+
+static void wmi_done(struct wmi_s *wmi)
+{
+    free(wmi);
+}
+
+/* Atheros AR600x */
+
 struct ar6k_s {
     struct sdio_s sd;
     NICInfo *nd;
@@ -953,7 +1062,7 @@ struct ar6k_s {
         uint8_t counter_int_stat;
         uint8_t mbox_frame;
         uint8_t rx_la_valid;
-        uint8_t rx_la[4];
+        uint32_t rx_la[4];
         uint8_t int_stat_ena;
         uint8_t cpu_int_stat_ena;
         uint8_t err_int_stat_ena;
@@ -969,6 +1078,8 @@ struct ar6k_s {
     struct {
         int done;
     } bmi;
+
+    struct wmi_s *wmi;
 
     QEMUTimer *cnt_irq_update;
 
@@ -1033,9 +1144,16 @@ static void ar6k_hif_cnt_irq_tick(void *opaque)
     ar6k_hif_counter_intr_update(s);
 }
 
+/* Atheros BMI (Bootloader Messaging Interface) */
+
 static void ar6k_bmi_reset(struct ar6k_s *s)
 {
     int i;
+
+    if (s->wmi) {
+        wmi_done(s->wmi);
+        s->wmi = 0;
+    }
 
     for (i = 0; i < 4; i ++) {
         s->hif.cnt[i] = 0x00;
@@ -1122,6 +1240,15 @@ static void ar6k_bmi_write(struct ar6k_s *s, uint8_t *data, int len)
     s->hif.cnt[0] = rlen;
 }
 
+/* Atheros HTC/HIF */
+
+enum {
+    WMI_CONTROL_MBOX = 0,
+    WMI_BEST_EFFORT_MBOX,
+    WMI_LOW_PRIORITY_MBOX,
+    WMI_HIGH_PRIORITY_MBOX,
+};
+
 static void ar6k_hif_txcredit_reset(struct ar6k_s *s, int mbox)
 {
     s->hif.cnt_tx[mbox] = 0;
@@ -1137,6 +1264,33 @@ static void ar6k_hif_txcredit_grant(struct ar6k_s *s, int mbox)
     if (!(s->hif.counter_int_stat & (1 << (mbox + 4)))) {
         s->hif.counter_int_stat |= 1 << (mbox + 4);
         ar6k_hif_counter_intr_sched(s);
+    }
+}
+
+#define AR6K_HTC_HEADER_LEN	2
+
+static void ar6k_hif_wmi_event(void *opaque, const uint8_t *buffer, int len)
+{
+    struct ar6k_s *s = (void *) opaque;
+
+    int mbox = WMI_CONTROL_MBOX;
+    uint16_t *datap;
+
+    s->hif.rx_la[mbox] = len;
+    s->hif.rx_la_valid |= 1 << mbox;
+
+    datap = (void *) s->hif.mbox + ((mbox + 1) << 11) -
+            (len + AR6K_HTC_HEADER_LEN);
+
+    /* Prepend the HTC frame header */
+    cpu_to_le16wu(datap ++, len);
+
+    memcpy(datap, buffer, len);
+
+    if (!(s->hif.host_int_stat & (1 << mbox))) {	/* STATUS_MBOX_DATA */
+        s->hif.host_int_stat |= 1 << mbox;		/* STATUS_MBOX_DATA */
+
+        ar6k_hif_intr_update(s);
     }
 }
 
@@ -1206,24 +1360,11 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
             ar6k_hif_counter_intr_update(s);
         }
         break;
+
     case AR6K_MBOX_FRAME:
         s->hif.mbox_frame = value;
         break;
-    case AR6K_RX_LOOKAHEAD_VALID:
-        s->hif.rx_la_valid = value;
-        break;
-    case AR6K_RX_LOOKAHEAD0:
-        s->hif.rx_la[0] = value;
-        break;
-    case AR6K_RX_LOOKAHEAD1:
-        s->hif.rx_la[1] = value;
-        break;
-    case AR6K_RX_LOOKAHEAD2:
-        s->hif.rx_la[2] = value;
-        break;
-    case AR6K_RX_LOOKAHEAD3:
-        s->hif.rx_la[3] = value;
-        break;
+
     case AR6K_INT_STAT_ENABLE:
         if (s->hif.int_stat_ena ^ value) {
             s->hif.int_stat_ena = value;
@@ -1248,9 +1389,11 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
             ar6k_hif_counter_intr_sched(s);
         }
         break;
+
     case AR6K_SCRATCH ... (AR6K_SCRATCH + 7):
         s->hif.scratch[addr - AR6K_SCRATCH] = value;
         break;
+
     case AR6K_FIFO_TIMEOUT:
     case AR6K_FIFO_TIMEOUT_ENABLE:
     case AR6K_DISABLE_SLEEP:
@@ -1260,8 +1403,10 @@ static void ar6k_hif_write(struct ar6k_s *s, uint32_t addr, uint8_t value)
 
     case AR6K_INT_WLAN:
         s->hif.wlan_int = value;
-        if (value)
-            fprintf(stderr, "%s: WLAN interrupt\n", __FUNCTION__);
+        if (value && !s->wmi) {
+            /* Initialisation sequence is complete (?).  */
+            s->wmi = wmi_init(s->nd, s, ar6k_hif_wmi_event);
+        }
         break;
 
     case AR6K_WINDOW_DATA:
@@ -1313,14 +1458,17 @@ static uint8_t ar6k_hif_read(struct ar6k_s *s, uint32_t addr)
 
     case AR6K_RX_LOOKAHEAD_VALID:
         return s->hif.rx_la_valid;
-    case AR6K_RX_LOOKAHEAD0:
-        return s->hif.rx_la[0];
-    case AR6K_RX_LOOKAHEAD1:
-        return s->hif.rx_la[1];
-    case AR6K_RX_LOOKAHEAD2:
-        return s->hif.rx_la[2];
-    case AR6K_RX_LOOKAHEAD3:
-        return s->hif.rx_la[3];
+    case AR6K_RX_LOOKAHEAD3 ... (AR6K_RX_LOOKAHEAD3 + 3): mbox ++;
+    case AR6K_RX_LOOKAHEAD2 ... (AR6K_RX_LOOKAHEAD2 + 3): mbox ++;
+    case AR6K_RX_LOOKAHEAD1 ... (AR6K_RX_LOOKAHEAD1 + 3): mbox ++;
+    case AR6K_RX_LOOKAHEAD0 ... (AR6K_RX_LOOKAHEAD0 + 3):
+        /* XXX when is the bit reset? */
+        s->hif.rx_la_valid &= ~(1 << mbox);
+        /* XXX when is the bit reset? */
+        s->hif.host_int_stat &= ~(1 << mbox);		/* STATUS_MBOX_DATA */
+
+        ar6k_hif_intr_update(s);
+        return (s->hif.rx_la[mbox] >> ((addr & 3) << 3)) & 0xff;
 
     case AR6K_INT_STAT_ENABLE:
         return s->hif.int_stat_ena;
@@ -1394,7 +1542,6 @@ static void ar6k_fn1_write(struct sdio_s *sd,
 {
     struct ar6k_s *s = (void *) sd;
 
-    fprintf(stderr, "%s: writing %i bytes at %x\n", __FUNCTION__, len, addr);
     for (; len; len --, addr += sd->transfer.step)
         ar6k_hif_write(s, addr, *data ++);
 }
@@ -1404,7 +1551,6 @@ static void ar6k_fn1_read(struct sdio_s *sd,
 {
     struct ar6k_s *s = (void *) sd;
 
-    fprintf(stderr, "%s: reading %i bytes at %x\n", __FUNCTION__, len, addr);
     for (; len; len --, addr += sd->transfer.step)
         *data ++ = ar6k_hif_read(s, addr);
 }
