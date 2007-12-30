@@ -3,6 +3,7 @@ NULL =
 AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
+	data \
 	po \
 	$(NULL)
 
@@ -54,4 +55,4 @@ MAINTAINERCLEANFILES = aclocal.m4 compile config.guess config.sub \
                        intltool-extract \
                        intltool-merge \
                        intltool-update \
-                       mkinstalldirs
+                       mkinstalldirs src/*.h src/*.c

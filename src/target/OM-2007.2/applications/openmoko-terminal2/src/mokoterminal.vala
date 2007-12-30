@@ -62,8 +62,6 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
         _terminal.set_cursor_blinks( true );
 
         _terminal.set_backspace_binding( TerminalEraseBinding.ASCII_DELETE);
-
-        //  getenv("HOME") ?
         _terminal.fork_command( null, null, null, Environment.get_variable( "HOME" ), true, true, true );
     }
 }
