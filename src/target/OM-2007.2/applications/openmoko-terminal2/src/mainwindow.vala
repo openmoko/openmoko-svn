@@ -2,7 +2,7 @@
  * mainwindow.vala
  *
  * Authored by Michael 'Mickey' Lauer <mickey@vanille-media.de>
- * Copyright (C) 2007 OpenMoko, Inc.
+ * Copyright (C) 2007-2008 OpenMoko, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,15 @@ using Gtk;
 
 public class OpenMokoTerminal2.MainWindow : Window
 {
+    private VBox _vbox;
+    private Toolbar _toolbar;
+    private Notebook _notebook;
+
+    private ToolButton _btn_new;
+    private ToolButton _btn_delete;
+    private ToolButton _btn_zoom_in;
+    private ToolButton _btn_zoom_out;
+
     public MainWindow()
     {
         title = "Terminal";
@@ -35,16 +44,83 @@ public class OpenMokoTerminal2.MainWindow : Window
     construct
     {
         destroy += Gtk.main_quit;
-        var notebook = new Gtk.Notebook();
-        notebook.set_tab_pos( PositionType.BOTTOM );
-        add( notebook );
+        _vbox = new Gtk.VBox( false, 0 );
+        add( _vbox );
+        setup_toolbar();
+        setup_notebook();
+        update_toolbar();
+    }
 
-        for ( int i = 0; i < 3; ++i )
-        {
-            var terminal = new OpenMokoTerminal2.MokoTerminal();
-            notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
-            notebook.child_set (terminal, "tab-expand", true, null );
-        }
+    public void setup_toolbar()
+    {
+        _toolbar = new Gtk.Toolbar();
+        _vbox.add( _toolbar );
+
+        _btn_new = new Gtk.ToolButton.from_stock( STOCK_NEW );
+        _btn_new.clicked += on_new_clicked;
+        _toolbar.insert( _btn_new, 0 );
+
+        _btn_delete = new Gtk.ToolButton.from_stock( STOCK_DELETE );
+        _btn_delete.clicked += on_delete_clicked;
+        _toolbar.insert( _btn_delete, 1 );
+
+        _toolbar.insert( new Gtk.SeparatorToolItem(), 2 );
+
+        _btn_zoom_in = new Gtk.ToolButton.from_stock( STOCK_ZOOM_IN );
+        _btn_zoom_in.clicked += on_zoom_in_clicked;
+        _toolbar.insert( _btn_zoom_in, 3 );
+
+        _btn_zoom_out = new Gtk.ToolButton.from_stock( STOCK_ZOOM_OUT );
+        _btn_zoom_out.clicked += on_zoom_out_clicked;
+        _toolbar.insert( _btn_zoom_out, 4 );
+    }
+
+    public void setup_notebook()
+    {
+        _notebook = new Gtk.Notebook();
+        _notebook.set_tab_pos( PositionType.BOTTOM );
+        _vbox.add( _notebook );
+
+        var terminal = new OpenMokoTerminal2.MokoTerminal();
+        _notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        _notebook.child_set (terminal, "tab-expand", true, null );
+    }
+
+    private void on_new_clicked( Gtk.ToolButton b )
+    {
+        stdout.printf( "on_new_clicked\n" );
+        var terminal = new OpenMokoTerminal2.MokoTerminal();
+        _notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        _notebook.child_set (terminal, "tab-expand", true, null );
+        _notebook.show_all();
+        update_toolbar();
+    }
+
+    private void on_delete_clicked( Gtk.ToolButton b )
+    {
+        stdout.printf( "on_delete_clicked\n" );
+        var page = _notebook.get_nth_page( _notebook.get_current_page() );
+        page.destroy();
+        update_toolbar();
+    }
+
+    private void on_zoom_in_clicked( Gtk.ToolButton b )
+    {
+        stdout.printf( "on_zoom_in_clicked\n" );
+        OpenMokoTerminal2.MokoTerminal terminal = _notebook.get_nth_page( _notebook.get_current_page() );
+        terminal.zoom_in();
+    }
+
+    private void on_zoom_out_clicked( Gtk.ToolButton b )
+    {
+        stdout.printf( "on_zoom_out_clicked\n" );
+        OpenMokoTerminal2.MokoTerminal terminal = _notebook.get_nth_page( _notebook.get_current_page() );
+        terminal.zoom_out();
+    }
+
+    public void update_toolbar()
+    {
+        _btn_delete.set_sensitive( _notebook.get_n_pages() > 1 );
     }
 
     public void run()

@@ -2,7 +2,7 @@
  * mokoterminal.vala
  *
  * Authored by Michael 'Mickey' Lauer <mickey@vanille-media.de>
- * Copyright (C) 2007 OpenMoko, Inc.
+ * Copyright (C) 2007-2008 OpenMoko, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,17 @@ using Vte;
 
 public class OpenMokoTerminal2.MokoTerminal : HBox
 {
+    private string _fontname;
+    private uint _fontsize;
     private Scrollbar _scrollbar;
     private Terminal _terminal;
 
     construct {
         stdout.printf( "moko-terminal constructed\n" );
+
+        // may read from gconf at some point?
+        _fontname = "LiberationMono";
+        _fontsize = 5;
 
         _terminal = new Vte.Terminal();
         _terminal.child_exited += term => { stdout.printf( "unhandled eof\n" ); };
@@ -56,13 +62,30 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
 
         //_terminal.set_colors( fore, back, colors[0], 8 );
 
+        update_font();
         _terminal.set_scrollback_lines( 1000 );
-        _terminal.set_font_from_string_full( "LiberationMono 5", TerminalAntiAlias.FORCE_ENABLE );
         _terminal.set_mouse_autohide( true );
         _terminal.set_cursor_blinks( true );
-
         _terminal.set_backspace_binding( TerminalEraseBinding.ASCII_DELETE);
         _terminal.fork_command( null, null, null, Environment.get_variable( "HOME" ), true, true, true );
+    }
+
+    public void update_font()
+    {
+        string font = "%s %d".printf( _fontname, _fontsize );
+        _terminal.set_font_from_string_full( font, TerminalAntiAlias.FORCE_ENABLE );
+    }
+
+    public void zoom_in()
+    {
+        ++_fontsize;
+        update_font();
+    }
+
+    public void zoom_out()
+    {
+        --_fontsize;
+        update_font();
     }
 }
 
