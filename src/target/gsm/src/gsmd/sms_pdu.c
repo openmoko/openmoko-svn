@@ -221,9 +221,9 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 			return 1;
 
 		/* TP-MR set it gsmd_sms_list.index*/
-		dst->index = (int) src[1];
+		dst->index = (u_int8_t) src[1];
 		/* TP-STATUS set it to coding_scheme */
-		dst->payload.coding_scheme = (int) src[len-1];
+		dst->payload.coding_scheme = (u_int8_t) src[len-1];
 		/* TP-RA */
 		i = sms_number_bytelen(src[3], src[2]);
 		if (len < 13 + i)
