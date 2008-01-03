@@ -48,19 +48,20 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
         _scrollbar = new VScrollbar( _terminal.adjustment );
         pack_start( _scrollbar, false, false, 0 );
 
-        Gdk.Color fore = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x0000 };
-        Gdk.Color back = new Gdk.Color() { pixel = 0, red = (ushort)0xffff, green = (ushort)0xffff, blue = (ushort)0xffff };
-        Gdk.Color[] colors = new Gdk.Color[8];
-        colors[0] = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x0000 };
-        colors[1] = new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x0000, blue = (ushort)0x0000 };
-        colors[2] = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x8000, blue = (ushort)0x0000 };
-        colors[3] = new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x8000, blue = (ushort)0x0000 };
-        colors[4] = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x8000 };
-        colors[5] = new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x0000, blue = (ushort)0x8000 };
-        colors[6] = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x8000, blue = (ushort)0x8000 };
-        colors[7] = new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x8000, blue = (ushort)0x8000 };
+        var fore = new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x0000 };
+        var back = new Gdk.Color() { pixel = 0, red = (ushort)0xffff, green = (ushort)0xffff, blue = (ushort)0xffff };
+        var colors = new Gdk.Color[] {
+            new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x0000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x0000, blue = (ushort)0x0000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x8000, blue = (ushort)0x0000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x8000, blue = (ushort)0x0000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x0000, blue = (ushort)0x8000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x0000, blue = (ushort)0x8000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x0000, green = (ushort)0x8000, blue = (ushort)0x8000 },
+            new Gdk.Color() { pixel = 0, red = (ushort)0x8000, green = (ushort)0x8000, blue = (ushort)0x8000 }
+        };
 
-        //_terminal.set_colors( fore, back, colors[0], 8 );
+        _terminal.set_colors( ref fore, ref back, ref colors[0], 8 );
 
         update_font();
         _terminal.set_scrollback_lines( 1000 );
