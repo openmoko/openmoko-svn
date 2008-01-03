@@ -413,6 +413,7 @@ static int pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 static int call_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	struct gsmd_call_status *gcs;
+	struct gsmd_call_fwd_stat *gcfs;
 	int *ret;
 
 	switch (gmh->msg_subtype) {
@@ -438,6 +439,26 @@ static int call_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_VOICECALL_CTRL:
 		ret = (int*)((char *)gmh + sizeof(*gmh));
 		 (*ret)? printf("+CME ERROR %d\n", *ret) : printf("OK\n");
+		pending_responses --;
+		break;
+	case GSMD_VOICECALL_FWD_DIS:
+		pending_responses --;
+		break;
+	case GSMD_VOICECALL_FWD_EN:
+		pending_responses --;
+		break;
+	case GSMD_VOICECALL_FWD_STAT:
+		gcfs = (struct  gsmd_call_fwd_stat*) ((char *)gmh + sizeof(*gmh));
+		
+		printf("+CCFC:%d, %d, %s\n",gcfs->status, gcfs->classx, gcfs->addr.number);
+
+		if (gcfs->is_last)
+			pending_responses --;
+		break;
+	case GSMD_VOICECALL_FWD_REG:
+		pending_responses --;
+		break;
+	case GSMD_VOICECALL_FWD_ERAS:
 		pending_responses --;
 		break;
 	default:
@@ -508,6 +529,11 @@ static int shell_help(void)
 		"\tHa\tHold all active calls and accept held or waiting call (+CHLD=2)\n"
 		"\tHx\tHold all active calls except call x (Hx=x)(+CHLD=2x)\n"
 		"\tMP\tAdd a held call to the conversation (+CHLD=3)\n"
+		"\tCFD\tDisable call forwarding (CFD=reason)\n"
+		"\tCFE\tEnable call forwarding (CFE=reason)\n"
+		"\tCFQ\tQuery the status of call forwarding (CFQ=reason)\n"
+		"\tCFR\tRegister call forwarding (CFR=reason,number)\n"
+		"\tCFe\tErase a record of call forwarding (CFe=reason)\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -862,7 +888,36 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("Add a held call to the conversation\n");
 				lgsm_voice_ctrl(lgsmh, &ctrl);
 				pending_responses ++;
-			} else {
+			} else if ( !strncmp(buf, "CFD", 3)) {
+				printf("Disable call forwarding\n");
+				ptr = strchr(buf, '=');
+				lgsm_voice_fwd_disable(lgsmh, atoi(ptr+1));
+				pending_responses ++;
+			}else if ( !strncmp(buf, "CFE", 3)) {
+				printf("Enable call forwarding\n");
+				ptr = strchr(buf, '=');
+				lgsm_voice_fwd_enable(lgsmh, atoi(ptr+1));
+				pending_responses ++;
+			}else if ( !strncmp(buf, "CFQ", 3)) {
+				printf("Query the status of call forwarding\n");
+				ptr = strchr(buf, '=');
+				lgsm_voice_fwd_stat(lgsmh, atoi(ptr+1));
+				pending_responses ++;
+			}else if ( !strncmp(buf, "CFR", 3)) {
+				struct lgsm_voicecall_fwd_reg lvfr;
+				printf("Register call forwarding\n");
+				ptr = strchr(buf, '=');
+				lvfr.reason = atoi(ptr+1);
+				ptr = strchr(buf, ',');
+				strcpy(lvfr.number.addr, ptr+1);
+				lgsm_voice_fwd_reg(lgsmh, &lvfr);
+				pending_responses ++;
+			}else if ( !strncmp(buf, "CFe", 3)) {
+				printf("Erase a record of call forwarding\n");
+				ptr = strchr(buf, '=');
+				lgsm_voice_fwd_erase(lgsmh, atoi(ptr+1));
+				pending_responses ++;
+			}else {
 				printf("Unknown command `%s'\n", buf);
 			}
 		}

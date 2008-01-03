@@ -43,6 +43,11 @@ enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_VOL_GET	= 6,
 	GSMD_VOICECALL_GET_STAT	= 7,
 	GSMD_VOICECALL_CTRL	= 8,
+	GSMD_VOICECALL_FWD_DIS	= 9,
+	GSMD_VOICECALL_FWD_EN	= 10,
+	GSMD_VOICECALL_FWD_STAT	= 11,
+	GSMD_VOICECALL_FWD_REG	= 12,
+	GSMD_VOICECALL_FWD_ERAS	= 13,
 };
 
 
@@ -97,6 +102,22 @@ enum gsmd_call_ctrl_proc {
 	GSMD_CALL_CTRL_H_ACTS_A_HLD_WAIT	= 4,	// 2
 	GSMD_CALL_CTRL_H_ACTS_EXCEPT_X		= 5,	// 2x
 	GSMD_CALL_CTRL_M_HELD			= 6,	// 3
+};
+
+/* call forward reason from 3GPP TS 07.07 subclause 07.10 */
+enum gsmd_call_fwd_reason {
+	GSMD_CALL_FWD_REASON_UNCOND		= 0,
+	GSMD_CALL_FWD_REASON_BUSY		= 1, 
+	GSMD_CALL_FWD_REASON_NO_REPLY		= 2,
+	GSMD_CALL_FWD_REASON_NOT_REACHABLE	= 3,
+	GSMD_CALL_FWD_REASON_ALL_FORWARD	= 4,
+	GSMD_CALL_FWD_REASON_ALL_COND_FORWARD	= 5, 
+};
+
+/* call forward status from 3GPP TS 07.07 subclause 07.10 */
+enum gsmd_call_fwd_status {
+	GSMD_CALL_FWD_STATUS_NOT_ACTIVE	= 0,
+	GSMD_CALL_FWD_STATUS_ACTIVE	= 1,
 };
 
 /* Handset / MT related commands */
@@ -382,6 +403,23 @@ struct gsmd_call_status {
 struct gsmd_call_ctrl {
 	enum gsmd_call_ctrl_proc proc;	
 	u_int8_t idx;
+} __attribute__ ((packed));
+
+/* call forwarding register from 3GPP TS 07.07 clause 7.10 */
+struct gsmd_call_fwd_reg {
+	enum gsmd_call_fwd_reason reason;
+	struct gsmd_addr addr;
+} __attribute__ ((packed));
+
+/* status of call forwarding from 3GPP TS 07.07 clause 7.10 */
+struct gsmd_call_fwd_stat {
+	enum gsmd_call_fwd_status status; 
+	u_int8_t classx;
+	struct gsmd_addr addr;
+	char subaddr[16+1];
+	u_int8_t satype;
+	u_int8_t time;
+	int is_last;	
 } __attribute__ ((packed));
 
 #define GSMD_PIN_MAXLEN		8

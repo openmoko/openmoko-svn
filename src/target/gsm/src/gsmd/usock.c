@@ -217,6 +217,75 @@ static int voicecall_ctrl_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
+static int voicecall_fwd_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
+{
+	struct gsmd_user *gu = ctx;
+	struct gsm_extrsp *er;
+	struct gsmd_call_fwd_stat gcfs;
+	int ret = 0;
+	
+	DEBUGP("resp: %s\n", resp);
+	
+	er = extrsp_parse(cmd, resp);
+
+	if ( !er )
+		return -ENOMEM;
+
+	gcfs.is_last = (cmd->ret == 0 || cmd->ret == 4)? 1:0;
+
+	if ( er->num_tokens == 2 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+
+		/*
+		 * +CCFC: <status>,<class1>[,<number>,<type>
+		 * [,<subaddr>,<satype>[,<time>]]][
+		 * <CR><LF>+CCFC: <status>,<class2>[,<number>,<type>
+		 * [,<subaddr>,<satype>[,<time>]]]
+		 * [...]]
+		 */
+
+		gcfs.status = er->tokens[0].u.numeric;
+		gcfs.classx = er->tokens[1].u.numeric;
+		gcfs.addr.number[0] = '\0';
+	}
+	else if ( er->num_tokens == 4 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC ) {
+		
+		gcfs.status = er->tokens[0].u.numeric;
+		gcfs.classx = er->tokens[1].u.numeric;
+		strcpy(gcfs.addr.number, er->tokens[2].u.string);
+		gcfs.addr.type = er->tokens[3].u.numeric;
+	}
+	else if ( er->num_tokens == 7 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC && 
+			er->tokens[4].type == GSMD_ECMD_RTT_EMPTY &&
+			er->tokens[5].type == GSMD_ECMD_RTT_EMPTY &&
+			er->tokens[6].type == GSMD_ECMD_RTT_NUMERIC ) {
+		
+		gcfs.status = er->tokens[0].u.numeric;
+		gcfs.classx = er->tokens[1].u.numeric;
+		strcpy(gcfs.addr.number, er->tokens[2].u.string);
+		gcfs.addr.type = er->tokens[3].u.numeric;
+		gcfs.time = er->tokens[6].u.numeric;
+	}
+	else {
+		DEBUGP("Invalid Input : Parse error\n");
+		return -EINVAL;
+	}
+	
+	talloc_free(er);
+
+	return gsmd_ucmd_submit(gu, GSMD_MSG_VOICECALL, GSMD_VOICECALL_FWD_STAT,
+			cmd->id, sizeof(gcfs), &gcfs);
+}
+
 static int usock_ringing_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
         struct gsmd_user *gu = ctx;
@@ -235,7 +304,10 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	struct gsmd_addr *ga;
 	struct gsmd_dtmf *gd;
 	struct gsmd_call_ctrl *gcc; 
+	struct gsmd_call_fwd_reg *gcfr;
+	char buf[64];
 	int atcmd_len;
+	int *reason;
 		
 	switch (gph->msg_subtype) {
 	case GSMD_VOICECALL_DIAL:
@@ -329,7 +401,81 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		}
 
 		break;
-	
+	case GSMD_VOICECALL_FWD_DIS:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		
+		reason = (int *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,0", *reason);
+
+		atcmd_len = 1 + strlen("AT+CCFC=") + strlen(buf);
+		cmd = atcmd_fill("AT+CCFC=", atcmd_len,
+				 &usock_cmd_cb, gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CCFC=%s", buf);
+		break;
+	case GSMD_VOICECALL_FWD_EN:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		
+		reason = (int *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,1", *reason);
+
+		atcmd_len = 1 + strlen("AT+CCFC=") + strlen(buf);
+		cmd = atcmd_fill("AT+CCFC=", atcmd_len,
+				 &usock_cmd_cb, gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CCFC=%s", buf);
+		break;
+	case GSMD_VOICECALL_FWD_STAT:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		
+		reason = (int *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,2", *reason);
+
+		atcmd_len = 1 + strlen("AT+CCFC=") + strlen(buf);
+		cmd = atcmd_fill("AT+CCFC=", atcmd_len,
+				 &voicecall_fwd_stat_cb, gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CCFC=%s", buf);
+		break;
+	case GSMD_VOICECALL_FWD_REG:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		
+		gcfr = (struct gsmd_call_fwd_reg *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,3,\"%s\"", gcfr->reason, gcfr->addr.number);
+
+		atcmd_len = 1 + strlen("AT+CCFC=") + strlen(buf);
+		cmd = atcmd_fill("AT+CCFC=", atcmd_len,
+				 &usock_cmd_cb, gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CCFC=%s", buf);
+		break;
+	case GSMD_VOICECALL_FWD_ERAS:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		
+		reason = (int *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,4", *reason);
+
+		atcmd_len = 1 + strlen("AT+CCFC=") + strlen(buf);
+		cmd = atcmd_fill("AT+CCFC=", atcmd_len,
+				 &usock_cmd_cb, gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CCFC=%s", buf);
+		break;
 	default:
 		return -EINVAL;
 	}

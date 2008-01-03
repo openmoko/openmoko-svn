@@ -22,10 +22,26 @@ enum lgsm_voicecall_ctrl_proc {
 	LGSM_VOICECALL_CTRL_M_HELD			= 6,	// 3
 };
 
+/* call forward reason from 3GPP TS 07.07 subclause 07.10 */
+enum lgsmd_voicecall_fwd_reason {
+	GSMD_VOICECALL_FWD_REASON_UNCOND		= 0,
+	GSMD_VOICECALL_FWD_REASON_BUSY			= 1, 
+	GSMD_VOICECALL_FWD_REASON_NO_REPLY		= 2,
+	GSMD_VOICECALL_FWD_REASON_NOT_REACHABLE		= 3,
+	GSMD_VOICECALL_FWD_REASON_ALL_FORWARD		= 4,
+	GSMD_VOICECALL_FWD_REASON_ALL_COND_FORWARD	= 5, 
+};
+
 /* Refer to GSM 07.07 subclause 7.12 and 02.30 subclause 4.5.5.1 */
 struct lgsm_voicecall_ctrl {
 	enum lgsm_voicecall_ctrl_proc proc;	
 	int idx;
+};
+
+/* Refer to GSM 07.07 subclause 07.10 */
+struct lgsm_voicecall_fwd_reg {
+	enum lgsmd_voicecall_fwd_reason reason;
+	struct lgsm_addr number;	
 };
 
 /* Initiate an outgoing voice call */
@@ -48,4 +64,23 @@ extern int lgsm_voice_get_status(struct lgsm_handle *lh);
 extern int lgsm_voice_ctrl(struct lgsm_handle *lh, 
 			       const struct lgsm_voicecall_ctrl *ctrl);
 
+/* disable call forwarding */
+extern int lgsm_voice_fwd_disable(struct lgsm_handle *lh, 
+				  enum lgsmd_voicecall_fwd_reason reason);
+
+/* enable call forwarding */
+extern int lgsm_voice_fwd_enable(struct lgsm_handle *lh, 
+				 enum lgsmd_voicecall_fwd_reason reason);
+
+/* querty current status/setting of call forwarding */
+extern int lgsm_voice_fwd_stat(struct lgsm_handle *lh, 
+	                       enum lgsmd_voicecall_fwd_reason reason);
+
+/* register call forwarding */
+extern int lgsm_voice_fwd_reg(struct lgsm_handle *lh, 
+	                      struct lgsm_voicecall_fwd_reg *fwd_reg);
+
+/* erase the record of registered call forwarding */
+extern int lgsm_voice_fwd_erase(struct lgsm_handle *lh, 
+		                enum lgsmd_voicecall_fwd_reason reason);
 #endif
