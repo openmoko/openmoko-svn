@@ -23,18 +23,17 @@
 using GLib;
 using Gtk;
 
-// how to define a const here?
-
 public class OpenMokoTerminal2.MainWindow : Window
 {
-    private VBox _vbox;
-    private Toolbar _toolbar;
-    private Notebook _notebook;
+    private VBox vbox;
+    private Toolbar toolbar;
+    private Notebook notebook;
 
-    private ToolButton _btn_new;
-    private ToolButton _btn_delete;
-    private ToolButton _btn_zoom_in;
-    private ToolButton _btn_zoom_out;
+    private ToolButton btn_new;
+    private ToolButton btn_delete;
+    private ToolButton btn_zoom_in;
+    private ToolButton btn_zoom_out;
+    private ToolButton btn_paste;
 
     public MainWindow()
     {
@@ -44,62 +43,80 @@ public class OpenMokoTerminal2.MainWindow : Window
     construct
     {
         destroy += Gtk.main_quit;
-        _vbox = new Gtk.VBox( false, 0 );
-        add( _vbox );
+        vbox = new Gtk.VBox( false, 0 );
+        add( vbox );
         setup_toolbar();
         setup_notebook();
         update_toolbar();
+        idle_add( on_idle, this );
     }
 
     public void setup_toolbar()
     {
-        _toolbar = new Gtk.Toolbar();
-        _vbox.add( _toolbar );
+        toolbar = new Gtk.Toolbar();
+        vbox.add( toolbar );
 
-        _btn_new = new Gtk.ToolButton.from_stock( STOCK_NEW );
-        _btn_new.clicked += on_new_clicked;
-        _toolbar.insert( _btn_new, 0 );
+        btn_new = new Gtk.ToolButton.from_stock( STOCK_NEW );
+        btn_new.clicked += on_new_clicked;
+        toolbar.insert( btn_new, 0 );
 
-        _btn_delete = new Gtk.ToolButton.from_stock( STOCK_DELETE );
-        _btn_delete.clicked += on_delete_clicked;
-        _toolbar.insert( _btn_delete, 1 );
+        btn_delete = new Gtk.ToolButton.from_stock( STOCK_DELETE );
+        btn_delete.clicked += on_delete_clicked;
+        toolbar.insert( btn_delete, 1 );
 
-        _toolbar.insert( new Gtk.SeparatorToolItem(), 2 );
+        toolbar.insert( new Gtk.SeparatorToolItem(), 2 );
 
-        _btn_zoom_in = new Gtk.ToolButton.from_stock( STOCK_ZOOM_IN );
-        _btn_zoom_in.clicked += on_zoom_in_clicked;
-        _toolbar.insert( _btn_zoom_in, 3 );
+        btn_zoom_in = new Gtk.ToolButton.from_stock( STOCK_ZOOM_IN );
+        btn_zoom_in.clicked += on_zoom_in_clicked;
+        toolbar.insert( btn_zoom_in, 3 );
 
-        _btn_zoom_out = new Gtk.ToolButton.from_stock( STOCK_ZOOM_OUT );
-        _btn_zoom_out.clicked += on_zoom_out_clicked;
-        _toolbar.insert( _btn_zoom_out, 4 );
+        btn_zoom_out = new Gtk.ToolButton.from_stock( STOCK_ZOOM_OUT );
+        btn_zoom_out.clicked += on_zoom_out_clicked;
+        toolbar.insert( btn_zoom_out, 4 );
+
+        toolbar.insert( new Gtk.SeparatorToolItem(), 5 );
+
+        btn_paste = new Gtk.ToolButton.from_stock( STOCK_PASTE );
+        btn_paste.clicked += on_paste_clicked;
+        toolbar.insert( btn_paste, 6 );
     }
 
     public void setup_notebook()
     {
-        _notebook = new Gtk.Notebook();
-        _notebook.set_tab_pos( PositionType.BOTTOM );
-        _vbox.add( _notebook );
+        notebook = new Gtk.Notebook();
+        notebook.set_tab_pos( PositionType.BOTTOM );
+        vbox.add( notebook );
 
         var terminal = new OpenMokoTerminal2.MokoTerminal();
-        _notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
-        _notebook.child_set (terminal, "tab-expand", true, null );
+        notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        notebook.child_set (terminal, "tab-expand", true, null );
+    }
+
+    private bool on_idle()
+    {
+        stdout.printf( "on_idle\n" );
+        notebook.switch_page += (o, page, num) => {
+            btn_delete.set_sensitive( notebook.get_n_pages() > 1 );
+            OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( (int)num ); btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
+            btn_zoom_out.set_sensitive( terminal.get_font_size() > 1 );
+        };
+        return false;
     }
 
     private void on_new_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_new_clicked\n" );
         var terminal = new OpenMokoTerminal2.MokoTerminal();
-        _notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
-        _notebook.child_set (terminal, "tab-expand", true, null );
-        _notebook.show_all();
+        notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        notebook.child_set (terminal, "tab-expand", true, null );
+        notebook.show_all();
         update_toolbar();
     }
 
     private void on_delete_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_delete_clicked\n" );
-        var page = _notebook.get_nth_page( _notebook.get_current_page() );
+        var page = notebook.get_nth_page( notebook.get_current_page() );
         page.destroy();
         update_toolbar();
     }
@@ -107,20 +124,35 @@ public class OpenMokoTerminal2.MainWindow : Window
     private void on_zoom_in_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_zoom_in_clicked\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = _notebook.get_nth_page( _notebook.get_current_page() );
+        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
         terminal.zoom_in();
+        update_toolbar();
     }
 
     private void on_zoom_out_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_zoom_out_clicked\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = _notebook.get_nth_page( _notebook.get_current_page() );
+        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
         terminal.zoom_out();
+        update_toolbar();
+    }
+
+    private void on_paste_clicked( Gtk.ToolButton b )
+    {
+        stdout.printf( "on_paste_clicked\n" );
+        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
+        terminal.paste();
+        update_toolbar();
     }
 
     public void update_toolbar()
     {
-        _btn_delete.set_sensitive( _notebook.get_n_pages() > 1 );
+        stdout.printf( "update_toolbar\n" );
+        btn_delete.set_sensitive( notebook.get_n_pages() > 1 );
+        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
+        stdout.printf( "current font size for terminal is %d\n", terminal.get_font_size() );
+        btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
+        btn_zoom_out.set_sensitive( terminal.get_font_size() > 1 );
     }
 
     public void run()
