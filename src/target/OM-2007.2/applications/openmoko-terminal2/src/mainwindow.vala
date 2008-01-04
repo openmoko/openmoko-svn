@@ -21,6 +21,7 @@
  */
 
 using GLib;
+//using Gdk;
 using Gtk;
 
 public class OpenMokoTerminal2.MainWindow : Window
@@ -49,6 +50,7 @@ public class OpenMokoTerminal2.MainWindow : Window
         setup_notebook();
         update_toolbar();
         idle_add( on_idle, this );
+        window.add_filter( on_gdk_filter, this );
     }
 
     public void setup_toolbar()
@@ -90,6 +92,17 @@ public class OpenMokoTerminal2.MainWindow : Window
         var terminal = new OpenMokoTerminal2.MokoTerminal();
         notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
         notebook.child_set (terminal, "tab-expand", true, null );
+    }
+
+    [InstanceLast()]
+    private Gdk.FilterReturn on_gdk_filter( Gdk.Event e, pointer xevent )
+    {
+        //stdout.printf( "gdk filter, event %d\n", e.type );
+        if ( e.type == Gdk.EventType.PROPERTY_NOTIFY )
+        {
+            stdout.printf( "gdk filter, property notify event for atom %d, state %d\n", ((Gdk.EventProperty)e).atom, ((Gdk.EventProperty)e).state );
+        }
+        return Gdk.FilterReturn.CONTINUE;
     }
 
     private bool on_idle()
