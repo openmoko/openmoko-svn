@@ -50,13 +50,13 @@ public class OpenMokoTerminal2.MainWindow : Window
         setup_notebook();
         update_toolbar();
         idle_add( on_idle, this );
-        window.add_filter( on_gdk_filter, this );
+        //window.add_filter( on_gdk_filter, this );
     }
 
     public void setup_toolbar()
     {
         toolbar = new Gtk.Toolbar();
-        vbox.add( toolbar );
+        vbox.pack_start( toolbar, false, false, 0 );
 
         btn_new = new Gtk.ToolButton.from_stock( STOCK_NEW );
         btn_new.clicked += on_new_clicked;
@@ -87,13 +87,14 @@ public class OpenMokoTerminal2.MainWindow : Window
     {
         notebook = new Gtk.Notebook();
         notebook.set_tab_pos( PositionType.BOTTOM );
-        vbox.add( notebook );
+        vbox.pack_start( notebook, true, true, 0 );
 
         var terminal = new OpenMokoTerminal2.MokoTerminal();
         notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
         notebook.child_set (terminal, "tab-expand", true, null );
     }
 
+    /*
     [InstanceLast()]
     private Gdk.FilterReturn on_gdk_filter( Gdk.Event e, pointer xevent )
     {
@@ -104,6 +105,7 @@ public class OpenMokoTerminal2.MainWindow : Window
         }
         return Gdk.FilterReturn.CONTINUE;
     }
+    */
 
     private bool on_idle()
     {
