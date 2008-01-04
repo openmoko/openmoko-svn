@@ -1,3 +1,12 @@
+2008-01-04	Michael Lauer  <mickey@openmoko.org>
+
+	* bindings/vala/libmokoui2.vapi
+	* bindings/vala/libmokoui2.deps
+	* bindings/vala/Makefile.am
+	* configure.ac
+	* Makefile.am
+	Add Vala Bindings
+
 2007-12-19  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_refresh),

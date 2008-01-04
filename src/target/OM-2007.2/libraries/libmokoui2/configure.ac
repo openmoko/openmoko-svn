@@ -38,6 +38,7 @@ AC_OUTPUT([
 Makefile
 libmokoui2.pc
 libmokoui/Makefile
+bindings/vala/Makefile
 doc/Makefile
 doc/reference/Makefile
 doc/reference/version.xml

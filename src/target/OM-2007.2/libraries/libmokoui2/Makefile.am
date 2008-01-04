@@ -1,4 +1,4 @@
-SUBDIRS = libmokoui doc
+SUBDIRS = libmokoui bindings/vala doc
 
 pcdata_DATA= libmokoui2.pc
 pcdatadir= $(libdir)/pkgconfig
