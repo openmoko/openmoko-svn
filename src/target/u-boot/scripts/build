@@ -21,7 +21,7 @@ UNDER DEVELOPMENT - DON'T USE YET
 # DEVICE=gta02v3
 # DEVICE=gta02v4
 #
-# GIT_HEAD, if defined, specifies with git head we use, e.g.,
+# GIT_HEAD, if defined, specifies which git head we use, e.g.,
 # GIT_HEAD=5c740711f0ea5b51414b341b71597c4a0751be74
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
@@ -31,12 +31,12 @@ UNDER DEVELOPMENT - DON'T USE YET
 git clone git://www.denx.de/git/u-boot.git
 cd u-boot
 
-[ ! -z "$GIT_HEAD"] ||
+[ -z "$GIT_HEAD"] ||
   git reset --hard $GIT_HEAD
 
 ln -sf $SVN/trunk/src/target/u-boot/patches
 
-[ ! -z "$SVN_REV" ] ||
+[ -z "$SVN_REV" ] ||
   ( cd patches && svn update -r$SVN_REV; )
 
 quilt push -a
