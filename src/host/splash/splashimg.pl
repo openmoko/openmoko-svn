@@ -2,7 +2,7 @@
 #
 # splashimg.pl - Convert a 480x640 PNG to a splash screen raw dump 
 #
-# Copyright (C) 2006-2007 by OpenMoko, Inc.
+# Copyright (C) 2006-2008 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
 # All Rights Reserved
 #
@@ -23,11 +23,12 @@
 
 
 $bpp = 16;
+$swap_pix = 0;
 
 
 sub usage
 {
-    print STDERR "usage: $0 [-32] [-pnm] [System_boot.png]\n";
+    print STDERR "usage: $0 [-32] [-pnm] [-swap] [System_boot.png]\n";
     exit(1);
 }
 
@@ -39,6 +40,10 @@ while ($ARGV[0] =~ /^-[^-]/) {
     }
     elsif ($ARGV[0] eq "-pnm") {
 	$pnm = 1;
+	shift @ARGV;
+    }
+    elsif ($ARGV[0] eq "-swap") {
+	$swap_pix = 1;
 	shift @ARGV;
     }
     else {
@@ -64,27 +69,27 @@ else {
 system($cmd) && die "system \"$cmd\": $?";
 
 for ("red", "grn", "blu") {
-    open(FILE,"noname.$_") || die "noname.$_";
-    $f = join("",<FILE>);
+    open(FILE, "noname.$_") || die "noname.$_";
+    $f = join("", <FILE>);
     close FILE;
     unlink("noname.$_");
     $f =~ s/^P5\s+(\d+)\s+(\d+)\s+(\d+)\s//s;
-    ($w,$h,$p) = ($1,$2,$3);
+    ($w, $h, $p) = ($1, $2, $3);
     $p{$_} = $f;
 }
 
 print STDERR "$w x $h ($p)\n";
 
 for ($i = 0; $i != $w*$h; $i++) {
-    $r = unpack("C",substr($p{"red"},$i,1));
-    $g = unpack("C",substr($p{"grn"},$i,1));
-    $b = unpack("C",substr($p{"blu"},$i,1));
+    $r = unpack("C", substr($p{"red"}, $i ^ $swap_pix, 1));
+    $g = unpack("C", substr($p{"grn"}, $i ^ $swap_pix, 1));
+    $b = unpack("C", substr($p{"blu"}, $i ^ $swap_pix, 1));
     if ($bpp == 16) {
 	$v = ($r >> 3) << 11 | ($g >> 2) << 5 | ($b >> 3);
-	print pack("v",$v) || die "print: $!";
+	print pack("v", $v) || die "print: $!";
     }
     else {
 	$v = ($r) << 16 | ($g) << 8 | $b;
-	print pack("V",$v) || die "print: $!";
+	print pack("V", $v) || die "print: $!";
     }
 }

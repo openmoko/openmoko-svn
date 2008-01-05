@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2244,6 +2244,14 @@
+@@ -2270,6 +2270,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -873,7 +873,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
 +	lcd->LCDCON2 = 0x019fc3c1;
 +	lcd->LCDCON3 = 0x0039df67;
 +	lcd->LCDCON4 = 0x00000007;
-+	lcd->LCDCON5 = 0x0001cf09;
++	lcd->LCDCON5 = 0x0001cf08;
 +	lcd->LPCSEL  = 0x00000000;
 +}
 Index: u-boot/board/neo1973/common/jbt6k74.h
