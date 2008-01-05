@@ -1,0 +1,44 @@
+UNDER DEVELOPMENT - DON'T USE YET
+
+#!/bin/sh -e
+#
+# This script illustrates how to build a specific version of u-boot from
+# scratch. This is mainly intended as a template for copy & paste, and as an
+# example for individual scripts.
+#
+# This script uses the gnueabi toolchain, see the file README in this
+# directory.
+#
+#
+# Environment variables:
+#
+# SVN points to the root of the local copy of the OpenMoko SVN tree (the tree
+# must be checked out already), e.g.,
+# SVN=/home/moko/svn.openmoko.org/
+#
+# DEVICE specifies the name of the device we build u-boot for, e.g., one of
+# DEVICE=gta01bv4
+# DEVICE=gta02v3
+# DEVICE=gta02v4
+#
+# GIT_HEAD, if defined, specifies with git head we use, e.g.,
+# GIT_HEAD=5c740711f0ea5b51414b341b71597c4a0751be74
+#
+# SVN_REV, if defined, specifies which SVN revision we use, e.g.,
+# SVN_REV=3768
+#
+
+git clone git://www.denx.de/git/u-boot.git
+cd u-boot
+
+[ ! -z "$GIT_HEAD"] ||
+  git reset --hard $GIT_HEAD
+
+ln -sf $SVN/trunk/src/target/u-boot/patches
+
+[ ! -z "$SVN_REV" ] ||
+  ( cd patches && svn update -r$SVN_REV; )
+
+quilt push -a
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- ${DEVICE}_config
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- u-boot.udfu
