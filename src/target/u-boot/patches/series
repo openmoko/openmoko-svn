@@ -80,3 +80,5 @@ usbtty-irq-racecondition-fix.patch
 neo1973-gsmver.patch
 uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
+# consider merging after checking OE resolution for bug P#180
+#eabi-toolchain.patch
