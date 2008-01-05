@@ -20,8 +20,6 @@ quilt pop -a
 
 git reset --hard ${GIT_HEAD:-HEAD}
 
-ln -sf $SVN/trunk/src/target/u-boot/patches
-
 ( cd patches && svn update -r${SVN_REV:-HEAD}; )
 
 quilt push -a
