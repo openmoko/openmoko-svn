@@ -38,7 +38,7 @@ Index: u-boot/cpu/arm920t/config.mk
 -PLATFORM_CPPFLAGS +=$(call cc-option,-mapcs-32,-mabi=apcs-gnu)
 +#PLATFORM_CPPFLAGS +=$(call cc-option,-mapcs-32,-mabi=apcs-gnu)
  PLATFORM_RELFLAGS +=$(call cc-option,-mshort-load-bytes,$(call cc-option,-malignment-traps,))
-+PLATFORM_LDFLAGS += --defsym raise=_start
++PLATFORM_LDFLAGS += --defsym raise=hang
 Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/Makefile

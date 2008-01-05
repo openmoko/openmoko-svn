@@ -74,11 +74,12 @@ uboot-gta02.patch
 uboot-s3c2443.patch
 uboot-smdk2443.patch
 
+# need to find out how upstream feels about this one
+eabi-toolchain.patch
+
 # for review, merge soon
 unbusy-i2c.patch 
 usbtty-irq-racecondition-fix.patch
 neo1973-gsmver.patch
 uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
-# consider merging after checking OE resolution for bug P#180
-#eabi-toolchain.patch
