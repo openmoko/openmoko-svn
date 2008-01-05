@@ -25,7 +25,20 @@ Index: u-boot/drivers/serial/usbtty.c
  #include <circbuf.h>
  #include <devices.h>
  #include "usbtty.h"
-@@ -544,6 +545,14 @@
+@@ -474,6 +475,12 @@
+ 		usbtty_poll ();
+ 
+ 		space = maxlen - usbtty_output.size;
++
++		/* If the USB is not configured, allow the circular buffer to
++		   be overwritten. Otherwise this while() will loop forever. */
++		if (!usbtty_configured())
++			space = maxlen;
++
+ 		/* Empty buffer here, if needed, to ensure space... */
+ 		if (space) {
+ 			write_buffer (&usbtty_output);
+@@ -544,6 +551,14 @@
  	}
  	usbtty_init_terminal_type(strcmp(tt,"cdc_acm"));
  
@@ -68,7 +81,7 @@ Index: u-boot/drivers/serial/usbtty.h
  
  #define CONFIG_USBD_CONFIGURATION_STR "TTY via USB"
  
-Index: u-boot/drivers/usbdcore_omap1510.c
+Index: u-boot/drivers/usb/usbdcore_omap1510.c
 ===================================================================
 --- u-boot.orig/drivers/usb/usbdcore_omap1510.c
 +++ u-boot/drivers/usb/usbdcore_omap1510.c
