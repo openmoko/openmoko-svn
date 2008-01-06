@@ -45,9 +45,13 @@ s3c2440-nand-disable-hwecc.patch
 hxd8-tsl256x.patch
 pcf50633.patch
 smedia-glamo.patch
+# test, then merge
+#fbset-smedia-glamo.patch
 s3c24xx-nand-largepage.patch
 s3c2442b-cpuid.patch
 gta02-core.patch
+# test, then merge
+#fbset-gta02-core.patch
 # merge into gta02-core as soon as compatibility issues are resolved
 gta02-nor.patch
 lis302dl.patch

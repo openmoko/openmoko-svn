@@ -1,0 +1,339 @@
+- include/linux/glamofb.h (struct glamofb_platform_data): add fields for timing
+  data
+- drivers/video/glamo/glamo-fb.c: move modeline setting to a function of 
+  itself. Call this function on initialization and set_par.
+- drivers/video/glamo/glamo-fb.c (glamofb_cmd_mode): glamo fails to return to 
+  display mode if we switch to and back from cmd mode too quickly. Add a 
+  certain amount of delay after entering cmd mode.
+- drivers/video/glamo/glamo-core.c (glamo_engine_reset, glamo_pll_rate, 
+  glamo_engine_reclock), drivers/video/glamo/glamo-core.h 
+  (glamo_engine_reclock), drivers/video/glamo/glamo-fb.c 
+  (glamofb_activate_var): adjust DCLK ratio to match the desired pixclock.
+
+Signed-off-by: Chia-I Wu <olv@openmoko.com>
+Acked-by: Werner Almesberger <werner@openmoko.org>
+
+Index: linux-2.6.22.5/include/linux/glamofb.h
+===================================================================
+--- linux-2.6.22.5.orig/include/linux/glamofb.h
++++ linux-2.6.22.5/include/linux/glamofb.h
+@@ -13,6 +13,10 @@
+ 
+ struct glamofb_platform_data {
+ 	int width, height;
++	int pixclock;
++	int left_margin, right_margin;
++	int upper_margin, lower_margin;
++	int hsync_len, vsync_len;
+ 
+ 	struct glamofb_val xres;
+ 	struct glamofb_val yres;
+Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
+===================================================================
+--- linux-2.6.22.5.orig/drivers/video/glamo/glamo-fb.c
++++ linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
+@@ -99,25 +99,12 @@
+ 	{ GLAMO_REG_LCD_MODE3, 0x0b40 },
+ 	  /* src data rgb565, res, 18bit rgb666
+ 	   * 000 01 011 0100 0000 */
+-	{ GLAMO_REG_LCD_WIDTH, 480 },
+-	{ GLAMO_REG_LCD_HEIGHT, 640 },
+ 	{ GLAMO_REG_LCD_POLARITY, 0x440c },
+ 	  /* DE high active, no cpu/lcd if, cs0 force low, a0 low active,
+ 	   * np cpu if, 9bit serial data, sclk rising edge latch data
+ 	   * 01 00 0 100 0 000 01 0 0 */
+ 	{ GLAMO_REG_LCD_A_BASE1, 0x0000 }, /* display A base address 15:0 */
+ 	{ GLAMO_REG_LCD_A_BASE2, 0x0000 }, /* display A base address 22:16 */
+-	{ GLAMO_REG_LCD_PITCH, 480*2 },
+-	{ GLAMO_REG_LCD_HORIZ_TOTAL, 480 + 8 + 8 + 104 }, /* 600 */
+-	{ GLAMO_REG_LCD_HORIZ_RETR_START, 0 },
+-	{ GLAMO_REG_LCD_HORIZ_RETR_END, 8 },
+-	{ GLAMO_REG_LCD_HORIZ_DISP_START, 8 + 104 },
+-	{ GLAMO_REG_LCD_HORIZ_DISP_END, 8 + 104 + 480 },
+-	{ GLAMO_REG_LCD_VERT_TOTAL, 640 + 2 + 2 + 16 }, /* 660 */
+-	{ GLAMO_REG_LCD_VERT_RETR_START, 0 },
+-	{ GLAMO_REG_LCD_VERT_RETR_END, 2 },
+-	{ GLAMO_REG_LCD_VERT_DISP_START, 2 + 2 },
+-	{ GLAMO_REG_LCD_VERT_DISP_END, 2 + 2 + 640 },
+ };
+ 
+ static int glamofb_run_script(struct glamofb_handle *glamo,
+@@ -207,24 +194,69 @@
+ 	return 0;
+ }
+ 
++static void glamofb_activate_var(struct glamofb_handle *glamo,
++				struct fb_var_screeninfo *var)
++{
++	int sync, bp, disp, fp, total;
++
++	glamofb_cmd_mode(glamo, 1);
++
++	if (var->pixclock)
++		glamo_engine_reclock(glamo->mach_info->glamo,
++				     GLAMO_ENGINE_LCD,
++				     var->pixclock);
++
++	/* XXX highest bits of the following two regs have other meanings */
++	reg_write(glamo, GLAMO_REG_LCD_WIDTH, var->xres);
++	reg_write(glamo, GLAMO_REG_LCD_HEIGHT, var->yres);
++	reg_write(glamo, GLAMO_REG_LCD_PITCH,
++			(var->xres * var->bits_per_pixel) / 8);
++
++	sync = 0;
++	bp = sync + var->hsync_len;
++	disp = bp + var->left_margin;
++	fp = disp + var->xres;
++	total = fp + var->right_margin;
++
++	reg_write(glamo, GLAMO_REG_LCD_HORIZ_TOTAL, total);
++	reg_write(glamo, GLAMO_REG_LCD_HORIZ_RETR_START, sync);
++	reg_write(glamo, GLAMO_REG_LCD_HORIZ_RETR_END, bp);
++	reg_write(glamo, GLAMO_REG_LCD_HORIZ_DISP_START, disp);
++	reg_write(glamo, GLAMO_REG_LCD_HORIZ_DISP_END, fp);
++
++	sync = 0;
++	bp = sync + var->vsync_len;
++	disp = bp + var->upper_margin;
++	fp = disp + var->yres;
++	total = fp + var->lower_margin;
++
++	reg_write(glamo, GLAMO_REG_LCD_VERT_TOTAL, total);
++	reg_write(glamo, GLAMO_REG_LCD_VERT_RETR_START, sync);
++	reg_write(glamo, GLAMO_REG_LCD_VERT_RETR_END, bp);
++	reg_write(glamo, GLAMO_REG_LCD_VERT_DISP_START, disp);
++	reg_write(glamo, GLAMO_REG_LCD_VERT_DISP_END, fp);
++
++	glamofb_cmd_mode(glamo, 0);
++}
++
+ static int glamofb_set_par(struct fb_info *info)
+ {
+ 	struct glamofb_handle *glamo = info->par;
+ 	struct fb_var_screeninfo *var = &info->var;
+ 
+-	/* FIXME */
+-
+ 	switch (var->bits_per_pixel) {
+ 	case 16:
+-		glamo->fb->fix.visual = FB_VISUAL_TRUECOLOR;
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
+ 	default:
+ 		printk("Smedia driver doens't support != 16bpp\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	glamo->fb->fix.line_length = (var->width * var->bits_per_pixel) / 8;
+-	glamo->fb->fix.smem_len = info->fix.line_length * var->yres_virtual;
++	info->fix.line_length = (var->xres * var->bits_per_pixel) / 8;
++	info->fix.smem_len = info->fix.line_length * var->yres_virtual;
++
++	glamofb_activate_var(glamo, var);
+ 
+ 	return 0;
+ }
+@@ -368,6 +400,8 @@
+ 		while (!reg_read(gfb, GLAMO_REG_LCD_STATUS2) & (1 << 12))
+ 			yield();
+ 		dev_dbg(gfb->dev, "idle!\n");
++
++		msleep(90);
+ 	} else {
+ 		/* RGB interface needs vsync/hsync */
+ 		if (reg_read(gfb, GLAMO_REG_LCD_MODE3) & GLAMO_LCD_MODE3_RGB)
+@@ -384,7 +418,6 @@
+ 
+ int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val)
+ {
+-
+ 	dev_dbg(gfb->dev, "%s: waiting for cmdq empty\n",
+ 		__FUNCTION__);
+ 	while (!glamofb_cmdq_empty(gfb))
+@@ -409,6 +442,18 @@
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
++static int glamofb_init_regs(struct glamofb_handle *glamo)
++{
++	struct fb_info *info = glamo->fb;
++	struct fb_var_screeninfo *var = &info->var;
++
++	glamofb_check_var(&info->var, info);
++	glamofb_run_script(glamo, glamo_regs, ARRAY_SIZE(glamo_regs));
++	glamofb_set_par(info);
++
++	return 0;
++}
++
+ static int __init glamofb_probe(struct platform_device *pdev)
+ {
+ 	int rc = -EIO;
+@@ -504,24 +549,14 @@
+ 	fbinfo->var.yres_virtual = mach_info->yres.defval;
+ 	fbinfo->var.bits_per_pixel = mach_info->bpp.defval;
+ 
+-#if 0
+-	fbinfo->var.upper_margin =
+-	fbinfo->var.lower_margin =
+-	fbinfo->var.vsync_len = 2;
+-
+-	fbinfo->var.left_margin =
+-	fbinfo->var.right_margin =
+-	fbinfo->var.hsync_len = 8;
+-#endif
++	fbinfo->var.pixclock = mach_info->pixclock;
++	fbinfo->var.left_margin = mach_info->left_margin;
++	fbinfo->var.right_margin = mach_info->right_margin;
++	fbinfo->var.upper_margin = mach_info->upper_margin;
++	fbinfo->var.lower_margin = mach_info->lower_margin;
++	fbinfo->var.hsync_len = mach_info->hsync_len;
++	fbinfo->var.vsync_len = mach_info->vsync_len;
+ 
+-	fbinfo->var.red.offset = 11;
+-	fbinfo->var.green.offset = 5;
+-	fbinfo->var.blue.offset = 0;
+-	fbinfo->var.transp.offset = 0;
+-	fbinfo->var.red.length = 5;
+-	fbinfo->var.green.length = 6;
+-	fbinfo->var.blue.length = 5;
+-	fbinfo->var.transp.length = 0;
+ 	fbinfo->fix.smem_len = mach_info->xres.max *
+ 			       mach_info->yres.max *
+ 			       mach_info->bpp.max / 8;
+@@ -530,8 +565,7 @@
+ 
+ 	glamo_engine_enable(mach_info->glamo, GLAMO_ENGINE_LCD);
+ 	glamo_engine_reset(mach_info->glamo, GLAMO_ENGINE_LCD);
+-	glamofb_run_script(glamofb, glamo_regs, ARRAY_SIZE(glamo_regs));
+-	glamofb_cmd_mode(glamofb, 0);
++	glamofb_init_regs(glamofb);
+ 
+ 	rc = register_framebuffer(fbinfo);
+ 	if (rc < 0) {
+Index: linux-2.6.22.5/drivers/video/glamo/glamo-core.c
+===================================================================
+--- linux-2.6.22.5.orig/drivers/video/glamo/glamo-core.c
++++ linux-2.6.22.5/drivers/video/glamo/glamo-core.c
+@@ -488,9 +488,85 @@
+ 	spin_lock(&glamo->lock);
+ 	__reg_clear_bit(glamo, rst->reg, rst->val);
+ 	spin_unlock(&glamo->lock);
++
++	msleep(1);
+ }
+ EXPORT_SYMBOL_GPL(glamo_engine_reset);
+ 
++enum glamo_pll {
++	GLAMO_PLL1,
++	GLAMO_PLL2,
++};
++
++static int glamo_pll_rate(struct glamo_core *glamo,
++			  enum glamo_pll pll)
++{
++	u_int16_t reg;
++	unsigned int div = 512;
++	/* FIXME: move osci into platform_data */
++	unsigned int osci = 32768;
++
++	if (osci == 32768)
++		div = 1;
++
++	switch (pll) {
++	case GLAMO_PLL1:
++		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN1);
++		break;
++	case GLAMO_PLL2:
++		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN3);
++		break;
++	default:
++		return -EINVAL;
++	}
++	return (osci/div)*reg;
++}
++
++int glamo_engine_reclock(struct glamo_core *glamo,
++			 enum glamo_engine engine,
++			 int ps)
++{
++	int pll, khz;
++	u_int16_t reg, mask, val = 0;
++
++	if (!ps)
++		return 0;
++
++	switch (engine) {
++	case GLAMO_ENGINE_LCD:
++		pll = GLAMO_PLL1;
++		reg = GLAMO_REG_CLOCK_GEN7;
++		mask = 0xff;
++		break;
++	default:
++		dev_warn(&glamo->pdev->dev,
++			 "reclock of engine 0x%x not supported\n", engine);
++		return -EINVAL;
++		break;
++	}
++
++	pll = glamo_pll_rate(glamo, pll);
++	khz = 1000000000UL / ps;
++
++	if (khz)
++		val = (pll / khz) / 1000;
++
++	dev_dbg(&glamo->pdev->dev,
++			"PLL %d, kHZ %d, div %d\n", pll, khz, val);
++
++	if (val) {
++		val--;
++
++		reg_set_bit_mask(glamo, reg, mask, val);
++		msleep(5); /* wait some time to stabilize */
++
++		return 0;
++	} else {
++		return -EINVAL;
++	}
++}
++EXPORT_SYMBOL_GPL(glamo_engine_reclock);
++
+ /***********************************************************************
+  * script support
+  ***********************************************************************/
+@@ -643,35 +719,6 @@
+ };
+ #endif
+ 
+-enum glamo_pll {
+-	GLAMO_PLL1,
+-	GLAMO_PLL2,
+-};
+-
+-static int glamo_pll_rate(struct glamo_core *glamo,
+-				   enum glamo_pll pll)
+-{
+-	u_int16_t reg;
+-	unsigned int div = 512;
+-	/* FIXME: move osci into platform_data */
+-	unsigned int osci = 32768;
+-
+-	if (osci == 32768)
+-		div = 1;
+-
+-	switch (pll) {
+-	case GLAMO_PLL1:
+-		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN1);
+-		break;
+-	case GLAMO_PLL2:
+-		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN3);
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-	return (osci/div)*reg;
+-}
+-
+ enum glamo_power {
+ 	GLAMO_POWER_ON,
+ 	GLAMO_POWER_STANDBY,
