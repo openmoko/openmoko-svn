@@ -349,10 +349,8 @@ on_incoming_ds (MokoListener *listener, struct lgsm_handle *handle,
   MokoSms *moko_sms = MOKO_SMS (listener);
   MokoSmsPrivate *priv = moko_sms->priv;
 
-  /* TODO: I'm not entirely sure of the spec when if 
-   *       storing an unsent message means it failed?
-   */
-  if (sms->payload.coding_scheme == LGSM_SMS_STO_SENT) {
+  if ((sms->payload.coding_scheme == TP_STATUS_RECEIVED_OK) &&
+      (sms->stat == LGSM_SMS_STO_SENT)) {
     gchar *ref = g_strdup_printf ("%d", sms->index);
     JanaStoreView *view = jana_store_get_view (priv->sms_store);
     MokoSmsStatusReport *sr = g_slice_new (MokoSmsStatusReport);

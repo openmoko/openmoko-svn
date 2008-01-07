@@ -1,3 +1,8 @@
+2008-01-07  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-sms.c: (on_incoming_ds):
+	Correct a misinterpretation of how delivery status reports are stored
+
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-sms.c: (on_incoming_ds):
