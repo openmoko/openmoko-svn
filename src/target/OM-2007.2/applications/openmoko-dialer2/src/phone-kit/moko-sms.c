@@ -349,8 +349,9 @@ on_incoming_ds (MokoListener *listener, struct lgsm_handle *handle,
   MokoSms *moko_sms = MOKO_SMS (listener);
   MokoSmsPrivate *priv = moko_sms->priv;
 
-  if ((sms->payload.coding_scheme == TP_STATUS_RECEIVED_OK) &&
-      (sms->stat == LGSM_SMS_STO_SENT)) {
+  g_debug ("Received sent SMS status report");
+  if ((sms->payload.coding_scheme == TP_STATUS_RECEIVED_OK)/* &&
+      (sms->stat == LGSM_SMS_STO_SENT)*/) {
     gchar *ref = g_strdup_printf ("%d", sms->index);
     JanaStoreView *view = jana_store_get_view (priv->sms_store);
     MokoSmsStatusReport *sr = g_slice_new (MokoSmsStatusReport);
@@ -358,7 +359,7 @@ on_incoming_ds (MokoListener *listener, struct lgsm_handle *handle,
     sr->moko_sms = g_object_ref (moko_sms);
     sr->ref = ref;
     
-    g_debug ("Received sent SMS status report");
+    g_debug ("Report signals success");
     jana_store_view_add_match (view, JANA_STORE_VIEW_CATEGORY, "Sending");
     g_signal_connect (view, "added",
                       G_CALLBACK (status_report_added_cb), sr);

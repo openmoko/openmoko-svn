@@ -1,5 +1,12 @@
 2008-01-07  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (on_incoming_ds):
+	Don't check the stat of the delivery report, no need as we have the ref
+	anyway and I must be misinterpreting its meaning. Also switch around a
+	debug comment to make it more clear.
+
+2008-01-07  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-network.c: (retry_oper_get),
 	(retry_opers_get), (retry_get_imsi), (on_network_registered),
 	(moko_network_dispose), (net_msghandler), (phone_msghandler):
