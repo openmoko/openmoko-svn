@@ -1,7 +1,7 @@
 /*
  * QEMU System Emulator
  *
- * Copyright (c) 2003-2007 Fabrice Bellard
+ * Copyright (c) 2003-2008 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -828,7 +828,7 @@ struct qemu_alarm_timer {
 };
 
 #define ALARM_FLAG_DYNTICKS  0x1
-#define ALARM_FLAG_MODIFIED  0x2
+#define ALARM_FLAG_EXPIRED   0x2
 
 static inline int alarm_has_dynticks(struct qemu_alarm_timer *t)
 {
@@ -839,11 +839,6 @@ static void qemu_rearm_alarm_timer(struct qemu_alarm_timer *t)
 {
     if (!alarm_has_dynticks(t))
         return;
-
-    if (!(t->flags & ALARM_FLAG_MODIFIED))
-        return;
-
-    t->flags &= ~(ALARM_FLAG_MODIFIED);
 
     t->rearm(t);
 }
@@ -1018,8 +1013,6 @@ void qemu_del_timer(QEMUTimer *ts)
 {
     QEMUTimer **pt, *t;
 
-    alarm_timer->flags |= ALARM_FLAG_MODIFIED;
-
     /* NOTE: this code must be signal safe because
        qemu_timer_expired() can be called from a signal. */
     pt = &active_timers[ts->clock->type];
@@ -1058,6 +1051,11 @@ void _qemu_mod_timer(QEMUTimer *ts, int64_t expire_time)
     ts->expire_time = expire_time;
     ts->next = *pt;
     *pt = ts;
+
+    /* Rearm if necessary  */
+    if ((alarm_timer->flags & ALARM_FLAG_EXPIRED) == 0 &&
+        pt == &active_timers[ts->clock->type])
+        qemu_rearm_alarm_timer(alarm_timer);
 }
 
 #ifdef TIMER_DEBUG
@@ -1218,12 +1216,13 @@ static void host_alarm_handler(int host_signum)
 #endif
         CPUState *env = next_cpu;
 
+        alarm_timer->flags |= ALARM_FLAG_EXPIRED;
+
         /* FIXME Ugly hack only to make usb-gadgetfs work */
         if (!alarm_has_dynticks(alarm_timer) && !cpu_single_env)
             return;
 
         if (env) {
-            alarm_timer->flags |= ALARM_FLAG_MODIFIED;
             /* stop the currently executing cpu because a timer occured */
             cpu_interrupt(env, CPU_INTERRUPT_EXIT);
 #ifdef USE_KQEMU
@@ -1408,7 +1407,7 @@ static void dynticks_rearm_timer(struct qemu_alarm_timer *t)
 
     if (!active_timers[QEMU_TIMER_REALTIME] &&
                 !active_timers[QEMU_TIMER_VIRTUAL])
-            return;
+        return;
 
     nearest_delta_us = qemu_next_deadline();
 
@@ -1535,7 +1534,7 @@ static void win32_rearm_timer(struct qemu_alarm_timer *t)
 
     if (!active_timers[QEMU_TIMER_REALTIME] &&
                 !active_timers[QEMU_TIMER_VIRTUAL])
-            return;
+        return;
 
     nearest_delta_us = qemu_next_deadline();
     nearest_delta_us /= 1000;
@@ -7651,7 +7650,10 @@ void main_loop_wait(int timeout)
     qemu_run_timers(&active_timers[QEMU_TIMER_REALTIME],
                     qemu_get_clock(rt_clock));
 
-    qemu_rearm_alarm_timer(alarm_timer);
+    if (alarm_timer->flags & ALARM_FLAG_EXPIRED) {
+        alarm_timer->flags &= ~(ALARM_FLAG_EXPIRED);
+        qemu_rearm_alarm_timer(alarm_timer);
+    }
 
     /* Check bottom-halves last in case any of the earlier events triggered
        them.  */
@@ -7741,7 +7743,7 @@ static int main_loop(void)
 
 static void help(int exitcode)
 {
-    printf("QEMU PC emulator version " QEMU_VERSION ", Copyright (c) 2003-2007 Fabrice Bellard\n"
+    printf("QEMU PC emulator version " QEMU_VERSION ", Copyright (c) 2003-2008 Fabrice Bellard\n"
            "usage: %s [options] [disk_image]\n"
            "\n"
            "'disk_image' is a raw hard image image for IDE hard disk 0\n"
@@ -8150,6 +8152,9 @@ static void register_machines(void)
     qemu_register_machine(&ss10_machine);
     qemu_register_machine(&ss600mp_machine);
     qemu_register_machine(&ss20_machine);
+    qemu_register_machine(&ss2_machine);
+    qemu_register_machine(&ss1000_machine);
+    qemu_register_machine(&ss2000_machine);
 #endif
 #elif defined(TARGET_ARM)
     qemu_register_machine(&integratorcp_machine);

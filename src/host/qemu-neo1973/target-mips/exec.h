@@ -79,6 +79,20 @@ void do_madd (void);
 void do_maddu (void);
 void do_msub (void);
 void do_msubu (void);
+void do_muls (void);
+void do_mulsu (void);
+void do_macc (void);
+void do_macchi (void);
+void do_maccu (void);
+void do_macchiu (void);
+void do_msac (void);
+void do_msachi (void);
+void do_msacu (void);
+void do_msachiu (void);
+void do_mulhi (void);
+void do_mulhiu (void);
+void do_mulshi (void);
+void do_mulshiu (void);
 #endif
 #if defined(TARGET_MIPS64)
 void do_ddiv (void);
@@ -223,8 +237,8 @@ static always_inline int cpu_halted(CPUState *env)
 
 static always_inline void compute_hflags(CPUState *env)
 {
-    env->hflags &= ~(MIPS_HFLAG_64 | MIPS_HFLAG_CP0 | MIPS_HFLAG_F64 |
-                     MIPS_HFLAG_FPU | MIPS_HFLAG_KSU);
+    env->hflags &= ~(MIPS_HFLAG_COP1X | MIPS_HFLAG_64 | MIPS_HFLAG_CP0 |
+                     MIPS_HFLAG_F64 | MIPS_HFLAG_FPU | MIPS_HFLAG_KSU);
     if (!(env->CP0_Status & (1 << CP0St_EXL)) &&
         !(env->CP0_Status & (1 << CP0St_ERL)) &&
         !(env->hflags & MIPS_HFLAG_DM)) {
@@ -243,6 +257,20 @@ static always_inline void compute_hflags(CPUState *env)
         env->hflags |= MIPS_HFLAG_FPU;
     if (env->CP0_Status & (1 << CP0St_FR))
         env->hflags |= MIPS_HFLAG_F64;
+    if (env->insn_flags & ISA_MIPS32R2) {
+        if (env->fpu->fcr0 & FCR0_F64)
+            env->hflags |= MIPS_HFLAG_COP1X;
+    } else if (env->insn_flags & ISA_MIPS32) {
+        if (env->hflags & MIPS_HFLAG_64)
+            env->hflags |= MIPS_HFLAG_COP1X;
+    } else if (env->insn_flags & ISA_MIPS4) {
+        /* All supported MIPS IV CPUs use the XX (CU3) to enable
+           and disable the MIPS IV extensions to the MIPS III ISA.
+           Some other MIPS IV CPUs ignore the bit, so the check here
+           would be too restrictive for them.  */
+        if (env->CP0_Status & (1 << CP0St_CU3))
+            env->hflags |= MIPS_HFLAG_COP1X;
+    }
 }
 
 #endif /* !defined(__QEMU_MIPS_EXEC_H__) */

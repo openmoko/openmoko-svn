@@ -43,7 +43,9 @@ LIBS=
 HELPER_CFLAGS=$(CFLAGS)
 DYNGEN=../dyngen$(EXESUF)
 # user emulator name
+ifndef TARGET_ARCH2
 TARGET_ARCH2=$(TARGET_ARCH)
+endif
 ifeq ($(TARGET_ARCH),arm)
   ifeq ($(TARGET_WORDS_BIGENDIAN),yes)
     TARGET_ARCH2=armeb
@@ -67,11 +69,6 @@ endif
 ifeq ($(TARGET_ARCH),mips64)
   ifneq ($(TARGET_WORDS_BIGENDIAN),yes)
     TARGET_ARCH2=mips64el
-  endif
-endif
-ifeq ($(TARGET_ARCH),sparc64)
-  ifeq ($(TARGET_ABI_DIR),sparc)
-    TARGET_ARCH2=sparc32plus
   endif
 endif
 QEMU_USER=qemu-$(TARGET_ARCH2)
@@ -478,6 +475,7 @@ VL_OBJS+= jazz_led.o
 VL_OBJS+= ide.o gt64xxx.o pckbd.o ps2.o fdc.o mc146818rtc.o usb-uhci.o acpi.o ds1225y.o
 VL_OBJS+= piix_pci.o parallel.o cirrus_vga.o $(SOUND_HW)
 VL_OBJS+= mipsnet.o
+VL_OBJS+= pflash_cfi01.o
 CPPFLAGS += -DHAS_AUDIO
 endif
 ifeq ($(TARGET_BASE_ARCH), cris)
@@ -494,7 +492,7 @@ VL_OBJS+= cirrus_vga.o parallel.o ptimer.o
 else
 VL_OBJS+= sun4m.o tcx.o pcnet.o iommu.o m48t59.o slavio_intctl.o
 VL_OBJS+= slavio_timer.o slavio_serial.o slavio_misc.o fdc.o esp.o sparc32_dma.o
-VL_OBJS+= cs4231.o ptimer.o eccmemctl.o
+VL_OBJS+= cs4231.o ptimer.o eccmemctl.o sbi.o sun4c_intctl.o
 endif
 endif
 ifeq ($(TARGET_BASE_ARCH), arm)

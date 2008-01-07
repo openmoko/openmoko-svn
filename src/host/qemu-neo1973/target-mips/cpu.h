@@ -162,6 +162,8 @@ struct CPUMIPSState {
 
     uint32_t SEGBITS;
     target_ulong SEGMask;
+    uint32_t PABITS;
+    target_ulong PAMask;
 
     int32_t CP0_Index;
     /* CP0_MVP* are per MVP registers. */
@@ -415,7 +417,7 @@ struct CPUMIPSState {
     int user_mode_only; /* user mode only simulation */
     uint32_t hflags;    /* CPU State */
     /* TMASK defines different execution modes */
-#define MIPS_HFLAG_TMASK  0x00FF
+#define MIPS_HFLAG_TMASK  0x01FF
 #define MIPS_HFLAG_MODE   0x0007 /* execution modes                    */
     /* The KSU flags must be the lowest bits in hflags. The flag order
        must be the same as defined for CP0 Status. This allows to use
@@ -429,16 +431,20 @@ struct CPUMIPSState {
 #define MIPS_HFLAG_CP0    0x0010 /* CP0 enabled                        */
 #define MIPS_HFLAG_FPU    0x0020 /* FPU enabled                        */
 #define MIPS_HFLAG_F64    0x0040 /* 64-bit FPU enabled                 */
-#define MIPS_HFLAG_RE     0x0080 /* Reversed endianness                */
+    /* True if the MIPS IV COP1X instructions can be used.  This also
+       controls the non-COP1X instructions RECIP.S, RECIP.D, RSQRT.S
+       and RSQRT.D.  */
+#define MIPS_HFLAG_COP1X  0x0080 /* COP1X instructions enabled         */
+#define MIPS_HFLAG_RE     0x0100 /* Reversed endianness                */
     /* If translation is interrupted between the branch instruction and
      * the delay slot, record what type of branch it is so that we can
      * resume translation properly.  It might be possible to reduce
      * this from three bits to two.  */
-#define MIPS_HFLAG_BMASK  0x0700
-#define MIPS_HFLAG_B      0x0100 /* Unconditional branch               */
-#define MIPS_HFLAG_BC     0x0200 /* Conditional branch                 */
-#define MIPS_HFLAG_BL     0x0300 /* Likely branch                      */
-#define MIPS_HFLAG_BR     0x0400 /* branch to register (can't link TB) */
+#define MIPS_HFLAG_BMASK  0x0e00
+#define MIPS_HFLAG_B      0x0200 /* Unconditional branch               */
+#define MIPS_HFLAG_BC     0x0400 /* Conditional branch                 */
+#define MIPS_HFLAG_BL     0x0600 /* Likely branch                      */
+#define MIPS_HFLAG_BR     0x0800 /* branch to register (can't link TB) */
     target_ulong btarget;        /* Jump / branch target               */
     int bcond;                   /* Branch condition (if needed)       */
 
@@ -521,40 +527,37 @@ enum {
     EXCP_SRESET,
     EXCP_DSS,
     EXCP_DINT,
+    EXCP_DDBL,
+    EXCP_DDBS,
     EXCP_NMI,
     EXCP_MCHECK,
-    EXCP_EXT_INTERRUPT,
+    EXCP_EXT_INTERRUPT, /* 8 */
     EXCP_DFWATCH,
-    EXCP_DIB, /* 8 */
+    EXCP_DIB,
     EXCP_IWATCH,
     EXCP_AdEL,
     EXCP_AdES,
     EXCP_TLBF,
     EXCP_IBE,
-    EXCP_DBp,
+    EXCP_DBp, /* 16 */
     EXCP_SYSCALL,
-    EXCP_BREAK, /* 16 */
+    EXCP_BREAK,
     EXCP_CpU,
     EXCP_RI,
     EXCP_OVERFLOW,
     EXCP_TRAP,
     EXCP_FPE,
-    EXCP_DDBS,
-    EXCP_DWATCH,
-    EXCP_LAE, /* 24 */
-    EXCP_SAE,
+    EXCP_DWATCH, /* 24 */
     EXCP_LTLBL,
     EXCP_TLBL,
     EXCP_TLBS,
     EXCP_DBE,
-    EXCP_DDBL,
     EXCP_THREAD,
-    EXCP_MTCP0         = 0x104, /* mtmsr instruction:               */
-                                /* may change privilege level       */
-    EXCP_BRANCH        = 0x108, /* branch instruction               */
-    EXCP_ERET          = 0x10C, /* return from interrupt            */
-    EXCP_SYSCALL_USER  = 0x110, /* System call in user mode only    */
-    EXCP_FLUSH         = 0x109,
+    EXCP_MDMX,
+    EXCP_C2E,
+    EXCP_CACHE, /* 32 */
+
+    EXCP_LAST = EXCP_CACHE,
 };
 
 int cpu_mips_exec(CPUMIPSState *s);

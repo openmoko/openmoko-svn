@@ -214,6 +214,26 @@ enum {
     OPC_SPECIAL3D_RESERVED = 0x3D | OPC_SPECIAL,
 };
 
+/* Multiplication variants of the vr54xx. */
+#define MASK_MUL_VR54XX(op)   MASK_SPECIAL(op) | (op & (0x1F << 6))
+
+enum {
+    OPC_VR54XX_MULS    = (0x03 << 6) | OPC_MULT,
+    OPC_VR54XX_MULSU   = (0x03 << 6) | OPC_MULTU,
+    OPC_VR54XX_MACC    = (0x05 << 6) | OPC_MULT,
+    OPC_VR54XX_MACCU   = (0x05 << 6) | OPC_MULTU,
+    OPC_VR54XX_MSAC    = (0x07 << 6) | OPC_MULT,
+    OPC_VR54XX_MSACU   = (0x07 << 6) | OPC_MULTU,
+    OPC_VR54XX_MULHI   = (0x09 << 6) | OPC_MULT,
+    OPC_VR54XX_MULHIU  = (0x09 << 6) | OPC_MULTU,
+    OPC_VR54XX_MULSHI  = (0x0B << 6) | OPC_MULT,
+    OPC_VR54XX_MULSHIU = (0x0B << 6) | OPC_MULTU,
+    OPC_VR54XX_MACCHI  = (0x0D << 6) | OPC_MULT,
+    OPC_VR54XX_MACCHIU = (0x0D << 6) | OPC_MULTU,
+    OPC_VR54XX_MSACHI  = (0x0F << 6) | OPC_MULT,
+    OPC_VR54XX_MSACHIU = (0x0F << 6) | OPC_MULTU,
+};
+
 /* REGIMM (rt field) opcodes */
 #define MASK_REGIMM(op)    MASK_OP_MAJOR(op) | (op & (0x1F << 16))
 
@@ -774,9 +794,22 @@ static always_inline void check_cp1_enabled(DisasContext *ctx)
         generate_exception_err(ctx, EXCP_CpU, 1);
 }
 
+/* Verify that the processor is running with COP1X instructions enabled.
+   This is associated with the nabla symbol in the MIPS32 and MIPS64
+   opcode tables.  */
+
+static always_inline void check_cop1x(DisasContext *ctx)
+{
+    if (unlikely(!(ctx->hflags & MIPS_HFLAG_COP1X)))
+        generate_exception(ctx, EXCP_RI);
+}
+
+/* Verify that the processor is running with 64-bit floating-point
+   operations enabled.  */
+
 static always_inline void check_cp1_64bitmode(DisasContext *ctx)
 {
-    if (unlikely(!(ctx->hflags & MIPS_HFLAG_F64)))
+    if (unlikely(~ctx->hflags & (MIPS_HFLAG_F64 | MIPS_HFLAG_COP1X)))
         generate_exception(ctx, EXCP_RI);
 }
 
@@ -1528,6 +1561,80 @@ static void gen_muldiv (DisasContext *ctx, uint32_t opc,
         return;
     }
     MIPS_DEBUG("%s %s %s", opn, regnames[rs], regnames[rt]);
+}
+
+static void gen_mul_vr54xx (DisasContext *ctx, uint32_t opc,
+                            int rd, int rs, int rt)
+{
+    const char *opn = "mul vr54xx";
+
+    GEN_LOAD_REG_T0(rs);
+    GEN_LOAD_REG_T1(rt);
+
+    switch (opc) {
+    case OPC_VR54XX_MULS:
+        gen_op_muls();
+        opn = "muls";
+	break;
+    case OPC_VR54XX_MULSU:
+        gen_op_mulsu();
+        opn = "mulsu";
+	break;
+    case OPC_VR54XX_MACC:
+        gen_op_macc();
+        opn = "macc";
+	break;
+    case OPC_VR54XX_MACCU:
+        gen_op_maccu();
+        opn = "maccu";
+	break;
+    case OPC_VR54XX_MSAC:
+        gen_op_msac();
+        opn = "msac";
+	break;
+    case OPC_VR54XX_MSACU:
+        gen_op_msacu();
+        opn = "msacu";
+	break;
+    case OPC_VR54XX_MULHI:
+        gen_op_mulhi();
+        opn = "mulhi";
+	break;
+    case OPC_VR54XX_MULHIU:
+        gen_op_mulhiu();
+        opn = "mulhiu";
+	break;
+    case OPC_VR54XX_MULSHI:
+        gen_op_mulshi();
+        opn = "mulshi";
+	break;
+    case OPC_VR54XX_MULSHIU:
+        gen_op_mulshiu();
+        opn = "mulshiu";
+	break;
+    case OPC_VR54XX_MACCHI:
+        gen_op_macchi();
+        opn = "macchi";
+	break;
+    case OPC_VR54XX_MACCHIU:
+        gen_op_macchiu();
+        opn = "macchiu";
+	break;
+    case OPC_VR54XX_MSACHI:
+        gen_op_msachi();
+        opn = "msachi";
+	break;
+    case OPC_VR54XX_MSACHIU:
+        gen_op_msachiu();
+        opn = "msachiu";
+	break;
+    default:
+        MIPS_INVAL("mul vr54xx");
+        generate_exception(ctx, EXCP_RI);
+        return;
+    }
+    GEN_STORE_T0_REG(rd);
+    MIPS_DEBUG("%s %s, %s, %s", opn, regnames[rd], regnames[rs], regnames[rt]);
 }
 
 static void gen_cl (DisasContext *ctx, uint32_t opc,
@@ -5084,12 +5191,14 @@ static void gen_farith (DisasContext *ctx, uint32_t op1,
         opn = "movn.s";
         break;
     case FOP(21, 16):
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         gen_op_float_recip_s();
         GEN_STORE_FTN_FREG(fd, WT2);
         opn = "recip.s";
         break;
     case FOP(22, 16):
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         gen_op_float_rsqrt_s();
         GEN_STORE_FTN_FREG(fd, WT2);
@@ -5172,7 +5281,7 @@ static void gen_farith (DisasContext *ctx, uint32_t op1,
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
         if (ctx->opcode & (1 << 6)) {
-            check_cp1_64bitmode(ctx);
+            check_cop1x(ctx);
             gen_cmpabs_s(func-48, cc);
             opn = condnames_abs[func-48];
         } else {
@@ -5325,14 +5434,14 @@ static void gen_farith (DisasContext *ctx, uint32_t op1,
         opn = "movn.d";
         break;
     case FOP(21, 17):
-        check_cp1_registers(ctx, fs | fd);
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(DT0, fs);
         gen_op_float_recip_d();
         GEN_STORE_FTN_FREG(fd, DT2);
         opn = "recip.d";
         break;
     case FOP(22, 17):
-        check_cp1_registers(ctx, fs | fd);
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(DT0, fs);
         gen_op_float_rsqrt_d();
         GEN_STORE_FTN_FREG(fd, DT2);
@@ -5387,7 +5496,8 @@ static void gen_farith (DisasContext *ctx, uint32_t op1,
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
         if (ctx->opcode & (1 << 6)) {
-            check_cp1_64bitmode(ctx);
+            check_cop1x(ctx);
+            check_cp1_registers(ctx, fs | ft);
             gen_cmpabs_d(func-48, cc);
             opn = condnames_abs[func-48];
         } else {
@@ -5720,8 +5830,6 @@ static void gen_flt3_ldst (DisasContext *ctx, uint32_t opc,
     const char *opn = "extended float load/store";
     int store = 0;
 
-    /* All of those work only on 64bit FPUs. */
-    check_cp1_64bitmode(ctx);
     if (base == 0) {
         if (index == 0)
             gen_op_reset_T0();
@@ -5738,33 +5846,41 @@ static void gen_flt3_ldst (DisasContext *ctx, uint32_t opc,
        memory access. */
     switch (opc) {
     case OPC_LWXC1:
+        check_cop1x(ctx);
         op_ldst(lwc1);
         GEN_STORE_FTN_FREG(fd, WT0);
         opn = "lwxc1";
         break;
     case OPC_LDXC1:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fd);
         op_ldst(ldc1);
         GEN_STORE_FTN_FREG(fd, DT0);
         opn = "ldxc1";
         break;
     case OPC_LUXC1:
+        check_cp1_64bitmode(ctx);
         op_ldst(luxc1);
         GEN_STORE_FTN_FREG(fd, DT0);
         opn = "luxc1";
         break;
     case OPC_SWXC1:
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         op_ldst(swc1);
         opn = "swxc1";
         store = 1;
         break;
     case OPC_SDXC1:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fs);
         GEN_LOAD_FREG_FTN(DT0, fs);
         op_ldst(sdc1);
         opn = "sdxc1";
         store = 1;
         break;
     case OPC_SUXC1:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(DT0, fs);
         op_ldst(suxc1);
         opn = "suxc1";
@@ -5784,10 +5900,9 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
 {
     const char *opn = "flt3_arith";
 
-    /* All of those work only on 64bit FPUs. */
-    check_cp1_64bitmode(ctx);
     switch (opc) {
     case OPC_ALNV_PS:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_REG_T0(fr);
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
@@ -5796,6 +5911,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "alnv.ps";
         break;
     case OPC_MADD_S:
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
         GEN_LOAD_FREG_FTN(WT2, fr);
@@ -5804,6 +5920,8 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "madd.s";
         break;
     case OPC_MADD_D:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fd | fs | ft | fr);
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
         GEN_LOAD_FREG_FTN(DT2, fr);
@@ -5812,6 +5930,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "madd.d";
         break;
     case OPC_MADD_PS:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WTH0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
@@ -5824,6 +5943,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "madd.ps";
         break;
     case OPC_MSUB_S:
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
         GEN_LOAD_FREG_FTN(WT2, fr);
@@ -5832,6 +5952,8 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "msub.s";
         break;
     case OPC_MSUB_D:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fd | fs | ft | fr);
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
         GEN_LOAD_FREG_FTN(DT2, fr);
@@ -5840,6 +5962,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "msub.d";
         break;
     case OPC_MSUB_PS:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WTH0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
@@ -5852,6 +5975,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "msub.ps";
         break;
     case OPC_NMADD_S:
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
         GEN_LOAD_FREG_FTN(WT2, fr);
@@ -5860,6 +5984,8 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "nmadd.s";
         break;
     case OPC_NMADD_D:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fd | fs | ft | fr);
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
         GEN_LOAD_FREG_FTN(DT2, fr);
@@ -5868,6 +5994,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "nmadd.d";
         break;
     case OPC_NMADD_PS:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WTH0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
@@ -5880,6 +6007,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "nmadd.ps";
         break;
     case OPC_NMSUB_S:
+        check_cop1x(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
         GEN_LOAD_FREG_FTN(WT2, fr);
@@ -5888,6 +6016,8 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "nmsub.s";
         break;
     case OPC_NMSUB_D:
+        check_cop1x(ctx);
+        check_cp1_registers(ctx, fd | fs | ft | fr);
         GEN_LOAD_FREG_FTN(DT0, fs);
         GEN_LOAD_FREG_FTN(DT1, ft);
         GEN_LOAD_FREG_FTN(DT2, fr);
@@ -5896,6 +6026,7 @@ static void gen_flt3_arith (DisasContext *ctx, uint32_t opc,
         opn = "nmsub.d";
         break;
     case OPC_NMSUB_PS:
+        check_cp1_64bitmode(ctx);
         GEN_LOAD_FREG_FTN(WT0, fs);
         GEN_LOAD_FREG_FTN(WTH0, fs);
         GEN_LOAD_FREG_FTN(WT1, ft);
@@ -5973,7 +6104,12 @@ static void decode_opc (CPUState *env, DisasContext *ctx)
             gen_arith(env, ctx, op1, rd, rs, rt);
             break;
         case OPC_MULT ... OPC_DIVU:
-            gen_muldiv(ctx, op1, rs, rt);
+            if (sa) {
+                check_insn(env, ctx, INSN_VR54XX);
+                op1 = MASK_MUL_VR54XX(ctx->opcode);
+                gen_mul_vr54xx(ctx, op1, rd, rs, rt);
+            } else
+                gen_muldiv(ctx, op1, rs, rt);
             break;
         case OPC_JR ... OPC_JALR:
             gen_compute_branch(ctx, op1, rs, rd, sa);
@@ -6366,6 +6502,7 @@ static void decode_opc (CPUState *env, DisasContext *ctx)
 #endif
             case OPC_BC1ANY2:
             case OPC_BC1ANY4:
+                check_cop1x(ctx);
                 check_insn(env, ctx, ASE_MIPS3D);
                 /* fall through */
             case OPC_BC1:
