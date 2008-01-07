@@ -128,6 +128,24 @@ retry_get_imsi (MokoNetwork *network)
   return TRUE;
 }
 
+static void
+stop_retrying (MokoNetwork *network)
+{
+  /* Stop trying to get details */
+  if (network->priv->retry_oper) {
+    g_source_remove (network->priv->retry_oper);
+    network->priv->retry_oper = 0;
+  }
+  if (network->priv->retry_opers) {
+    g_source_remove (network->priv->retry_opers);
+    network->priv->retry_opers = 0;
+  }
+  if (network->priv->retry_imsi) {
+    g_source_remove (network->priv->retry_imsi);
+    network->priv->retry_imsi = 0;
+  }
+}
+
 /* Callbacks for gsmd events */
 static void
 on_network_registered (MokoListener *listener,
@@ -151,18 +169,7 @@ on_network_registered (MokoListener *listener,
       priv->lac = 0;
       
       /* Stop trying to get details */
-      if (priv->retry_oper) {
-        g_source_remove (priv->retry_oper);
-        priv->retry_oper = 0;
-      }
-      if (priv->retry_opers) {
-        g_source_remove (priv->retry_opers);
-        priv->retry_opers = 0;
-      }
-      if (priv->retry_imsi) {
-        g_source_remove (priv->retry_imsi);
-        priv->retry_imsi = 0;
-      }
+      stop_retrying (MOKO_NETWORK (listener));
       
       break;
     case GSMD_NETREG_DENIED:
@@ -186,14 +193,14 @@ on_network_registered (MokoListener *listener,
         lgsm_get_imsi (handle);
         
         /* Add a time-out in case retrieval fails - retry every 10 seconds */
-        while (g_source_remove_by_user_data (listener));
-        priv->retry_oper = g_timeout_add_seconds (10,
+        stop_retrying (MOKO_NETWORK (listener));
+        priv->retry_oper = g_timeout_add_seconds (15,
                                                   (GSourceFunc)retry_oper_get,
                                                   listener);
-        priv->retry_opers = g_timeout_add_seconds (10,
+        priv->retry_opers = g_timeout_add_seconds (15,
                                                    (GSourceFunc)retry_opers_get,
                                                    listener);
-        priv->retry_imsi = g_timeout_add_seconds (10,
+        priv->retry_imsi = g_timeout_add_seconds (15,
                                                   (GSourceFunc)retry_get_imsi,
                                                   listener);
       }
@@ -306,18 +313,7 @@ moko_network_dispose (GObject *object)
   network = MOKO_NETWORK (object);
   priv = network->priv;
 
-  if (priv->retry_oper) {
-    g_source_remove (priv->retry_oper);
-    priv->retry_oper = 0;
-  }
-  if (priv->retry_opers) {
-    g_source_remove (priv->retry_opers);
-    priv->retry_opers = 0;
-  }
-  if (priv->retry_imsi) {
-    g_source_remove (priv->retry_imsi);
-    priv->retry_imsi = 0;
-  }
+  stop_retrying (MOKO_NETWORK (object));
 
   if (priv->handle) {
     lgsm_exit (priv->handle);
