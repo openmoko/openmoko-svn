@@ -68,6 +68,10 @@ struct _MokoNetworkPrivate
   gchar                     *network_name;
   gchar                     *network_number;
   gchar                     *imsi;
+  
+  guint                     retry_oper;
+  guint                     retry_opers;
+  guint                     retry_imsi;
 
   /* gsmd connection variables */
   struct lgsm_handle        *handle;
@@ -99,6 +103,31 @@ moko_network_get_property (GObject *object, guint property_id,
   }
 }
 
+/* Callbacks to retry retrieving of operator/sim details after registration */
+static gboolean
+retry_oper_get (MokoNetwork *network)
+{
+  g_debug ("Retrying operator retrieval");
+  lgsm_oper_get (network->priv->handle);
+  return TRUE;
+}
+
+static gboolean
+retry_opers_get (MokoNetwork *network)
+{
+  g_debug ("Retrying operators list retrieval");
+  lgsm_opers_get (network->priv->handle);
+  return TRUE;
+}
+
+static gboolean
+retry_get_imsi (MokoNetwork *network)
+{
+  g_debug ("Retrying imsi retrieval");
+  lgsm_get_imsi (network->priv->handle);
+  return TRUE;
+}
+
 /* Callbacks for gsmd events */
 static void
 on_network_registered (MokoListener *listener,
@@ -116,8 +145,25 @@ on_network_registered (MokoListener *listener,
   {
     case GSMD_NETREG_UNREG:
     case GSMD_NETREG_UNREG_BUSY:
-      /* Do nothing */
       g_debug ("Searching for network");
+      
+      /* Clear operator location */
+      priv->lac = 0;
+      
+      /* Stop trying to get details */
+      if (priv->retry_oper) {
+        g_source_remove (priv->retry_oper);
+        priv->retry_oper = 0;
+      }
+      if (priv->retry_opers) {
+        g_source_remove (priv->retry_opers);
+        priv->retry_opers = 0;
+      }
+      if (priv->retry_imsi) {
+        g_source_remove (priv->retry_imsi);
+        priv->retry_imsi = 0;
+      }
+      
       break;
     case GSMD_NETREG_DENIED:
       /* This may be a pin issue*/
@@ -138,6 +184,18 @@ on_network_registered (MokoListener *listener,
         
         /* Retrieve IMSI to get home country code */
         lgsm_get_imsi (handle);
+        
+        /* Add a time-out in case retrieval fails - retry every 10 seconds */
+        while (g_source_remove_by_user_data (listener));
+        priv->retry_oper = g_timeout_add_seconds (10,
+                                                  (GSourceFunc)retry_oper_get,
+                                                  listener);
+        priv->retry_opers = g_timeout_add_seconds (10,
+                                                   (GSourceFunc)retry_opers_get,
+                                                   listener);
+        priv->retry_imsi = g_timeout_add_seconds (10,
+                                                  (GSourceFunc)retry_get_imsi,
+                                                  listener);
       }
       
       break;
@@ -247,6 +305,19 @@ moko_network_dispose (GObject *object)
 
   network = MOKO_NETWORK (object);
   priv = network->priv;
+
+  if (priv->retry_oper) {
+    g_source_remove (priv->retry_oper);
+    priv->retry_oper = 0;
+  }
+  if (priv->retry_opers) {
+    g_source_remove (priv->retry_opers);
+    priv->retry_opers = 0;
+  }
+  if (priv->retry_imsi) {
+    g_source_remove (priv->retry_imsi);
+    priv->retry_imsi = 0;
+  }
 
   if (priv->handle) {
     lgsm_exit (priv->handle);
@@ -472,12 +543,20 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       }
       break;
     case GSMD_NETWORK_OPER_GET :
+      if (priv->retry_oper) {
+        g_source_remove (priv->retry_oper);
+        priv->retry_oper = 0;
+      }
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_network_name (MOKO_LISTENER (l->data),
                                        priv->handle, oper);
       }
       break;
     case GSMD_NETWORK_OPER_LIST :
+      if (priv->retry_opers) {
+        g_source_remove (priv->retry_opers);
+        priv->retry_opers = 0;
+      }
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_network_list (MOKO_LISTENER (l->data),
                                        priv->handle, opers);
@@ -501,8 +580,11 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   switch (gmh->msg_subtype)
   {
     case GSMD_PHONE_GET_IMSI:
-      for (l = priv->listeners; l; l = l->next)
-      {
+      if (priv->retry_imsi) {
+        g_source_remove (priv->retry_imsi);
+        priv->retry_imsi = 0;
+      }
+      for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_imsi (MOKO_LISTENER (l->data), priv->handle,
                                (const gchar *)gmh + sizeof (*gmh));
       }

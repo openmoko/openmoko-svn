@@ -1,5 +1,13 @@
 2008-01-07  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-network.c: (retry_oper_get),
+	(retry_opers_get), (retry_get_imsi), (on_network_registered),
+	(moko_network_dispose), (net_msghandler), (phone_msghandler):
+	Retry retrieval of network details on connecting if they fail (ten
+	second time-out) - should help reliability of SMS sending
+
+2008-01-07  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-sms.c: (on_incoming_ds):
 	Correct a misinterpretation of how delivery status reports are stored
 
