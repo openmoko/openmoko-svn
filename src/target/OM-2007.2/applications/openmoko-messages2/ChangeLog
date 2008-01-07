@@ -1,3 +1,10 @@
+2008-01-07  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-notes.c: (scroll_notes_to_bottom_cb), (note_progress_cb),
+	(page_shown):
+	Scroll the notes treeview to the end of the list when switching to the
+	page
+
 2007-12-21  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-main.c:

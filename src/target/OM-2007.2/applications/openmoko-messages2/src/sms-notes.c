@@ -89,6 +89,25 @@ note_changed_cb_end:
 	}
 }
 
+static void
+scroll_notes_to_bottom_cb (GtkAdjustment *vadjust, SmsData *data)
+{
+	/* Scroll note list to the bottom */
+	if (vadjust->value != (vadjust->upper - vadjust->page_size))
+		gtk_adjustment_set_value (vadjust,
+			vadjust->upper - vadjust->page_size);
+}
+
+static void
+note_progress_cb (JanaStoreView *store_view, gint percent, SmsData *data)
+{
+	if (percent != 100) return;
+	
+	/* Remove scroll-to-bottom callback */
+	g_signal_handlers_disconnect_by_func (
+		data->notes_treeview, scroll_notes_to_bottom_cb, data);
+}
+
 static gboolean
 mark_messages_read_idle (SmsData *data)
 {
@@ -161,6 +180,8 @@ page_shown (SmsData *data)
 		G_CALLBACK (scroll_changed_cb), data);
 	g_signal_connect (vadjust, "value-changed",
 		G_CALLBACK (scroll_changed_cb), data);
+	g_signal_connect (vadjust, "changed",
+		G_CALLBACK (scroll_notes_to_bottom_cb), data);
 	
 	/* Assign the recipient photo to the generic avatar icon, in case we 
 	 * can't find it later.
@@ -199,6 +220,8 @@ page_shown (SmsData *data)
 		}
 		g_list_free (components);
 		
+		note_progress_cb (store_view, 100, data);
+		
 		return;
 	}
 	
@@ -226,6 +249,8 @@ page_shown (SmsData *data)
 			G_CALLBACK (note_changed_cb), data);
 		g_signal_connect (store_view, "modified",
 			G_CALLBACK (note_changed_cb), data);
+		g_signal_connect (store_view, "progress",
+			G_CALLBACK (note_progress_cb), data);
 		jana_store_view_start (store_view);
 	}
 	g_object_unref (store_view);
