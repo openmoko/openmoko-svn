@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2253,6 +2253,13 @@
+@@ -2276,6 +2276,13 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -92,7 +92,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,455 @@
+@@ -0,0 +1,458 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -150,8 +150,8 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#define U_M_SDIV	0x2
 +#else
 +/* configure GTA02v2 to low speed until we've increased the voltage */
-+#define M_MDIV 80
-+#define M_PDIV 8
++#define M_MDIV 42
++#define M_PDIV 1
 +#define M_SDIV 0
 +#define U_M_MDIV 88
 +#define U_M_PDIV 4
@@ -194,6 +194,9 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +	/* configure UPLL */
 +	clk_power->UPLLCON = ((U_M_MDIV << 12) + (U_M_PDIV << 4) + U_M_SDIV);
++
++	/* clock divide */
++	clk_power->CLKDIVN = 0x05; /* 1:4:8 */
 +
 +	/* some delay between MPLL and UPLL */
 +	delay (8000);
