@@ -32,7 +32,25 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- linux-2.6.22.5.orig/drivers/video/glamo/glamo-fb.c
 +++ linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
-@@ -99,25 +99,12 @@
+@@ -52,6 +52,17 @@
+ #include "glamo-regs.h"
+ #include "glamo-core.h"
+ 
++#ifdef DEBUG
++#define GLAMO_LOG(...)
++#else
++#define GLAMO_LOG(...) \
++do { \
++	printk(KERN_DEBUG "in %s:%s:%d", __FILE__, __func__, __LINE__); \
++	printk(KERN_DEBUG __VA_ARGS__); \
++} while (0);
++#endif
++
++
+ #define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
+ 
+ #define GLAMO_FB_ALLOC	(640*480*2)
+@@ -99,25 +110,12 @@
  	{ GLAMO_REG_LCD_MODE3, 0x0b40 },
  	  /* src data rgb565, res, 18bit rgb666
  	   * 000 01 011 0100 0000 */
@@ -58,14 +76,109 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  };
  
  static int glamofb_run_script(struct glamofb_handle *glamo,
-@@ -207,24 +194,69 @@
+@@ -207,24 +205,231 @@
  	return 0;
  }
  
-+static void glamofb_activate_var(struct glamofb_handle *glamo,
-+				struct fb_var_screeninfo *var)
++static void reg_set_bit_mask(struct glamofb_handle *glamo,
++			     u_int16_t reg, u_int16_t mask,
++			     u_int16_t val)
 +{
-+	int sync, bp, disp, fp, total;
++	u_int16_t tmp;
++
++	val &= mask;
++
++	tmp = reg_read(glamo, reg);
++	tmp &= ~mask;
++	tmp |= val;
++	reg_write(glamo, reg, tmp);
++}
++
++#define GLAMO_LCD_WIDTH_MASK 0x03FF
++#define GLAMO_LCD_HEIGHT_MASK 0x03FF
++#define GLAMO_LCD_PITCH_MASK 0x07FE
++#define GLAMO_LCD_HV_TOTAL_MASK 0x03FF
++#define GLAMO_LCD_HV_RETR_START_MASK 0x03FF
++#define GLAMO_LCD_HV_RETR_END_MASK 0x03FF
++#define GLAMO_LCD_HV_RETR_DISP_START_MASK 0x03FF
++#define GLAMO_LCD_HV_RETR_DISP_END_MASK 0x03FF
++
++enum orientation {
++    ORIENTATION_PORTRAIT,
++    ORIENTATION_LANDSCAPE
++};
++
++
++static void rotate_lcd(struct glamofb_handle *glamo,
++                       __u32 rotation)
++{
++	int glamo_rot;
++
++	switch (rotation) {
++		case FB_ROTATE_UR:
++			glamo_rot = GLAMO_LCD_ROT_MODE_0;
++			break;
++		case FB_ROTATE_CW:
++			glamo_rot = GLAMO_LCD_ROT_MODE_90;
++			break;
++		case FB_ROTATE_UD:
++			glamo_rot = GLAMO_LCD_ROT_MODE_180;
++			break;
++		case FB_ROTATE_CCW:
++			glamo_rot = GLAMO_LCD_ROT_MODE_270;
++			break;
++		default:
++			glamo_rot = GLAMO_LCD_ROT_MODE_0;
++			break;
++	}
++	glamofb_cmd_mode(glamo, 1);
++	reg_set_bit_mask(glamo,
++			 GLAMO_REG_LCD_WIDTH,
++			 GLAMO_LCD_ROT_MODE_MASK,
++			 glamo_rot);
++	reg_set_bit_mask(glamo,
++			 GLAMO_REG_LCD_MODE1,
++			 GLAMO_LCD_MODE1_ROTATE_EN,
++			 (glamo_rot != GLAMO_LCD_ROT_MODE_0)?
++				 GLAMO_LCD_MODE1_ROTATE_EN : 0);
++	glamofb_cmd_mode(glamo, 0);
++}
++
++static enum orientation get_orientation(struct fb_var_screeninfo *var)
++{
++	GLAMO_LOG("mark\n")
++	if (var->xres <= var->yres) {
++		GLAMO_LOG("portrait\n")
++		return ORIENTATION_PORTRAIT;
++	}
++	GLAMO_LOG("landscape\n")
++	return ORIENTATION_LANDSCAPE;
++}
++
++static int will_orientation_change(struct fb_var_screeninfo *var)
++{
++	enum  orientation orient = get_orientation(var);
++	switch (orient) {
++		case ORIENTATION_LANDSCAPE:
++			if (var->rotate == FB_ROTATE_UR || var->rotate == FB_ROTATE_UD)
++				return 1;
++			break;
++		case ORIENTATION_PORTRAIT:
++			if (var->rotate == FB_ROTATE_CW || var->rotate == FB_ROTATE_CCW)
++				return 1;
++			break;
++	}
++	return 0;
++}
++
++static void glamofb_update_lcd_controller(struct glamofb_handle *glamo,
++					  struct fb_var_screeninfo *var)
++{
++	int sync, bp, disp, fp, total, xres, yres, pitch, orientation_changing;
++
++	GLAMO_LOG("enter: glamo:%#x, var:%#x\n", (unsigned)glamo, (unsigned)var);
++	if (!glamo || !var)
++		return;
 +
 +	glamofb_cmd_mode(glamo, 1);
 +
@@ -74,37 +187,104 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 +				     GLAMO_ENGINE_LCD,
 +				     var->pixclock);
 +
-+	/* XXX highest bits of the following two regs have other meanings */
-+	reg_write(glamo, GLAMO_REG_LCD_WIDTH, var->xres);
-+	reg_write(glamo, GLAMO_REG_LCD_HEIGHT, var->yres);
-+	reg_write(glamo, GLAMO_REG_LCD_PITCH,
-+			(var->xres * var->bits_per_pixel) / 8);
++	xres = var->xres;
++	yres = var->yres;
++	GLAMO_LOG("xres:%d, yres:%d, rotate:%d\n", xres, yres, var->rotate);
 +
++	/*
++	 * figure out if orientation is going to change
++	 */
++	orientation_changing = will_orientation_change(var);
++	GLAMO_LOG("orientation_changing:%d\n", orientation_changing);
++
++        /*
++         * adjust the pitch according to new orientation to come
++         */
++        if (orientation_changing) {
++		pitch = var->yres * var->bits_per_pixel / 8;
++        } else {
++		pitch = var->xres * var->bits_per_pixel / 8;
++        }
++	GLAMO_LOG("pitch:%d\n", pitch);
++
++	/*
++	 * set the awaiten LCD geometry
++	 */
++	reg_set_bit_mask(glamo,
++			 GLAMO_REG_LCD_WIDTH,
++			 GLAMO_LCD_WIDTH_MASK,
++			 xres);
++	reg_set_bit_mask(glamo,
++			 GLAMO_REG_LCD_HEIGHT,
++			 GLAMO_LCD_HEIGHT_MASK,
++			 yres);
++	reg_set_bit_mask(glamo,
++			 GLAMO_REG_LCD_PITCH,
++			 GLAMO_LCD_PITCH_MASK,
++			 pitch);
++
++	GLAMO_LOG("mark:\n");
++	/*
++	 * honour the rotation request
++	 */
++	rotate_lcd(glamo, var->rotate);
++
++	/*
++	 * update the reported geometry
++	 * of the framebuffer.
++	 */
++	if (orientation_changing) {
++		var->xres_virtual = var->xres = yres;
++		var->yres_virtual = var->yres = xres;
++	} else {
++		var->xres_virtual = var->xres = xres;
++		var->yres_virtual = var->yres = yres;
++	}
++
++	GLAMO_LOG("reported res:(%d,%d)\n", var->xres, var->yres);
++	/*
++	 * update scannout timings
++	 */
 +	sync = 0;
 +	bp = sync + var->hsync_len;
 +	disp = bp + var->left_margin;
-+	fp = disp + var->xres;
++	fp = disp + xres;
 +	total = fp + var->right_margin;
 +
-+	reg_write(glamo, GLAMO_REG_LCD_HORIZ_TOTAL, total);
-+	reg_write(glamo, GLAMO_REG_LCD_HORIZ_RETR_START, sync);
-+	reg_write(glamo, GLAMO_REG_LCD_HORIZ_RETR_END, bp);
-+	reg_write(glamo, GLAMO_REG_LCD_HORIZ_DISP_START, disp);
-+	reg_write(glamo, GLAMO_REG_LCD_HORIZ_DISP_END, fp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_HORIZ_TOTAL,
++			 GLAMO_LCD_HV_TOTAL_MASK, total);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_HORIZ_RETR_START,
++			 GLAMO_LCD_HV_RETR_START_MASK, sync);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_HORIZ_RETR_END,
++			 GLAMO_LCD_HV_RETR_END_MASK, bp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_HORIZ_DISP_START,
++			  GLAMO_LCD_HV_RETR_DISP_START_MASK, disp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_HORIZ_DISP_END,
++			 GLAMO_LCD_HV_RETR_DISP_END_MASK, fp);
++
++	GLAMO_LOG("mark:\n");
 +
 +	sync = 0;
 +	bp = sync + var->vsync_len;
 +	disp = bp + var->upper_margin;
-+	fp = disp + var->yres;
++	fp = disp + yres;
 +	total = fp + var->lower_margin;
 +
-+	reg_write(glamo, GLAMO_REG_LCD_VERT_TOTAL, total);
-+	reg_write(glamo, GLAMO_REG_LCD_VERT_RETR_START, sync);
-+	reg_write(glamo, GLAMO_REG_LCD_VERT_RETR_END, bp);
-+	reg_write(glamo, GLAMO_REG_LCD_VERT_DISP_START, disp);
-+	reg_write(glamo, GLAMO_REG_LCD_VERT_DISP_END, fp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_VERT_TOTAL,
++			 GLAMO_LCD_HV_TOTAL_MASK, total);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_VERT_RETR_START,
++			  GLAMO_LCD_HV_RETR_START_MASK, sync);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_VERT_RETR_END,
++			 GLAMO_LCD_HV_RETR_END_MASK, bp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_VERT_DISP_START,
++			 GLAMO_LCD_HV_RETR_DISP_START_MASK, disp);
++	reg_set_bit_mask(glamo, GLAMO_REG_LCD_VERT_DISP_END,
++			 GLAMO_LCD_HV_RETR_DISP_END_MASK, fp);
 +
++	GLAMO_LOG("mark:\n");
 +	glamofb_cmd_mode(glamo, 0);
++
++	GLAMO_LOG("leave:\n");
 +}
 +
  static int glamofb_set_par(struct fb_info *info)
@@ -129,11 +309,11 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 +	info->fix.line_length = (var->xres * var->bits_per_pixel) / 8;
 +	info->fix.smem_len = info->fix.line_length * var->yres_virtual;
 +
-+	glamofb_activate_var(glamo, var);
++	glamofb_update_lcd_controller(glamo, var);
  
  	return 0;
  }
-@@ -368,6 +400,8 @@
+@@ -368,6 +573,8 @@
  		while (!reg_read(gfb, GLAMO_REG_LCD_STATUS2) & (1 << 12))
  			yield();
  		dev_dbg(gfb->dev, "idle!\n");
@@ -142,7 +322,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	} else {
  		/* RGB interface needs vsync/hsync */
  		if (reg_read(gfb, GLAMO_REG_LCD_MODE3) & GLAMO_LCD_MODE3_RGB)
-@@ -384,7 +418,6 @@
+@@ -384,7 +591,6 @@
  
  int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val)
  {
@@ -150,7 +330,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	dev_dbg(gfb->dev, "%s: waiting for cmdq empty\n",
  		__FUNCTION__);
  	while (!glamofb_cmdq_empty(gfb))
-@@ -409,6 +442,18 @@
+@@ -409,6 +615,18 @@
  	.fb_imageblit	= cfb_imageblit,
  };
  
@@ -169,7 +349,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  static int __init glamofb_probe(struct platform_device *pdev)
  {
  	int rc = -EIO;
-@@ -504,24 +549,14 @@
+@@ -504,24 +722,14 @@
  	fbinfo->var.yres_virtual = mach_info->yres.defval;
  	fbinfo->var.bits_per_pixel = mach_info->bpp.defval;
  
@@ -201,7 +381,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	fbinfo->fix.smem_len = mach_info->xres.max *
  			       mach_info->yres.max *
  			       mach_info->bpp.max / 8;
-@@ -530,8 +565,7 @@
+@@ -530,8 +738,7 @@
  
  	glamo_engine_enable(mach_info->glamo, GLAMO_ENGINE_LCD);
  	glamo_engine_reset(mach_info->glamo, GLAMO_ENGINE_LCD);
@@ -337,3 +517,24 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-core.c
  enum glamo_power {
  	GLAMO_POWER_ON,
  	GLAMO_POWER_STANDBY,
+Index: linux-2.6.22.5/drivers/video/glamo/glamo-regs.h
+===================================================================
+--- linux-2.6.22.5.orig/drivers/video/glamo/glamo-regs.h
++++ linux-2.6.22.5/drivers/video/glamo/glamo-regs.h
+@@ -431,6 +431,16 @@
+ 	GLAMO_LCD_MODE3_18BITS		= 0x0040,
+ };
+ 
++enum glamo_lcd_rot_mode {
++        GLAMO_LCD_ROT_MODE_0            = 0x0000,
++        GLAMO_LCD_ROT_MODE_180          = 0x2000,
++        GLAMO_LCD_ROT_MODE_MIRROR       = 0x4000,
++        GLAMO_LCD_ROT_MODE_FLIP         = 0x6000,
++        GLAMO_LCD_ROT_MODE_90           = 0x8000,
++        GLAMO_LCD_ROT_MODE_270          = 0xa000,
++};
++#define GLAMO_LCD_ROT_MODE_MASK         0xe000
++
+ enum glamo_lcd_cmd_type {
+ 	GLAMO_LCD_CMD_TYPE_DISP		= 0x0000,
+ 	GLAMO_LCD_CMD_TYPE_PARALLEL	= 0x4000,
