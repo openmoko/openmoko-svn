@@ -1,5 +1,3 @@
-UNDER DEVELOPMENT - DON'T USE YET
-
 #!/bin/sh -e
 #
 # This script illustrates how to build a specific version of u-boot from
@@ -31,7 +29,7 @@ UNDER DEVELOPMENT - DON'T USE YET
 git clone git://www.denx.de/git/u-boot.git
 cd u-boot
 
-[ -z "$GIT_HEAD"] ||
+[ -z "$GIT_HEAD" ] ||
   git reset --hard $GIT_HEAD
 
 ln -sf $SVN/trunk/src/target/u-boot/patches

@@ -1,5 +1,3 @@
-UNDER DEVELOPMENT - DON'T USE YET
-
 #!/bin/sh -e
 #
 # This script illustrates how to build a specific version of the Linux kernel
@@ -42,10 +40,11 @@ cd linux-$KERNEL
 
 ln -sf $SVN/trunk/src/target/kernel/patches
 
+defconfig=$SVN/trunk/src/target/kernel/config/defconfig-$KERNEL
 [ -z "$SVN_REV" ] ||
-  ( cd patches && svn update -r$SVN_REV; )
+  ( cd patches && svn update -r$SVN_REV . $defconfig; )
 
 quilt push -a
-cp $SVN/trunk/src/target/kernel/config/defconfig-$KERNEL .config
+cp $defconfig .config
 make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- oldconfig
 make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- uImage
