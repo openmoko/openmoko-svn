@@ -767,69 +767,94 @@ static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return ret;
 }
 
-static int network_opers_parse(const char *str, struct gsmd_msg_oper out[])
+static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 {
 	int len = 0;
-	int stat, n;
-	char opname_longalpha[16 + 1];
-	char opname_shortalpha[8 + 1];
-	char opname_num[6 + 1];
+	struct gsm_extrsp *er;
+	char buf[64];
+	char *head, *tail, *ptr;
+	struct gsmd_msg_oper *out2;
 
 	if (strncmp(str, "+COPS: ", 7))
-		goto final;
-	str += 7;
+		return -EINVAL;
 
-	while (*str == '(') {
-		if (out) {
-			out->is_last = 0;
-			if (sscanf(str,
-						"(%i,\"%16[^\"]\","
-						"\"%8[^\"]\",\"%6[0-9]\")%n",
-						&stat,
-						opname_longalpha,
-						opname_shortalpha,
-						opname_num,
-						&n) < 4)
-				goto final;
-			out->stat = stat;
-			memcpy(out->opname_longalpha, opname_longalpha,
-					sizeof(out->opname_longalpha));
-			memcpy(out->opname_shortalpha, opname_shortalpha,
-					sizeof(out->opname_shortalpha));
-			memcpy(out->opname_num, opname_num,
-					sizeof(out->opname_num));
-		} else
-			if (sscanf(str,
-						"(%*i,\"%*[^\"]\","
-						"\"%*[^\"]\",\"%*[0-9]\")%n",
-						&n) < 0)
-				goto final;
-		if (n < 10 || str[n - 1] != ')')
-			goto final;
-		if (str[n] == ',')
-			n ++;
-		str += n;
-		len ++;
-		if (out)
-			out ++;
+	ptr = str;
+	while (*str) {
+		if ( *str == '(' && isdigit(*(str+1)) ) {
+			len++;	
+			str+=2;
+		}
+		else
+			str++;
 	}
-final:
-	if (out)
-		out->is_last = 1;
+
+	*out = talloc_size(__gu_ctx, sizeof(struct gsmd_msg_oper) * (len + 1));
+
+	if (!out)
+		return -ENOMEM;
+
+	out2 = *out;
+	str = ptr;
+
+	while (*str) {
+		if ( *str == '(' )
+			head = str;
+		else if ( *str == ')' ) {
+			tail = str;
+			
+			memset(buf, '\0', sizeof(buf));
+			strncpy(buf, head+1, (tail-head-1));
+
+			DEBUGP("buf: %s\n", buf);
+
+			er = extrsp_parse(gsmd_tallocs, buf);
+
+			if ( !er )
+				return -ENOMEM;
+
+			//extrsp_dump(er);	
+				
+			if ( er->num_tokens == 4 &&
+					er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+					er->tokens[1].type == GSMD_ECMD_RTT_STRING &&
+					er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
+					er->tokens[3].type == GSMD_ECMD_RTT_STRING ) {
+				
+				/*
+				 * +COPS=? +COPS: [list of supported (<stat>,long alphanumeric <oper>
+				 *       ,short alphanumeric <oper>,numeric <oper>)s]
+				 */
+				
+				out2->stat = er->tokens[0].u.numeric;
+				strcpy(out2->opname_longalpha, er->tokens[1].u.string);
+				strcpy(out2->opname_shortalpha, er->tokens[2].u.string);
+				strcpy(out2->opname_num, er->tokens[3].u.string);
+			}
+			else {
+				DEBUGP("Invalid Input : Parse error\n");
+				talloc_free(*out);
+				return -EINVAL;
+			}
+
+			talloc_free(er);
+			out2->is_last = 0;
+			out2 ++;
+		}
+
+		str ++;
+	}
+
+	out2->is_last = 1;
 	return len;
 }
 
 static int network_opers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	struct gsmd_msg_oper *buf;
+	struct gsmd_msg_oper *buf = NULL;
 	int len, ret;
 
-	len = network_opers_parse(resp, 0);
-	buf = talloc_size(__gu_ctx, sizeof(struct gsmd_msg_oper) * (len + 1));
-	if (!buf)
-		return -ENOMEM;
-	network_opers_parse(resp, buf);
+	len = network_opers_parse(resp, &buf);
 
 	ret = gsmd_ucmd_submit(gu, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_LIST,
 			cmd->id, sizeof(*buf) * (len + 1), buf);
