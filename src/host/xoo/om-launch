@@ -1,0 +1,44 @@
+#!/bin/sh
+# Authored by Mickey.
+# (C) 2007 OpenMoko Inc.
+# MIT License
+
+THEDISPLAY=:1
+SERVER=Xephyr
+SHOWCURSOR="yes"
+OMTOPDIR=/local/pkg/openmoko
+OMDIR=$OMTOPDIR/src/target/OM-2007.2
+OMDATADIR=/usr/local/share
+THEMEDIR=$OMDIR/artwork/themes/openmoko-standard-2/gtk-2.0
+NEODATADIR=$OMDIR/daemons/neod/data
+
+xoo -xo '-dpi 285 -ac' -xd :1 -xn `which $SERVER` -t 'OpenMoko running on Neo1973' \
+         -d $OMTOPDIR/src/host/xoo/neo1973.xml &
+
+sleep 2 # give Xoo a chance to come up
+
+# set gconf variables
+gconftool-2 --type string --set /desktop/poky/interface/theme                     openmoko-standard-2
+gconftool-2 --type string --set /desktop/poky/interface/icon_theme                openmoko-standard
+gconftool-2 --type string --set /desktop/poky/interface/font_name                 "Sans 5"
+gconftool-2 --type string --set /desktop/poky/interface/wallpaper                 $OMDATADIR/wallpaper.png
+gconftool-2 --type bool   --set /desktop/poky/interface/digital_clock             1
+gconftool-2 --type int    --set /desktop/poky/peripherals/mouse/drag_threshold    8
+gconftool-2 --type int    --set /desktop/openmoko/neod/power_management           2
+
+# set env variables
+export DISPLAY=$THEDISPLAY
+export GTK_RC2_FILES=$THEMEDIR/gtkrc
+export PATH=/usr/local/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/lib
+
+# launch X clients, this is from /etc/matchbox/session
+
+openmoko-today &
+
+matchbox-window-manager -use_titlebar yes -use_desktop_mode decorated -theme openmoko-standard-2 -use_cursor $SHOWCURSOR $@ &
+
+matchbox-panel --start-applets systray,startup \
+  --end-applets openmoko-panel-battery,openmoko-panel-gsm,openmoko-panel-gps,openmoko-panel-usb,openmoko-panel-bt,keyboard --titlebar &
+
+exec neod
