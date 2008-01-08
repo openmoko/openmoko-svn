@@ -17,7 +17,7 @@ Index: linux-2.6.22.5/include/linux/glamofb.h
 ===================================================================
 --- linux-2.6.22.5.orig/include/linux/glamofb.h
 +++ linux-2.6.22.5/include/linux/glamofb.h
-@@ -13,6 +13,10 @@
+@@ -13,6 +13,11 @@
  
  struct glamofb_platform_data {
  	int width, height;
@@ -25,6 +25,7 @@ Index: linux-2.6.22.5/include/linux/glamofb.h
 +	int left_margin, right_margin;
 +	int upper_margin, lower_margin;
 +	int hsync_len, vsync_len;
++	int fb_mem_size;
  
  	struct glamofb_val xres;
  	struct glamofb_val yres;
@@ -32,10 +33,11 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- linux-2.6.22.5.orig/drivers/video/glamo/glamo-fb.c
 +++ linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
-@@ -52,6 +52,17 @@
+@@ -52,9 +52,18 @@
  #include "glamo-regs.h"
  #include "glamo-core.h"
  
+-#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
 +#ifdef DEBUG
 +#define GLAMO_LOG(...)
 +#else
@@ -45,12 +47,14 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 +	printk(KERN_DEBUG __VA_ARGS__); \
 +} while (0);
 +#endif
-+
-+
- #define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
  
- #define GLAMO_FB_ALLOC	(640*480*2)
-@@ -99,25 +110,12 @@
+-#define GLAMO_FB_ALLOC	(640*480*2)
++
++#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
+ 
+ struct glamofb_handle {
+ 	struct fb_info *fb;
+@@ -99,25 +108,12 @@
  	{ GLAMO_REG_LCD_MODE3, 0x0b40 },
  	  /* src data rgb565, res, 18bit rgb666
  	   * 000 01 011 0100 0000 */
@@ -76,7 +80,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  };
  
  static int glamofb_run_script(struct glamofb_handle *glamo,
-@@ -207,24 +205,231 @@
+@@ -207,24 +203,231 @@
  	return 0;
  }
  
@@ -313,7 +317,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  
  	return 0;
  }
-@@ -368,6 +573,8 @@
+@@ -368,6 +571,8 @@
  		while (!reg_read(gfb, GLAMO_REG_LCD_STATUS2) & (1 << 12))
  			yield();
  		dev_dbg(gfb->dev, "idle!\n");
@@ -322,7 +326,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	} else {
  		/* RGB interface needs vsync/hsync */
  		if (reg_read(gfb, GLAMO_REG_LCD_MODE3) & GLAMO_LCD_MODE3_RGB)
-@@ -384,7 +591,6 @@
+@@ -384,7 +589,6 @@
  
  int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val)
  {
@@ -330,7 +334,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	dev_dbg(gfb->dev, "%s: waiting for cmdq empty\n",
  		__FUNCTION__);
  	while (!glamofb_cmdq_empty(gfb))
-@@ -409,6 +615,18 @@
+@@ -409,6 +613,18 @@
  	.fb_imageblit	= cfb_imageblit,
  };
  
@@ -349,7 +353,17 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  static int __init glamofb_probe(struct platform_device *pdev)
  {
  	int rc = -EIO;
-@@ -504,24 +722,14 @@
+@@ -453,7 +669,8 @@
+ 	}
+ 
+ 	glamofb->fb_res = request_mem_region(glamofb->fb_res->start,
+-					     GLAMO_FB_ALLOC, pdev->name);
++					     mach_info->fb_mem_size,
++					     pdev->name);
+ 	if (!glamofb->fb_res) {
+ 		dev_err(&pdev->dev, "failed to request vram region\n");
+ 		goto out_release_reg;
+@@ -504,34 +721,21 @@
  	fbinfo->var.yres_virtual = mach_info->yres.defval;
  	fbinfo->var.bits_per_pixel = mach_info->bpp.defval;
  
@@ -378,10 +392,12 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 -	fbinfo->var.green.length = 6;
 -	fbinfo->var.blue.length = 5;
 -	fbinfo->var.transp.length = 0;
- 	fbinfo->fix.smem_len = mach_info->xres.max *
- 			       mach_info->yres.max *
- 			       mach_info->bpp.max / 8;
-@@ -530,8 +738,7 @@
+-	fbinfo->fix.smem_len = mach_info->xres.max *
+-			       mach_info->yres.max *
+-			       mach_info->bpp.max / 8;
++	fbinfo->fix.smem_len = mach_info->fb_mem_size;
+ 
+ 	memset(fbinfo->screen_base, 0, fbinfo->fix.smem_len);
  
  	glamo_engine_enable(mach_info->glamo, GLAMO_ENGINE_LCD);
  	glamo_engine_reset(mach_info->glamo, GLAMO_ENGINE_LCD);
