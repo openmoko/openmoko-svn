@@ -92,7 +92,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,458 @@
+@@ -0,0 +1,457 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -149,7 +149,6 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#define U_M_PDIV	0x2
 +#define U_M_SDIV	0x2
 +#else
-+/* configure GTA02v2 to low speed until we've increased the voltage */
 +#define M_MDIV 42
 +#define M_PDIV 1
 +#define M_SDIV 0
