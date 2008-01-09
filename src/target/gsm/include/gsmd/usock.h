@@ -511,6 +511,7 @@ struct gsmd_sms {
 	int has_header;
 	int is_voicemail;
 	struct gsmd_sms_datacodingscheme dcs;
+	enum gsmd_sms_tp_mti tp_mti;
 	char data[GSMD_SMS_DATA_MAXLEN+1];	
 } __attribute__ ((packed));
 

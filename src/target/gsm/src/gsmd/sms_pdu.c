@@ -103,6 +103,7 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 	/* TP-MTI */
 	switch (src[0] & 3) {
 	case GSMD_SMS_TP_MTI_DELIVER:
+		dst->payload.tp_mti = GSMD_SMS_TP_MTI_DELIVER;
 		if (len < 3)
 			return 1;
 		i = sms_number_bytelen(src[2], src[1]);
@@ -167,6 +168,7 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 
 		break;
 	case GSMD_SMS_TP_MTI_SUBMIT:
+		dst->payload.tp_mti = GSMD_SMS_TP_MTI_SUBMIT;
 		if (len < 4)
 			return 1;
 		i = sms_number_bytelen(src[3], src[2]);
@@ -217,6 +219,7 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 		dst->payload.data[i] = 0;
 		break;
 	case GSMD_SMS_TP_MTI_STATUS_REPORT:
+		dst->payload.tp_mti = GSMD_SMS_TP_MTI_STATUS_REPORT;
 		if (len < 3)
 			return 1;
 
