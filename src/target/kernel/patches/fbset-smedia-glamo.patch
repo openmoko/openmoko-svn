@@ -80,7 +80,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  };
  
  static int glamofb_run_script(struct glamofb_handle *glamo,
-@@ -207,24 +203,231 @@
+@@ -207,24 +203,230 @@
  	return 0;
  }
  
@@ -304,20 +304,20 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
 +		info->fix.visual = FB_VISUAL_TRUECOLOR;
  		break;
  	default:
- 		printk("Smedia driver doens't support != 16bpp\n");
+-		printk("Smedia driver doens't support != 16bpp\n");
++		printk("Smedia driver doesn't support != 16bpp\n");
  		return -EINVAL;
  	}
  
 -	glamo->fb->fix.line_length = (var->width * var->bits_per_pixel) / 8;
 -	glamo->fb->fix.smem_len = info->fix.line_length * var->yres_virtual;
 +	info->fix.line_length = (var->xres * var->bits_per_pixel) / 8;
-+	info->fix.smem_len = info->fix.line_length * var->yres_virtual;
 +
 +	glamofb_update_lcd_controller(glamo, var);
  
  	return 0;
  }
-@@ -368,6 +571,8 @@
+@@ -368,6 +570,8 @@
  		while (!reg_read(gfb, GLAMO_REG_LCD_STATUS2) & (1 << 12))
  			yield();
  		dev_dbg(gfb->dev, "idle!\n");
@@ -326,7 +326,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	} else {
  		/* RGB interface needs vsync/hsync */
  		if (reg_read(gfb, GLAMO_REG_LCD_MODE3) & GLAMO_LCD_MODE3_RGB)
-@@ -384,7 +589,6 @@
+@@ -384,7 +588,6 @@
  
  int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val)
  {
@@ -334,7 +334,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	dev_dbg(gfb->dev, "%s: waiting for cmdq empty\n",
  		__FUNCTION__);
  	while (!glamofb_cmdq_empty(gfb))
-@@ -409,6 +613,18 @@
+@@ -409,6 +612,18 @@
  	.fb_imageblit	= cfb_imageblit,
  };
  
@@ -353,7 +353,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  static int __init glamofb_probe(struct platform_device *pdev)
  {
  	int rc = -EIO;
-@@ -453,7 +669,8 @@
+@@ -453,7 +668,8 @@
  	}
  
  	glamofb->fb_res = request_mem_region(glamofb->fb_res->start,
@@ -363,7 +363,7 @@ Index: linux-2.6.22.5/drivers/video/glamo/glamo-fb.c
  	if (!glamofb->fb_res) {
  		dev_err(&pdev->dev, "failed to request vram region\n");
  		goto out_release_reg;
-@@ -504,34 +721,21 @@
+@@ -504,34 +720,21 @@
  	fbinfo->var.yres_virtual = mach_info->yres.defval;
  	fbinfo->var.bits_per_pixel = mach_info->bpp.defval;
  
