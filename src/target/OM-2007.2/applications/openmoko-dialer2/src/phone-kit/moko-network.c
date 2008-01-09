@@ -174,6 +174,9 @@ on_network_registered (MokoListener *listener,
       break;
     case GSMD_NETREG_DENIED:
       /* This may be a pin issue*/
+
+      /* Stop trying to get details */
+      stop_retrying (MOKO_NETWORK (listener));
       break;
     case GSMD_NETREG_REG_HOME:
     case GSMD_NETREG_REG_ROAMING:
@@ -455,7 +458,8 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
                                       sms);
       }
     } else {
-      g_warning ("Delivery status report not in-line, left unhandled");
+      g_debug ("Delivery status report stored on SIM, reading...");
+      lgsm_sms_read (lh, aux->u.sms.index);
     }
     break;
   case GSMD_EVT_IN_CLIP :
@@ -508,8 +512,19 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
     struct gsmd_sms_list *sms_list = (struct gsmd_sms_list *)
                                      ((void *) gmh + sizeof(*gmh));
     for (l = priv->listeners; l; l = l->next) {
-      moko_listener_on_incoming_sms (MOKO_LISTENER (l->data), priv->handle,
-                                     sms_list);
+      switch (sms_list->payload.tp_mti) {
+        case GSMD_SMS_TP_MTI_DELIVER :
+        case GSMD_SMS_TP_MTI_SUBMIT :
+          moko_listener_on_incoming_sms (MOKO_LISTENER (l->data), priv->handle,
+                                         sms_list);
+          break;
+        case GSMD_SMS_TP_MTI_STATUS_REPORT :
+          moko_listener_on_incoming_ds (MOKO_LISTENER (l->data), priv->handle,
+                                        sms_list);
+          break;
+        default :
+          break;
+      }
     }
   } else {
     return -EINVAL;
