@@ -1,3 +1,3 @@
 [D-BUS Service]
-Name=org.openmoko.openmoko-messages2
+Name=org.openmoko.OpenmokoMessages2
 Exec=@bindir@/openmoko-messages

@@ -1,5 +1,10 @@
 2008-01-09  Chris Lord  <chris@openedhand.com>
 
+	* data/org.openmoko.OpenmokoMessages2.service.in:
+	Correct service name
+
+2008-01-09  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-utils.c: (sms_select_contact):
 	Clear current search/group and convert to filter iter before selecting
 	contact
