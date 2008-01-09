@@ -19,6 +19,8 @@
 
 #include "sms-contacts.h"
 #include "sms-utils.h"
+#include <string.h>
+#include <libmokoui2/moko-search-bar.h>
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -45,10 +47,32 @@ sms_select_contact (SmsData *data, const gchar *uid)
 			&iter, COL_UID, &iter_uid, -1);
 		
 		if (iter_uid && (strcmp (uid, iter_uid) == 0)) {
+			GtkTreeIter filter_iter;
+			
+			/* Reset filter */
+			if (moko_search_bar_search_visible (MOKO_SEARCH_BAR (
+			    data->contacts_search))) {
+				gtk_entry_set_text (moko_search_bar_get_entry (
+					MOKO_SEARCH_BAR(data->contacts_search)),
+					"");
+			} else {
+				gtk_combo_box_set_active (
+					moko_search_bar_get_combo_box (
+					MOKO_SEARCH_BAR(data->contacts_search)),
+					0);
+			}
+			gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (
+				data->contacts_filter));
+			
+			gtk_tree_model_filter_convert_child_iter_to_iter (
+				GTK_TREE_MODEL_FILTER (data->contacts_filter),
+				&filter_iter, &iter);
+			
 			g_free (iter_uid);
 			selection = gtk_tree_view_get_selection (
 				GTK_TREE_VIEW (data->contacts_treeview));
-			gtk_tree_selection_select_iter (selection, &iter);
+			gtk_tree_selection_select_iter (
+				selection, &filter_iter);
 			return TRUE;
 		}
 		
