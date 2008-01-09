@@ -1,5 +1,10 @@
 2008-01-09  Chris Lord  <chris@openedhand.com>
 
+	* data/org.openmoko.Dialer.service.in:
+	Correct name
+
+2008-01-09  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-network.c: (on_network_registered),
 	(sms_msghandler):
 	Add support for reading delivery status reports from the SIM card
