@@ -26,6 +26,21 @@ if test $ac_cv_type_EContactPhotoType = yes; then
         AC_DEFINE(HAVE_PHOTO_TYPE, 1, [Defined if EContactPhotoType exists])
 fi
 
+dnl ==============================================
+dnl DBUS
+dnl ==============================================
+
+DBUS_GLIB_BIN="`$PKG_CONFIG --variable=exec_prefix dbus-glib-1`/bin"
+
+dnl AC_ARG_WITH(dbusbindir,
+dnl            AC_HELP_STRING([--with-dbusbindir=[=DIR]],
+dnl                           [Use a different path to dbus tools]),,
+dnl                           dbusdir=$withval;)
+
+AC_ARG_WITH(dbusbindir,[  --with-dbusbindir=DIR  dbus tools in DIR], [DBUS_GLIB_BIN="$withval"])
+echo "DBus tools location ${DBUS_GLIB_BIN}"
+AC_SUBST(DBUS_GLIB_BIN)
+
 AC_OUTPUT([
 Makefile
 src/Makefile

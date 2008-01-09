@@ -27,5 +27,6 @@ EContact *sms_get_selected_contact (SmsData *data);
 GdkPixbuf *sms_contact_load_photo (EContact *contact);
 gboolean sms_contacts_note_count_update (SmsData *data);
 gboolean sms_delete_selected_contact_messages (SmsData *data);
+gboolean sms_select_contact (SmsData *data, const gchar *uid);
 
 #endif /* SMS_UTILS_H */

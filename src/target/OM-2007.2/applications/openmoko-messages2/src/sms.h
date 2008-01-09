@@ -43,6 +43,7 @@ typedef struct {
 	GHashTable *note_emblems;
 	
 	EBook *ebook;
+	gboolean book_seq_complete;
 	GtkTreeModel *contacts_store;
 	GtkTreeModel *contacts_filter;
 	GHashTable *contacts;

@@ -110,6 +110,19 @@ page_hidden (SmsData *data)
 		MOKO_STOCK_SMS_NEW);
 }
 
+void
+sms_compose_refresh (SmsData *data)
+{
+	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
+	    SMS_PAGE_COMPOSE) {
+		page_hidden (data);
+		page_shown (data);
+	} else {
+		gtk_notebook_set_current_page (GTK_NOTEBOOK (data->notebook),
+			SMS_PAGE_COMPOSE);
+	}
+}
+
 static void
 notify_visible_cb (GObject *gobject, GParamSpec *arg1, SmsData *data)
 {

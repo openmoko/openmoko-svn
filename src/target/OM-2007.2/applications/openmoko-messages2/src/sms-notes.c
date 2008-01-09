@@ -42,6 +42,27 @@ enum {
 	RECV_NOTES,
 };
 
+static gboolean
+notes_treeview_scroll_to_bottom (SmsData *data)
+{
+	GtkTreePath *path;
+	GtkTreeModel *model;
+	GtkTreeViewColumn *column;
+	
+	column = gtk_tree_view_get_column (
+		GTK_TREE_VIEW (data->notes_treeview), 0);
+	model = gtk_tree_view_get_model (GTK_TREE_VIEW (data->notes_treeview));
+	path = gtk_tree_path_new_from_indices (
+		gtk_tree_model_iter_n_children (model, NULL) - 1, -1);
+
+	gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW (data->notes_treeview),
+		path, column, TRUE, 1.0, 0.0);
+	
+	gtk_tree_path_free (path);
+	
+	return FALSE;
+}
+
 static void
 note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
 {
@@ -90,22 +111,15 @@ note_changed_cb_end:
 }
 
 static void
-scroll_notes_to_bottom_cb (GtkAdjustment *vadjust, SmsData *data)
-{
-	/* Scroll note list to the bottom */
-	if (vadjust->value != (vadjust->upper - vadjust->page_size))
-		gtk_adjustment_set_value (vadjust,
-			vadjust->upper - vadjust->page_size);
-}
-
-static void
 note_progress_cb (JanaStoreView *store_view, gint percent, SmsData *data)
 {
 	if (percent != 100) return;
 	
-	/* Remove scroll-to-bottom callback */
-	g_signal_handlers_disconnect_by_func (
-		data->notes_treeview, scroll_notes_to_bottom_cb, data);
+	notes_treeview_scroll_to_bottom (data);
+	/*g_idle_add ((GSourceFunc)notes_treeview_scroll_to_bottom, data);*/
+
+	g_signal_handlers_disconnect_by_func (store_view,
+		note_progress_cb, data);
 }
 
 static gboolean
@@ -180,8 +194,6 @@ page_shown (SmsData *data)
 		G_CALLBACK (scroll_changed_cb), data);
 	g_signal_connect (vadjust, "value-changed",
 		G_CALLBACK (scroll_changed_cb), data);
-	g_signal_connect (vadjust, "changed",
-		G_CALLBACK (scroll_notes_to_bottom_cb), data);
 	
 	/* Assign the recipient photo to the generic avatar icon, in case we 
 	 * can't find it later.
@@ -286,6 +298,19 @@ page_hidden (SmsData *data)
 	if (data->recipient_icon) {
 		g_object_unref (data->recipient_icon);
 		data->recipient_icon = NULL;
+	}
+}
+
+void
+sms_notes_refresh (SmsData *data)
+{
+	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
+	    SMS_PAGE_NOTES) {
+		page_hidden (data);
+		page_shown (data);
+	} else {
+		gtk_notebook_set_current_page (GTK_NOTEBOOK (data->notebook),
+			SMS_PAGE_NOTES);
 	}
 }
 

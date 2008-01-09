@@ -1,3 +1,30 @@
+2008-01-09  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* data/Makefile.am:
+	* data/org.openmoko.OpenmokoMessages2.service.in:
+	* src/Makefile.am:
+	* src/sms-compose.c: (sms_compose_refresh):
+	* src/sms-compose.h:
+	* src/sms-contacts.c: (contacts_changed_cb),
+	(contacts_seq_complete_cb), (sms_contacts_page_new):
+	* src/sms-dbus.c: (sms_dbus_class_init), (sms_dbus_init),
+	(sms_dbus_new), (free_data), (view_messages_idle),
+	(send_message_idle), (sms_dbus_view_messages),
+	(sms_dbus_send_message), (sms_dbus_append_recipient):
+	* src/sms-dbus.h:
+	* src/sms-dbus.xml:
+	* src/sms-main.c: (main):
+	* src/sms-notes.c: (notes_treeview_scroll_to_bottom),
+	(note_progress_cb), (page_shown), (sms_notes_refresh):
+	* src/sms-notes.h:
+	* src/sms-utils.c: (sms_select_contact):
+	* src/sms-utils.h:
+	* src/sms.h:
+	Add DBus interface for viewing/sending SMS messages. Also, break
+	scrolling to bottom of messages (but it was even more broken before,
+	really)
+
 2008-01-07  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-notes.c: (scroll_notes_to_bottom_cb), (note_progress_cb),

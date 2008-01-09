@@ -21,7 +21,13 @@
 #include "sms-contacts.h"
 #include "sms-notes.h"
 #include "sms-compose.h"
+#include "sms-dbus.h"
 #include <libmokoui2/moko-stock.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
+
+#define SMS_NAMESPACE "org.openmoko.OpenmokoMessages2"
+#define SMS_PATH "/org/openmoko/OpenmokoMessages2"
 
 static void
 notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
@@ -52,6 +58,7 @@ main (int argc, char **argv)
 {
 	SmsData data;
 	DBusGConnection *connection;
+	DBusGProxy *proxy;
 	GtkWidget *vbox, *toolbar;
 	GError *error = NULL;
 	
@@ -65,9 +72,25 @@ main (int argc, char **argv)
 		g_error_free (error);
 		data.sms_proxy = NULL;
 	} else {
+		guint32 ret;
+		
 		data.sms_proxy = dbus_g_proxy_new_for_name (connection,
 			"org.openmoko.PhoneKit", "/org/openmoko/PhoneKit/Sms",
 			"org.openmoko.PhoneKit.Sms");
+
+		proxy = dbus_g_proxy_new_for_name (connection,
+			DBUS_SERVICE_DBUS, DBUS_PATH_DBUS,
+			DBUS_INTERFACE_DBUS);
+		if (org_freedesktop_DBus_request_name (proxy,
+		    SMS_NAMESPACE, 0, &ret, &error)) {
+			SmsDbus *sms_dbus = sms_dbus_new (&data);
+			dbus_g_connection_register_g_object (connection,
+				SMS_PATH, G_OBJECT (sms_dbus));
+		} else {
+			g_warning ("Failing requestion dbus name %s: %s",
+				SMS_NAMESPACE, error->message);
+			g_error_free (error);
+		}
 	}
 
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

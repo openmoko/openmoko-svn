@@ -33,6 +33,32 @@ sms_clear_combo_box_text (GtkComboBox *combo)
 		gtk_combo_box_remove_text (combo, 0);
 }
 
+gboolean
+sms_select_contact (SmsData *data, const gchar *uid)
+{
+	GtkTreeSelection *selection;
+	GtkTreeIter iter;
+	
+	if (gtk_tree_model_get_iter_first (data->contacts_store, &iter)) do {
+		gchar *iter_uid;
+		gtk_tree_model_get (data->contacts_store,
+			&iter, COL_UID, &iter_uid, -1);
+		
+		if (iter_uid && (strcmp (uid, iter_uid) == 0)) {
+			g_free (iter_uid);
+			selection = gtk_tree_view_get_selection (
+				GTK_TREE_VIEW (data->contacts_treeview));
+			gtk_tree_selection_select_iter (selection, &iter);
+			return TRUE;
+		}
+		
+		g_free (iter_uid);
+		
+	} while (gtk_tree_model_iter_next (data->contacts_store, &iter));
+	
+	return FALSE;
+}
+
 EContact *
 sms_get_selected_contact (SmsData *data)
 {

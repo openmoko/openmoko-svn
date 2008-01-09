@@ -233,6 +233,8 @@ contacts_added_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 static void
 contacts_changed_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 {
+	data->book_seq_complete = FALSE;
+
 	for (; contacts; contacts = contacts->next) {
 		GList *categories, *c;
 		GtkTreeIter *iter;
@@ -298,6 +300,13 @@ contacts_removed_cb (EBookView *ebookview, GList *uids, SmsData *data)
 		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
 	if (!data->contact_category_idle) data->contact_category_idle =
 		g_idle_add ((GSourceFunc)update_categories, data);
+}
+
+static void
+contacts_seq_complete_cb (EBookView *ebookview, EBookViewStatus status,
+			  SmsData *data)
+{
+	data->book_seq_complete = TRUE;
 }
 
 static void
@@ -594,6 +603,7 @@ sms_contacts_page_new (SmsData *data)
 
 	GError *error = NULL;
 	
+	data->book_seq_complete = FALSE;
 	data->contact_groups = g_hash_table_new_full (g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)malloc_list_free);
 	data->group_refs = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -736,6 +746,8 @@ sms_contacts_page_new (SmsData *data)
 		G_CALLBACK (contacts_changed_cb), data);
 	g_signal_connect (view, "contacts-removed",
 		G_CALLBACK (contacts_removed_cb), data);
+	g_signal_connect (view, "sequence-complete",
+		G_CALLBACK (contacts_seq_complete_cb), data);
 	e_book_view_start (view);
 	
 	/* Connect to toolbar delete buttons */

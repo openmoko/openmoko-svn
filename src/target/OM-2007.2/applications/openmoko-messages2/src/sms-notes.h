@@ -23,5 +23,6 @@
 #include "sms.h"
 
 GtkWidget *sms_notes_page_new (SmsData *data);
+void sms_notes_refresh (SmsData *data);
 
 #endif

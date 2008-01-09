@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<node name="/org/openmoko/OpenmokoMessages2">
+<interface name="org.openmoko.OpenmokoMessages2">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="sms_dbus"/>
+
+  <method name="ViewMessages">
+    <arg type="s" name="uid" direction="in" />
+  </method>
+
+  <method name="SendMessage">
+    <arg type="s" name="uid" direction="in" />
+    <arg type="s" name="number" direction="in" />
+    <arg type="s" name="message" direction="in" />
+  </method>
+  
+  <method name="AppendRecipient">
+    <arg type="s" name="uid" direction="in" />
+    <arg type="s" name="number" direction="in" />
+  </method>
+
+</interface>
+</node>
+
