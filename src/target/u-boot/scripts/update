@@ -1,5 +1,3 @@
-UNDER DEVELOPMENT - DON'T USE YET
-
 #!/bin/sh -e
 #
 # This script illustrates how to update u-boot to either the latest or some
@@ -7,6 +5,7 @@ UNDER DEVELOPMENT - DON'T USE YET
 # for copy & paste, and as an example for individual scripts.
 #
 # See README for the toolchain and "build" for environment variables.
+# We use GIT_HEAD and SVN_REV (both are optional).
 #
 
 cd u-boot
@@ -18,6 +17,7 @@ cd u-boot
 #
 quilt pop -a
 
+git pull
 git reset --hard ${GIT_HEAD:-HEAD}
 
 ( cd patches && svn update -r${SVN_REV:-HEAD}; )
