@@ -55,4 +55,6 @@ fbset-gta02-core.patch
 # merge into gta02-core as soon as compatibility issues are resolved
 gta02-nor.patch
 lis302dl.patch
+# work in progress. hangs the kernel, if enabled.
+gta02-acc.patch
 gta02-leds.patch

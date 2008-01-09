@@ -1,0 +1,151 @@
+Index: linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- linux-2.6.22.5.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -344,8 +344,6 @@
+ 	&s3c_device_usbgadget,
+ 	&s3c_device_nand,
+ 	&s3c_device_ts,
+-	&s3c_device_spi0,
+-	&s3c_device_spi1,
+ 	&gta02_nor_flash,
+ };
+ 
+@@ -522,10 +520,54 @@
+ 	},
+ };
+ 
+-static struct s3c2410_spi_info gta02_spi_acc_cfg = {
+-	.set_cs		= gta02_spi_acc_set_cs,
++static void spi_acc_cs(struct s3c2410_spigpio_info *spi, int cs)
++{
++	switch (cs) {
++	case BITBANG_CS_ACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPD12, 0);
++		break;
++	case BITBANG_CS_INACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPD12, 1);
++		break;
++	}
++}
++
++static struct s3c2410_spigpio_info spi_gpio_cfg = {
++	.pin_clk	= S3C2410_GPG7,
++	.pin_mosi	= S3C2410_GPG6,
++	.pin_miso	= S3C2410_GPG5,
+ 	.board_size	= ARRAY_SIZE(gta02_spi_acc_bdinfo),
+-	.board_info	= &gta02_spi_acc_bdinfo,
++	.board_info	= gta02_spi_acc_bdinfo,
++	.chip_select	= &spi_acc_cs,
++};
++
++static struct resource s3c_spi_acc_resource[] = {
++	[0] = {
++		.start = S3C2410_GPG3,
++		.end   = S3C2410_GPG3,
++	},
++	[1] = {
++		.start = S3C2410_GPG5,
++		.end   = S3C2410_GPG5,
++	},
++	[2] = {
++		.start = S3C2410_GPG6,
++		.end   = S3C2410_GPG6,
++	},
++	[3] = {
++		.start = S3C2410_GPG7,
++		.end   = S3C2410_GPG7,
++	},
++};
++
++static struct platform_device s3c_device_spi_acc = {
++	.name		  = "s3c24xx-spi-gpio",
++	.id		  = 1,
++	.num_resources	  = ARRAY_SIZE(s3c_spi_acc_resource),
++	.resource	  = s3c_spi_acc_resource,
++	.dev = {
++		.platform_data = &spi_gpio_cfg,
++	},
+ };
+ 
+ static struct resource gta02_led_resources[] = {
+@@ -673,7 +715,6 @@
+ 	s3c_device_usb.dev.platform_data = &gta02_usb_info;
+ 	s3c_device_nand.dev.platform_data = &gta02_nand_info;
+ 	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
+-	s3c_device_spi1.dev.platform_data = &gta02_spi_acc_cfg;
+ 
+ 	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
+ 	 * hot-pluggable, this is not required anyway */
+@@ -702,6 +743,7 @@
+ 		break;
+ 	}
+ 
++	platform_device_register(&s3c_device_spi_acc);
+ 	platform_device_register(&gta01_button_dev);
+ 	platform_device_register(&gta01_pm_gsm_dev);
+ 
+@@ -721,6 +763,13 @@
+ 	s3c2410_gpio_cfgpin(GTA01_GPIO_LCD_RESET, S3C2410_GPIO_OUTPUT);
+ 	s3c2410_gpio_setpin(GTA01_GPIO_LCD_RESET, 1);
+ 
++	s3c2410_gpio_cfgpin(S3C2410_GPD12, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(S3C2410_GPD12, 1);
++
++
++	s3c2410_gpio_cfgpin(S3C2410_GPD13, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(S3C2410_GPD13, 1);
++
+ 	/* Make sure the modem can wake us up */
+ 	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
+ 	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq,
+Index: linux-2.6.22.5/drivers/spi/lis302dl.c
+===================================================================
+--- linux-2.6.22.5.orig/drivers/spi/lis302dl.c
++++ linux-2.6.22.5/drivers/spi/lis302dl.c
+@@ -143,7 +143,7 @@
+ 	int rc;
+ 	u_int8_t cmd;
+ 
+-	cmd = (reg << ADDR_SHIFT) | READ_BIT;
++	cmd = (0x80) | (reg & 0x3F);
+ 
+ 	rc = spi_w8r8(lis->spi_dev, cmd);
+ 
+@@ -165,7 +165,7 @@
+ {
+ 	u_int8_t buf[2];
+ 
+-	buf[0] = (reg << ADDR_SHIFT);
++	buf[0] = (reg & 0x3F);
+ 	buf[1] = val;
+ 
+ 	return spi_write(lis->spi_dev, buf, sizeof(buf));
+@@ -459,12 +459,13 @@
+ 		kfree(lis);
+ 		return -ENODEV;
+ 	}
+-
+ 	/* switch interrupt to open collector */
+ 	reg_write(lis, LIS302DL_CTRL3_PP_OD, 0x7c);
+ 
+-	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt, IRQF_DISABLED,
+-			 "lis302dl", NULL);
++	/* Fix me: always interrupt */
++	//rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt, IRQF_DISABLED,
++	//		 "lis302dl", NULL);
++	rc = 0;
+ 	if (rc < 0) {
+ 		dev_err(&spi->dev, "error requesting IRQ %d\n",
+ 			lis->spi_dev->irq);
+@@ -472,7 +473,9 @@
+ 		return rc;
+ 	}
+ 
+-	rc = sysfs_create_group(&spi->dev.kobj, &lis302dl_attr_group);
++	/* Fix me: can't create group */
++	//rc = sysfs_create_group(&spi->dev.kobj, &lis302dl_attr_group);
++	rc = 0;
+ 	if (rc) {
+ 		dev_err(&spi->dev, "error creating sysfs group\n");
+ 		/* FIXME */
