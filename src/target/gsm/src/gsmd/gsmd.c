@@ -365,7 +365,6 @@ int main(int argc, char **argv)
 
 	signal(SIGTERM, sig_handler);
 	signal(SIGINT, sig_handler);
-	signal(SIGSEGV, sig_handler);
 	signal(SIGUSR1, sig_handler);
 	signal(SIGALRM, sig_handler);
 	
