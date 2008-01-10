@@ -38,6 +38,7 @@ int lgsm_get_netreg_state(struct lgsm_handle *lh,
 		enum lgsm_netreg_state *state)
 {
 	*state = lh->netreg_state;
+	return 0;
 }
 
 int lgsm_oper_get(struct lgsm_handle *lh)
@@ -139,7 +140,6 @@ int lgsm_voicemail_set(struct lgsm_handle *lh, const char *number)
 {
 	struct gsmd_msg_hdr *gmh;
 	struct gsmd_voicemail *vmail;
-	int rc;
 
 	gmh = lgsm_gmh_fill(GSMD_MSG_NETWORK,
 			GSMD_NETWORK_VMAIL_SET, sizeof(*vmail));

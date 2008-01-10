@@ -52,7 +52,7 @@ static int pin_handler(struct lgsm_handle *lh,
 	} else {
 		do {
 			printf("Please enter %s: ", lgsm_pin_name(type));
-			rc = fscanf(stdin, "%8s", &pinbuf);
+			rc = fscanf(stdin, "%8s", pinbuf);
 		} while (rc < 1);
 
 		switch (type) {
@@ -60,7 +60,7 @@ static int pin_handler(struct lgsm_handle *lh,
 		case GSMD_PIN_SIM_PUK2:
 			do {
 				printf("Please enter new PIN: ");
-				rc = fscanf(stdin, "%8s", &pinbuf2);
+				rc = fscanf(stdin, "%8s", pinbuf2);
 				newpin = pinbuf2;
 			} while (rc < 1);
 			break;

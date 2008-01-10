@@ -32,9 +32,11 @@
 
 #include <gsmd/usock.h>
 #include <libgsmd/libgsmd.h>
+#include <libgsmd/event.h>
 
 #include "lgsm_internals.h"
 
+#if 0
 static int lgsm_get_packet(struct lgsm_handle *lh)
 {
 	static char buf[GSMD_MSGSIZE_MAX];
@@ -56,6 +58,7 @@ static int lgsm_get_packet(struct lgsm_handle *lh)
 
 	return 0;
 }
+#endif
 
 static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 {

@@ -37,12 +37,13 @@
 static LLIST_HEAD(gsmd_timers);
 static void *__tmr_ctx;
 
+#if 0
 static void tv_normalize(struct timeval *out)
 {
 	out->tv_sec += (out->tv_usec / 1000000);
 	out->tv_usec = (out->tv_usec % 1000000);
 }
-
+#endif
 /* subtract two struct timevals */
 static int tv_sub(struct timeval *res, const struct timeval *from,
 		  const struct timeval *sub)
@@ -57,7 +58,7 @@ static int tv_sub(struct timeval *res, const struct timeval *from,
 
 	return 0;
 }
-
+#if 0
 static int tv_add(struct timeval *res, const struct timeval *a1,
 		  const struct timeval *a2)
 {
@@ -68,7 +69,7 @@ static int tv_add(struct timeval *res, const struct timeval *a1,
 
 	tv_normalize(res);
 }
-
+#endif
 static int tv_later(const struct timeval *expires, const struct timeval *now)
 {
 	if (expires->tv_sec < now->tv_sec)

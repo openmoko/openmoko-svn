@@ -43,7 +43,7 @@
 #include <gsmd/ts0707.h>
 #include <gsmd/sms.h>
 
-static void *__ucmd_ctx, *__gu_ctx, *__pb_ctx;
+static void *__ucmd_ctx, *__gu_ctx;
 
 struct gsmd_ucmd *ucmd_alloc(int extra_size)
 {
@@ -112,6 +112,7 @@ static int usock_rcv_event(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int l
 		return -EINVAL;
 
 	gu->subscriptions = *evtmask;
+	return 0;
 }
 
 static int voicecall_get_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
@@ -222,7 +223,6 @@ static int voicecall_fwd_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_user *gu = ctx;
 	struct gsm_extrsp *er;
 	struct gsmd_call_fwd_stat gcfs;
-	int ret = 0;
 	
 	DEBUGP("resp: %s\n", resp);
 	
@@ -955,7 +955,7 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_NETWORK_REGISTER:
 		if ((*oper)[0])
 			cmdlen = sprintf(buffer, "AT+COPS=1,2,\"%.*s\"",
-					sizeof(gsmd_oper_numeric), oper);
+					sizeof(gsmd_oper_numeric), (char *)oper);
 		else
 			cmdlen = sprintf(buffer, "AT+COPS=0");
 		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0, NULL);
@@ -996,7 +996,7 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_NETWORK_PREF_ADD:
 		cmdlen = sprintf(buffer, "AT+CPOL=,2,\"%.*s\"",
-				sizeof(gsmd_oper_numeric), oper);
+				sizeof(gsmd_oper_numeric), (char *)oper);
 		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_PREF_SPACE:
@@ -1253,9 +1253,8 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 	struct gsmd_phonebook_readrg *gpr;
 	struct gsmd_phonebook *gp;
 	struct gsmd_phonebook_find *gpf;
-	struct gsmd_phonebooks *cur, *cur2;
-	int *index, *num;
-	int atcmd_len, i, ret;
+	int *index;
+	int atcmd_len;
 	char *storage;
 	char buf[1024];
 

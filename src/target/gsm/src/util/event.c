@@ -115,7 +115,7 @@ static int incbm_handler(struct lgsm_handle *lh, int evt,
 				msg->page, msg->pages);
 
 		if (msg->coding_scheme == ALPHABET_DEFAULT) {
-			cbm_unpacking_7bit_character(msg->data, payload);
+			cbm_unpacking_7bit_character((char *)msg->data, payload);
 			printf("\"%s\"\n", payload);
 		} else if (msg->coding_scheme == ALPHABET_8BIT)
 			printf("8-bit encoded data\n");
@@ -175,6 +175,8 @@ static int netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxda
 		break;
 	case GSMD_NETREG_REG_ROAMING:
 		printf("registered (roaming) ");
+		break;
+	default:
 		break;
 	}
 

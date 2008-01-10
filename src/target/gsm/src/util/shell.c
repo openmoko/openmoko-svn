@@ -31,6 +31,7 @@
 #include <libgsmd/misc.h>
 #include <libgsmd/phonebook.h>
 #include <libgsmd/sms.h>
+#include <libgsmd/pin.h>
 #include <gsmd/usock.h>
 #include <gsmd/ts0705.h>
 
@@ -49,6 +50,7 @@ static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	char *payload = (char *)gmh + sizeof(*gmh);
 	printf("RSTR=`%s'\n", payload);
+	return 0;
 }
 
 /* this is the handler for receiving phonebook responses */
@@ -135,7 +137,8 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		break;
 	default:
 		return -EINVAL;
-	}	
+	}
+	return 0;
 }
 
 /* this is the handler for receiving sms responses */
@@ -273,6 +276,7 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		pending_responses --;
 		return -EINVAL;
 	}
+	return 0;
 }
 
 /* this is the handler for responses to network/operator commands */
@@ -359,6 +363,7 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	default:
 		return -EINVAL;
 	}
+	return 0;
 }
 
 static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
@@ -482,7 +487,7 @@ static const struct msghandler_s {
 	{ 0, 0 }
 };
 
-static int shell_help(void)
+static void shell_help(void)
 {
 	printf( "\tA\tAnswer incoming call\n"
 		"\tD\tDial outgoing number\n"
@@ -542,8 +547,6 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 {
 	int rc;
 	char buf[STDIN_BUF_SIZE+1];
-	char rbuf[STDIN_BUF_SIZE+1];
-	int rlen = sizeof(rbuf);
 	fd_set readset;
 	char *ptr, *fcomma, *lcomma;
 	int gsm_fd = lgsm_fd(lgsmh);
@@ -923,4 +926,5 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 		}
 		fflush(stdout);
 	}
+	return 0;
 }

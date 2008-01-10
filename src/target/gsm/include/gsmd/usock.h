@@ -741,7 +741,9 @@ extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_in
 extern int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt);
 extern int gsmd_ucmd_submit(struct gsmd_user *gu, u_int8_t msg_type,
 		u_int8_t msg_subtype, u_int16_t id, int len, const void *data);
-
+extern int gsmd_opname_init(struct gsmd *g);
+extern int gsmd_opname_add(struct gsmd *g, const char *numeric_bcd_string,
+		const char *alnum_long);
 #endif /* __GSMD__ */
 
 #endif

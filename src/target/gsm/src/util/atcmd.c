@@ -35,6 +35,7 @@ static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	char *payload = (char *)gmh + sizeof(*gmh);
 	printf("RSTR=`%s'\n", payload);
+	return 0;
 }
 
 int atcmd_main(struct lgsm_handle *lgsmh)
@@ -42,7 +43,7 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 	int rc;
 	char buf[STDIN_BUF_SIZE+1];
 	char rbuf[STDIN_BUF_SIZE+1];
-	int rlen = sizeof(rbuf);
+	unsigned int rlen = sizeof(rbuf);
 	fd_set readset;
 
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
@@ -99,4 +100,5 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 			fflush(stdout);
 		}
 	}
+	return 0;
 }

@@ -67,7 +67,6 @@ struct gsm_extrsp *extrsp_parse(const void *ctx, const char *input)
 {
 	const char *cur = input;
 	struct gsm_extrsp *er;
-	int cur_tok = 0;
 	enum parser_state state = IDLE;
 	char buf[512];
 	char *cur_buf = buf;
@@ -165,6 +164,8 @@ struct gsm_extrsp *extrsp_parse(const void *ctx, const char *input)
 			} else {
 				/* ERROR */
 			}
+			break;
+		default:
 			break;
 		}
 		cur++;

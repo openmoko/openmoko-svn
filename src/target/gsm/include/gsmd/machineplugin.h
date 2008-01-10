@@ -10,13 +10,15 @@ struct gsmd;
 
 struct gsmd_machine_plugin {
 	struct llist_head list;
-	unsigned char *name;
+	char *name;
 	int (*power)(struct gsmd *g, int power);
 	int (*ex_submit)(struct gsmd *g);
 	int (*detect)(struct gsmd *g);
 	int (*init)(struct gsmd *g, int fd);
 };
 
+extern int gsmd_machine_plugin_init(struct gsmd *g,
+		char *machine_name, char *vendor_name);
 extern int gsmd_machine_plugin_register(struct gsmd_machine_plugin *pl);
 extern void gsmd_machine_plugin_unregister(struct gsmd_machine_plugin *pl);
 extern int gsmd_machine_plugin_find(struct gsmd *g);

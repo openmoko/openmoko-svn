@@ -44,6 +44,8 @@
 #include <gsmd/usock.h>
 #include <gsmd/vendorplugin.h>
 #include <gsmd/talloc.h>
+#include <gsmd/sms.h>
+#include <gsmd/unsolicited.h>
 
 #define GSMD_ALIVECMD		"AT"
 #define GSMD_ALIVE_INTERVAL	5*60
@@ -157,7 +159,7 @@ int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 
 static int gsmd_initsettings2(struct gsmd *gsmd)
 {
-	int rc;
+	int rc = 0;
 	
 	/* echo on, verbose */
 	rc |= gsmd_simplecmd(gsmd, "ATE0V1");
@@ -215,19 +217,10 @@ static int firstcmd_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return gsmd_initsettings2(gsmd);
 }
 
-static void firstcmd_tmr_cb(struct gsmd_timer *tmr, void *data)
-{
-	if (firstcmd_response == 0) {
-		gsmd_log(GSMD_FATAL, "No response from GSM Modem");
-		exit(4);
-	}
-	gsmd_timer_free(tmr);
-}
 
 int gsmd_initsettings(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	struct timeval tv;
 
 	cmd = atcmd_fill("ATZ", strlen("ATZ")+1, &firstcmd_atcb, gsmd, 0, NULL);
 	if (!cmd)
@@ -366,7 +359,6 @@ int main(int argc, char **argv)
 	int bps = 115200;
 	int hwflow = 0;
 	char *device = NULL;
-	char *logfile = "syslog";
 	char *vendor_name = NULL;
 	char *machine_name = NULL;
 	int wait = -1;
@@ -475,7 +467,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-        write(fd,'\r',1);
+        write(fd,"\r",1);
 	atcmd_drain(fd);
 
 	if (usock_init(&g) < 0) {

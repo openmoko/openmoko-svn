@@ -36,10 +36,9 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/unsolicited.h>
 
-static int htccsq_parse(char *buf, int len, const char *param,
+static int htccsq_parse(const char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
-	char *tok;
 	struct gsmd_evt_auxdata *aux;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_SIGNAL,
 					     sizeof(*aux));
@@ -63,13 +62,9 @@ static int htccsq_parse(char *buf, int len, const char *param,
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_SIGNAL);
 
 	return 0;
-
-out_free_io:
-	free(ucmd);
-	return -EIO;
 }
 
-static int wcdma_parse(char *buf, int len, const char *param,
+static int wcdma_parse(const char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
 	return 0;
@@ -96,8 +91,7 @@ static int qc_detect(struct gsmd *g)
 
 static int qc_initsettings(struct gsmd *g)
 {
-	int rc;
-	struct gsmd_atcmd *cmd;
+	int rc = 0;
 
 	/* enable @HTCCSQ: signal quality reports */
 	rc |= gsmd_simplecmd(g, "AT@HTCCSQ=1");

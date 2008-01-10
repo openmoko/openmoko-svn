@@ -35,6 +35,7 @@
 #include <gsmd/ts0707.h>
 #include <gsmd/unsolicited.h>
 #include <gsmd/talloc.h>
+#include <gsmd/sms.h>
 
 struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int16_t len)
 {
@@ -147,7 +148,7 @@ static void state_ringing_update(struct gsmd *gsmd)
 				&state_ringing_timeout, gsmd);
 }
 
-static int ring_parse(char *buf, int len, const char *param,
+static int ring_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
         struct gsmd_ucmd *ucmd;
@@ -167,7 +168,7 @@ static int ring_parse(char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CALL);
 }
 
-static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cring_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
 					     sizeof(struct gsmd_evt_auxdata));
@@ -201,7 +202,7 @@ static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 }
 
 /* Chapter 7.2, network registration */
-static int creg_parse(char *buf, int len, const char *param,
+static int creg_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	const char *comma = strchr(param, ',');
@@ -250,7 +251,7 @@ static int creg_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 7.11, call waiting */
-static int ccwa_parse(char *buf, int len, const char *param,
+static int ccwa_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_evt_auxdata *aux;
@@ -309,7 +310,7 @@ static int ccwa_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 7.14, unstructured supplementary service data */
-static int cusd_parse(char *buf, int len, const char *param,
+static int cusd_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -317,7 +318,7 @@ static int cusd_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 7.15, advise of charge */
-static int cccm_parse(char *buf, int len, const char *param,
+static int cccm_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -325,7 +326,7 @@ static int cccm_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 10.1.13, GPRS event reporting */
-static int cgev_parse(char *buf, int len, const char *param,
+static int cgev_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -333,7 +334,7 @@ static int cgev_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 10.1.14, GPRS network registration status */
-static int cgreg_parse(char *buf, int len, const char *param,
+static int cgreg_parse(const char *buf, int len, const char *param,
 		       struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -341,7 +342,7 @@ static int cgreg_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 7.6, calling line identification presentation */
-static int clip_parse(char *buf, int len, const char *param,
+static int clip_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CLIP,
@@ -369,7 +370,7 @@ static int clip_parse(char *buf, int len, const char *param,
 }
 
 /* Chapter 7.9, calling line identification presentation */
-static int colp_parse(char *buf, int len, const char *param,
+static int colp_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_OUT_COLP,
@@ -395,7 +396,7 @@ static int colp_parse(char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_COLP);
 }
 
-static int ctzv_parse(char *buf, int len, const char *param,
+static int ctzv_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_TIMEZONE,
@@ -419,7 +420,7 @@ static int ctzv_parse(char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_TIMEZONE);
 }
 
-static int copn_parse(char *buf, int len, const char *param,
+static int copn_parse(const char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsm_extrsp *er = extrsp_parse(gsmd_tallocs, param);
@@ -468,11 +469,10 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 static struct gsmd_unsolicit unsolicit[256] = {{ 0, 0 }};
 
 /* called by midlevel parser if a response seems unsolicited */
-int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
+int unsolicited_parse(struct gsmd *g, const char *buf, int len, const char *param)
 {
 	struct gsmd_unsolicit *i;
 	int rc;
-	struct gsmd_vendor_plugin *vpl = g->vendorpl;
 
 	/* call unsolicited code parser */
 	for (i = unsolicit; i->prefix; i ++) {

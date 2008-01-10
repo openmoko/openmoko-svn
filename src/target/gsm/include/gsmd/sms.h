@@ -18,7 +18,8 @@ int cbs_pdu_to_msg(struct gsmd_cbm *dst, u_int8_t *src, int pdulen, int len);
 
 int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len);
 int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len);
-
+int sms_pdu_decode_dcs(struct gsmd_sms_datacodingscheme *dcs,
+		const u_int8_t *data);
 #endif /* __GSMD__ */
 
 #endif

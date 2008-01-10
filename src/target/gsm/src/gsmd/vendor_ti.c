@@ -38,7 +38,7 @@
 #include <gsmd/unsolicited.h>
 
 
-static int csq_parse(char *buf, int len, const char *param,
+static int csq_parse(const char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
 	struct gsmd_evt_auxdata *aux;
@@ -63,11 +63,13 @@ out_free_io:
 	return -EIO;
 }
 
-static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cpri_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	char *tok1, *tok2;
-
-	tok1 = strtok(buf, ",");
+	char tx_buf[20];
+	
+	strcpy(tx_buf, buf);
+	tok1 = strtok(tx_buf, ",");
 	if (!tok1)
 		return -EIO;
 	
@@ -103,7 +105,7 @@ static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return 0;
 }
 
-static int ctzv_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int ctzv_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	/* FIXME: decide what to do with it.  send as event to clients? or keep
 	 * locally? Offer option to sync system RTC? */
@@ -111,14 +113,16 @@ static int ctzv_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 }
 
 /* Call Progress Information */
-static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cpi_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	char *tok;
 	struct gsmd_evt_auxdata *aux;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
 						   GSMD_EVT_OUT_STATUS,
 						   sizeof(*aux));
-	
+	char tx_buf[64];
+
+	strcpy(tx_buf, buf);
 	DEBUGP("entering cpi_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;
@@ -128,7 +132,7 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	/* Format: cId, msgType, ibt, tch, dir,[mode],[number],[type],[alpha],[cause],line */
 
 	/* call ID */
-	tok = strtok(buf, ",");
+	tok = strtok(tx_buf, ",");
 	if (!tok)
 		goto out_free_io;
 

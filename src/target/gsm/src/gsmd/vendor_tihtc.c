@@ -52,10 +52,9 @@ int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 	return atcmd_submit(gsmd, cmd);
 }
 
-static int htccsq_parse(char *buf, int len, const char *param,
+static int htccsq_parse(const char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
-	char *tok;
 	struct gsmd_evt_auxdata *aux;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_SIGNAL,
 					     sizeof(*aux));
@@ -79,17 +78,15 @@ static int htccsq_parse(char *buf, int len, const char *param,
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_SIGNAL);
 
 	return 0;
-
-out_free_io:
-	free(ucmd);
-	return -EIO;
 }
 
-static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cpri_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	char *tok1, *tok2;
-
-	tok1 = strtok(buf, ",");
+	char tx_buf[20];
+	
+	strcpy(tx_buf, buf);
+	tok1 = strtok(tx_buf, ",");
 	if (!tok1)
 		return -EIO;
 
@@ -126,14 +123,16 @@ static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 }
 
 /* Call Progress Information */
-static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cpi_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	char *tok;
 	struct gsmd_evt_auxdata *aux;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
 						   GSMD_EVT_OUT_STATUS,
 						   sizeof(*aux));
+	char tx_buf[64];
 
+	strcpy(tx_buf, buf);
 	DEBUGP("entering cpi_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;
@@ -143,7 +142,7 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	/* Format: cId, msgType, ibt, tch, dir,[mode],[number],[type],[alpha],[cause],line */
 
 	/* call ID */
-	tok = strtok(buf, ",");
+	tok = strtok(tx_buf, ",");
 	if (!tok)
 		goto out_free_io;
 
@@ -248,7 +247,7 @@ static int tihtc_detect(struct gsmd *g)
 
 static int tihtc_initsettings(struct gsmd *g)
 {
-	int rc;
+	int rc = 0;
 	struct gsmd_atcmd *cmd;
 
 	/* use %CGREG */

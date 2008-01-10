@@ -135,7 +135,7 @@ int lgsm_sms_send(struct lgsm_handle *lh,
 	/* FIXME: only support PDU mode */
 	struct gsmd_msg_hdr *gmh;
 	struct gsmd_sms_submit *gss;
-	int i, rc;
+	int rc;
 
 	gmh = lgsm_gmh_fill(GSMD_MSG_SMS,
 			GSMD_SMS_SEND, sizeof(*gss));
@@ -258,7 +258,6 @@ int packing_7bit_character(const char *src, struct lgsm_sms *dest)
 {
 	int i,j = 0;
 	unsigned char ch1, ch2;
-	char tmp[2];
 	int shift = 0;
 
 	dest->alpha = ALPHABET_DEFAULT;

@@ -38,6 +38,7 @@
 #include <gsmd/usock.h>
 #include <gsmd/unsolicited.h>
 #include <gsmd/sms.h>
+#include <gsmd/talloc.h>
 
 static const char *ts0705_memtype_name[] = {
 	[GSM0705_MEMTYPE_NONE]		= "NONE",
@@ -402,7 +403,8 @@ int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 }
 
 /* Unsolicited messages related to SMS / CB */
-static int cmti_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cmti_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	char memstr[3];
 	struct gsmd_evt_auxdata *aux;
@@ -424,7 +426,8 @@ static int cmti_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_SMS);
 }
 
-static int cmt_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cmt_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];
@@ -474,7 +477,8 @@ static int cmt_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_SMS);
 }
 
-static int cbmi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cbmi_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	char memstr[3];
 	struct gsmd_evt_auxdata *aux;
@@ -496,7 +500,8 @@ static int cbmi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CBM);
 }
 
-static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cbm_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
 	u_int8_t pdu[CBM_MAX_PDU_SIZE];
@@ -541,7 +546,8 @@ static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CBM);
 }
 
-static int cdsi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cdsi_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	char memstr[3];
 	struct gsmd_evt_auxdata *aux;
@@ -563,7 +569,8 @@ static int cdsi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_DS);
 }
 
-static int cds_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cds_parse(const char *buf, int len, const char *param,
+		struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];

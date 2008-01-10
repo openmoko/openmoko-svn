@@ -35,7 +35,7 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/unsolicited.h>
 
-static int mrdy_parse(char *buf, int len, const char *param,
+static int mrdy_parse(const char *buf, int len, const char *param,
 		     struct gsmd *g)
 {
 	int status = atoi(param);
@@ -70,11 +70,9 @@ static int mrdy_parse(char *buf, int len, const char *param,
 	return 0;
 }
 
-static int mtsmenu_parse(char *buf, int len, const char *param,
+static int mtsmenu_parse(const char *buf, int len, const char *param,
 		     struct gsmd *g)
 {
-	char *tok, *param_tmp;
-	struct mtsmenu *mtsmenu;
 
 	DEBUGP("mtsmenu_parse param=`%s'\n", param);
 	return 0;
@@ -95,8 +93,7 @@ static int bcm_detect(struct gsmd *g)
 
 static int bcm_initsettings(struct gsmd *g)
 {
-	int rc;
-	struct gsmd_atcmd *cmd;
+	int rc = 0;
 
 	/* bcm sometimes sends LFCR instead of CRLF (eg *MTSMENU message) */
 	g->llp.flags |= LGSM_ATCMD_F_LFCR;

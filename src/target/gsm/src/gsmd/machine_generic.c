@@ -41,8 +41,6 @@ static int generic_detect(struct gsmd *g)
 
 static int generic_init(struct gsmd *g, int fd)
 {
-	int rc;
-
 	/*
 	 * We assume that the GSM chipset can take
 	 * input immediately, so we don't have to

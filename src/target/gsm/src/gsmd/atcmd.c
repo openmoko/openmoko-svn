@@ -49,12 +49,14 @@ enum final_result_codes {
 	NUM_FINAL_RESULTS,
 };
 
+#if 0
 static const char *final_results[] = {
 	"OK",
 	"ERROR",
 	"+CME ERROR:",
 	"+CMS ERROR:",
 };
+#endif
 
 /* we basically implement a parse that can deal with
  * - receiving and queueing commands from higher level of libgmsd
@@ -188,6 +190,7 @@ static int llparse_init(struct llparser *llp)
 	return 0;
 }
 
+#if 0
 /* mid-level parser */
 
 static int parse_final_result(const char *res)
@@ -200,6 +203,7 @@ static int parse_final_result(const char *res)
 	
 	return -1;
 }
+#endif
 
 void atcmd_wake_pending_queue (struct gsmd *g) 
 {
@@ -224,10 +228,10 @@ static int atcmd_done(struct gsmd *g, struct gsmd_atcmd *cmd, const char *buf)
                 /* send final result code if there is no information
                 * response in mlbuf */
                 if (g->mlbuf_len) {
-                        cmd->resp = g->mlbuf;
+                        cmd->resp = (char *) g->mlbuf;
                         g->mlbuf[g->mlbuf_len] = 0;
                 } else {
-                        cmd->resp = buf;
+                        cmd->resp = (char *) buf;
                 }
                 rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
                 DEBUGP("Clearing mlbuf\n");
@@ -367,7 +371,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 					gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 				} else {
 					DEBUGP("Calling cmd->cb()\n");
-					cmd->resp = g->mlbuf;
+					cmd->resp = (char *) g->mlbuf;
 					rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 					DEBUGP("Clearing mlbuf\n");
 					memset(g->mlbuf, 0, MLPARSE_BUF_SIZE);
@@ -429,8 +433,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	g->mlbuf_len += len;
 
 	if (g->mlunsolicited) {
-		rc = unsolicited_parse(g, g->mlbuf, g->mlbuf_len,
-				strchr(g->mlbuf, ':') + 1);
+		rc = unsolicited_parse(g, (const char*) g->mlbuf, (int) g->mlbuf_len,
+				strchr((const char*)g->mlbuf, ':') + 1);
 		if (rc == -EAGAIN) {
 			/* The parser wants one more line of
 			 * input.  Wait for the next line, concatenate
@@ -464,6 +468,7 @@ static int atcmd_prompt(void *data)
 	struct gsmd *g = data;
 
         atcmd_wake_pending_queue(g);
+	return 0;
 }
 
 /* callback to be called if [virtual] UART has some data for us */
@@ -642,7 +647,6 @@ static int remove_timer(struct gsmd_atcmd * cmd)
 /* submit an atcmd in the global queue of pending atcmds */
 int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd)
 {
-        int empty;
 
 	if (g->machinepl->ex_submit) {
 		DEBUGP("extra-submiting command\n");

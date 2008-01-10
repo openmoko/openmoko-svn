@@ -117,7 +117,7 @@ int gsmd_machine_plugin_init(struct gsmd *g, char *machine_name, char *vendor_na
 	buf[sizeof(buf)-1] = '\0';
 
 	line = strtok(buf, "\n");
-	while (line = strtok(NULL, "\n")) {
+	while ((line = strtok(NULL, "\n"))) {
 		if (strncmp(line, "Hardware\t: ", 11) == 0) {
 			hw = line+11;
 			break;
@@ -138,7 +138,7 @@ int gsmd_machine_plugin_init(struct gsmd *g, char *machine_name, char *vendor_na
 
 				if (vendor_name)
 					DEBUGP("wanring: auto-detected vendor '%s', "
-						"but user override to '%s'\m",
+						"but user override to '%s'\n",
 						machines[i].vendor, vendor_name);
 				else
 					vendor_name = machines[i].vendor;

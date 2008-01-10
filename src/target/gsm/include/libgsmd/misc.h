@@ -71,5 +71,8 @@ extern int lgsm_get_subscriber_num(struct lgsm_handle *lh);
 
 /* Retrieve IMSI information */
 extern int lgsm_get_imsi(struct lgsm_handle *lh);
-
+/* Set voice mail number */
+extern int lgsm_voicemail_set(struct lgsm_handle *lh, const char *number);
+/* Get currently configured voice mail number */
+extern int lgsm_voicemail_get(struct lgsm_handle *lh);
 #endif

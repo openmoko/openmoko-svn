@@ -4,6 +4,7 @@
 #ifdef __GSMD__
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include <common/linux_list.h>
 
@@ -117,6 +118,8 @@ void __gsmd_log(int level, const char *file, int line, const char *function, con
 #define DEBUGP(x, args ...)	gsmd_log(GSMD_DEBUG, x, ## args)
 
 extern int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt);
+extern int gsmd_initsettings(struct gsmd *gsmd);
+extern int gsmd_alive_start(struct gsmd *gsmd);
 
 /***********************************************************************
  * timer handling
@@ -130,8 +133,7 @@ struct gsmd_timer {
 };
 
 int gsmd_timer_init(void);
-void gmsd_timer_check_n_run(void);
-
+void gsmd_timer_check_n_run(void);
 struct gsmd_timer *gsmd_timer_alloc(void);
 int gsmd_timer_register(struct gsmd_timer *timer);
 void gsmd_timer_unregister(struct gsmd_timer *timer);
