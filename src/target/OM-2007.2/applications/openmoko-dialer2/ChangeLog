@@ -1,3 +1,8 @@
+2008-01-11  Chris Lord  <chris@openedhand.com>
+
+	* src/dialer/moko-alsa-volume-button.[ch]:
+	Add an alsa volume control widget (requires refactoring)
+
 2008-01-09  Chris Lord  <chris@openedhand.com>
 
 	* data/org.openmoko.Dialer.service.in:
