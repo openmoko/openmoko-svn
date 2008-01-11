@@ -1,6 +1,12 @@
 2008-01-11  Chris Lord  <chris@openedhand.com>
 
 	* src/dialer/moko-alsa-volume-button.[ch]:
+	* src/dialer/moko-alsa-volume-control.[ch]:
+	Refactor into separate control a widget objects for flexibility
+
+2008-01-11  Chris Lord  <chris@openedhand.com>
+
+	* src/dialer/moko-alsa-volume-button.[ch]:
 	Add an alsa volume control widget (requires refactoring)
 
 2008-01-09  Chris Lord  <chris@openedhand.com>

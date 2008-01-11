@@ -3,7 +3,7 @@
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
-#include <alsa/asoundlib.h>
+#include "moko-alsa-volume-control.h"
 
 G_BEGIN_DECLS
 
@@ -41,20 +41,11 @@ GType moko_alsa_volume_button_get_type (void);
 
 GtkWidget *moko_alsa_volume_button_new (void);
 
-void moko_alsa_volume_button_set_device (MokoAlsaVolumeButton *button,
-					 const gchar *device);
+void moko_alsa_volume_button_set_control (MokoAlsaVolumeButton *button,
+					  MokoAlsaVolumeControl *control);
 
-void moko_alsa_volume_button_set_element (MokoAlsaVolumeButton *button,
-					  snd_mixer_selem_id_t *element);
-
-void moko_alsa_volume_button_set_device_from_card_number (
-			MokoAlsaVolumeButton *button, gint number);
-
-void moko_alsa_volume_button_set_device_from_name (MokoAlsaVolumeButton *button,
-						   const gchar *name);
-
-void moko_alsa_volume_button_set_element_from_name (
-			MokoAlsaVolumeButton *button, const gchar *name);
+MokoAlsaVolumeControl *moko_alsa_volume_button_get_control (
+			MokoAlsaVolumeButton *button);
 
 G_END_DECLS
 
