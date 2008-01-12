@@ -8,7 +8,7 @@ Index: u-boot/drivers/video/cfb_console.c
 ===================================================================
 --- u-boot.orig/drivers/video/cfb_console.c
 +++ u-boot/drivers/video/cfb_console.c
-@@ -181,6 +181,7 @@ CONFIG_VIDEO_HW_CURSOR:	     - Uses the 
+@@ -185,6 +185,7 @@
  
  #include <version.h>
  #include <linux/types.h>
@@ -16,10 +16,11 @@ Index: u-boot/drivers/video/cfb_console.c
  #include <devices.h>
  #include <video_font.h>
  
-@@ -676,10 +677,96 @@ static void console_newline (void)
+@@ -691,10 +692,95 @@
  
  /*****************************************************************************/
  
++
 +static enum {
 +	CS_NORMAL = 0,
 +	CS_ESC,
@@ -100,6 +101,8 @@ Index: u-boot/drivers/video/cfb_console.c
 +
  void video_putc (const char c)
  {
+ 	static int nl = 1;
+ 
 +	if (state) {
 +		escape_sequence(c);
 +		CURSOR_SET;
@@ -107,14 +110,9 @@ Index: u-boot/drivers/video/cfb_console.c
 +	}
 +
  	switch (c) {
--	case 13:		/* ignore */
-+	case 13:		/* return to beginning of line */
-+		CURSOR_OFF;
-+		console_col = 0;
- 		break;
- 
- 	case '\n':		/* next line */
-@@ -698,6 +785,10 @@ void video_putc (const char c)
+ 	case 13:		/* back to first column */
+ 		console_cr ();
+@@ -718,6 +804,10 @@
  		console_back ();
  		break;
  

@@ -2,10 +2,10 @@ Index: u-boot/drivers/video/Makefile
 ===================================================================
 --- u-boot.orig/drivers/video/Makefile
 +++ u-boot/drivers/video/Makefile
-@@ -28,6 +28,7 @@
- COBJS-y += ati_radeon_fb.o
+@@ -29,6 +29,7 @@
  COBJS-y += cfb_console.o
  COBJS-y += ct69000.o
+ COBJS-y += mb862xx.o
 +COBJS-y += s3c2410_fb.o
  COBJS-y += sed13806.o
  COBJS-y += sed156x.o
