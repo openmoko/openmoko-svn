@@ -2,7 +2,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2208,6 +2208,9 @@
+@@ -2362,6 +2362,9 @@
  smdk2440_config :	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2440 NULL s3c24x0
  
@@ -296,7 +296,7 @@ Index: u-boot/board/smdk2443/u-boot.lds
 +
 +	. = ALIGN(4);
 +	__bss_start = .;
-+	.bss : { *(.bss) }
++	.bss (NOLOAD) : { *(.bss) }
 +	_end = .;
 +}
 Index: u-boot/include/configs/smdk2443.h
@@ -1414,7 +1414,7 @@ Index: u-boot/drivers/usb/usb_ohci.c
 ===================================================================
 --- u-boot.orig/drivers/usb/usb_ohci.c
 +++ u-boot/drivers/usb/usb_ohci.c
-@@ -63,6 +63,7 @@
+@@ -67,6 +67,7 @@
      defined(CONFIG_S3C2400) || \
      defined(CONFIG_S3C2410) || \
      defined(CONFIG_S3C2440) || \

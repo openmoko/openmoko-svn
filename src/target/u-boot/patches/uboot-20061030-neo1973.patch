@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2270,6 +2270,14 @@
+@@ -2323,6 +2323,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -27,7 +27,7 @@ Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c
 +++ u-boot/common/main.c
-@@ -67,6 +67,7 @@
+@@ -66,6 +66,7 @@
  #undef DEBUG_PARSER
  
  char        console_buffer[CFG_CBSIZE];		/* console I/O buffer	*/
@@ -35,7 +35,7 @@ Index: u-boot/common/main.c
  
  #ifndef CONFIG_CMDLINE_EDITING
  static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
-@@ -382,7 +383,7 @@
+@@ -381,7 +382,7 @@
  
  	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
  
@@ -1901,7 +1901,7 @@ Index: u-boot/board/neo1973/gta01/u-boot.lds
 +
 +	. = ALIGN(4);
 +	__bss_start = .;
-+	.bss : { *(.bss) }
++	.bss (NOLOAD) : { *(.bss) }
 +	_end = .;
 +}
 Index: u-boot/include/configs/neo1973_gta01.h

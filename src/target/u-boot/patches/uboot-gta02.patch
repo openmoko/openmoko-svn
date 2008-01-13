@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2276,6 +2276,13 @@
+@@ -2329,6 +2329,13 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -610,7 +610,7 @@ Index: u-boot/board/neo1973/gta02/u-boot.lds
 +
 +	. = ALIGN(4);
 +	__bss_start = .;
-+	.bss : { *(.bss) }
++	.bss (NOLOAD) : { *(.bss) }
 +	_end = .;
 +}
 Index: u-boot/include/configs/neo1973_gta02.h
@@ -1873,7 +1873,7 @@ Index: u-boot/drivers/video/Makefile
 ===================================================================
 --- u-boot.orig/drivers/video/Makefile
 +++ u-boot/drivers/video/Makefile
-@@ -32,6 +32,7 @@
+@@ -33,6 +33,7 @@
  COBJS-y += sed13806.o
  COBJS-y += sed156x.o
  COBJS-y += sm501.o

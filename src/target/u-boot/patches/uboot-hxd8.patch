@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2189,6 +2189,9 @@
+@@ -2340,6 +2340,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
  
@@ -936,7 +936,7 @@ Index: u-boot/board/hxd8/u-boot.lds
 +
 +	. = ALIGN(4);
 +	__bss_start = .;
-+	.bss : { *(.bss) }
++	.bss (NOLOAD) : { *(.bss) }
 +	_end = .;
 +}
 Index: u-boot/board/hxd8/lowlevel_foo.S
@@ -1156,7 +1156,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
  
  static void s3c2410_hwcontrol(struct mtd_info *mtd, int cmd)
  {
-@@ -251,6 +304,11 @@
+@@ -210,6 +263,11 @@
  	nand->eccmode = NAND_ECC_SOFT;
  #endif
  
