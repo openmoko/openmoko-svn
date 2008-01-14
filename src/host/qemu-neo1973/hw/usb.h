@@ -229,6 +229,9 @@ USBDevice *usb_bt_init(struct bt_piconet_s *net);
 /* usb-wacom.c */
 USBDevice *usb_wacom_init(void);
 
+/* usb-serial.c */
+USBDevice *usb_serial_init(const char *filename);
+
 /* usb ports of the VM */
 
 #define USB_INDEX_HOST  -1

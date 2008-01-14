@@ -59,7 +59,7 @@ OBJS+=ssd0303.o ssd0323.o ads7846.o pcf5060x.o stellaris_input.o
 OBJS+=scsi-disk.o cdrom.o
 OBJS+=scsi-generic.o
 OBJS+=usb.o usb-hub.o usb-linux.o usb-linux-gadget.o
-OBJS+=usb-hid.o usb-msd.o usb-wacom.o usb-net.o usb-bt.o
+OBJS+=usb-hid.o usb-msd.o usb-wacom.o usb-net.o usb-bt.o usb-serial.o
 OBJS+=sd.o ssi-sd.o ar6000.o
 
 ifdef CONFIG_WIN32
@@ -75,6 +75,7 @@ AUDIO_OBJS += ossaudio.o
 endif
 ifdef CONFIG_COREAUDIO
 AUDIO_OBJS += coreaudio.o
+AUDIO_PT = yes
 endif
 ifdef CONFIG_ALSA
 AUDIO_OBJS += alsaaudio.o
@@ -85,6 +86,17 @@ endif
 ifdef CONFIG_FMOD
 AUDIO_OBJS += fmodaudio.o
 audio/audio.o audio/fmodaudio.o: CPPFLAGS := -I$(CONFIG_FMOD_INC) $(CPPFLAGS)
+endif
+ifdef CONFIG_ESD
+AUDIO_PT = yes
+AUDIO_PT_INT = yes
+AUDIO_OBJS += esdaudio.o
+endif
+ifdef AUDIO_PT
+LDFLAGS += -pthread
+endif
+ifdef AUDIO_PT_INT
+AUDIO_OBJS += audio_pt_int.o
 endif
 AUDIO_OBJS+= wavcapture.o
 OBJS+=$(addprefix audio/, $(AUDIO_OBJS))
@@ -159,6 +171,7 @@ clean:
 # avoid old build problems by removing potentially incorrect old files
 	rm -f config.mak config.h op-i386.h opc-i386.h gen-op-i386.h op-arm.h opc-arm.h gen-op-arm.h
 	rm -f *.o *.d *.a $(TOOLS) dyngen$(EXESUF) TAGS cscope.* *.pod *~ */*~
+	rm -rf dyngen.dSYM
 	rm -f slirp/*.o slirp/*.d audio/*.o audio/*.d
 	$(MAKE) -C tests clean
 	for d in $(TARGET_DIRS); do \
