@@ -1,3 +1,16 @@
+2008-01-14  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-main.c: (new_clicked_cb), (main):
+	Add a forward button, clear the text view when composing a new
+	message
+
+	* src/sms-notes.c: (page_shown), (page_hidden),
+	(forward_clicked_cb), (selection_changed_cb), (sms_notes_page_new):
+	Add basic forward message functionality (bug #1171)
+
+	* src/sms.h:
+	Add forward button
+
 2008-01-09  Chris Lord  <chris@openedhand.com>
 
 	* data/org.openmoko.OpenmokoMessages2.service.in:

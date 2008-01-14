@@ -179,7 +179,11 @@ page_shown (SmsData *data)
 	gboolean found_match = FALSE;
 	EContact *contact = NULL;
 	
+	/* Show forward button */
+	gtk_widget_show (GTK_WIDGET (data->forward_button));
+
 	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->forward_button), FALSE);
 	
 	if (!open) return;
 	
@@ -274,6 +278,9 @@ static void
 page_hidden (SmsData *data)
 {
 	GtkAdjustment *hadjust, *vadjust;
+
+	/* Hide forward button */
+	gtk_widget_hide (GTK_WIDGET (data->forward_button));
 
 	if (data->notes_scroll_idle) g_source_remove (data->notes_scroll_idle);
 	g_object_get (G_OBJECT (data->notes_treeview),
@@ -601,6 +608,33 @@ free_count_data (SmsNoteCountData *data)
 }
 
 static void
+forward_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	gchar *body;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	GtkTreeSelection *selection;
+
+	/* Fill in compose box with message text and call new */
+	selection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->notes_treeview));
+	if ((!selection) ||
+	    (!gtk_tree_selection_get_selected (selection, &model, &iter)))
+		return;
+	
+	gtk_tree_model_get (model, &iter,
+		JANA_GTK_NOTE_STORE_COL_BODY, &body, -1);
+	gtk_text_buffer_set_text (gtk_text_view_get_buffer (
+		GTK_TEXT_VIEW (data->sms_textview)), body, -1);
+	g_free (body);
+	
+	/* TODO: Launch a contact-picker */
+	
+	gtk_notebook_set_current_page (
+		GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+}
+
+static void
 delete_clicked_cb (GtkToolButton *button, SmsData *data)
 {
 	gchar *uid;
@@ -752,9 +786,13 @@ selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		gtk_widget_set_sensitive (GTK_WIDGET (
 			data->delete_button), FALSE);
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->forward_button), FALSE);
 	} else {
 		gtk_widget_set_sensitive (GTK_WIDGET (
 			data->delete_button), TRUE);
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->forward_button), TRUE);
 	}
 }
 
@@ -864,7 +902,9 @@ sms_notes_page_new (SmsData *data)
 	
 	jana_store_open (data->notes);
 
-	/* Connect to toolbar delete buttons */
+	/* Connect to toolbar button-click signals */
+	g_signal_connect (data->forward_button, "clicked",
+		G_CALLBACK (forward_clicked_cb), data);
 	g_signal_connect (data->delete_button, "clicked",
 		G_CALLBACK (delete_clicked_cb), data);
 	g_signal_connect (data->delete_all_button, "clicked",

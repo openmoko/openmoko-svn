@@ -57,6 +57,7 @@ typedef struct {
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkToolItem *new_button;
+	GtkToolItem *forward_button;
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;
 
