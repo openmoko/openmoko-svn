@@ -598,11 +598,13 @@ on_call_progress (MokoListener *listener, struct lgsm_handle *handle,
       priv->incoming_clip = NULL;
 
       moko_notify_stop (priv->notify);
+      moko_talking_hide_window (MOKO_TALKING (priv->talking));
       g_debug ("mokogsmd disconnect");
       break;
     
     case GSMD_CALLPROG_REJECT:
       moko_dialer_rejected (dialer);
+      moko_talking_hide_window (MOKO_TALKING (priv->talking));
       g_debug ("mokogsmd reject");
       break;
     

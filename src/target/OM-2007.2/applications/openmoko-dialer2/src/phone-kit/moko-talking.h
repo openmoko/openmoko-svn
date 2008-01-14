@@ -94,6 +94,9 @@ moko_talking_set_clip (MokoTalking      *talking,
                        const gchar      *number,
                        MokoContactEntry *entry);
 
+void 
+moko_talking_hide_window (MokoTalking *talking);
+
 G_END_DECLS
 
 #endif /* _HAVE_MOKO_TALKING_H */

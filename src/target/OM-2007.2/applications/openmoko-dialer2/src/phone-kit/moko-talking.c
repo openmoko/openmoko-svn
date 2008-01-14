@@ -156,6 +156,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
   gtk_widget_hide (priv->main_bar);
   gtk_widget_show_all (priv->incoming_bar);
 
+  gtk_window_set_title (GTK_WINDOW (priv->window), "Incoming Call");
   gtk_label_set_text (GTK_LABEL (priv->title), "Incoming Call");
   gtk_label_set_text (GTK_LABEL (priv->duration), "");
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
@@ -215,6 +216,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   else
     markup = g_strdup (number);
 
+  gtk_window_set_title (GTK_WINDOW (priv->window), "Dialing");
   gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
   gtk_label_set_text (GTK_LABEL (priv->duration), "");
 
@@ -293,6 +295,7 @@ moko_talking_accepted_call (MokoTalking      *talking,
   else
     markup = g_strdup (number);
 
+  gtk_window_set_title (GTK_WINDOW (priv->window), "Talking");
   gtk_label_set_text (GTK_LABEL (priv->title), "Talking");
   gtk_label_set_text (GTK_LABEL (priv->duration), "00:00:00");
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
@@ -315,6 +318,26 @@ moko_talking_accepted_call (MokoTalking      *talking,
   g_free (markup);
 }
 
+void
+moko_talking_hide_window (MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+
+  if (priv->dtimer)
+    g_timer_destroy(priv->dtimer);
+  priv->dtimer = NULL;
+
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
+
+  gtk_widget_hide (priv->window);
+}
+
 
 /* Toolbar callbacks */
 static void
@@ -326,29 +349,42 @@ on_answer_clicked (GtkToolButton *button, MokoTalking *talking)
 static void
 on_reject_clicked (GtkToolButton *button, MokoTalking *talking)
 {
-  g_source_remove (talking->priv->timeout);
-  gtk_widget_hide (talking->priv->window);
+  MokoTalkingPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
+
+  gtk_widget_hide (priv->window);
   g_signal_emit (G_OBJECT (talking), talking_signals[REJECT_CALL], 0);
 }
 
 static void
 on_silence_clicked (GtkToolButton *button, MokoTalking *talking)
 {
-  g_source_remove (talking->priv->timeout);
   g_signal_emit (G_OBJECT (talking), talking_signals[SILENCE], 0);
 }
 
 static void
 on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 {
-  /* stop call duration timer */
-  if (talking->priv->dtimer)
-    g_timer_destroy(talking->priv->dtimer);
-  
-  gtk_widget_hide (talking->priv->window);
+  MokoTalkingPrivate *priv;
 
-  g_source_remove (talking->priv->timeout);
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  /* stop call duration timer */
+  if (priv->dtimer)
+    g_timer_destroy(priv->dtimer);
+  priv->dtimer = NULL;
+  
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
+
   moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+  gtk_widget_hide (priv->window);
   g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 0);
 }
 
@@ -478,6 +514,9 @@ moko_talking_init (MokoTalking *talking)
   gint i;
 
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
+
+  /* initialize dtimer to NULL */
+  priv->dtimer = NULL;
 
   notebook = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);

@@ -1,3 +1,19 @@
+2008-01-14  Chris Lord  <chris@openedhand.com>
+
+	Patch by Roman Moravcik <roman.moravcik@gmail.com>, bug #1153
+
+	* src/phone-kit/moko-dialer.c: (on_call_progress):
+	Hide talking window when call missed or caller hung up
+
+	* src/phone-kit/moko-talking.h:
+	* src/phone-kit/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (moko_talking_accepted_call),
+	(moko_talking_hide_window), (on_reject_clicked),
+	(on_silence_clicked), (on_cancel_clicked), (moko_talking_init):
+	Add function to hide talking window, be sure timer was initialised
+	before removal, set window title and don't stop animation when silence
+	button is pressed.
+
 2008-01-11  Chris Lord  <chris@openedhand.com>
 
 	* src/dialer/moko-alsa-volume-button.[ch]:
