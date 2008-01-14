@@ -1,5 +1,16 @@
 2008-01-14  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-network.c: (retry_oper_get),
+	(retry_opers_get), (retry_get_imsi), (on_network_registered),
+	(net_msghandler), (phone_msghandler), (moko_network_init):
+	Only retry n amount of times before giving up on getting imsi,
+	subscriber number and network number
+
+	* src/phone-kit/moko-sms.c: (moko_sms_send):
+	Don't rely on subscriber number to send messages
+
+2008-01-14  Chris Lord  <chris@openedhand.com>
+
 	Patch by Roman Moravcik <roman.moravcik@gmail.com>, bug #1153
 
 	* src/phone-kit/moko-dialer.c: (on_call_progress):

@@ -638,8 +638,7 @@ moko_sms_send (MokoSms *self, const gchar *number,
     return FALSE;
   }
   
-  if (!moko_network_get_subscriber_number (priv->network, &sub_num, error))
-    return FALSE;
+  moko_network_get_subscriber_number (priv->network, &sub_num, NULL);
   
   /* Ask for delivery report */
   sms.ask_ds = report ? 1 : 0;
@@ -693,9 +692,11 @@ moko_sms_send (MokoSms *self, const gchar *number,
     g_free (full_number);
   } else
     jana_note_set_recipient (note, number);
-  jana_note_set_author (note, sub_num);
+  if (sub_num) {
+    jana_note_set_author (note, sub_num);
+    g_free (sub_num);
+  }
   g_free (dialcode);
-  g_free (sub_num);
   
   jana_note_set_body (note, message);
   if (report) {

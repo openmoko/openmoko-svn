@@ -41,6 +41,9 @@ G_DEFINE_TYPE_WITH_CODE (MokoNetwork, moko_network, G_TYPE_OBJECT,
 #define MOKO_NETWORK_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_NETWORK, MokoNetworkPrivate))
 
+#define RETRY_MAX 5
+#define RETRY_DELAY 15
+
 enum {
   PROP_STATUS = 1,
 };
@@ -70,8 +73,11 @@ struct _MokoNetworkPrivate
   gchar                     *imsi;
   
   guint                     retry_oper;
+  gint                      retry_oper_n;
   guint                     retry_opers;
+  gint                      retry_opers_n;
   guint                     retry_imsi;
+  gint                      retry_imsi_n;
 
   /* gsmd connection variables */
   struct lgsm_handle        *handle;
@@ -107,25 +113,26 @@ moko_network_get_property (GObject *object, guint property_id,
 static gboolean
 retry_oper_get (MokoNetwork *network)
 {
-  g_debug ("Retrying operator retrieval");
+  g_debug ("Retrying operator retrieval (%d)", network->priv->retry_oper_n);
   lgsm_oper_get (network->priv->handle);
-  return TRUE;
+  return (--network->priv->retry_oper_n) ? TRUE : FALSE;
 }
 
 static gboolean
 retry_opers_get (MokoNetwork *network)
 {
-  g_debug ("Retrying operators list retrieval");
+  g_debug ("Retrying operators list retrieval (%d)",
+           network->priv->retry_opers_n);
   lgsm_opers_get (network->priv->handle);
-  return TRUE;
+  return (--network->priv->retry_opers_n) ? TRUE : FALSE;
 }
 
 static gboolean
 retry_get_imsi (MokoNetwork *network)
 {
-  g_debug ("Retrying imsi retrieval");
+  g_debug ("Retrying imsi retrieval (%d)", network->priv->retry_imsi_n);
   lgsm_get_imsi (network->priv->handle);
-  return TRUE;
+  return (--network->priv->retry_imsi_n) ? TRUE : FALSE;
 }
 
 static void
@@ -195,17 +202,21 @@ on_network_registered (MokoListener *listener,
         /* Retrieve IMSI to get home country code */
         lgsm_get_imsi (handle);
         
-        /* Add a time-out in case retrieval fails - retry every 10 seconds */
+        /* Add a time-out in case retrieval fails,
+         * retry every RETRY_DELAY seconds */
         stop_retrying (MOKO_NETWORK (listener));
-        priv->retry_oper = g_timeout_add_seconds (15,
-                                                  (GSourceFunc)retry_oper_get,
-                                                  listener);
-        priv->retry_opers = g_timeout_add_seconds (15,
-                                                   (GSourceFunc)retry_opers_get,
-                                                   listener);
-        priv->retry_imsi = g_timeout_add_seconds (15,
-                                                  (GSourceFunc)retry_get_imsi,
-                                                  listener);
+        if (priv->retry_oper_n)
+          priv->retry_oper = g_timeout_add_seconds (RETRY_DELAY,
+                                                    (GSourceFunc)retry_oper_get,
+                                                    listener);
+        if (priv->retry_opers_n)
+          priv->retry_opers = g_timeout_add_seconds (RETRY_DELAY,
+                                                     (GSourceFunc)retry_opers_get,
+                                                     listener);
+        if (priv->retry_imsi_n)
+          priv->retry_imsi = g_timeout_add_seconds (RETRY_DELAY,
+                                                    (GSourceFunc)retry_get_imsi,
+                                                    listener);
       }
       
       break;
@@ -557,6 +568,7 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       if (priv->retry_oper) {
         g_source_remove (priv->retry_oper);
         priv->retry_oper = 0;
+        priv->retry_oper_n = RETRY_MAX;
       }
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_network_name (MOKO_LISTENER (l->data),
@@ -567,6 +579,7 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       if (priv->retry_opers) {
         g_source_remove (priv->retry_opers);
         priv->retry_opers = 0;
+        priv->retry_opers_n = RETRY_MAX;
       }
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_network_list (MOKO_LISTENER (l->data),
@@ -594,6 +607,7 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       if (priv->retry_imsi) {
         g_source_remove (priv->retry_imsi);
         priv->retry_imsi = 0;
+        priv->retry_imsi_n = RETRY_MAX;
       }
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_imsi (MOKO_LISTENER (l->data), priv->handle,
@@ -754,6 +768,10 @@ moko_network_init (MokoNetwork *network)
   MokoNetworkPrivate *priv;
 
   priv = network->priv = MOKO_NETWORK_GET_PRIVATE (network);
+  
+  priv->retry_oper_n = RETRY_MAX;
+  priv->retry_opers_n = RETRY_MAX;
+  priv->retry_imsi_n = RETRY_MAX;
 
   network_init_gsmd (network);
 }
