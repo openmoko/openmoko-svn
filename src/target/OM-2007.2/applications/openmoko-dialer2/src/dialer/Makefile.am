@@ -1,5 +1,5 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" -DPKGDATADIR=\"$(pkgdatadir)\"
-AM_CFLAGS = -Wall @DIALER_CFLAGS@
+AM_CFLAGS = -Wall @DIALER_CFLAGS@ @JANA_CFLAGS@
 
 INCLUDES = -I$(top_srcdir)/src/common
 
@@ -11,4 +11,4 @@ openmoko_dialer_SOURCES = \
 	moko-tips.c moko-tips.h \
 	dialer-main.c
 
-openmoko_dialer_LDADD = @DIALER_LIBS@ $(top_srcdir)/src/common/libdialer-common.a
+openmoko_dialer_LDADD = @DIALER_LIBS@ @JANA_LIBS@ $(top_srcdir)/src/common/libdialer-common.a

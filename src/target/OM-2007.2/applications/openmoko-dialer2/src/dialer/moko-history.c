@@ -21,6 +21,8 @@
 
 #include <gtk/gtk.h>
 
+#include <libjana-gtk/jana-gtk.h>
+
 #include <string.h>
 
 #include <moko-journal.h>
@@ -88,6 +90,7 @@ enum history_columns
   DSTART_COLUMN,
   ICON_NAME_COLUMN,
   DISPLAY_TEXT_COLUMN,
+  CALL_DETAILS_COLUMN,
   CALL_TYPE_COLUMN,
   ENTRY_POINTER_COLUMN
 };
@@ -233,16 +236,22 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   MokoContactEntry *contacts;
   GdkPixbuf *icon = NULL;
   const gchar *display_text;
-  time_t dstart;
+  const gchar *details;
+  time_t dstart, dend, duration;
   MessageDirection direction;
   gboolean was_missed;
   const MokoTime *time;
+  gchar dstart_str[256];
+  gchar duration_str[9];
   gint type;
 
   uid = moko_journal_entry_get_uid (entry);
   moko_journal_entry_get_direction (entry, &direction);
   time = moko_journal_entry_get_dtstart (entry);
   dstart = moko_time_as_timet (time);
+  time = moko_journal_entry_get_dtend (entry);
+  dend = moko_time_as_timet (time);
+  duration = dend - dstart;
   
   was_missed = moko_journal_voice_info_get_was_missed (entry);
   number = moko_journal_voice_info_get_distant_number (entry);
@@ -279,6 +288,11 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
       display_text = number;
   }
 
+  strftime (dstart_str, sizeof (dstart_str), "%d/%m/%Y %H:%M:%S",
+	    localtime (&dstart));
+  strftime (duration_str, sizeof (duration_str), "%H:%M:%S", gmtime (&duration));
+  details = g_strdup_printf ("%s\t\t%s", dstart_str, duration_str);
+
   if (display_text == NULL || uid == NULL)
   {
     /*g_debug ("Not adding");
@@ -289,6 +303,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
     DSTART_COLUMN, dstart,
     ICON_NAME_COLUMN, icon,
     DISPLAY_TEXT_COLUMN, display_text,
+    CALL_DETAILS_COLUMN, details,
     CALL_TYPE_COLUMN, type,
     ENTRY_POINTER_COLUMN, uid,
     -1);
@@ -385,7 +400,6 @@ moko_history_load_entries (MokoHistory *history)
   GtkListStore *store;
   GtkTreeModel *sorted;
   GtkTreeModel *filtered;
-  GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
   MokoJournalEntry *entry;
   gint i, j, n_entries;
@@ -394,26 +408,23 @@ moko_history_load_entries (MokoHistory *history)
   g_return_if_fail (MOKO_IS_HISTORY (history));
   priv = history->priv;
 
-  /* Create the columns */
-  col = gtk_tree_view_column_new ();
+  /* Create renderer and column */
+  renderer = jana_gtk_cell_renderer_note_new ();
+  g_object_set (G_OBJECT (renderer), "show_created", FALSE,
+	            "show_recipient", FALSE, NULL);
 
-  renderer = gtk_cell_renderer_pixbuf_new ();
-  gtk_tree_view_column_pack_start (col, renderer, FALSE);
-  gtk_tree_view_column_set_attributes (col, renderer, 
-                                       "pixbuf", ICON_NAME_COLUMN,
-                                       NULL);
+  gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (priv->treeview),
+		0, NULL, renderer, "author", DISPLAY_TEXT_COLUMN, "body",
+		CALL_DETAILS_COLUMN, "icon", ICON_NAME_COLUMN, NULL);
 
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_column_pack_start (col, renderer, TRUE);
-  gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", DISPLAY_TEXT_COLUMN,
-                                       NULL);
-  gtk_tree_view_append_column (GTK_TREE_VIEW (priv->treeview), col);
+  g_signal_connect (priv->treeview, "size-allocate",
+		G_CALLBACK (jana_gtk_utils_treeview_resize), renderer);
 
   /* Set up the list store */
-  store = gtk_list_store_new (6, G_TYPE_STRING,
+  store = gtk_list_store_new (7, G_TYPE_STRING,
                                  G_TYPE_INT,
                                  GDK_TYPE_PIXBUF,
+                                 G_TYPE_STRING,
                                  G_TYPE_STRING,
                                  G_TYPE_INT,
                                  G_TYPE_STRING);
@@ -665,6 +676,7 @@ moko_history_init (MokoHistory *history)
   gtk_box_pack_start (GTK_BOX (history), scroll, TRUE, TRUE, 0);
 
   treeview = priv->treeview = gtk_tree_view_new ();
+  gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (treeview), TRUE);
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
   gtk_container_add (GTK_CONTAINER (scroll), treeview);
 

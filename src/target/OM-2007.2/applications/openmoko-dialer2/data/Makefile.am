@@ -1,7 +1,7 @@
 # A shell check command that I find convenient:
 # ls -1 *.png | xargs --replace=pngimg sh -c '(grep -qw "pngimg" Makefile.am  || echo "Missing pngimg")'
 
-dist_pkgdata_DATA =unkown.png\
+dist_pkgdata_DATA =unknown.png\
                 dialed.png\
                 missed.png\
                 received.png\

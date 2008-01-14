@@ -1,5 +1,23 @@
 2008-01-14  Chris Lord  <chris@openedhand.com>
 
+	Patch by: Roman Moracvik <roman.moravcik@gmail.com>, bug #1157
+
+	* configure.ac:
+	* src/dialer/Makefile.am:
+	Add libjana-gtk to dependencies
+
+	* data/Makefile.am:
+	* src/phone-kit/moko-talking.c: (moko_talking_set_clip),
+	(moko_talking_incoming_call), (moko_talking_outgoing_call):
+	Rename unkown.png -> unknown.png
+
+	* src/dialer/moko-history.c: (history_add_entry),
+	(moko_history_load_entries), (moko_history_init):
+	Use JanaGtkCellRendererNote to display more details in the dialer
+	history
+
+2008-01-14  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-network.c: (retry_oper_get),
 	(retry_opers_get), (retry_get_imsi), (on_network_registered),
 	(net_msghandler), (phone_msghandler), (moko_network_init):

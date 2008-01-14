@@ -21,7 +21,7 @@ PKG_CHECK_MODULES(DIALER,
                   libmokoui2
                   libpulse)
 
-PKG_CHECK_MODULES(JANA, libjana libjana-ecal)
+PKG_CHECK_MODULES(JANA, libjana libjana-ecal libjana-gtk)
 PKG_CHECK_MODULES(NOTIFY, libnotify)
 
 old_cflags=$CFLAGS

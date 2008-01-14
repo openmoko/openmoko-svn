@@ -106,7 +106,7 @@ moko_talking_set_clip (MokoTalking      *talking,
     gtk_image_set_from_pixbuf (GTK_IMAGE (priv->person), entry->contact->photo);
   else
     gtk_image_set_from_file (GTK_IMAGE (priv->person),
-                             PKGDATADIR"/unkown.png");
+                             PKGDATADIR"/unknown.png");
 
   g_free (markup);
 }
@@ -164,7 +164,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
 
   gtk_label_set_text (GTK_LABEL (priv->status), number);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
-                           PKGDATADIR"/unkown.png");
+                           PKGDATADIR"/unknown.png");
   if (priv->timeout)
     g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
@@ -226,7 +226,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
     gtk_image_set_from_pixbuf (GTK_IMAGE (priv->person), entry->contact->photo);
   else
     gtk_image_set_from_file (GTK_IMAGE (priv->person),
-                             PKGDATADIR"/unkown.png");
+                             PKGDATADIR"/unknown.png");
   if (priv->timeout)
     g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
