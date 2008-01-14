@@ -62,3 +62,4 @@ s3c2440-nand-disable-hwecc.patch
 # qt2410 local hacks
 qt2410-cs8900.patch
 s3c2410-qt2410-buttons.patch
+fail-unless-uimage.patch
