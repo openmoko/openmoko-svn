@@ -3,10 +3,10 @@ multi-function peripheral device.
 
 Signedo-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6/drivers/mfd/Kconfig
+Index: linux-2.6.24-rc7/drivers/mfd/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/mfd/Kconfig
-+++ linux-2.6/drivers/mfd/Kconfig
+--- linux-2.6.24-rc7.orig/drivers/mfd/Kconfig
++++ linux-2.6.24-rc7/drivers/mfd/Kconfig
 @@ -15,6 +15,8 @@
  	  interface. The device may be connected by PCI or local bus with
  	  varying functions enabled.
@@ -16,10 +16,10 @@ Index: linux-2.6/drivers/mfd/Kconfig
  endmenu
  
  menu "Multimedia Capabilities Port drivers"
-Index: linux-2.6/drivers/mfd/glamo/Makefile
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/Makefile
++++ linux-2.6.24-rc7/drivers/mfd/glamo/Makefile
 @@ -0,0 +1,11 @@
 +#
 +# Makefile for the Smedia Glamo framebuffer driver
@@ -32,10 +32,10 @@ Index: linux-2.6/drivers/mfd/glamo/Makefile
 +obj-$(CONFIG_MFD_GLAMO_FB)		+= glamo-fb.o
 +obj-$(CONFIG_MFD_GLAMO_SPI_FB)		+= glamo-lcm-spi.o
 +
-Index: linux-2.6/drivers/mfd/glamo/glamo-regs.h
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-regs.h
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-regs.h
 @@ -0,0 +1,467 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
@@ -504,10 +504,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-regs.h
 +};
 +
 +#endif /* _GLAMO_REGS_H */
-Index: linux-2.6/drivers/mfd/glamo/glamo-core.c
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-core.c
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 @@ -0,0 +1,1072 @@
 +/* Smedia Glamo 336x/337x driver
 + *
@@ -1581,10 +1581,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-core.c
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x core/resource driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
+Index: linux-2.6.24-rc7/include/asm-arm/arch-s3c2410/irqs.h
 ===================================================================
---- linux-2.6.orig/include/asm-arm/arch-s3c2410/irqs.h
-+++ linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
+--- linux-2.6.24-rc7.orig/include/asm-arm/arch-s3c2410/irqs.h
++++ linux-2.6.24-rc7/include/asm-arm/arch-s3c2410/irqs.h
 @@ -155,9 +155,37 @@
  #define IRQ_S3C2443_AC97	S3C2410_IRQSUB(28)
  
@@ -1625,10 +1625,10 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
 +#define IRQ_GLAMO_RISC		IRQ_GLAMO(8)
 +
  #endif /* __ASM_ARCH_IRQ_H */
-Index: linux-2.6/drivers/mfd/glamo/glamo-fb.c
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-fb.c
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 @@ -0,0 +1,658 @@
 +/* Smedia Glamo 336x/337x driver
 + *
@@ -2288,10 +2288,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-fb.c
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x framebuffer driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/include/linux/glamofb.h
+Index: linux-2.6.24-rc7/include/linux/glamofb.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/linux/glamofb.h
++++ linux-2.6.24-rc7/include/linux/glamofb.h
 @@ -0,0 +1,33 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
@@ -2326,10 +2326,10 @@ Index: linux-2.6/include/linux/glamofb.h
 +int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val);
 +
 +#endif
-Index: linux-2.6/include/linux/spi/glamo.h
+Index: linux-2.6.24-rc7/include/linux/spi/glamo.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/linux/spi/glamo.h
++++ linux-2.6.24-rc7/include/linux/spi/glamo.h
 @@ -0,0 +1,28 @@
 +#ifndef __GLAMO_SPI_H
 +#define __GLAMO_SPI_H
@@ -2359,10 +2359,10 @@ Index: linux-2.6/include/linux/spi/glamo.h
 +
 +
 +#endif
-Index: linux-2.6/drivers/mfd/glamo/glamo-core.h
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-core.h
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
 @@ -0,0 +1,53 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
@@ -2417,10 +2417,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-core.h
 +			 enum glamo_engine engine, int ps);
 +
 +#endif /* __GLAMO_CORE_H */
-Index: linux-2.6/drivers/mfd/glamo/glamo-gpio.c
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-gpio.c
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-gpio.c
 @@ -0,0 +1,62 @@
 +
 +#include <linux/kernel.h>
@@ -2484,10 +2484,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-gpio.c
 +}
 +EXPORT_SYMBOL(glamo_gpio_cfgpin);
 +
-Index: linux-2.6/drivers/mfd/glamo/glamo-lcm-spi.c
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-lcm-spi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-lcm-spi.c
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-lcm-spi.c
 @@ -0,0 +1,241 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2730,11 +2730,11 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-lcm-spi.c
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-spi-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
-@@ -0,0 +1,250 @@
++++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-spi-gpio.c
+@@ -0,0 +1,256 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2887,7 +2887,7 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
 +		goto err_no_pdev;
 +	}
 +
-+
++	master->num_chipselect = 1;
 +	master->bus_num = 2; /* FIXME: use dynamic number */
 +
 +	sp->master = spi_master_get(master);
@@ -2910,6 +2910,12 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
 +	glamo_gpio_cfgpin(sp->glamo, sp->info->pin_cs);
 +	if (sp->info->pin_miso)
 +		glamo_gpio_cfgpin(sp->glamo, sp->info->pin_miso);
++
++	/* bring the LCM panel out of reset if it isn't already */
++
++	glamo_gpio_setpin(sp->glamo, GLAMO_GPIO4, 1);
++	glamo_gpio_cfgpin(sp->glamo, GLAMO_GPIO4_OUTPUT);
++	msleep(90);
 +
 +#if 0
 +	sp->dev = &pdev->dev;
@@ -2985,10 +2991,10 @@ Index: linux-2.6/drivers/mfd/glamo/glamo-spi-gpio.c
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
-Index: linux-2.6/include/linux/glamo-gpio.h
+Index: linux-2.6.24-rc7/include/linux/glamo-gpio.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/linux/glamo-gpio.h
++++ linux-2.6.24-rc7/include/linux/glamo-gpio.h
 @@ -0,0 +1,99 @@
 +#ifndef __GLAMO_GPIO_H
 +#define __GLAMO_GPIO_H
@@ -3089,10 +3095,10 @@ Index: linux-2.6/include/linux/glamo-gpio.h
 +
 +
 +#endif /* _GLAMO_GPIO */
-Index: linux-2.6/drivers/mfd/glamo/Kconfig
+Index: linux-2.6.24-rc7/drivers/mfd/glamo/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mfd/glamo/Kconfig
++++ linux-2.6.24-rc7/drivers/mfd/glamo/Kconfig
 @@ -0,0 +1,35 @@
 +config MFD_GLAMO
 +	bool "Smedia Glamo 336x/337x support"
@@ -3129,10 +3135,10 @@ Index: linux-2.6/drivers/mfd/glamo/Kconfig
 +	 control channel.  This SPI interface is frequently used to
 +	 interconnect the LCM control interface.
 +
-Index: linux-2.6/drivers/mfd/Makefile
+Index: linux-2.6.24-rc7/drivers/mfd/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/mfd/Makefile
-+++ linux-2.6/drivers/mfd/Makefile
+--- linux-2.6.24-rc7.orig/drivers/mfd/Makefile
++++ linux-2.6.24-rc7/drivers/mfd/Makefile
 @@ -3,6 +3,7 @@
  #
  
