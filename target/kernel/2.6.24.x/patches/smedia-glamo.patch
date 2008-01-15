@@ -508,7 +508,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
-@@ -0,0 +1,1068 @@
+@@ -0,0 +1,1106 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -560,6 +560,14 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +
 +#include "glamo-regs.h"
 +#include "glamo-core.h"
++
++#ifndef UGLY_HACK_BE_GONE
++#ifdef CONFIG_MACH_NEO1973_GTA02
++#include <asm/arch/gpio.h>
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/regs-gpioj.h>
++#endif
++#endif /* UGLY_HACK_BE_GONE */
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
 +
@@ -1385,6 +1393,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +static int __init glamo_probe(struct platform_device *pdev)
 +{
 +	int rc, irq;
++	int count = 0;
 +	struct glamo_core *glamo;
 +
 +	if (glamo_handle) {
@@ -1494,7 +1503,36 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +		set_irq_flags(irq, IRQF_VALID);
 +	}
 +
-+	if (!glamo->irq)
++#ifndef UGLY_HACK_BE_GONE
++	/*
++	* GTA-02 S-Media IRQs prior to A5 are broken due to a lack of
++	* a pullup on the INT# line.  Check for the bad behaviour.
++	*/
++	s3c2410_gpio_setpin(S3C2410_GPG4, 0);
++	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_OUTP);
++	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_INP);
++	/*
++	* we force it low ourselves for a moment and resume being input.
++	* If there is a pullup, it won't stay low for long.  But if the
++	* level converter is there as on < A5 revision, the weak keeper
++	* on the input of the LC will hold the line low indefinitiely
++	*/
++	do {
++		rc = s3c2410_gpio_getpin(S3C2410_GPG4);
++	} while ((!rc) && ((count++) < 10));
++
++	if (rc) { /* it got pulled back up, it's good */
++		dev_info(&glamo->pdev->dev, "Detected S-Media IRQ# pullup, "
++		"enabling interrupt\n");
++		glamo->irq_works = 1;
++	} else { /* Gah we can't work with this level converter */
++		dev_warn(&glamo->pdev->dev, "** Detected bad IRQ# circuit found"
++		" on pre-A5 GTA-02: S-Media interrupt disabled **\n");
++		glamo->irq_works = 0;
++	}
++#endif /* UGLY_HACK_BE_GONE */
++
++	if (!glamo->irq || !glamo->irq_works)
 +		dev_warn(&glamo->pdev->dev, "No IRQ support on this hardware!\n");
 +	else {
 +		dev_dbg(&glamo->pdev->dev, "chained\n");
@@ -2359,12 +2397,13 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,54 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
 +
 +struct glamo_core {
 +	int irq;
++	int irq_works; /* 0 means PCB does not support Glamo IRQ - UGLY HACK */
 +	struct resource *mem;
 +	struct resource *mem_core;
 +	void __iomem *base;
