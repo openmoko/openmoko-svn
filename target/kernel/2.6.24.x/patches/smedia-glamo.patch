@@ -1137,13 +1137,13 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_PLL_GEN1,		0x05db },	/* 48MHz */
 +	{ GLAMO_REG_PLL_GEN3,		0x09c3 },	/* 80MHz */
 +		{ 0xfffe, 300 },
-+	{ GLAMO_REG_IRQ_ENABLE,		0xffff },
++	{ GLAMO_REG_IRQ_ENABLE,		0x01ff }, /* all 9 irqs, irq to base */
 +	{ GLAMO_REG_CLOCK_GEN6,		0x2000 },
 +	{ GLAMO_REG_CLOCK_GEN7,		0x0101 },
 +	{ GLAMO_REG_CLOCK_GEN8,		0x0100 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x000d },
 +	{ 0x200,	0x0ef0 },
-+	{ 0x202, 	0x7fff },
++	{ 0x202, 	0x07ff },
 +	{ 0x212,	0x0000 },
 +	{ 0x214,	0x4000 },
 +	{ 0x216,	0xf00e },
