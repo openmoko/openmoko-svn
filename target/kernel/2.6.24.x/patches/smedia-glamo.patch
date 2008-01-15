@@ -1081,7 +1081,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +
 +	if (val) {
 +		val--;
-+
++		printk(KERN_INFO "-------------- engine reclock val = %d\n", val);
 +		reg_set_bit_mask(glamo, reg, mask, val);
 +		msleep(5); /* wait some time to stabilize */
 +
@@ -1679,7 +1679,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
-@@ -0,0 +1,823 @@
+@@ -0,0 +1,820 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1821,7 +1821,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 +			     struct fb_info *info)
 +{
 +	struct glamofb_handle *glamo = info->par;
-+	u_int16_t mode;
 +
 +	if (var->yres > glamo->mach_info->yres.max)
 +		var->yres = glamo->mach_info->yres.max;
@@ -2297,7 +2296,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 +static int glamofb_init_regs(struct glamofb_handle *glamo)
 +{
 +	struct fb_info *info = glamo->fb;
-+	struct fb_var_screeninfo *var = &info->var;
 +
 +	glamofb_check_var(&info->var, info);
 +	glamofb_run_script(glamo, glamo_regs, ARRAY_SIZE(glamo_regs));
@@ -2438,7 +2436,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 +
 +out_unmap_fb:
 +	iounmap(fbinfo->screen_base);
-+out_unmap:
 +	iounmap(glamofb->base);
 +out_release_fb:
 +	release_mem_region(glamofb->fb_res->start, RESSIZE(glamofb->fb_res));
