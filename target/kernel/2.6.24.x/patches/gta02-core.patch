@@ -2,7 +2,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,710 @@
+@@ -0,0 +1,711 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -559,9 +559,10 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	.lower_margin	= 16,
 +	.hsync_len	= 8,
 +	.vsync_len	= 2,
++	.fb_mem_size	= 0x400000, /* glamo has 8 megs of SRAM. we use 4 */
 +	.xres		= {
 +		.min	= 240,
-+		.max	= 480,
++		.max	= 640,
 +		.defval	= 480,
 +	},
 +	.yres		= {
