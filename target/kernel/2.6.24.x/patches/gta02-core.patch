@@ -2,7 +2,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,711 @@
+@@ -0,0 +1,753 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -338,6 +338,35 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +
 +
++static struct resource gta02_sdio_resources[] = {
++	[0] = {
++		.flags	= IORESOURCE_IRQ,
++		.start	= IRQ_SDI,
++		.end	= IRQ_SDI,
++	},
++	[1] = {
++		.flags = IORESOURCE_MEM,
++		.start = S3C2410_PA_SDI,
++		.end   = S3C2410_PA_SDI + S3C24XX_SZ_SDI - 1,
++	},
++	[2] = {
++		.flags = IORESOURCE_DMA,
++		.start = 0, /* Channel 0 for SDI */
++		.end = 0,
++	},
++};
++
++
++static struct platform_device gta02_sdio_dev = {
++        .name           = "s3c24xx-sdio",
++        .id             = -1,
++        .dev            = {
++                                .coherent_dma_mask      = 0xffffffff,
++        },
++        .resource       = gta02_sdio_resources,
++        .num_resources  = ARRAY_SIZE(gta02_sdio_resources),
++};
++
 +static struct platform_device *gta02_devices[] __initdata = {
 +	&s3c_device_usb,
 +	&s3c_device_wdt,
@@ -665,14 +694,25 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	set_s3c2410ts_info(&gta02_ts_cfg);
 +
 +	/* FIXME: hardcoded WLAN module power-up */
-+	s3c2410_gpio_setpin(GTA02_CHIP_PWD, 0);
++	s3c2410_gpio_cfgpin(GTA02_CHIP_PWD, S3C2410_GPIO_OUTPUT);
++
++	/* Power is down */
++	s3c2410_gpio_setpin(GTA02_CHIP_PWD, 1);
++	mdelay(100);
++
 +	switch (system_rev) {
 +	case GTA02v1_SYSTEM_REV:
++		s3c2410_gpio_setpin(GTA02_CHIP_PWD, 0);
 +		break;
 +	default:
++		s3c2410_gpio_cfgpin(GTA02_GPIO_nWLAN_RESET, S3C2410_GPIO_OUTPUT);
++		/* Chip is in reset state */
 +		s3c2410_gpio_setpin(GTA02_GPIO_nWLAN_RESET, 0);
-+		udelay(2000);
-+		udelay(2000);
++		mdelay(100);
++		/* Power is up */
++		s3c2410_gpio_setpin(GTA02_CHIP_PWD, 0);
++		mdelay(100);
++		/* Chip is out of reset */
 +		s3c2410_gpio_setpin(GTA02_GPIO_nWLAN_RESET, 1);
 +		break;
 +	}
@@ -687,6 +727,8 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +	mangle_glamo_res_by_system_rev();
 +	platform_device_register(&gta02_glamo_dev);
++
++	platform_device_register(&gta02_sdio_dev);
 +
 +	platform_add_devices(gta02_devices, ARRAY_SIZE(gta02_devices));
 +
