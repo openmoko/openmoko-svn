@@ -518,7 +518,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
-@@ -0,0 +1,1107 @@
+@@ -0,0 +1,1112 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1133,7 +1133,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_CLOCK_RISC1,	0x1000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
-+	{ GLAMO_REG_CLOCK_MPROC,	0x1000 },
++	{ GLAMO_REG_CLOCK_MPROC,	0x100f },
 +		{ 0xfffe, 1 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x0000 },
 +	{ GLAMO_REG_CLOCK_MEMORY,	0x0000 },
@@ -1150,7 +1150,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_CLOCK_RISC1,	0x0000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
-+	{ GLAMO_REG_CLOCK_MPROC,	0x0000 },
++	{ GLAMO_REG_CLOCK_MPROC,	0x000f },
 +		{ 0xfffe, 1 },
 +	{ GLAMO_REG_PLL_GEN1,		0x05db },	/* 48MHz */
 +	{ GLAMO_REG_PLL_GEN3,		0x09c3 },	/* 80MHz */
@@ -1165,6 +1165,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ 0x212,	0x0000 },
 +	{ 0x214,	0x4000 },
 +	{ 0x216,	0xf00e },
++	{ GLAMO_REG_MEM_TYPE,		0x0874 },
 +	{ GLAMO_REG_MEM_GEN,		0xafaf },
 +	{ GLAMO_REG_MEM_TIMING1,	0x0108 },
 +	{ GLAMO_REG_MEM_TIMING2,	0x0010 },
@@ -1179,10 +1180,14 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_MEM_TIMING11,	0x0001 },
 +	{ GLAMO_REG_MEM_POWER1,		0x0020 },
 +	{ GLAMO_REG_MEM_POWER2,		0x0000 },
++	{ GLAMO_REG_MEM_DRAM1,		0x0000 },
++		{ 0xfffe, 1 },
++	{ GLAMO_REG_MEM_DRAM1,		0xc100 },
++		{ 0xfffe, 1 },
++	{ GLAMO_REG_MEM_DRAM1,		0xe100 },
 +	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
 +	{ GLAMO_REG_CLOCK_MEMORY,	0x000a },
-+	{ GLAMO_REG_CLOCK_MEMORY,	0x000b },
-+	{ GLAMO_REG_MEM_TYPE,		0x0873 },
++//	{ GLAMO_REG_CLOCK_MEMORY,	0x000b },
 +};
 +
 +#if 0 /* MM370 */
@@ -1674,7 +1679,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
-@@ -0,0 +1,829 @@
+@@ -0,0 +1,823 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -2417,12 +2422,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-fb.c
 +		dev_err(&pdev->dev, "failed to register framebuffer\n");
 +		goto out_unmap_fb;
 +	}
-+
-+	/* pull LCM out of reset (bootloader should have done this before!!) */
-+	/* FIXME: make this part of platform info */
-+	glamo_gpio_cfgpin(mach_info->glamo, GLAMO_GPIO4_OUTPUT);
-+	glamo_gpio_setpin(mach_info->glamo, GLAMO_GPIO4, 1);
-+	msleep(90);
 +
 +	if (mach_info->spi_info) {
 +		/* register the sibling spi device */
