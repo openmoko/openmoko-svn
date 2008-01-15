@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.24-rc7
-# Tue Jan 15 17:59:37 2008
+# Tue Jan 15 18:34:56 2008
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -320,7 +320,7 @@ CONFIG_NET=y
 #
 # Networking options
 #
-CONFIG_PACKET=m
+CONFIG_PACKET=y
 CONFIG_PACKET_MMAP=y
 CONFIG_UNIX=y
 CONFIG_XFRM=y
