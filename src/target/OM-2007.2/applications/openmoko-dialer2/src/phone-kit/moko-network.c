@@ -42,7 +42,7 @@ G_DEFINE_TYPE_WITH_CODE (MokoNetwork, moko_network, G_TYPE_OBJECT,
         MOKO_TYPE_NETWORK, MokoNetworkPrivate))
 
 #define RETRY_MAX 5
-#define RETRY_DELAY 15
+#define RETRY_DELAY 60
 
 enum {
   PROP_STATUS = 1,

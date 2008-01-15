@@ -686,11 +686,11 @@ moko_sms_send (MokoSms *self, const gchar *number,
 
   moko_network_get_country_code (priv->network, &dialcode, NULL);
   
-  if ((number[0] == '0') && (number[1] != '0') && (dialcode)) {
+  /*if ((number[0] == '0') && (number[1] != '0') && (dialcode)) {
     gchar *full_number = g_strconcat (dialcode, number + 1, NULL);
     jana_note_set_recipient (note, full_number);
     g_free (full_number);
-  } else
+  } else*/
     jana_note_set_recipient (note, number);
   if (sub_num) {
     jana_note_set_author (note, sub_num);

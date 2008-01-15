@@ -1,3 +1,11 @@
+2008-01-15  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-network.c:
+	Increase timeout to 60 seconds
+
+	* src/phone-kit/moko-sms.c: (moko_sms_send):
+	Don't try to resolve recipient number
+
 2008-01-14  Chris Lord  <chris@openedhand.com>
 
 	Patch by: Roman Moracvik <roman.moravcik@gmail.com>, bug #1157
