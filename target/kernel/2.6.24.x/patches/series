@@ -62,8 +62,15 @@ s3c2440-nand-disable-hwecc.patch
 # qt2410 local hacks
 qt2410-cs8900.patch
 s3c2410-qt2410-buttons.patch
+
+# local hack
 fail-unless-uimage.patch
+
+# Atheros WLAN driver
 pnp_fixes.patch
 atheros_2_0_function.patch
 atheros_2_0_hcd-patch
 atheros_2_0_sdio_stack.patch
+
+# Preliminary suspend/resume power saving improvements
+suspend-prelim1.patch
