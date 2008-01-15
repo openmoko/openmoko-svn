@@ -508,7 +508,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
-@@ -0,0 +1,1106 @@
+@@ -0,0 +1,1107 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1406,6 +1406,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	if (!glamo)
 +		return -ENOMEM;
 +
++	spin_lock_init(&glamo->lock);
 +	glamo_handle = glamo;
 +	glamo->pdev = pdev;
 +	glamo->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
