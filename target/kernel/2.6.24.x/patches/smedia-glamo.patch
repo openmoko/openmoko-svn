@@ -1287,12 +1287,12 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +{
 +	int i;
 +
-+	static const u_int16_t pattern[] = {
++	/*static const u_int16_t pattern[] = {
 +		0x1111, 0x8a8a, 0x2222, 0x7a7a,
 +		0x3333, 0x6a6a, 0x4444, 0x5a5a,
 +		0x5555, 0x4a4a, 0x6666, 0x3a3a,
 +		0x7777, 0x2a2a, 0x8888, 0x1a1a
-+	};
++	}; */
 +
 +	for (i = 0; i < MEMDETECT_RETRY; i++) {
 +		switch (glamo->type) {
@@ -1347,7 +1347,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +/* Find out if we can support this version of the Glamo chip */
 +static int glamo_supported(struct glamo_core *glamo)
 +{
-+	u_int16_t dev_id, rev_id, memsize;
++	u_int16_t dev_id, rev_id; /*, memsize; */
 +
 +	dev_id = __reg_read(glamo, GLAMO_REG_DEVICE_ID);
 +	rev_id = __reg_read(glamo, GLAMO_REG_REVISION_ID);
