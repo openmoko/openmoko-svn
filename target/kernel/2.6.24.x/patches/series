@@ -64,3 +64,6 @@ qt2410-cs8900.patch
 s3c2410-qt2410-buttons.patch
 fail-unless-uimage.patch
 pnp_fixes.patch
+atheros_2_0_function.patch
+atheros_2_0_hcd-patch
+atheros_2_0_sdio_stack.patch
