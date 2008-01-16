@@ -427,19 +427,30 @@ moko_alsa_volume_control_set_device_from_name (MokoAlsaVolumeControl *control,
 
 	while (snd_card_next (&i) == 0) {
 		void **hints;
+		
+		if (i == -1) break;
 	
 		if (snd_device_name_hint (i, "pcm", &hints) == 0) {
+			gchar *separator;
 			gchar *device = strdup (snd_device_name_get_hint (
-				hints[0], "NAME"));
-			snd_device_name_free_hint (hints);
-			strchr (device, ':')[0] = '\0';
+				hints[0], "DESC"));
+			
+			if ((separator = strchr (device, ',')))
+			  *separator = '\0';
 			
 			if (strcmp (device, name) == 0) {
+				g_free (device);
+				
+				device = strdup (snd_device_name_get_hint (
+					hints[0], "NAME"));
+				snd_device_name_free_hint (hints);
+				strchr (device, ':')[0] = '\0';
+				
 				moko_alsa_volume_control_set_device (
 					control, device);
-				g_free (device);
 				return;
 			}
+			snd_device_name_free_hint (hints);
 			g_free (device);
 		}
 	}

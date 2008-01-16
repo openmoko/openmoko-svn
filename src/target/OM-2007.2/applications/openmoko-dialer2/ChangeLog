@@ -1,5 +1,12 @@
 2008-01-16  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-alsa-volume-control.c:
+	(moko_alsa_volume_control_set_device_from_name):
+	Finish implementing (didn't realise I left this unfinished): Fix
+	infinite loop, get card name correctly and resolve alsa alias
+
+2008-01-16  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	* src/phone-kit/Makefile.am:
 	Add alsa to dependencies and compile volume control object/widget
