@@ -1,5 +1,22 @@
 2008-01-16  Chris Lord  <chris@openedhand.com>
 
+	* configure.ac:
+	* src/phone-kit/Makefile.am:
+	Add alsa to dependencies and compile volume control object/widget
+
+	* src/phone-kit/moko-alsa-volume-button.c:
+	* src/phone-kit/moko-alsa-volume-button.h:
+	Remove unused MokoAlsaVolumeButton
+
+	* src/phone-kit/moko-alsa-volume-scale.[ch]:
+	Add new MokoAlsaVolumeScale
+
+	* src/phone-kit/moko-talking.c: (volume_changed_cb),
+	(moko_talking_init):
+	Integrate volume control widget, bug #394
+
+2008-01-16  Chris Lord  <chris@openedhand.com>
+
 	* src/dialer/moko-tips.c: (moko_tips_set_matches):
 	Fix not setting entry data on first contact if it has no photo (bug
 	#1122)

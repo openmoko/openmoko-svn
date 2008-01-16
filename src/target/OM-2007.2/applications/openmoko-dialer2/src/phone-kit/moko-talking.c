@@ -23,6 +23,8 @@
 #include "moko-talking.h"
 #include "moko-dialer-panel.h"
 #include "moko-dialer-textview.h"
+#include "moko-alsa-volume-control.h"
+#include "moko-alsa-volume-scale.h"
 
 G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_WIDGET)
 
@@ -51,6 +53,7 @@ struct _MokoTalkingPrivate
 
   GtkWidget *person;
   GtkWidget *status;
+  GtkWidget *volume;
   
   GtkToolItem *speaker_toggle_btn;
   
@@ -65,6 +68,9 @@ struct _MokoTalkingPrivate
   guint timeout;
   
   gint call_direction;
+  
+  MokoAlsaVolumeControl *amp_left;
+  MokoAlsaVolumeControl *amp_right;
 };
 
 enum
@@ -504,6 +510,13 @@ on_pad_user_input (MokoDialerPanel *panel, const gchar digit,
 }
 
 static void
+volume_changed_cb (MokoAlsaVolumeControl *control1, gdouble volume,
+                   MokoAlsaVolumeControl *control2)
+{
+  moko_alsa_volume_control_set_volume (control2, volume);
+}
+
+static void
 moko_talking_init (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
@@ -550,6 +563,22 @@ moko_talking_init (MokoTalking *talking)
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_reject_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
+  
+  /* Volume controls */
+  priv->amp_left = moko_alsa_volume_control_new ();
+  moko_alsa_volume_control_set_device_from_name (priv->amp_left, "neo1973");
+  moko_alsa_volume_control_set_element_from_name (priv->amp_left, "Amp Left");
+  priv->amp_right = moko_alsa_volume_control_new ();
+  moko_alsa_volume_control_set_device_from_name (priv->amp_right, "neo1973");
+  moko_alsa_volume_control_set_element_from_name (priv->amp_right, "Amp Right");
+  
+  priv->volume = moko_alsa_volume_scale_new (GTK_ORIENTATION_HORIZONTAL);
+  moko_alsa_volume_scale_set_control (MOKO_ALSA_VOLUME_SCALE (priv->volume),
+                                      priv->amp_left);
+  
+  /* Chain Amp Left to Amp Right */
+  g_signal_connect (priv->amp_left, "volume_changed",
+                    G_CALLBACK (volume_changed_cb), priv->amp_right);
 
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
@@ -606,6 +635,9 @@ moko_talking_init (MokoTalking *talking)
 
   priv->status = label = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+  
+  /* The volume control */
+  gtk_box_pack_start (GTK_BOX (vbox), priv->volume, FALSE, TRUE, 12);
 
   /* Load the pixbufs */
   for (i = 0; i < N_PICS; i++)

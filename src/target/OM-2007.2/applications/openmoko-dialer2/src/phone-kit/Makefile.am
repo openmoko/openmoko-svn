@@ -1,5 +1,5 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" -DPKGDATADIR=\"$(pkgdatadir)\"
-AM_CFLAGS = -Wall @DIALER_CFLAGS@ @JANA_CFLAGS@ @NOTIFY_CFLAGS@
+AM_CFLAGS = -Wall @DIALER_CFLAGS@ @JANA_CFLAGS@ @NOTIFY_CFLAGS@ @ALSA_CFLAGS@
 
 INCLUDES = -I$(top_srcdir)/src/common
 
@@ -14,10 +14,12 @@ phone_kit_SOURCES = \
 	moko-notify.c moko-notify.h \
 	moko-sound.c moko-sound.h \
 	moko-talking.c moko-talking.h \
+	moko-alsa-volume-control.c moko-alsa-volume-control.h \
+	moko-alsa-volume-scale.c moko-alsa-volume-scale.h \
 	moko-pin.c moko-pin.h \
 	moko-mcc-dc.h
 
-phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ @NOTIFY_LIBS@ $(top_srcdir)/src/common/libdialer-common.a
+phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ @NOTIFY_LIBS@ @ALSA_LIBS@ $(top_srcdir)/src/common/libdialer-common.a
 
 
 %-glue.h: %-dbus.xml
