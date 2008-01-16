@@ -77,14 +77,14 @@ moko_tips_set_matches (MokoTips *tips, GList *list)
         if (!entry->contact->photo)
         {
           gtk_image_clear (GTK_IMAGE (priv->image));
-          continue;
+        } else {
+          scaled = gdk_pixbuf_scale_simple (entry->contact->photo,
+                                            36, 36,
+                                            GDK_INTERP_BILINEAR);
+          
+          gtk_image_set_from_pixbuf (GTK_IMAGE (priv->image), scaled);
+          g_object_unref (scaled);
         }
-        scaled = gdk_pixbuf_scale_simple (entry->contact->photo,
-                                          36, 36,
-                                          GDK_INTERP_BILINEAR);
-        
-        gtk_image_set_from_pixbuf (GTK_IMAGE (priv->image), scaled);
-        g_object_unref (scaled);
       }
       gtk_widget_show (label);
     }

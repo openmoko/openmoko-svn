@@ -1,3 +1,9 @@
+2008-01-16  Chris Lord  <chris@openedhand.com>
+
+	* src/dialer/moko-tips.c: (moko_tips_set_matches):
+	Fix not setting entry data on first contact if it has no photo (bug
+	#1122)
+
 2008-01-15  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-network.c:
