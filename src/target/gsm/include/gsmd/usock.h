@@ -196,15 +196,15 @@ enum gsmd_msg_sms_fmt {
 enum {
 	MESSAGE_CLASS_CLASS0		= 0x00,
 	MESSAGE_CLASS_CLASS1		= 0x01,
-	MESSAGE_CLASS_CLASS2		= 0x10,
-	MESSAGE_CLASS_CLASS3		= 0x11,
+	MESSAGE_CLASS_CLASS2		= 0x02,
+	MESSAGE_CLASS_CLASS3		= 0x03,
 };
 
 enum gsmd_sms_alphabet {
 	ALPHABET_DEFAULT		= (0x00<<2),
 	ALPHABET_8BIT			= (0x01<<2),
-	ALPHABET_UCS2			= (0x10<<2),
-	ALPHABET_RESERVED		= (0x11<<2),
+	ALPHABET_UCS2			= (0x02<<2),
+	ALPHABET_RESERVED		= (0x03<<2),
 };
 
 /* bit 1 & bit0 */

@@ -46,7 +46,7 @@ static int sms_data_bytelen(u_int8_t data_coding_scheme, u_int8_t len)
 	case ALPHABET_8BIT:
 		return len;
 	case ALPHABET_UCS2:
-		return len * 2;
+		return len;
 	}
 	return 0;
 }
