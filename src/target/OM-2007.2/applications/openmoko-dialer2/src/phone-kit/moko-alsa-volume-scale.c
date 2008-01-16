@@ -43,17 +43,17 @@ create_widgets (MokoAlsaVolumeScale *scale, GtkOrientation orientation)
 	else box = GTK_BOX (gtk_vbox_new (FALSE, 6));
 	
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
-		image = gtk_image_new_from_icon_name ("moko-volume-down.png",
+		image = gtk_image_new_from_icon_name ("moko-volume-down",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	else image = gtk_image_new_from_icon_name ("moko-volume-up.png",
+	else image = gtk_image_new_from_icon_name ("moko-volume-up",
 		GTK_ICON_SIZE_SMALL_TOOLBAR);
 	
 	gtk_box_pack_start (box, image, FALSE, TRUE, 0);
 	
 	if (orientation == GTK_ORIENTATION_HORIZONTAL)
-		image = gtk_image_new_from_icon_name ("moko-volume-up.png",
+		image = gtk_image_new_from_icon_name ("moko-volume-up",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	else image = gtk_image_new_from_icon_name ("moko-volume-down.png",
+	else image = gtk_image_new_from_icon_name ("moko-volume-down",
 		GTK_ICON_SIZE_SMALL_TOOLBAR);
 	
 	gtk_box_pack_end (box, image, FALSE, TRUE, 0);
