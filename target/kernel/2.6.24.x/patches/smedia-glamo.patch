@@ -518,7 +518,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
-@@ -0,0 +1,1112 @@
+@@ -0,0 +1,1113 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -887,7 +887,8 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +		irqstatus = __reg_read(glamo_handle, GLAMO_REG_IRQ_STATUS);
 +		for (i = 0; i < 9; i++)
 +			if (irqstatus & (1 << i))
-+				desc_handle_irq(irq, irq_desc+IRQ_GLAMO(i));
++				desc_handle_irq(IRQ_GLAMO(i),
++				    irq_desc+IRQ_GLAMO(i));
 +
 +	} while ((desc->status & (IRQ_PENDING | IRQ_DISABLED)) == IRQ_PENDING);
 +
