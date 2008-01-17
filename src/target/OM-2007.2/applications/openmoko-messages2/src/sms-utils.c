@@ -25,6 +25,59 @@
 #  include <config.h>
 #endif
 
+/* Following two functions taken from contacts hito branch, written by
+ * Ross Burton, copyright OpenedHand 2007
+ */
+GList *
+hito_vcard_get_named_attributes (EVCard *contact, const char *name)
+{
+  GList *attrs = NULL, *l;
+
+  g_return_val_if_fail (E_IS_VCARD (contact), NULL);
+  g_return_val_if_fail (name != NULL, NULL);
+
+  for (l = e_vcard_get_attributes (E_VCARD (contact)); l; l = l->next)
+  {
+    EVCardAttribute *attr;
+    const char *n;
+
+    attr = (EVCardAttribute *) l->data;
+    n = e_vcard_attribute_get_name (attr);
+
+    if (strcmp (n, name) == 0)
+      attrs = g_list_prepend (attrs, attr);
+  }
+
+  return g_list_reverse (attrs);
+}
+
+/*
+ * load the attribute value, returning a newly allocated semicolon seperated
+ * string for multivalue attributes
+ */
+gchar*
+hito_vcard_attribute_get_value_string (EVCardAttribute *attr)
+{
+  gchar *attr_value = NULL;
+  GList *l;
+  l = e_vcard_attribute_get_values (attr);
+  if (l)
+  {
+    attr_value = g_strdup (l->data);
+
+    while ((l = g_list_next (l)))
+    {
+      gchar *old = attr_value;
+      if (old)
+        attr_value = g_strdup_printf ("%s; %s", old, (gchar*) l->data);
+      else
+        attr_value = g_strdup (l->data);
+      g_free (old);
+    }
+  }
+  return attr_value;
+}
+
 void
 sms_clear_combo_box_text (GtkComboBox *combo)
 {
@@ -135,20 +188,28 @@ sms_delete_selected_contact_messages (SmsData *data)
 	gtk_widget_destroy (dialog);
 
 	if (contact) {
-		gint i, j;
+		gint i;
+		GList *n, *numbers;
 		
-		for (i = E_CONTACT_FIRST_PHONE_ID;
-		     i <= E_CONTACT_LAST_PHONE_ID; i++) {
+		numbers = hito_vcard_get_named_attributes (
+			E_VCARD (contact), EVC_TEL);
+		
+		for (n = numbers; n; n = n->next) {
 			SmsNoteCountData *ncdata;
-			const gchar *number = e_contact_get_const (
-				contact, (EContactField)i);
+
+			gchar *number = hito_vcard_attribute_get_value_string (
+				(EVCardAttribute *)n->data);
+
 			if (!number) continue;
 			
 			ncdata = g_hash_table_lookup (data->note_count, number);
-			if (!ncdata) continue;
+			if (!ncdata) {
+				g_free (number);
+				continue;
+			}
 			
-			for (j = 0; j < 2; j++) {
-				GList *uids = j ? ncdata->read : ncdata->unread;
+			for (i = 0; i < 2; i++) {
+				GList *uids = i ? ncdata->read : ncdata->unread;
 				for (; uids; uids = uids->next) {
 					/* TODO: Add
 					 * jana_store_remove_component_from_uid
@@ -165,8 +226,10 @@ sms_delete_selected_contact_messages (SmsData *data)
 			}
 			
 			g_hash_table_remove (data->note_count, number);
+			g_free (number);
 		}
 		
+		g_list_free (numbers);
 		g_object_unref (contact);
 	} else {
 		while (data->unassigned_notes) {
@@ -281,7 +344,7 @@ sms_contacts_note_count_update (SmsData *data)
 		return FALSE;
 	
 	do {
-		gint i;
+		GList *numbers, *n;
 		EContact *contact;
 		gchar *uid;
 		gboolean unknown;
@@ -306,20 +369,25 @@ sms_contacts_note_count_update (SmsData *data)
 		
 		unread = 0;
 		read = 0;
-		for (i = E_CONTACT_FIRST_PHONE_ID;
-		     i <= E_CONTACT_LAST_PHONE_ID; i++) {
+		numbers = hito_vcard_get_named_attributes (
+			E_VCARD (contact), EVC_TEL);
+		for (n = numbers; n; n = n->next) {
 			SmsNoteCountData *ncdata;
-			const gchar *number = e_contact_get_const (
-				contact, (EContactField)i);
+			
+			gchar *number = hito_vcard_attribute_get_value_string (
+				(EVCardAttribute *)n->data);
+			
 			if (!number) continue;
 			
 			ncdata = g_hash_table_lookup (data->note_count, number);
+			g_free (number);
 			if (!ncdata) continue;
 			
 			read += g_list_length (ncdata->read);
 			unread += g_list_length (ncdata->unread);
 			ncdata->assigned = assignment;
 		}
+		g_list_free (numbers);
 		
 		set_message_count (data, &iter, read, unread, FALSE);
 	} while (gtk_tree_model_iter_next (data->contacts_store, &iter));

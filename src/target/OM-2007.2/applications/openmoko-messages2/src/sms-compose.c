@@ -27,12 +27,10 @@ static void
 page_shown (SmsData *data)
 {
 	GtkTreeModel *model;
+	GList *numbers, *n;
 	EContact *contact;
 	GdkPixbuf *photo;
 	gchar *string;
-	gint i;
-	
-	gboolean set = FALSE;
 	
 	/* Make delete(-all) buttons insensitive */
 	/* TODO: Replace these with more useful buttons? */
@@ -77,27 +75,24 @@ page_shown (SmsData *data)
 	g_free (string);
 	
 	/* Fill number combo */
-	for (i = E_CONTACT_FIRST_PHONE_ID; i <= E_CONTACT_LAST_PHONE_ID; i++) {
-		const gchar *number = e_contact_get_const (
-			contact, (EContactField)i);
+	numbers = hito_vcard_get_named_attributes (E_VCARD (contact), EVC_TEL);
+	for (n = numbers; n; n = n->next) {
+		gchar *number = hito_vcard_attribute_get_value_string (
+			(EVCardAttribute *)n->data);
 
 		if (!number) continue;
 		
-		if (((i == E_CONTACT_PHONE_MOBILE) ||
-		     (i == E_CONTACT_PHONE_PRIMARY)) && (!set)) {
-			gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
-				data->number_combo)->child), number);
-			set = TRUE;
-		}
 		gtk_combo_box_append_text (GTK_COMBO_BOX (data->number_combo),
 			number);
+		g_free (number);
 	}
-	if (!set) {
-		gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
-			data->number_combo)->child),
-			gtk_combo_box_get_active_text (
-				GTK_COMBO_BOX (data->number_combo)));
-	}
+	g_list_free (numbers);
+	
+	gtk_combo_box_set_active (GTK_COMBO_BOX (data->number_combo), 0);
+	gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
+		data->number_combo)->child),
+		gtk_combo_box_get_active_text (
+			GTK_COMBO_BOX (data->number_combo)));
 	
 	g_object_unref (contact);
 }

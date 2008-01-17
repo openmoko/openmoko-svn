@@ -49,6 +49,9 @@ notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 static void
 new_clicked_cb (GtkToolButton *button, SmsData *data)
 {
+	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
+	    SMS_PAGE_COMPOSE) return;
+
 	gtk_text_buffer_set_text (gtk_text_view_get_buffer (
 		GTK_TEXT_VIEW (data->sms_textview)), "", -1);
 

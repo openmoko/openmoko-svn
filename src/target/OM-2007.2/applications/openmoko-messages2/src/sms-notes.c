@@ -174,7 +174,7 @@ page_shown (SmsData *data)
 {
 	JanaStoreView *store_view;
 	GtkAdjustment *hadjust, *vadjust;
-	gint i;
+	GList *numbers, *n;
 
 	gboolean found_match = FALSE;
 	EContact *contact = NULL;
@@ -246,17 +246,21 @@ page_shown (SmsData *data)
 		data->author_icon = g_object_ref (data->no_photo);
 	
 	store_view = jana_store_get_view (data->notes);
-	for (i = E_CONTACT_FIRST_PHONE_ID; i <= E_CONTACT_LAST_PHONE_ID; i++) {
-		const gchar *number = e_contact_get_const (
-			contact, (EContactField)i);
+	numbers = hito_vcard_get_named_attributes (E_VCARD (contact), EVC_TEL);
+	for (n = numbers; n; n = n->next) {
+		gchar *number = hito_vcard_attribute_get_value_string (
+			(EVCardAttribute *)n->data);
+		
 		if (!number) continue;
 		
 		jana_store_view_add_match (store_view,
 			JANA_STORE_VIEW_AUTHOR, number);
 		jana_store_view_add_match (store_view,
 			JANA_STORE_VIEW_RECIPIENT, number);
+		g_free (number);
 		found_match = TRUE;
 	}
+	g_list_free (numbers);
 	
 	if (found_match) {
 		jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (

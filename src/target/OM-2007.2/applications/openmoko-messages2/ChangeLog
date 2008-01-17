@@ -1,3 +1,18 @@
+2008-01-17  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-main.c: (new_clicked_cb):
+	Don't clear the text input if the compose page is active
+
+	* src/sms-compose.c: (page_shown):
+	* src/sms-notes.c: (page_shown):
+	* src/sms-utils.c: (hito_vcard_get_named_attributes),
+	(hito_vcard_attribute_get_value_string),
+	(sms_delete_selected_contact_messages),
+	(sms_contacts_note_count_update):
+	* src/sms-utils.h:
+	Import two contacts-hito functions and use them to read numbers from
+	EVCard instead of EContact
+
 2008-01-14  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-main.c: (new_clicked_cb), (main):

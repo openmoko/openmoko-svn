@@ -22,6 +22,9 @@
 
 #include "sms.h"
 
+GList *hito_vcard_get_named_attributes (EVCard *contact, const char *name);
+gchar *hito_vcard_attribute_get_value_string (EVCardAttribute *attr);
+
 void sms_clear_combo_box_text (GtkComboBox *combo);
 EContact *sms_get_selected_contact (SmsData *data);
 GdkPixbuf *sms_contact_load_photo (EContact *contact);
