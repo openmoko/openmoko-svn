@@ -69,8 +69,7 @@ struct _MokoTalkingPrivate
   
   gint call_direction;
   
-  MokoAlsaVolumeControl *amp_left;
-  MokoAlsaVolumeControl *amp_right;
+  MokoAlsaVolumeControl *headphone;
 };
 
 enum
@@ -510,13 +509,6 @@ on_pad_user_input (MokoDialerPanel *panel, const gchar digit,
 }
 
 static void
-volume_changed_cb (MokoAlsaVolumeControl *control1, gdouble volume,
-                   MokoAlsaVolumeControl *control2)
-{
-  moko_alsa_volume_control_set_volume (control2, volume);
-}
-
-static void
 moko_talking_init (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
@@ -565,21 +557,14 @@ moko_talking_init (MokoTalking *talking)
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
   
   /* Volume controls */
-  priv->amp_left = moko_alsa_volume_control_new ();
-  moko_alsa_volume_control_set_device_from_name (priv->amp_left, "neo1973");
-  moko_alsa_volume_control_set_element_from_name (priv->amp_left, "Amp Left");
-  priv->amp_right = moko_alsa_volume_control_new ();
-  moko_alsa_volume_control_set_device_from_name (priv->amp_right, "neo1973");
-  moko_alsa_volume_control_set_element_from_name (priv->amp_right, "Amp Right");
+  priv->headphone = moko_alsa_volume_control_new ();
+  moko_alsa_volume_control_set_device_from_name (priv->headphone, "neo1973");
+  moko_alsa_volume_control_set_element_from_name (priv->headphone, "Headphone");
   
   priv->volume = moko_alsa_volume_scale_new (GTK_ORIENTATION_HORIZONTAL);
   moko_alsa_volume_scale_set_control (MOKO_ALSA_VOLUME_SCALE (priv->volume),
-                                      priv->amp_left);
+                                      priv->headphone);
   
-  /* Chain Amp Left to Amp Right */
-  g_signal_connect (priv->amp_left, "volume_changed",
-                    G_CALLBACK (volume_changed_cb), priv->amp_right);
-
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
   gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
