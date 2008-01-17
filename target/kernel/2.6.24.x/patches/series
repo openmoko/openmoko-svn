@@ -50,6 +50,8 @@ gta02-sound.patch
 lis302dl.patch
 gta02-leds.patch
 gta02-acc.patch
+pcf506xx.patch
+gta02-bt-fixes.patch
 
 # additional local stuff
 yaffs2-20070905.patch
