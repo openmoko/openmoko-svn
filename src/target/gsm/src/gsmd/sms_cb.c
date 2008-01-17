@@ -39,6 +39,7 @@
 #include <gsmd/unsolicited.h>
 #include <gsmd/sms.h>
 #include <gsmd/talloc.h>
+#include <gsmd/extrsp.h>
 
 static const char *ts0705_memtype_name[] = {
 	[GSM0705_MEMTYPE_NONE]		= "NONE",
@@ -431,9 +432,10 @@ static int cmt_parse(const char *buf, int len, const char *param,
 {
 	/* TODO: TEXT mode */
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];
-	const char *comma = strchr(param, ',');
-	char *cr;
+	const char *cr = NULL;
 	int i;
+	char tmp[64];
+	struct gsm_extrsp *er;
 	struct gsmd_evt_auxdata *aux;
 	struct gsmd_sms_list *msg;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
@@ -446,14 +448,43 @@ static int cmt_parse(const char *buf, int len, const char *param,
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 	msg = (struct gsmd_sms_list *) aux->data;
 
-	if (!comma) {
-		talloc_free(ucmd);
-		return -EINVAL;
-	}
-	len = strtoul(comma + 1, &cr, 10);
-	if (cr[0] != '\n') {
+	cr = strchr(param, '\n');
+
+	if (!cr) {
 		talloc_free(ucmd);
 		return -EAGAIN;
+	}
+
+	strncpy(tmp, param, (cr-param));
+	tmp[(cr-param)] = '\0';
+
+	er = extrsp_parse(gsmd_tallocs, tmp);
+
+	if ( !er ) {
+		talloc_free(ucmd);
+		return -ENOMEM;
+	}
+
+	//extrsp_dump(er);	
+
+	if ( er->num_tokens == 2 && 
+			er->tokens[0].type == GSMD_ECMD_RTT_EMPTY &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+
+		aux->u.sms.alpha[0] = '\0';
+		len = er->tokens[1].u.numeric; 
+	}
+	else if ( er->num_tokens == 2 && 
+			er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+
+		strcpy(aux->u.sms.alpha, er->tokens[0].u.string);
+		len = er->tokens[1].u.numeric; 
+	}
+	else {
+		talloc_free(ucmd);
+		talloc_free(er);
+		return -EINVAL;
 	}
 
 	cr ++;

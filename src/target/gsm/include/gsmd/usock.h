@@ -386,6 +386,8 @@ struct gsmd_voicemail {
 	struct gsmd_addr addr;
 } __attribute__ ((packed));
 
+#define GSMD_ALPHA_MAXLEN	20
+
 /* call status from 3GPP TS 07.07 clause 07.17 */
 struct gsmd_call_status {
 	int8_t idx;
@@ -395,7 +397,7 @@ struct gsmd_call_status {
 	u_int8_t mpty;
 	char number[GSMD_ADDR_MAXLEN+1];	
 	u_int8_t type;
-	char alpha[8+1];
+	char alpha[GSMD_ALPHA_MAXLEN+1];
 	int is_last;	
 } __attribute__ ((packed));
 
@@ -441,6 +443,7 @@ struct gsmd_evt_auxdata {
 			struct gsmd_addr addr;
 		} colp;
 		struct {
+			char alpha[GSMD_ALPHA_MAXLEN+1];
 			int inlined;
 			u_int8_t memtype;
 			int index;
@@ -490,7 +493,7 @@ struct gsmd_evt_auxdata {
 		struct {
 			struct gsmd_addr addr;
 			u_int8_t classx;
-			char	alpha[16];
+			char	alpha[GSMD_ALPHA_MAXLEN+1];
 			u_int8_t cli; 
 		} ccwa;
 	} u;

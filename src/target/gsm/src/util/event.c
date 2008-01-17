@@ -64,6 +64,8 @@ static int insms_handler(struct lgsm_handle *lh, int evt,
 				(sms->time_stamp[6] & 8) ? '-' : '+',
 				(((sms->time_stamp[6] << 4) |
 				  (sms->time_stamp[6] >> 4)) & 0x3f) >> 2);
+		if ( strlen(aux->u.sms.alpha) )		  
+			printf("From %s\n", aux->u.sms.alpha);
 		if (sms->payload.coding_scheme == ALPHABET_DEFAULT) {
 			unpacking_7bit_character(&sms->payload, payload);
 			printf("\"%s\"\n", payload);
