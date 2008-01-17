@@ -34,6 +34,7 @@
 #include "moko-network.h"
 #include "moko-listener.h"
 #include "moko-notify.h"
+#include "moko-sms-marshal.h"
 
 static void
 listener_interface_init (gpointer g_iface, gpointer iface_data);
@@ -53,6 +54,7 @@ enum {
 enum
 {
   STATUS_CHANGED,
+  MEMORY_FULL,
   
   LAST_SIGNAL
 };
@@ -62,7 +64,7 @@ static guint signals[LAST_SIGNAL] = {0, };
 struct _MokoSmsPrivate
 {
   MokoNetwork        *network;
-  gboolean           got_subscriber_number;
+  /*gboolean           got_subscriber_number;*/
   gboolean           handling_sms;
   
   JanaStore          *sms_store;
@@ -72,6 +74,8 @@ struct _MokoSmsPrivate
   GList              *unread_uids;
   NotifyNotification *notification;
   MokoNotify         *notify;
+  
+  gboolean           sim_full;
 };
 
 static void start_handling_sms (MokoSms *sms);
@@ -89,7 +93,7 @@ moko_sms_get_property (GObject *object, guint property_id,
   }
 }
 
-static void
+/*static void
 subscriber_number_changed_cb (MokoNetwork *network, const gchar *number,
                               MokoSms *sms)
 {
@@ -111,13 +115,13 @@ subscriber_number_changed_cb (MokoNetwork *network, const gchar *number,
         g_signal_emit (sms, signals[STATUS_CHANGED], 0, PK_SMS_NOTREADY);
     }
   }
-}
+}*/
 
 static void
 moko_sms_set_property (GObject *object, guint property_id,
                        const GValue *value, GParamSpec *pspec)
 {
-  gchar *number;
+  /*gchar *number;*/
   MokoSms *sms = MOKO_SMS (object);
   MokoSmsPrivate *priv = sms->priv;
 
@@ -128,14 +132,15 @@ moko_sms_set_property (GObject *object, guint property_id,
         g_object_unref (priv->network);
       }
       priv->network = g_value_dup_object (value);
-      if (!moko_network_get_subscriber_number (priv->network, &number, NULL)) {
+      /*if (!moko_network_get_subscriber_number (priv->network, &number, NULL)) {
         subscriber_number_changed_cb (priv->network, NULL, MOKO_SMS (object));
       } else {
         subscriber_number_changed_cb (priv->network, number, MOKO_SMS (object));
       }
       g_signal_connect (priv->network, "subscriber_number_changed",
-                        G_CALLBACK (subscriber_number_changed_cb), object);
+                        G_CALLBACK (subscriber_number_changed_cb), object);*/
       /* moko_network_add_listener happens in start_handling_sms */
+      if (!priv->handling_sms) start_handling_sms (sms);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -221,6 +226,16 @@ moko_sms_class_init (MokoSmsClass *klass)
                   g_cclosure_marshal_VOID__INT,
                   G_TYPE_NONE, 
                   1, G_TYPE_INT);
+
+  signals[MEMORY_FULL] =
+    g_signal_new ("memory_full", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoSmsClass, memory_full),
+                  NULL, NULL,
+                  _moko_sms_marshal_VOID__BOOLEAN_BOOLEAN,
+                  G_TYPE_NONE, 
+                  2, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN);
 
   g_type_class_add_private (obj_class, sizeof (MokoSmsPrivate)); 
   dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (klass), 
@@ -405,6 +420,18 @@ on_send_sms (MokoListener *listener, struct lgsm_handle *handle,
 }
 
 static void
+on_error (MokoListener *listener, struct lgsm_handle *handle,
+          int cme, int cms)
+{
+  MokoSmsPrivate *priv = ((MokoSms *)listener)->priv;
+
+  if (cms == 322) {
+    priv->sim_full = TRUE;
+    g_signal_emit (listener, signals[MEMORY_FULL], 0, TRUE, FALSE);
+  }
+}
+
+static void
 listener_interface_init (gpointer g_iface, gpointer iface_data)
 {
   MokoListenerInterface *iface = (MokoListenerInterface *)g_iface;
@@ -412,6 +439,7 @@ listener_interface_init (gpointer g_iface, gpointer iface_data)
   iface->on_incoming_sms = on_incoming_sms;
   iface->on_incoming_ds = on_incoming_ds;
   iface->on_send_sms = on_send_sms;
+  iface->on_error = on_error;
 }
 
 static gboolean
@@ -530,8 +558,8 @@ start_handling_sms (MokoSms *sms)
   MokoSmsPrivate *priv = sms->priv;
   struct lgsm_handle *handle;
   
-  if (priv->handling_sms ||
-      (!priv->sms_store_open) || (!priv->got_subscriber_number)) return;
+  if (priv->handling_sms || (!priv->sms_store_open)/* ||
+      (!priv->got_subscriber_number)*/) return;
   if (!moko_network_get_lgsm_handle (priv->network, &handle, NULL)) return;
   
   /* Add listener to MokoNetwork object */
@@ -558,7 +586,7 @@ sms_store_opened_cb (JanaStore *store, MokoSms *self)
   jana_store_view_start (view);
 
   if (!priv->handling_sms) start_handling_sms (self);
-  if (priv->got_subscriber_number)
+  /*if (priv->got_subscriber_number)*/
     g_signal_emit (self, signals[STATUS_CHANGED], 0, PK_SMS_READY);
 }
 
@@ -598,7 +626,7 @@ moko_sms_get_status (MokoSms *sms)
 {
   MokoSmsPrivate *priv = sms->priv;
   
-  if (priv->sms_store_open && priv->got_subscriber_number)
+  if (priv->sms_store_open/* && priv->got_subscriber_number*/)
     return PK_SMS_READY;
   else
     return PK_SMS_NOTREADY;
@@ -717,6 +745,15 @@ moko_sms_send (MokoSms *self, const gchar *number,
     g_object_unref (priv->last_msg);
   }
   priv->last_msg = note;
+  
+  return TRUE;
+}
+
+gboolean
+moko_sms_get_memory_status (MokoSms *self, gboolean *sim_full,
+                            gboolean *phone_full, GError **error)
+{
+  if (phone_full) *phone_full = FALSE;
   
   return TRUE;
 }

@@ -77,6 +77,7 @@ struct _MokoSmsClass
   
   /* signals */
   void (*status_changed) (MokoSms *sms, PhoneKitSmsStatus status);
+  void (*memory_full)    (MokoSms *sms, gboolean sim, gboolean phone);
     
   /* future padding */
   void (*_moko_sms_1) (void);
@@ -98,6 +99,10 @@ gboolean
 moko_sms_send (MokoSms *self, const gchar *number,
                const gchar *message, gboolean report, gchar **uid,
                GError **error);
+
+gboolean
+moko_sms_get_memory_status (MokoSms *self, gboolean *sim, gboolean *phone,
+                            GError **error);
 
 G_END_DECLS
 

@@ -168,3 +168,13 @@ moko_listener_on_send_sms (MokoListener *listener,
     interface->on_send_sms (listener, handle, result);
 }
 
+void
+moko_listener_on_error (MokoListener *listener,
+                        struct lgsm_handle *handle,
+                        int cme, int cms)
+{
+  MokoListenerInterface *interface = MOKO_LISTENER_GET_INTERFACE (listener);
+  if (interface->on_error)
+    interface->on_error (listener, handle, cme, cms);
+}
+

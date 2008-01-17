@@ -197,7 +197,10 @@ on_network_registered (MokoListener *listener,
         lgsm_oper_get (handle);
         
         /* Retrieve operator list to get current country code */
-        lgsm_opers_get (handle);
+        /* FIXME: This takes too long, we need gsmd to give us the current 
+         * operator number from lgsm_oper_get.
+         */
+        /*lgsm_opers_get (handle);*/
         
         /* Retrieve IMSI to get home country code */
         lgsm_get_imsi (handle);
@@ -209,10 +212,10 @@ on_network_registered (MokoListener *listener,
           priv->retry_oper = g_timeout_add_seconds (RETRY_DELAY,
                                                     (GSourceFunc)retry_oper_get,
                                                     listener);
-        if (priv->retry_opers_n)
+        /*if (priv->retry_opers_n)
           priv->retry_opers = g_timeout_add_seconds (RETRY_DELAY,
                                                      (GSourceFunc)retry_opers_get,
-                                                     listener);
+                                                     listener);*/
         if (priv->retry_imsi_n)
           priv->retry_imsi = g_timeout_add_seconds (RETRY_DELAY,
                                                     (GSourceFunc)retry_get_imsi,
@@ -498,6 +501,13 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
                                       aux->u.call_status.prog);
     }
     break;
+  case GSMD_EVT_IN_ERROR :
+    for (l = priv->listeners; l; l = l->next) {
+      moko_listener_on_error (MOKO_LISTENER (l->data), priv->handle,
+                              aux->u.cme_err.number,
+                              aux->u.cms_err.number);
+    }
+    break;
   default :
     g_warning ("Unhandled gsmd event (%d)", evt_type);
   }
@@ -743,6 +753,7 @@ network_init_gsmd (MokoNetwork *network)
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_PIN, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_ERROR, gsmd_eventhandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, net_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_PHONE, phone_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_SMS, sms_msghandler);

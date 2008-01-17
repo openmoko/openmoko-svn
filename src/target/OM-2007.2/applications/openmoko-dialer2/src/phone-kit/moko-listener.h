@@ -76,6 +76,9 @@ struct _MokoListenerInterface {
   void  (*on_send_sms)           (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   int result);
+  void  (*on_error)              (MokoListener *listener,
+                                  struct lgsm_handle *handle,
+                                  int cme, int cms);
 };
 
 GType moko_listener_get_type (void);
@@ -113,6 +116,9 @@ void  moko_listener_on_incoming_ds        (MokoListener *listener,
 void  moko_listener_on_send_sms           (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 int result);
+void  moko_listener_on_error              (MokoListener *listener,
+                                struct lgsm_handle *handle,
+                                int cme, int cms);
 
 #endif /* MOKO_LISTENER_H */
 
