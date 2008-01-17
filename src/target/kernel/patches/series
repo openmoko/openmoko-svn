@@ -58,3 +58,5 @@ lis302dl.patch
 # work in progress. hangs the kernel, if enabled.
 gta02-acc.patch
 gta02-leds.patch
+# bad bug
+fix-hwecc-2410.patch
