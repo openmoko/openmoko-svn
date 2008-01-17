@@ -59,12 +59,6 @@ enum
 
 static guint signals[LAST_SIGNAL] = {0, };
 
-typedef struct {
-  GSource source;
-  GPollFD pollfd;
-  struct lgsm_handle *handle;
-} MokoNetworkSource;
-
 struct _MokoNetworkPrivate
 {
   gchar                     *own_number;
@@ -80,8 +74,8 @@ struct _MokoNetworkPrivate
   gint                      retry_imsi_n;
 
   /* gsmd connection variables */
+  GIOChannel                *channel;
   struct lgsm_handle        *handle;
-  MokoNetworkSource         *source;
   int                       lac;
   
   /* Registration variables */
@@ -333,14 +327,15 @@ moko_network_dispose (GObject *object)
 
   stop_retrying (MOKO_NETWORK (object));
 
+  if (priv->channel) {
+    g_io_channel_shutdown (priv->channel, FALSE, NULL);
+    g_io_channel_unref (priv->channel);
+    priv->channel = NULL;
+  }
+
   if (priv->handle) {
     lgsm_exit (priv->handle);
     priv->handle = NULL;
-  }
-
-  if (priv->source) {
-    g_source_destroy ((GSource *)priv->source);
-    priv->source = NULL;
   }
 
   G_OBJECT_CLASS (moko_network_parent_class)->dispose (object);
@@ -687,37 +682,43 @@ pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   return 0;
 }
 
-static gboolean 
-connection_source_prepare (GSource* self, gint* timeout)
-{
-    return FALSE;
-}
-
 static gboolean
-connection_source_check (GSource* source)
+io_func (GIOChannel *source, GIOCondition condition, MokoNetwork *self)
 {
-  MokoNetworkSource *self = (MokoNetworkSource *)source;
-  return self->pollfd.revents & G_IO_IN;
-}
+  gchar buf[1025];
+  gsize length;
 
-static gboolean 
-connection_source_dispatch (GSource *source, GSourceFunc callback,
-                            gpointer data)
-{
-  char buf[1025];
-  int size;
+  MokoNetworkPrivate *priv = self->priv;
+  GError *error = NULL;
+  
+  g_debug ("Start IO");
+  
+  switch (condition) {
+    case G_IO_IN :
+      if (g_io_channel_read_chars (source, buf, sizeof (buf), &length, &error)
+          == G_IO_STATUS_NORMAL) {
+        lgsm_handle_packet (priv->handle, buf, length);
+      } else {
+        g_warning ("Error reading from source: %s", error->message);
+        g_error_free (error);
+      }
+      break;
 
-  MokoNetworkSource *self = (MokoNetworkSource *)source;
-
-  size = read (self->pollfd.fd, &buf, sizeof(buf));
-  if (size < 0) {
-    g_warning ("moko_gsmd_connection_source_dispatch:%s %s",
-               "read error from libgsmd:", strerror (errno));
-  } else {
-    if (size == 0) /* EOF */
+    case G_IO_ERR :
+    case G_IO_NVAL :
+      g_warning ("Encountered an error, stopping IO watch");
       return FALSE;
-    lgsm_handle_packet (self->handle, buf, size);
+    
+    case G_IO_HUP :
+      g_warning ("Gsmd hung up - TODO: Reconnect/restart gsmd?");
+      return FALSE;
+
+    default :
+      g_warning ("Unhandled IO condition");
+      break;
   }
+    
+  g_debug ("End IO");
 
   return TRUE;
 }
@@ -725,14 +726,8 @@ connection_source_dispatch (GSource *source, GSourceFunc callback,
 static void
 network_init_gsmd (MokoNetwork *network)
 {
-  static GSourceFuncs funcs = {
-    connection_source_prepare,
-    connection_source_check,
-    connection_source_dispatch,
-    NULL,
-  };
-
   MokoNetworkPrivate *priv;
+  
   priv = network->priv;
   
   /* Add ourselves as an event listener */
@@ -764,14 +759,11 @@ network_init_gsmd (MokoNetwork *network)
   lgsm_phone_power (priv->handle, 1);
 
   /* Start polling for events */
-  priv->source = (MokoNetworkSource *)
-    g_source_new (&funcs, sizeof (MokoNetworkSource));
-  priv->source->handle = priv->handle;
-  priv->source->pollfd.fd = lgsm_fd (priv->handle);
-  priv->source->pollfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-  priv->source->pollfd.revents = 0;
-  g_source_add_poll ((GSource*)priv->source, &priv->source->pollfd);
-  g_source_attach ((GSource*)priv->source, NULL);
+  priv->channel = g_io_channel_unix_new (lgsm_fd (priv->handle));
+  g_io_channel_set_encoding (priv->channel, NULL, NULL);
+  g_io_channel_set_buffered (priv->channel, FALSE);
+  g_io_add_watch (priv->channel, G_IO_IN | G_IO_ERR | G_IO_NVAL | G_IO_HUP,
+                  (GIOFunc)io_func, network);
 }
 
 static void

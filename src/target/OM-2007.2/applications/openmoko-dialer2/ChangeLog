@@ -1,5 +1,11 @@
 2008-01-17  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-network.c: (moko_network_dispose), (io_func),
+	(network_init_gsmd):
+	Use GIOChannel instead of GSource for polling (simplifies code)
+
+2008-01-17  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-talking.c: (moko_talking_init):
 	Make the volume slider control the 'Headphone' mixer, fixes bug #394
 
