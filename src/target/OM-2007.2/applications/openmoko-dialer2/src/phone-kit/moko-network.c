@@ -691,8 +691,6 @@ io_func (GIOChannel *source, GIOCondition condition, MokoNetwork *self)
   MokoNetworkPrivate *priv = self->priv;
   GError *error = NULL;
   
-  g_debug ("Start IO");
-  
   switch (condition) {
     case G_IO_IN :
       if (g_io_channel_read_chars (source, buf, sizeof (buf), &length, &error)
@@ -717,8 +715,6 @@ io_func (GIOChannel *source, GIOCondition condition, MokoNetwork *self)
       g_warning ("Unhandled IO condition");
       break;
   }
-    
-  g_debug ("End IO");
 
   return TRUE;
 }
