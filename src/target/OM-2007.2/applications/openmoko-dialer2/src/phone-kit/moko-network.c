@@ -72,6 +72,9 @@ struct _MokoNetworkPrivate
   gint                      retry_opers_n;
   guint                     retry_imsi;
   gint                      retry_imsi_n;
+  
+  gint                      pin_attempts;
+  enum gsmd_pin_type        pin_type;
 
   /* gsmd connection variables */
   GIOChannel                *channel;
@@ -231,7 +234,7 @@ on_network_registered (MokoListener *listener,
 
 static void
 on_pin_requested (MokoListener *listener, struct lgsm_handle *handle,
-                  int type)
+                  enum gsmd_pin_type type, int error)
 {
   MokoNetworkPrivate *priv;
   gchar *pin;
@@ -241,12 +244,75 @@ on_pin_requested (MokoListener *listener, struct lgsm_handle *handle,
 
   g_debug ("Pin Requested");
   
-  pin = get_pin_from_user ();
-  if (!pin)
-    return;
+  if (priv->pin_attempts < 3) {
+    const char *message;
+    
+    switch (type) {
+      case GSMD_PIN_READY :
+        g_debug ("Received GSMD_PIN_READY, ignoring");
+        return;
+      
+      default :
+      case GSMD_PIN_SIM_PIN :         /* SIM PIN */
+        message = "Enter PIN";
+        break;
+      case GSMD_PIN_SIM_PUK :         /* SIM PUK */
+        message = "Enter PUK";
+        break;
+      case GSMD_PIN_PH_SIM_PIN :      /* phone-to-SIM password */
+        message = "Enter SIM PIN";
+        break;
+      case GSMD_PIN_PH_FSIM_PIN :     /* phone-to-very-first SIM password */
+        message = "Enter new SIM PIN";
+        break;
+      case GSMD_PIN_PH_FSIM_PUK :     /* phone-to-very-first SIM PUK password */
+        message = "Enter new SIM PUK";
+        break;
+      case GSMD_PIN_SIM_PIN2 :        /* SIM PIN2 */
+        message = "Enter PIN2";
+        break;
+      case GSMD_PIN_SIM_PUK2 :        /* SIM PUK2 */
+        message = "Enter PUK2";
+        break;
+      case GSMD_PIN_PH_NET_PIN :      /* network personalisation password */
+        message = "Enter network PIN";
+        break;
+      case GSMD_PIN_PH_NET_PUK :      /* network personalisation PUK */
+        message = "Enter network PUK";
+        break;
+      case GSMD_PIN_PH_NETSUB_PIN :   /* network subset personalisation PIN */
+        message = "Enter network subset PIN";
+        break;
+      case GSMD_PIN_PH_NETSUB_PUK :   /* network subset personalisation PUK */
+        message = "Enter network subset PUK";
+        break;
+      case GSMD_PIN_PH_SP_PIN :       /* service provider personalisation PIN */
+        message = "Enter service provider PIN";
+        break;
+      case GSMD_PIN_PH_SP_PUK :       /* service provider personalisation PUK */
+        message = "Enter service provider PUK";
+        break;
+      case GSMD_PIN_PH_CORP_PIN :     /* corporate personalisation PIN */
+        message = "Enter corporate PIN";
+        break;
+      case GSMD_PIN_PH_CORP_PUK :     /* corporate personalisation PUK */
+        message = "Enter corporate PUK";
+        break;
+    }
+    
+    pin = get_pin_from_user (message);
+    if (!pin) {
+      g_debug ("No PIN entered, not requestiong");
+      return;
+    }
   
-  lgsm_pin (handle, 1, pin, NULL);
-  g_free (pin);
+    lgsm_pin (handle, 1, pin, NULL);
+    g_free (pin);
+    
+    priv->pin_attempts ++;
+  } else {
+    display_pin_error ("Maximum number of PIN attempts reached.");
+  }
 }
 
 static void
@@ -486,9 +552,10 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
     }
     break;
   case GSMD_EVT_PIN :
+    priv->pin_type = aux->u.pin.type;
     for (l = priv->listeners; l; l = l->next) {
       moko_listener_on_pin_requested (MOKO_LISTENER (l->data), priv->handle,
-                                      aux->u.pin.type);
+                                      aux->u.pin.type, 0);
     }
     break;
   case GSMD_EVT_OUT_STATUS :
@@ -644,36 +711,19 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 static int
 pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
+  GList *l;
+
+  MokoNetwork *network = moko_network_get_default ();
+  MokoNetworkPrivate *priv = network->priv;
+  
   int result = *(int *) gmh->data;
-  static int attempt = 0;
-  
-  /* store the number of pin attempts */
-  attempt++;
-  
-  /* must not do more than three attempts */
-  if (attempt > 3)
-  {
-    char *msg = "Maximum number of PIN attempts reached";
-    g_debug (msg);
-    display_pin_error (msg);
-  }
  
-  if (result)
-  {
-    gchar *pin = NULL;
-    char *msg = g_strdup_printf ("PIN error: %i", result);
-    
-    g_debug (msg);
-    display_pin_error (msg);
-    g_free (msg);
-    
-    pin = get_pin_from_user ();
-    if (!pin) return 0;
-    lgsm_pin (lh, 1, pin, NULL);
-    g_free (pin);
-  }
-  else
-  {
+  if (result) {
+    for (l = priv->listeners; l; l = l->next) {
+      moko_listener_on_pin_requested (MOKO_LISTENER (l->data), priv->handle,
+                                      priv->pin_type, result);
+    }
+  } else {
     /* PIN accepted, so let's make sure the phone is now powered on */
     g_debug ("PIN accepted!");
     lgsm_phone_power (lh, 1);

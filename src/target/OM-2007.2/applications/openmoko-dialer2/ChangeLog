@@ -1,5 +1,21 @@
 2008-01-17  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-listener.c: (moko_listener_on_pin_requested):
+	* src/phone-kit/moko-listener.h:
+	Flesh out on_pin_requested a bit better
+
+	* src/phone-kit/moko-network.c: (on_pin_requested),
+	(gsmd_eventhandler), (pin_msghandler):
+	Handle PIN completely in on_pin_requested, provide custom messages for
+	different PIN types
+
+	* src/phone-kit/moko-pin.c: (get_pin_from_user),
+	(display_pin_error):
+	* src/phone-kit/moko-pin.h:
+	Allow setting a custom message for PIN entry dialog
+
+2008-01-17  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-network.c: (moko_network_dispose), (io_func),
 	(network_init_gsmd):
 	Use GIOChannel instead of GSource for polling (simplifies code)

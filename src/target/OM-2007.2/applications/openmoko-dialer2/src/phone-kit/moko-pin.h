@@ -13,5 +13,11 @@
  *  GNU Lesser Public License for more details.
  */
 
-char *get_pin_from_user ();
-void *display_pin_error (char *message);
+#ifndef MOKO_PIN_H
+#define MOKO_PIN_H
+
+char *get_pin_from_user (const char *message);
+void display_pin_error (const char *message);
+
+#endif
+

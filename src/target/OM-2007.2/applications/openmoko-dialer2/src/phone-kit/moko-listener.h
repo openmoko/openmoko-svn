@@ -27,6 +27,7 @@
 #include <libgsmd/sms.h>
 #include <libgsmd/voicecall.h>
 #include <libgsmd/phonebook.h>
+#include <libgsmd/pin.h>
 #include <gsmd/usock.h>
 
 #define MOKO_TYPE_LISTENER		(moko_listener_get_type ())
@@ -47,7 +48,8 @@ struct _MokoListenerInterface {
                                   struct lgsm_handle *handle, int type,
                                   int lac, int cell);
   void  (*on_pin_requested)      (MokoListener *listener,
-                                  struct lgsm_handle *handle, int type);
+                                  struct lgsm_handle *handle,
+                                  enum gsmd_pin_type type, int error);
   void  (*on_network_name)       (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   const gchar *name);
@@ -87,7 +89,8 @@ void  moko_listener_on_network_registered (MokoListener *listener,
                                 struct lgsm_handle *handle, int type,
                                 int lac, int cell);
 void  moko_listener_on_pin_requested      (MokoListener *listener,
-                                struct lgsm_handle *handle, int type);
+                                struct lgsm_handle *handle,
+                                enum gsmd_pin_type type, int error);
 void  moko_listener_on_network_name       (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 const gchar *name);

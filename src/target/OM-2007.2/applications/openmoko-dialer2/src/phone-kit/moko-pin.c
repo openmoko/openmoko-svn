@@ -15,6 +15,7 @@
 
 #include <gtk/gtk.h>
 
+#include "moko-pin.h"
 #include "moko-dialer-textview.h"
 #include "moko-dialer-panel.h"
 
@@ -70,13 +71,13 @@ on_pad_user_input (MokoDialerPanel *panel, const gchar digit,
 
 
 char*
-get_pin_from_user ()
+get_pin_from_user (const char *message)
 {
   GtkWidget *pad;
   gchar *pin;
   MokoPinData data;
   
-  data.dialog = gtk_dialog_new_with_buttons ("Enter PIN", NULL, 0,
+  data.dialog = gtk_dialog_new_with_buttons (message, NULL, 0,
                                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                              GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
   gtk_dialog_set_has_separator (GTK_DIALOG (data.dialog), FALSE);
@@ -106,7 +107,7 @@ get_pin_from_user ()
 }
 
 void
-display_pin_error (char *message)
+display_pin_error (const char *message)
 {
   GtkWidget *dlg;
   
@@ -115,3 +116,4 @@ display_pin_error (char *message)
   gtk_dialog_run (GTK_DIALOG (dlg));
   gtk_widget_destroy (dlg);
 }
+

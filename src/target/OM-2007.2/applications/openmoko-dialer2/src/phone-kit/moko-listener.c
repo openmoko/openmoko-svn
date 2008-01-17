@@ -62,11 +62,12 @@ moko_listener_on_network_registered (MokoListener *listener,
 void
 moko_listener_on_pin_requested (MokoListener *listener,
                                  struct lgsm_handle *handle,
-                                 int type)
+                                 enum gsmd_pin_type type,
+                                 int error)
 {
   MokoListenerInterface *interface = MOKO_LISTENER_GET_INTERFACE (listener);
   if (interface->on_pin_requested)
-    interface->on_pin_requested (listener, handle, type);
+    interface->on_pin_requested (listener, handle, type, error);
 }
 
 void
