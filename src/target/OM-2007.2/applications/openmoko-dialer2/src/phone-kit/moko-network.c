@@ -196,12 +196,6 @@ on_network_registered (MokoListener *listener,
         /* Retrieve operator name */
         lgsm_oper_get (handle);
         
-        /* Retrieve operator list to get current country code */
-        /* FIXME: This takes too long, we need gsmd to give us the current 
-         * operator number from lgsm_oper_get.
-         */
-        /*lgsm_opers_get (handle);*/
-        
         /* Retrieve IMSI to get home country code */
         lgsm_get_imsi (handle);
         
@@ -212,14 +206,21 @@ on_network_registered (MokoListener *listener,
           priv->retry_oper = g_timeout_add_seconds (RETRY_DELAY,
                                                     (GSourceFunc)retry_oper_get,
                                                     listener);
-        /*if (priv->retry_opers_n)
-          priv->retry_opers = g_timeout_add_seconds (RETRY_DELAY,
-                                                     (GSourceFunc)retry_opers_get,
-                                                     listener);*/
         if (priv->retry_imsi_n)
           priv->retry_imsi = g_timeout_add_seconds (RETRY_DELAY,
                                                     (GSourceFunc)retry_get_imsi,
                                                     listener);
+
+	if (type == GSMD_NETREG_REG_ROAMING) {
+        /* Retrieve operator list to get current country code */
+        /* FIXME: This blocks other gsmd calls... Error states? */
+        lgsm_opers_get (handle);
+        
+        if (priv->retry_opers_n)
+          priv->retry_opers = g_timeout_add_seconds (RETRY_DELAY,
+                                                     (GSourceFunc)retry_opers_get,
+                                                     listener);
+        }
       }
       
       break;
@@ -932,6 +933,10 @@ moko_network_get_country_code (MokoNetwork *self, gchar **dial_code,
   if (!moko_network_get_lgsm_handle (self, NULL, error)) return FALSE;
   if (!moko_network_check_registration (self, error)) return FALSE;
   priv = self->priv;
+  
+  if (priv->registered == GSMD_NETREG_REG_HOME) {
+    return moko_network_get_home_country_code (self, dial_code, error);
+  }
   
   if (!priv->network_number) {
     if (error) *error = g_error_new (PHONE_KIT_NETWORK_ERROR,

@@ -1,5 +1,12 @@
 2008-01-17  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-network.c: (on_network_registered),
+	(moko_network_get_country_code):
+	Do get the operators list, but only when roaming - when not roaming,
+	return the home country code when asked for the local country code
+
+2008-01-17  Chris Lord  <chris@openedhand.com>
+
 	* src/moko-dialer-glue.h:
 	Remove, shouldn't be in version control
 
