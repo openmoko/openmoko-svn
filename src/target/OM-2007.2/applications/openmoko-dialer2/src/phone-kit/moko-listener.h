@@ -53,6 +53,9 @@ struct _MokoListenerInterface {
   void  (*on_network_name)       (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   const gchar *name);
+  void  (*on_network_number)     (MokoListener *listener,
+                                  struct lgsm_handle *handle,
+                                  const gchar *number);
   void  (*on_network_list)       (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   const struct gsmd_msg_oper *opers);
@@ -94,6 +97,9 @@ void  moko_listener_on_pin_requested      (MokoListener *listener,
 void  moko_listener_on_network_name       (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 const gchar *name);
+void  moko_listener_on_network_number     (MokoListener *listener,
+                                struct lgsm_handle *handle,
+                                const gchar *number);
 void  moko_listener_on_network_list       (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 const struct gsmd_msg_oper *opers);

@@ -81,6 +81,16 @@ moko_listener_on_network_name (MokoListener *listener,
 }
 
 void
+moko_listener_on_network_number (MokoListener *listener,
+                               struct lgsm_handle *handle,
+                               const gchar *number)
+{
+  MokoListenerInterface *interface = MOKO_LISTENER_GET_INTERFACE (listener);
+  if (interface->on_network_number)
+    interface->on_network_number (listener, handle, number);
+}
+
+void
 moko_listener_on_network_list (MokoListener *listener,
                                struct lgsm_handle *handle,
                                const struct gsmd_msg_oper *opers)

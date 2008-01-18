@@ -68,8 +68,8 @@ struct _MokoNetworkPrivate
   
   guint                     retry_oper;
   gint                      retry_oper_n;
-  guint                     retry_opers;
-  gint                      retry_opers_n;
+  guint                     retry_opern;
+  gint                      retry_opern_n;
   guint                     retry_imsi;
   gint                      retry_imsi_n;
   
@@ -110,18 +110,18 @@ moko_network_get_property (GObject *object, guint property_id,
 static gboolean
 retry_oper_get (MokoNetwork *network)
 {
-  g_debug ("Retrying operator retrieval (%d)", network->priv->retry_oper_n);
+  g_debug ("Retrying operator name retrieval (%d)", network->priv->retry_oper_n);
   lgsm_oper_get (network->priv->handle);
   return (--network->priv->retry_oper_n) ? TRUE : FALSE;
 }
 
 static gboolean
-retry_opers_get (MokoNetwork *network)
+retry_opern_get (MokoNetwork *network)
 {
-  g_debug ("Retrying operators list retrieval (%d)",
-           network->priv->retry_opers_n);
-  lgsm_opers_get (network->priv->handle);
-  return (--network->priv->retry_opers_n) ? TRUE : FALSE;
+  g_debug ("Retrying operator number retrieval (%d)",
+           network->priv->retry_opern_n);
+  lgsm_oper_n_get (network->priv->handle);
+  return (--network->priv->retry_opern_n) ? TRUE : FALSE;
 }
 
 static gboolean
@@ -140,9 +140,9 @@ stop_retrying (MokoNetwork *network)
     g_source_remove (network->priv->retry_oper);
     network->priv->retry_oper = 0;
   }
-  if (network->priv->retry_opers) {
-    g_source_remove (network->priv->retry_opers);
-    network->priv->retry_opers = 0;
+  if (network->priv->retry_opern) {
+    g_source_remove (network->priv->retry_opern);
+    network->priv->retry_opern = 0;
   }
   if (network->priv->retry_imsi) {
     g_source_remove (network->priv->retry_imsi);
@@ -209,13 +209,13 @@ on_network_registered (MokoListener *listener,
                                                     listener);
 
 	if (type == GSMD_NETREG_REG_ROAMING) {
-        /* Retrieve operator list to get current country code */
-        /* FIXME: This blocks other gsmd calls... Error states? */
-        lgsm_opers_get (handle);
+        /* Retrieve operator number to get current country code */
+        lgsm_oper_n_get (handle);
         
-        if (priv->retry_opers_n)
-          priv->retry_opers = g_timeout_add_seconds (RETRY_DELAY,
-                                                     (GSourceFunc)retry_opers_get,
+        if (priv->retry_opern_n)
+          priv->retry_opern = g_timeout_add_seconds (RETRY_DELAY,
+                                                     (GSourceFunc)
+                                                     retry_opern_get,
                                                      listener);
         }
       }
@@ -351,20 +351,14 @@ on_network_name (MokoListener *listener, struct lgsm_handle *handle,
 }
 
 static void
-on_network_list (MokoListener *listener, struct lgsm_handle *handle,
-                 const struct gsmd_msg_oper *opers)
+on_network_number (MokoListener *listener, struct lgsm_handle *handle,
+                   const gchar *number)
 {
   MokoNetwork *network = MOKO_NETWORK (listener);
   MokoNetworkPrivate *priv = network->priv;
 
-  for (; !opers->is_last; opers++) {
-    if (opers->stat == GSMD_OPER_CURRENT) {
-      g_free (priv->network_number);
-      priv->network_number = g_strndup (opers->opname_num,
-                                        sizeof(opers->opname_num));
-      break;
-    }
-  }
+  g_free (priv->network_number);
+  priv->network_number = g_strdup (number);
 }
 
 static void
@@ -491,7 +485,7 @@ listener_interface_init (gpointer g_iface, gpointer iface_data)
   iface->on_network_registered = on_network_registered;
   iface->on_pin_requested = on_pin_requested;
   iface->on_network_name = on_network_name;
-  iface->on_network_list = on_network_list;
+  iface->on_network_number = on_network_number;
   iface->on_imsi = on_imsi;
   iface->on_subscriber_number = on_subscriber_number;
 }
@@ -624,11 +618,11 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   MokoNetwork *network = moko_network_get_default ();
   MokoNetworkPrivate *priv = network->priv;
 
-	const char *oper = (char *) gmh + sizeof(*gmh);
+  const char *oper = (char *) gmh + sizeof(*gmh);
   const struct gsmd_own_number *num = (struct gsmd_own_number *)
                                       ((void *) gmh + sizeof(*gmh));
-	const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
-		((void *) gmh + sizeof(*gmh));
+  const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
+                                      ((void *) gmh + sizeof(*gmh));
 
   switch (gmh->msg_subtype) {
     case GSMD_NETWORK_GET_NUMBER :
@@ -648,12 +642,18 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
                                        priv->handle, oper);
       }
       break;
-    case GSMD_NETWORK_OPER_LIST :
-      if (priv->retry_opers) {
-        g_source_remove (priv->retry_opers);
-        priv->retry_opers = 0;
-        priv->retry_opers_n = RETRY_MAX;
+    case GSMD_NETWORK_OPER_N_GET :
+      if (priv->retry_opern) {
+        g_source_remove (priv->retry_opern);
+        priv->retry_opern = 0;
+        priv->retry_opern_n = RETRY_MAX;
       }
+      for (l = priv->listeners; l; l = l->next) {
+        moko_listener_on_network_number (MOKO_LISTENER (l->data),
+                                         priv->handle, oper);
+      }
+      break;
+    case GSMD_NETWORK_OPER_LIST :
       for (l = priv->listeners; l; l = l->next) {
         moko_listener_on_network_list (MOKO_LISTENER (l->data),
                                        priv->handle, opers);
@@ -820,7 +820,7 @@ moko_network_init (MokoNetwork *network)
   priv = network->priv = MOKO_NETWORK_GET_PRIVATE (network);
   
   priv->retry_oper_n = RETRY_MAX;
-  priv->retry_opers_n = RETRY_MAX;
+  priv->retry_opern_n = RETRY_MAX;
   priv->retry_imsi_n = RETRY_MAX;
 
   network_init_gsmd (network);

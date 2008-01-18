@@ -1,3 +1,15 @@
+2008-01-18  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-listener.c: (moko_listener_on_network_number):
+	* src/phone-kit/moko-listener.h:
+	Add on_network_number for new lgsm_oper_n_get function
+
+	* src/phone-kit/moko-network.c: (retry_oper_get),
+	(retry_opern_get), (stop_retrying), (on_network_registered),
+	(on_network_number), (listener_interface_init), (net_msghandler),
+	(moko_network_init):
+	Use lgsm_oper_n_get to get network number instead of listing operators
+
 2008-01-17  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-listener.c: (moko_listener_on_pin_requested):
