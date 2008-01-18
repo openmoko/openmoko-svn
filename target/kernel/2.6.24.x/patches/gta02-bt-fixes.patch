@@ -234,7 +234,7 @@ Index: linux-2.6.24-rc7/drivers/i2c/chips/pcf50633.c
 +		return -EINVAL;
 +
 +	regnr = ena_regulator_registers[reg];
-+	BUG_ON(regnr); /* in case we forgot one */
++	BUG_ON(!regnr); /* in case we forgot one */
 +
 +	if (on)
 +		reg_set_bit_mask(pcf, regnr, 0x01, 0x01);
