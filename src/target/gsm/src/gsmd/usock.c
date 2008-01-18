@@ -767,6 +767,46 @@ static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return ret;
 }
 
+static int network_oper_n_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	int format, s, ret;
+	char buf[16+1] = {'\0'};
+	struct gsm_extrsp *er;
+
+	er = extrsp_parse(cmd, resp);
+
+	if ( !er )
+		return -ENOMEM;
+	
+	//extrsp_dump(er);	
+
+	/* Format: <mode>[,<format>,<oper>] */
+	if ( er->num_tokens == 1 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC ) {
+		
+		/* In case we're not registered, return an empty string */
+		buf[0] = '\0';
+	}
+	else if ( er->num_tokens == 3 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_STRING ) {
+
+		
+		strcpy(buf, er->tokens[2].u.string);
+	}
+	else {
+		DEBUGP("Invalid Input : Parse error\n");
+		return -EINVAL;
+	}
+	
+	talloc_free(er);
+
+	return gsmd_ucmd_submit(gu, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_N_GET,
+			cmd->id, sizeof(buf), buf);
+}
+
 static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 {
 	int len = 0;
@@ -979,6 +1019,12 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		atcmd_submit(gu->gsmd, atcmd_fill("AT+COPS=3,0", 11+1,
 					&null_cmd_cb, gu, 0, NULL));
 		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_cb, gu, 0, NULL);
+		break;
+	case GSMD_NETWORK_OPER_N_GET:
+		/* Set numeric format */
+		atcmd_submit(gu->gsmd, atcmd_fill("AT+COPS=3,2", 11+1,
+					&null_cmd_cb, gu, 0, NULL));
+		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_n_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_OPER_LIST:
 		cmd = atcmd_fill("AT+COPS=?", 9+1, &network_opers_cb, gu, 0, NULL);

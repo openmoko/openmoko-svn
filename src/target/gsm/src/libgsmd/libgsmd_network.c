@@ -46,6 +46,11 @@ int lgsm_oper_get(struct lgsm_handle *lh)
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_GET);
 }
 
+int lgsm_oper_n_get(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_N_GET);
+}
+
 int lgsm_opers_get(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_LIST);

@@ -320,6 +320,7 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		pending_responses --;
 		break;
 	case GSMD_NETWORK_OPER_GET:
+	case GSMD_NETWORK_OPER_N_GET:
 		if (oper[0])
 			printf("Our current operator is %s\n", oper);
 		else
@@ -500,6 +501,7 @@ static void shell_help(void)
 		"\tR\tRegister to given operator (R=number)\n"
 		"\tU\tUnregister from netowrk\n"
 		"\tP\tPrint current operator\n"
+		"\tN\tPrint current operator in numeric\n"
 		"\tL\tList available operators\n"
 		"\tQ\tRead signal quality\n"
 		"\tS\tSleep (S[=second], default 5)\n"
@@ -633,6 +635,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strcmp(buf, "P")) {
 				printf("Read current opername\n");
 				lgsm_oper_get(lgsmh);
+				pending_responses ++;
+			} else if (!strcmp(buf, "N")) {
+				printf("Read current opername in numeric format\n");
+				lgsm_oper_n_get(lgsmh);
 				pending_responses ++;
 			} else if (!strcmp(buf, "L")) {
 				printf("List operators\n");
