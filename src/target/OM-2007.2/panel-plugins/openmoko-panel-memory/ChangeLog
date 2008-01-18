@@ -1,0 +1,10 @@
+2008-01-18  Chris Lord  <chris@openedhand.com>
+
+	* AUTHORS:
+	* autogen.sh:
+	* configure.ac:
+	* src/Makefile.am:
+	* src/openmoko-panel-memory.c: (blink_idle), (memory_full_cb),
+	(mb_panel_applet_create):
+	Initial check-in of memory status applet
+
