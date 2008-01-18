@@ -158,7 +158,7 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  		}
  	}
  
-@@ -143,18 +184,25 @@
+@@ -143,18 +184,30 @@
  	dev_info(&pdev->dev, DRVMSG ": starting\n");
  
  	switch (machine_arch_type) {
@@ -176,7 +176,13 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 +
 +#ifdef CONFIG_MACH_NEO1973_GTA02
  	case MACH_TYPE_NEO1973_GTA02:
- 		/* FIXME: implementation */
+-		/* FIXME: implementation */
++		/* we make sure that the voltage is off */
++		pcf50633_ena_voltage(pcf50633_global,
++				     PCF50633_REGULATOR_LDO4, 0);
++		/* we pull reset to low to make sure that the chip doesn't
++	 	 * drain power through the reset line */
++		s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, 0);
  		break;
 +#endif /* CONFIG_MACH_NEO1973_GTA02 */
 +
