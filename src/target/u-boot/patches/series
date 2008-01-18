@@ -1,5 +1,4 @@
 # just some local hacks
-uboot-machtypes.patch
 uboot-mokoversion.patch
 
 # those we want to get mainline
