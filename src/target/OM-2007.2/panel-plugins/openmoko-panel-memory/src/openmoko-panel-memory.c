@@ -28,6 +28,9 @@ typedef struct {
 	NotifyNotification *notification;
 	
 	guint blink_idle;
+	
+	gboolean sim_full;
+	gboolean phone_full;
 } MemoryAppletData;
 
 static gboolean
@@ -40,10 +43,9 @@ blink_idle (MemoryAppletData *data)
 }
 
 static void
-memory_full_cb (DBusGProxy *proxy, gboolean sim_full, gboolean phone_full,
-		MemoryAppletData *data)
+update (MemoryAppletData *data)
 {
-	if (sim_full || phone_full) {
+	if (data->sim_full || data->phone_full) {
 		const gchar *message;
 		
 		if (!data->blink_idle) {
@@ -52,9 +54,9 @@ memory_full_cb (DBusGProxy *proxy, gboolean sim_full, gboolean phone_full,
 				(GSourceFunc)blink_idle, data);
 		}
 		
-		if (sim_full && phone_full) {
+		if (data->sim_full && data->phone_full) {
 			message = "Phone and SIM memory full";
-		} else if (sim_full) {
+		} else if (data->sim_full) {
 			message = "SIM memory full";
 		} else {
 			message = "Phone memory full";
@@ -71,6 +73,20 @@ memory_full_cb (DBusGProxy *proxy, gboolean sim_full, gboolean phone_full,
 		gtk_widget_hide (GTK_WIDGET (data->applet));
 		notify_notification_close (data->notification, NULL);
 	}
+}
+
+static void
+sim_full_cb (DBusGProxy *proxy, gboolean full, MemoryAppletData *data)
+{
+	data->sim_full = full;
+	update (data);
+}
+
+static void
+phone_full_cb (DBusGProxy *proxy, gboolean full, MemoryAppletData *data)
+{
+	data->phone_full = full;
+	update (data);
 }
 
 G_MODULE_EXPORT GtkWidget *
@@ -93,10 +109,14 @@ mb_panel_applet_create (const char* id, GtkOrientation orientation)
 		"org.openmoko.PhoneKit", "/org/openmoko/PhoneKit/Sms",
 		"org.openmoko.PhoneKit.Sms");
 	
-	dbus_g_proxy_add_signal (data->sms_proxy, "MemoryFull",
-		G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (data->sms_proxy, "MemoryFull",
-		G_CALLBACK (memory_full_cb), data, NULL);
+	dbus_g_proxy_add_signal (data->sms_proxy, "SimMemoryState",
+		G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (data->sms_proxy, "PhoneMemoryState",
+		G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (data->sms_proxy, "SimMemoryState",
+		G_CALLBACK (sim_full_cb), data, NULL);
+	dbus_g_proxy_connect_signal (data->sms_proxy, "PhoneMemoryState",
+		G_CALLBACK (phone_full_cb), data, NULL);
 	
 	notify_init ("openmoko-panel-memory");
 	data->notification = notify_notification_new ("Memory full", "",
@@ -108,6 +128,15 @@ mb_panel_applet_create (const char* id, GtkOrientation orientation)
 		GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU);
 	gtk_widget_show (data->image);
 	moko_panel_applet_set_widget (data->applet, data->image);
+	
+	if (!dbus_g_proxy_call (data->sms_proxy, "GetMemoryStatus", &error,
+	     G_TYPE_INVALID, G_TYPE_BOOLEAN, &data->sim_full,
+	     G_TYPE_BOOLEAN, &data->phone_full, G_TYPE_INVALID)) {
+		g_warning ("Error calling GetMemoryStatus: %s", error->message);
+		g_error_free (error);
+	} else {
+		update (data);
+	}
 	
 	return GTK_WIDGET (data->applet);
 }

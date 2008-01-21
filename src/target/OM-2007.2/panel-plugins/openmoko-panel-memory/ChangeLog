@@ -1,5 +1,11 @@
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
+	* src/openmoko-panel-memory.c: (update), (sim_full_cb),
+	(phone_full_cb), (mb_panel_applet_create):
+	Update to match new dbus API
+
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
 	* src/openmoko-panel-memory.c: (memory_full_cb):
 	Don't add multiple idles/try to remove non-existant ones
 
