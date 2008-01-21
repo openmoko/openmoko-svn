@@ -45,6 +45,7 @@ s3c2442b-cpuid.patch
 # gta02 feature set
 pcf50633.patch
 smedia-glamo.patch
+glamo-mmc.patch
 gta02-core.patch
 gta02-sound.patch
 lis302dl.patch

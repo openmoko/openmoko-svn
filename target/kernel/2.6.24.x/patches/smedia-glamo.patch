@@ -1179,13 +1179,13 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	 * unreliability is not seen after 4GB of write / read testing
 +	 */
 +	{ GLAMO_REG_MEM_TIMING1,	0x05ad },
-+	{ GLAMO_REG_MEM_TIMING2,	0x0010 }, /* Taa = 3 MCLK */
++	{ GLAMO_REG_MEM_TIMING2,	0x0011 }, /* Taa = 3 MCLK */
 +	{ GLAMO_REG_MEM_TIMING3,	0x0000 },
 +	{ GLAMO_REG_MEM_TIMING4,	0x0000 }, /* CE1# delay fall/rise */
-+	{ GLAMO_REG_MEM_TIMING5,	0x0000 },
-+	{ GLAMO_REG_MEM_TIMING6,	0x0000 },
-+	{ GLAMO_REG_MEM_TIMING7,	0x0000 },
-+	{ GLAMO_REG_MEM_TIMING8,	0x1000 },
++	{ GLAMO_REG_MEM_TIMING5,	0x0000 }, /* UB# LB# */
++	{ GLAMO_REG_MEM_TIMING6,	0x0000 }, /* OE# */
++	{ GLAMO_REG_MEM_TIMING7,	0x0000 }, /* WE# */
++	{ GLAMO_REG_MEM_TIMING8,	0x1008 }, /* MCLK delay, was 0x1000 */
 +	{ GLAMO_REG_MEM_TIMING9,	0x6000 },
 +	{ GLAMO_REG_MEM_TIMING10,	0x00ff },
 +	{ GLAMO_REG_MEM_TIMING11,	0x0000 },
