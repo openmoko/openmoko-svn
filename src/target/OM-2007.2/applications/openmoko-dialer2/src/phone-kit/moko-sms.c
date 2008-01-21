@@ -55,6 +55,7 @@ enum {
 enum
 {
   STATUS_CHANGED,
+  SIM_FULL,
   MEMORY_FULL,
   
   LAST_SIGNAL
@@ -238,20 +239,27 @@ moko_sms_class_init (MokoSmsClass *klass)
                   G_TYPE_NONE, 
                   1, G_TYPE_INT);
 
-  signals[MEMORY_FULL] =
-    g_signal_new ("memory_full", 
+  signals[SIM_FULL] =
+    g_signal_new ("sim_memory_state", 
                   G_TYPE_FROM_CLASS (obj_class),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MokoSmsClass, memory_full),
                   NULL, NULL,
-                  _moko_sms_marshal_VOID__BOOLEAN_BOOLEAN,
+                  g_cclosure_marshal_VOID__BOOLEAN,
                   G_TYPE_NONE, 
-                  2, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN);
+                  1, G_TYPE_BOOLEAN);
+
+  signals[MEMORY_FULL] =
+    g_signal_new ("phone_memory_state", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoSmsClass, memory_full),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__BOOLEAN,
+                  G_TYPE_NONE, 
+                  1, G_TYPE_BOOLEAN);
 
   g_type_class_add_private (obj_class, sizeof (MokoSmsPrivate));
-  dbus_g_object_register_marshaller (_moko_sms_marshal_VOID__BOOLEAN_BOOLEAN,
-                                     G_TYPE_NONE, G_TYPE_BOOLEAN,
-                                     G_TYPE_BOOLEAN, G_TYPE_INVALID);
   dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (klass), 
                                    &dbus_glib_moko_sms_object_info);
 }
@@ -440,8 +448,10 @@ on_error (MokoListener *listener, struct lgsm_handle *handle,
   MokoSmsPrivate *priv = ((MokoSms *)listener)->priv;
 
   if (cms == 322) {
-    priv->sim_full = TRUE;
-    g_signal_emit (listener, signals[MEMORY_FULL], 0, TRUE, priv->memory_full);
+    if (!priv->sim_full) {
+      priv->sim_full = TRUE;
+      g_signal_emit (listener, signals[SIM_FULL], 0, TRUE);
+    }
   }
 }
 
@@ -656,14 +666,14 @@ memory_check_idle (MokoSms *sms)
       (buf.f_ffree < 100)*/) {
     if (!priv->memory_full) {
       priv->memory_full = TRUE;
-      g_signal_emit (sms, signals[MEMORY_FULL], 0, priv->sim_full, TRUE);
+      g_signal_emit (sms, signals[MEMORY_FULL], 0, TRUE);
       if (priv->sms_store) {
         stop_handling_sms (sms);
       }
     }
   } else if (priv->memory_full) {
     priv->memory_full = FALSE;
-    g_signal_emit (sms, signals[MEMORY_FULL], 0, priv->sim_full, FALSE);
+    g_signal_emit (sms, signals[MEMORY_FULL], 0, FALSE);
     open_sms_store (sms);
   }
   

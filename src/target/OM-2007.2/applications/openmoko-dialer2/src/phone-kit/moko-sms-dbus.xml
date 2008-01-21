@@ -21,9 +21,12 @@
     <arg type="i" name="status" />
   </signal>
 
-  <signal name="MemoryFull">
-    <arg type="b" name="sim" />
-    <arg type="b" name="phone" />
+  <signal name="SimMemoryState">
+    <arg type="b" name="full" />
+  </signal>
+
+  <signal name="PhoneMemoryState">
+    <arg type="b" name="full" />
   </signal>
 
 </interface>

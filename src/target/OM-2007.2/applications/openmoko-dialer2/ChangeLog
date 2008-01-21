@@ -1,5 +1,14 @@
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms-dbus.xml:
+	* src/phone-kit/moko-sms-marshal.list:
+	* src/phone-kit/moko-sms.c: (moko_sms_class_init), (on_error),
+	(memory_check_idle):
+	Separate MemoryFull signal into separate phone and sim memory signals,
+	to avoid custom marshaller and ease client-side usage
+
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-sms.c: (memory_check_idle):
 	Removing free file handles check for now
 
