@@ -46,9 +46,11 @@ memory_full_cb (DBusGProxy *proxy, gboolean sim_full, gboolean phone_full,
 	if (sim_full || phone_full) {
 		const gchar *message;
 		
-		gtk_widget_show (GTK_WIDGET (data->applet));
-		data->blink_idle = g_timeout_add_seconds (1,
-			(GSourceFunc)blink_idle, data);
+		if (!data->blink_idle) {
+			gtk_widget_show (GTK_WIDGET (data->applet));
+			data->blink_idle = g_timeout_add_seconds (1,
+				(GSourceFunc)blink_idle, data);
+		}
 		
 		if (sim_full && phone_full) {
 			message = "Phone and SIM memory full";
@@ -62,7 +64,10 @@ memory_full_cb (DBusGProxy *proxy, gboolean sim_full, gboolean phone_full,
 		
 		notify_notification_show (data->notification, NULL);
 	} else {
-		g_source_remove (data->blink_idle);
+		if (data->blink_idle) {
+			g_source_remove (data->blink_idle);
+			data->blink_idle = 0;
+		}
 		gtk_widget_hide (GTK_WIDGET (data->applet));
 		notify_notification_close (data->notification, NULL);
 	}

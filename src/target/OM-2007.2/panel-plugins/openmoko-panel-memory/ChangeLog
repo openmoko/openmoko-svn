@@ -1,3 +1,8 @@
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
+	* src/openmoko-panel-memory.c: (memory_full_cb):
+	Don't add multiple idles/try to remove non-existant ones
+
 2008-01-18  Chris Lord  <chris@openedhand.com>
 
 	* AUTHORS:
