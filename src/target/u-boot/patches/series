@@ -72,6 +72,7 @@ uboot-s3c2443.patch
 uboot-smdk2443.patch
 
 # need to find out how upstream feels about this one
+gta02-splash.patch
 eabi-toolchain.patch
 
 # for review, merge soon
