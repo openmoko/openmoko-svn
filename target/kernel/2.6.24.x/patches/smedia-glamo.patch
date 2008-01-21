@@ -518,7 +518,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
-@@ -0,0 +1,1113 @@
+@@ -0,0 +1,1097 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -559,6 +559,8 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +#include <linux/kernel_stat.h>
 +#include <linux/spinlock.h>
 +#include <linux/glamofb.h>
++#include <linux/mmc/mmc.h>
++#include <linux/mmc/host.h>
 +
 +#include <asm/io.h>
 +#include <asm/uaccess.h>
@@ -570,14 +572,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +
 +#include "glamo-regs.h"
 +#include "glamo-core.h"
-+
-+#ifndef UGLY_HACK_BE_GONE
-+#ifdef CONFIG_MACH_NEO1973_GTA02
-+#include <asm/arch/gpio.h>
-+#include <asm/arch/regs-gpio.h>
-+#include <asm/arch/regs-gpioj.h>
-+#endif
-+#endif /* UGLY_HACK_BE_GONE */
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
 +
@@ -675,25 +669,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +};
 +#endif
 +
-+static struct resource glamo_mmc_resources[] = {
-+	{
-+		/* FIXME: those need to be incremented by parent base */
-+		.start	= GLAMO_REGOFS_MMC,
-+		.end	= GLAMO_REGOFS_MPROC0 - 1,
-+		.flags	= IORESOURCE_MEM
-+	}, {
-+		.start	= IRQ_GLAMO_MMC,
-+		.end	= IRQ_GLAMO_MMC,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device glamo_mmc_dev = {
-+	.name		= "glamo-mmc",
-+	.resource	= glamo_mmc_resources,
-+	.num_resources	= ARRAY_SIZE(glamo_mmc_resources),
-+};
-+
 +static struct resource glamo_jpeg_resources[] = {
 +	{
 +		.start	= GLAMO_REGOFS_JPEG,
@@ -766,17 +741,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	.name		= "glamo-spi-gpio",
 +};
 +
-+/* for the time being, we put the on-screen framebuffer into the lowest
-+ * VRAM space.  This should make the code easily compatible with the various
-+ * 2MB/4MB/8MB variants of the Smedia chips */
-+#define GLAMO_OFFSET_VRAM	0x800000
-+#define GLAMO_OFFSET_FB	(GLAMO_OFFSET_VRAM)
-+
-+/* we only allocate the minimum possible size for the framebuffer to make
-+ * sure we have sufficient memory for other functions of the chip */
-+/*#define GLAMO_FB_SIZE	(640*480*4)*/	/* == 0x12c000 */
-+#define GLAMO_FB_SIZE	0x800000
-+
 +static struct resource glamo_fb_resources[] = {
 +	/* FIXME: those need to be incremented by parent base */
 +	{
@@ -797,6 +761,40 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	.resource	= glamo_fb_resources,
 +	.num_resources	= ARRAY_SIZE(glamo_fb_resources),
 +};
++
++static struct resource glamo_mmc_resources[] = {
++	{
++		/* FIXME: those need to be incremented by parent base */
++		.start	= GLAMO_REGOFS_MMC,
++		.end	= GLAMO_REGOFS_MPROC0 - 1,
++		.flags	= IORESOURCE_MEM
++	}, {
++		.start	= IRQ_GLAMO_MMC,
++		.end	= IRQ_GLAMO_MMC,
++		.flags	= IORESOURCE_IRQ,
++	}, { /* our data buffer for MMC transfers */
++		.start	= GLAMO_OFFSET_FB + GLAMO_FB_SIZE,
++		.end	= GLAMO_OFFSET_FB + GLAMO_FB_SIZE +
++				  GLAMO_MMC_BUFFER_SIZE - 1,
++		.flags	= IORESOURCE_MEM
++	},
++};
++
++static struct platform_device glamo_mmc_dev = {
++	.name		= "glamo-mci",
++	.resource	= glamo_mmc_resources,
++	.num_resources	= ARRAY_SIZE(glamo_mmc_resources),
++};
++
++struct glamo_mci_pdata glamo_mci_def_pdata = {
++	.gpio_detect		= 0,
++	.glamo_set_mci_power	= NULL, /* filled in from MFD platform data */
++	.ocr_avail		= MMC_VDD_32_33,
++	.glamo_irq_is_wired	= NULL, /* filled in from MFD platform data */
++};
++EXPORT_SYMBOL_GPL(glamo_mci_def_pdata);
++
++
 +
 +static void mangle_mem_resources(struct resource *res, int num_res,
 +				 struct resource *parent)
@@ -950,6 +948,8 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +				   GLAMO_HOSTBUS2_MMIO_EN_CQ);
 +		break;
 +	/* FIXME: Implementation */
++	default:
++		break;
 +	}
 +	spin_unlock(&glamo->lock);
 +
@@ -1082,7 +1082,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +
 +	if (val) {
 +		val--;
-+		printk(KERN_INFO "-------------- engine reclock val = %d\n", val);
 +		reg_set_bit_mask(glamo, reg, mask, val);
 +		msleep(5); /* wait some time to stabilize */
 +
@@ -1125,60 +1124,71 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_CLOCK_LCD,		0x1000 },
 +	{ GLAMO_REG_CLOCK_MMC,		0x1000 },
 +	{ GLAMO_REG_CLOCK_ISP,		0x1000 },
-+	{ GLAMO_REG_CLOCK_ISP,		0x2000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x3000 },
 +	{ GLAMO_REG_CLOCK_JPEG,		0x1000 },
 +	{ GLAMO_REG_CLOCK_3D,		0x1000 },
-+	{ GLAMO_REG_CLOCK_3D,		0x2000 },
++	{ GLAMO_REG_CLOCK_3D,		0x3000 },
 +	{ GLAMO_REG_CLOCK_2D,		0x1000 },
-+	{ GLAMO_REG_CLOCK_2D,		0x2000 },
++	{ GLAMO_REG_CLOCK_2D,		0x3000 },
 +	{ GLAMO_REG_CLOCK_RISC1,	0x1000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
 +	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
-+	{ GLAMO_REG_CLOCK_MPROC,	0x100f },
++	{ GLAMO_REG_CLOCK_MPROC,	0x1000 },
 +		{ 0xfffe, 1 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x0000 },
 +	{ GLAMO_REG_CLOCK_MEMORY,	0x0000 },
-+	{ GLAMO_REG_CLOCK_MEMORY,	0x0000 },
 +	{ GLAMO_REG_CLOCK_LCD,		0x0000 },
 +	{ GLAMO_REG_CLOCK_MMC,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_JPEG,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_3D,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_3D,		0x0000 },
++#if 0
++/* unused engines must be left in reset to stop MMC block read "blackouts" */
++	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
++	{ GLAMO_REG_CLOCK_JPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_3D,		0x0000 },
++	{ GLAMO_REG_CLOCK_3D,		0x0000 },
 +	{ GLAMO_REG_CLOCK_2D,		0x0000 },
 +	{ GLAMO_REG_CLOCK_2D,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_RISC1,	0x0000 },
-+//	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
-+//	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
-+	{ GLAMO_REG_CLOCK_MPROC,	0x000f },
++	{ GLAMO_REG_CLOCK_RISC1,	0x0000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_MPROC,	0x0000 },
 +		{ 0xfffe, 1 },
++#endif
 +	{ GLAMO_REG_PLL_GEN1,		0x05db },	/* 48MHz */
 +	{ GLAMO_REG_PLL_GEN3,		0x09c3 },	/* 80MHz */
-+		{ 0xfffe, 300 },
-+	{ GLAMO_REG_IRQ_ENABLE,		0x01ff }, /* all 9 irqs, irq to base */
++		{ 0xfffe, 30 },
++	/*
++	 * b9 of this register MUST be zero to get any interrupts on INT#
++	 * the other set bits enable all the engine interrupt sources
++	 */
++	{ GLAMO_REG_IRQ_ENABLE,		0x01ff },
 +	{ GLAMO_REG_CLOCK_GEN6,		0x2000 },
 +	{ GLAMO_REG_CLOCK_GEN7,		0x0101 },
 +	{ GLAMO_REG_CLOCK_GEN8,		0x0100 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x000d },
-+	{ 0x200,	0x0ef0 },
-+	{ 0x202, 	0x07ff },
++	{ 0x200,	0x0cf0 /* 0x0ef0 */ },
++	{ 0x202, 	0x0298 /* 0x07ff */ },
 +	{ 0x212,	0x0000 },
 +	{ 0x214,	0x4000 },
 +	{ 0x216,	0xf00e },
-+	{ GLAMO_REG_MEM_TYPE,		0x0874 },
-+	{ GLAMO_REG_MEM_GEN,		0xafaf },
-+	{ GLAMO_REG_MEM_TIMING1,	0x0108 },
-+	{ GLAMO_REG_MEM_TIMING2,	0x0010 },
++	{ GLAMO_REG_MEM_TYPE,		0x0874 }, /* 8MB, 16 word pg wr+rd */
++	{ GLAMO_REG_MEM_GEN,		0xbfbf }, /* 63 grants min + max */
++	/*
++	 * the register below originally 0x0108 makes unreliable Glamo MMC
++	 * write operations.  Cranked to 0x05ad to add a wait state, the
++	 * unreliability is not seen after 4GB of write / read testing
++	 */
++	{ GLAMO_REG_MEM_TIMING1,	0x05ad },
++	{ GLAMO_REG_MEM_TIMING2,	0x0010 }, /* Taa = 3 MCLK */
 +	{ GLAMO_REG_MEM_TIMING3,	0x0000 },
-+	{ GLAMO_REG_MEM_TIMING4,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING4,	0x0000 }, /* CE1# delay fall/rise */
 +	{ GLAMO_REG_MEM_TIMING5,	0x0000 },
 +	{ GLAMO_REG_MEM_TIMING6,	0x0000 },
 +	{ GLAMO_REG_MEM_TIMING7,	0x0000 },
-+	{ GLAMO_REG_MEM_TIMING8,	0x1002 },
-+	{ GLAMO_REG_MEM_TIMING9,	0x6006 },
++	{ GLAMO_REG_MEM_TIMING8,	0x1000 },
++	{ GLAMO_REG_MEM_TIMING9,	0x6000 },
 +	{ GLAMO_REG_MEM_TIMING10,	0x00ff },
-+	{ GLAMO_REG_MEM_TIMING11,	0x0001 },
++	{ GLAMO_REG_MEM_TIMING11,	0x0000 },
 +	{ GLAMO_REG_MEM_POWER1,		0x0020 },
 +	{ GLAMO_REG_MEM_POWER2,		0x0000 },
 +	{ GLAMO_REG_MEM_DRAM1,		0x0000 },
@@ -1186,10 +1196,10 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	{ GLAMO_REG_MEM_DRAM1,		0xc100 },
 +		{ 0xfffe, 1 },
 +	{ GLAMO_REG_MEM_DRAM1,		0xe100 },
-+	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
-+	{ GLAMO_REG_CLOCK_MEMORY,	0x000a },
-+//	{ GLAMO_REG_CLOCK_MEMORY,	0x000b },
++	{ GLAMO_REG_MEM_DRAM2,		0x0155 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x000f },
 +};
++
 +
 +#if 0 /* MM370 */
 +static const struct glamo_script regs_vram_2mb = {
@@ -1302,6 +1312,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	spin_unlock(&glamo->lock);
 +}
 +
++#if 0
 +#define MEMDETECT_RETRY	6
 +static unsigned int detect_memsize(struct glamo_core *glamo)
 +{
@@ -1363,6 +1374,7 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +
 +	return 0;
 +}
++#endif
 +
 +/* Find out if we can support this version of the Glamo chip */
 +static int glamo_supported(struct glamo_core *glamo)
@@ -1409,7 +1421,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +static int __init glamo_probe(struct platform_device *pdev)
 +{
 +	int rc, irq;
-+	int count = 0;
 +	struct glamo_core *glamo;
 +
 +	if (glamo_handle) {
@@ -1444,8 +1455,22 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +	glamo_core_dev.resources[1].end = glamo->irq;
 +	platform_device_register(&glamo_core_dev);
 +#endif
++	/* only remap the generic, hostbus and memory controller registers */
++	glamo->base = ioremap(glamo->mem->start, GLAMO_REGOFS_VIDCAP);
++	if (!glamo->base) {
++		dev_err(&pdev->dev, "failed to ioremap() memory region\n");
++		goto out_free;
++	}
++
++	/* bring MCI specific stuff over from our MFD platform data */
++	glamo_mci_def_pdata.glamo_set_mci_power =
++					glamo->pdata->glamo_set_mci_power;
++	glamo_mci_def_pdata.glamo_irq_is_wired =
++					glamo->pdata->glamo_irq_is_wired;
 +
 +	glamo_mmc_dev.dev.parent = &pdev->dev;
++	/* we need it later to give to the engine enable and disable */
++	glamo_mci_def_pdata.pglamo = glamo;
 +	mangle_mem_resources(glamo_mmc_dev.resource,
 +			     glamo_mmc_dev.num_resources, glamo->mem);
 +	platform_device_register(&glamo_mmc_dev);
@@ -1490,13 +1515,6 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +		goto out_free;
 +	}
 +
-+	/* only remap the generic, hostbus and memory controller registers */
-+	glamo->base = ioremap(glamo->mem->start, GLAMO_REGOFS_VIDCAP);
-+	if (!glamo->base) {
-+		dev_err(&pdev->dev, "failed to ioremap() memory region\n");
-+		goto out_free;
-+	}
-+
 +	if (!glamo_supported(glamo)) {
 +		dev_err(&pdev->dev, "This Glamo is not supported\n");
 +		goto out_free;
@@ -1511,53 +1529,19 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.c
 +		 glamo_pll_rate(glamo, GLAMO_PLL1),
 +		 glamo_pll_rate(glamo, GLAMO_PLL2));
 +
-+	/* FIXME: do we need to request_irq() it ? */
-+
-+	dev_dbg(&glamo->pdev->dev, "interrupts\n");
 +	for (irq = IRQ_GLAMO(0); irq <= IRQ_GLAMO(8); irq++) {
 +		set_irq_chip(irq, &glamo_irq_chip);
 +		set_irq_handler(irq, handle_level_irq);
 +		set_irq_flags(irq, IRQF_VALID);
 +	}
 +
-+#ifndef UGLY_HACK_BE_GONE
-+	/*
-+	* GTA-02 S-Media IRQs prior to A5 are broken due to a lack of
-+	* a pullup on the INT# line.  Check for the bad behaviour.
-+	*/
-+	s3c2410_gpio_setpin(S3C2410_GPG4, 0);
-+	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_OUTP);
-+	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_INP);
-+	/*
-+	* we force it low ourselves for a moment and resume being input.
-+	* If there is a pullup, it won't stay low for long.  But if the
-+	* level converter is there as on < A5 revision, the weak keeper
-+	* on the input of the LC will hold the line low indefinitiely
-+	*/
-+	do {
-+		rc = s3c2410_gpio_getpin(S3C2410_GPG4);
-+	} while ((!rc) && ((count++) < 10));
-+
-+	if (rc) { /* it got pulled back up, it's good */
-+		dev_info(&glamo->pdev->dev, "Detected S-Media IRQ# pullup, "
-+		"enabling interrupt\n");
-+		glamo->irq_works = 1;
-+	} else { /* Gah we can't work with this level converter */
-+		dev_warn(&glamo->pdev->dev, "** Detected bad IRQ# circuit found"
-+		" on pre-A5 GTA-02: S-Media interrupt disabled **\n");
-+		glamo->irq_works = 0;
-+	}
-+#endif /* UGLY_HACK_BE_GONE */
-+
-+	if (!glamo->irq || !glamo->irq_works)
-+		dev_warn(&glamo->pdev->dev, "No IRQ support on this hardware!\n");
-+	else {
-+		dev_dbg(&glamo->pdev->dev, "chained\n");
++	if (glamo->pdata->glamo_irq_is_wired &&
++	    !glamo->pdata->glamo_irq_is_wired()) {
 +		set_irq_chained_handler(glamo->irq, glamo_irq_demux_handler);
-+		dev_dbg(&glamo->pdev->dev, "type\n");
 +		set_irq_type(glamo->irq, IRQT_FALLING);
-+	}
-+
++		glamo->irq_works = 1;
++	} else
++		glamo->irq_works = 0;
 +	return 0;
 +
 +out_free:
@@ -2505,7 +2489,7 @@ Index: linux-2.6.24-rc7/include/linux/glamofb.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/include/linux/glamofb.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,39 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
 +
@@ -2534,6 +2518,11 @@ Index: linux-2.6.24-rc7/include/linux/glamofb.h
 +	struct glamo_spi_info *spi_info;
 +	struct glamo_spigpio_info *spigpio_info;
 +	struct glamo_core *glamo;
++
++	/* glamo mmc platform specific info */
++	void		(*glamo_set_mci_power)(unsigned char power_mode,
++				     unsigned short vdd);
++	int		(*glamo_irq_is_wired)(void);
 +};
 +
 +void glamofb_cmd_mode(struct glamofb_handle *gfb, int on);
@@ -2577,13 +2566,27 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,79 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
 +
++/* for the time being, we put the on-screen framebuffer into the lowest
++ * VRAM space.  This should make the code easily compatible with the various
++ * 2MB/4MB/8MB variants of the Smedia chips */
++#define GLAMO_OFFSET_VRAM	0x800000
++#define GLAMO_OFFSET_FB	(GLAMO_OFFSET_VRAM)
++
++/* we only allocate the minimum possible size for the framebuffer to make
++ * sure we have sufficient memory for other functions of the chip */
++//#define GLAMO_FB_SIZE	(640*480*4)	/* == 0x12c000 */
++#define GLAMO_INTERNAL_RAM_SIZE 0x800000
++#define GLAMO_MMC_BUFFER_SIZE (64 * 1024)
++#define GLAMO_FB_SIZE	(GLAMO_INTERNAL_RAM_SIZE - GLAMO_MMC_BUFFER_SIZE)
++
++
 +struct glamo_core {
 +	int irq;
-+	int irq_works; /* 0 means PCB does not support Glamo IRQ - UGLY HACK */
++	int irq_works; /* 0 means PCB does not support Glamo IRQ */
 +	struct resource *mem;
 +	struct resource *mem_core;
 +	void __iomem *base;
@@ -2624,6 +2627,17 @@ Index: linux-2.6.24-rc7/drivers/mfd/glamo/glamo-core.h
 +#endif
 +	__NUM_GLAMO_ENGINES
 +};
++
++struct glamo_mci_pdata {
++	struct glamo_core * pglamo;
++	unsigned int	gpio_detect;
++	unsigned int	gpio_wprotect;
++	unsigned long	ocr_avail;
++	void		(*glamo_set_mci_power)(unsigned char power_mode,
++				     unsigned short vdd);
++	int		(*glamo_irq_is_wired)(void);
++};
++
 +
 +int glamo_engine_enable(struct glamo_core *glamo, enum glamo_engine engine);
 +int glamo_engine_disable(struct glamo_core *glamo, enum glamo_engine engine);

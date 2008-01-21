@@ -2,7 +2,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,753 @@
+@@ -0,0 +1,821 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -236,6 +236,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +};
 +
++#if 0 /* currently unused */
 +static void cfg_pmu_vrail(struct pmu_voltage_rail *vrail, char *name,
 +			  unsigned int flags, unsigned int init,
 +			  unsigned int max)
@@ -245,6 +246,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	vrail->voltage.init = init;
 +	vrail->voltage.max = max;
 +}
++#endif
 +
 +static void mangle_pmu_pdata_by_system_rev(void)
 +{
@@ -401,24 +403,9 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	.sets		= gta02_nand_sets,
 +};
 +
-+static void gta02_mmc_set_power(unsigned char power_mode, unsigned short vdd)
-+{
-+	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
-+	       power_mode, vdd);
-+
-+	switch (system_rev) {
-+	case GTA02v1_SYSTEM_REV:
-+	case GTA02v2_SYSTEM_REV:
-+	case GTA02v3_SYSTEM_REV:
-+	case GTA02v4_SYSTEM_REV:
-+		/* FIXME */
-+		break;
-+	}
-+}
-+
 +static struct s3c24xx_mci_pdata gta02_mmc_cfg = {
 +	.gpio_detect	= GTA02v1_GPIO_nSD_DETECT,
-+	.set_power	= &gta02_mmc_set_power,
++	.set_power	= NULL,
 +	.ocr_avail	= MMC_VDD_32_33,
 +};
 +
@@ -576,6 +563,83 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +};
 +
++static int glamo_irq_is_wired(void)
++{
++	int rc;
++	int count = 0;
++
++	/*
++	* GTA02 S-Media IRQs prior to A5 are broken due to a lack of
++	* a pullup on the INT# line.  Check for the bad behaviour.
++	*/
++	s3c2410_gpio_setpin(S3C2410_GPG4, 0);
++	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_OUTP);
++	s3c2410_gpio_cfgpin(S3C2410_GPG4, S3C2410_GPG4_INP);
++	/*
++	* we force it low ourselves for a moment and resume being input.
++	* If there is a pullup, it won't stay low for long.  But if the
++	* level converter is there as on < A5 revision, the weak keeper
++	* on the input of the LC will hold the line low indefinitiely
++	*/
++	do
++		rc = s3c2410_gpio_getpin(S3C2410_GPG4);
++	while ((!rc) && ((count++) < 10));
++	if (rc) { /* it got pulled back up, it's good */
++		printk(KERN_INFO "Detected S-Media IRQ# pullup, "
++		"enabling interrupt\n");
++		return 0;
++	} else  /* Gah we can't work with this level converter */
++		printk(KERN_WARNING "** Detected bad IRQ# circuit found"
++		" on pre-A5 GTA02: S-Media interrupt disabled **\n");
++	return -ENODEV;
++}
++
++
++static void
++gta02_glamo_mmc_set_power(unsigned char power_mode, unsigned short vdd)
++{
++	int mv = 1650;
++
++	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
++	       power_mode, vdd);
++
++	switch (system_rev) {
++	case GTA02v1_SYSTEM_REV:
++	case GTA02v2_SYSTEM_REV:
++		break;
++	case GTA02v3_SYSTEM_REV:
++	case GTA02v4_SYSTEM_REV:
++/*	case GTA02v5_SYSTEM_REV: */
++		/* depend on pcf50633 driver init */
++		if (!pcf50633_global)
++			while (!pcf50633_global)
++				msleep(10);
++		switch (power_mode) {
++		case MMC_POWER_ON:
++		case MMC_POWER_UP:
++			/* select and set the voltage */
++			if (vdd > 7) {
++				mv += 300 + 100 * (vdd - 8);
++				if (mv > 3500)
++					mv = 3500;
++			}
++			pcf50633_voltage_set(pcf50633_global,
++					     PCF50633_REGULATOR_HCLDO, mv);
++			msleep(10);
++			pcf50633_onoff_set(pcf50633_global,
++					   PCF50633_REGULATOR_HCLDO, 1);
++			msleep(1);
++			break;
++		case MMC_POWER_OFF:
++			pcf50633_onoff_set(pcf50633_global,
++					   PCF50633_REGULATOR_HCLDO, 0);
++			msleep(1);
++			break;
++		}
++		break;
++	}
++}
++
 +/* Smedia Glamo 3362 */
 +
 +static struct glamofb_platform_data gta02_glamo_pdata = {
@@ -606,6 +670,10 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +	//.spi_info	= &glamo_spi_cfg,
 +	.spigpio_info	= &glamo_spigpio_cfg,
++
++	/* glamo MMC function platform data */
++	.glamo_set_mci_power = gta02_glamo_mmc_set_power,
++	.glamo_irq_is_wired = glamo_irq_is_wired,
 +};
 +
 +static struct resource gta02_glamo_resources[] = {
