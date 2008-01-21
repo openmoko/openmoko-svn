@@ -72,6 +72,7 @@ fail-unless-uimage.patch
 
 # OE patches
 fix-EVIOCGRAB-semantics.patch
+iis-suspend.patch
 
 # Atheros WLAN driver
 pnp_fixes.patch
