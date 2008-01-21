@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.24-rc7
-# Tue Jan 15 18:34:56 2008
+# Sun Jan 20 23:13:13 2008
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1042,6 +1042,7 @@ CONFIG_MFD_GLAMO=y
 CONFIG_MFD_GLAMO_FB=y
 CONFIG_MFD_GLAMO_SPI_GPIO=y
 CONFIG_MFD_GLAMO_SPI_FB=y
+CONFIG_MFD_GLAMO_MCI=y
 
 #
 # Multimedia devices
