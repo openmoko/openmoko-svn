@@ -19,6 +19,7 @@
  */
 
 #include <string.h>
+#include <sys/vfs.h>
 
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
@@ -76,9 +77,14 @@ struct _MokoSmsPrivate
   MokoNotify         *notify;
   
   gboolean           sim_full;
+  gboolean           memory_full;
+  
+  guint              memory_idle;
 };
 
 static void start_handling_sms (MokoSms *sms);
+static void stop_handling_sms (MokoSms *sms);
+static void open_sms_store (MokoSms *sms);
 
 static void
 moko_sms_get_property (GObject *object, guint property_id,
@@ -128,7 +134,7 @@ moko_sms_set_property (GObject *object, guint property_id,
   switch (property_id) {
     case PROP_NETWORK :
       if (priv->network) {
-        moko_network_remove_listener (priv->network, MOKO_LISTENER (object));
+        stop_handling_sms (sms);
         g_object_unref (priv->network);
       }
       priv->network = g_value_dup_object (value);
@@ -140,7 +146,7 @@ moko_sms_set_property (GObject *object, guint property_id,
       g_signal_connect (priv->network, "subscriber_number_changed",
                         G_CALLBACK (subscriber_number_changed_cb), object);*/
       /* moko_network_add_listener happens in start_handling_sms */
-      if (!priv->handling_sms) start_handling_sms (sms);
+      if ((!priv->sim_full) && (!priv->memory_full)) start_handling_sms (sms);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -156,8 +162,13 @@ moko_sms_dispose (GObject *object)
   sms = MOKO_SMS (object);
   priv = sms->priv;
   
-  while (g_source_remove_by_user_data (object)) moko_notify_stop (priv->notify);
+  if (priv->memory_idle) {
+    g_source_remove (priv->memory_idle);
+    priv->memory_idle = 0;
+  }
 
+  while (g_source_remove_by_user_data (object)) moko_notify_stop (priv->notify);
+  
   if (priv->sms_store) {
     g_object_unref (priv->sms_store);
     priv->sms_store = NULL;
@@ -427,7 +438,7 @@ on_error (MokoListener *listener, struct lgsm_handle *handle,
 
   if (cms == 322) {
     priv->sim_full = TRUE;
-    g_signal_emit (listener, signals[MEMORY_FULL], 0, TRUE, FALSE);
+    g_signal_emit (listener, signals[MEMORY_FULL], 0, TRUE, priv->memory_full);
   }
 }
 
@@ -578,6 +589,8 @@ sms_store_opened_cb (JanaStore *store, MokoSms *self)
   MokoSmsPrivate *priv = self->priv;
   priv->sms_store_open = TRUE;
 
+  g_debug ("Sms store opened");
+
   /* Hook onto added/modified/removed signals for SMS notification */
   view = jana_store_get_view (store);
   g_signal_connect (view, "added", G_CALLBACK (note_added_cb), self);
@@ -588,6 +601,70 @@ sms_store_opened_cb (JanaStore *store, MokoSms *self)
   if (!priv->handling_sms) start_handling_sms (self);
   /*if (priv->got_subscriber_number)*/
     g_signal_emit (self, signals[STATUS_CHANGED], 0, PK_SMS_READY);
+}
+
+static void
+stop_handling_sms (MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  
+  if (!priv->handling_sms) return;
+  
+  g_debug ("Closing sms store");
+  
+  moko_network_remove_listener (priv->network, MOKO_LISTENER (sms));
+  
+  g_object_unref (priv->sms_store);
+  priv->sms_store = NULL;
+  
+  priv->sms_store_open = FALSE;
+  priv->handling_sms = FALSE;
+  
+  g_signal_emit (sms, signals[STATUS_CHANGED], 0, PK_SMS_NOTREADY);
+}
+
+static void
+open_sms_store (MokoSms *sms)
+{
+  MokoSmsPrivate *priv = sms->priv;
+  
+  if (priv->sms_store) return;
+  
+  g_debug ("Opening sms store");
+
+  /* Get the SMS note store */
+  priv->sms_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
+  g_signal_connect (priv->sms_store, "opened",
+                    G_CALLBACK (sms_store_opened_cb), sms);
+  jana_store_open (priv->sms_store);
+}
+
+static gboolean
+memory_check_idle (MokoSms *sms)
+{
+  struct statfs buf;
+
+  MokoSmsPrivate *priv = sms->priv;
+  
+  statfs ("/", &buf);
+  
+  /* TODO: Is it reasonable to expect 4 megs/100 files free? */
+  if (((buf.f_bfree * buf.f_bsize) < (1024*1024*4)) ||
+      (buf.f_ffree < 100)) {
+    if (!priv->memory_full) {
+      priv->memory_full = TRUE;
+      g_signal_emit (sms, signals[MEMORY_FULL], 0, priv->sim_full, TRUE);
+      if (priv->sms_store) {
+        stop_handling_sms (sms);
+      }
+    }
+  } else if (priv->memory_full) {
+    priv->memory_full = FALSE;
+    g_signal_emit (sms, signals[MEMORY_FULL], 0, priv->sim_full, FALSE);
+    open_sms_store (sms);
+  }
+  
+  return TRUE;
 }
 
 static void
@@ -602,11 +679,11 @@ moko_sms_init (MokoSms *sms)
                                                 NULL);
   priv->notify = moko_notify_get_default ();
 
-  /* Get the SMS note store */
-  priv->sms_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
-  g_signal_connect (priv->sms_store, "opened",
-                    G_CALLBACK (sms_store_opened_cb), sms);
-  jana_store_open (priv->sms_store);
+  memory_check_idle (sms);
+  if (!priv->memory_full) open_sms_store (sms);
+  
+  priv->memory_idle = g_timeout_add_seconds (5, (GSourceFunc)
+                                             memory_check_idle, sms);
 }
 
 MokoSms*
