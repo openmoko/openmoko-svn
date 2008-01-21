@@ -1,5 +1,10 @@
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (memory_check_idle):
+	Removing free file handles check for now
+
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-sms.c: (moko_sms_class_init):
 	Register custom marshaller for MemoryFull signal
 

@@ -652,8 +652,8 @@ memory_check_idle (MokoSms *sms)
   statfs ("/", &buf);
   
   /* TODO: Is it reasonable to expect 4 megs/100 files free? */
-  if (((buf.f_bfree * buf.f_bsize) < (1024*1024*4)) ||
-      (buf.f_ffree < 100)) {
+  if (((buf.f_bfree * buf.f_bsize) < (1024*1024*4))/* ||
+      (buf.f_ffree < 100)*/) {
     if (!priv->memory_full) {
       priv->memory_full = TRUE;
       g_signal_emit (sms, signals[MEMORY_FULL], 0, priv->sim_full, TRUE);
