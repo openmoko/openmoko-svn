@@ -74,6 +74,7 @@ fail-unless-uimage.patch
 fix-EVIOCGRAB-semantics.patch
 iis-suspend.patch
 s3c24xx-pcm-suspend.patch
+s3c2410-usb-switch.patch
 
 # Atheros WLAN driver
 pnp_fixes.patch
