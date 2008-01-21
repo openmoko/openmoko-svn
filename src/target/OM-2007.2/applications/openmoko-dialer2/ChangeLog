@@ -1,5 +1,10 @@
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-sms.c: (moko_sms_class_init):
+	Register custom marshaller for MemoryFull signal
+
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-sms.c: (moko_sms_set_property),
 	(moko_sms_dispose), (on_error), (sms_store_opened_cb),
 	(stop_handling_sms), (open_sms_store), (memory_check_idle),

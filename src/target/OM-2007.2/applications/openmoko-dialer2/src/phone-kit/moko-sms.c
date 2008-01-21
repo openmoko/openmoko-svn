@@ -248,7 +248,10 @@ moko_sms_class_init (MokoSmsClass *klass)
                   G_TYPE_NONE, 
                   2, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN);
 
-  g_type_class_add_private (obj_class, sizeof (MokoSmsPrivate)); 
+  g_type_class_add_private (obj_class, sizeof (MokoSmsPrivate));
+  dbus_g_object_register_marshaller (_moko_sms_marshal_VOID__BOOLEAN_BOOLEAN,
+                                     G_TYPE_NONE, G_TYPE_BOOLEAN,
+                                     G_TYPE_BOOLEAN, G_TYPE_INVALID);
   dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (klass), 
                                    &dbus_glib_moko_sms_object_info);
 }
