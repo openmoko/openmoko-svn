@@ -1,3 +1,8 @@
+2008-01-21  Chris Lord  <chris@openedhand.com>
+
+        * taku:
+        Update to r1898, should fix bug #927
+
 2007-12-20  Chris Lord  <chris@openedhand.com>
 
 	* src/today-pim-journal.c: (today_pim_journal_entry_changed),
