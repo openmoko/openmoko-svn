@@ -20,10 +20,10 @@
 # DEVICE=gta02v4
 #
 # GIT_HEAD, if defined, specifies which git head we use, e.g.,
-# GIT_HEAD=6d714f82fb4b8bb7e267e9c71b8009bc670bfe88
+# GIT_HEAD=f188896c2f1594fe749fdb99bbc8c54023cfab3a
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
-# SVN_REV=3821
+# SVN_REV=3890
 #
 
 git clone git://www.denx.de/git/u-boot.git
