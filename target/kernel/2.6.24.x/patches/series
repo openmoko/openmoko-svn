@@ -70,6 +70,9 @@ s3c2410-qt2410-buttons.patch
 # local hack
 fail-unless-uimage.patch
 
+# OE patches
+fix-EVIOCGRAB-semantics.patch
+
 # Atheros WLAN driver
 pnp_fixes.patch
 atheros_2_0_function.patch
