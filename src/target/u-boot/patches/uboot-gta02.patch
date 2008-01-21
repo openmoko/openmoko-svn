@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2329,6 +2329,13 @@
+@@ -2334,6 +2334,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -12,7 +12,8 @@ Index: u-boot/Makefile
 +gta02v1_config \
 +gta02v2_config \
 +gta02v3_config \
-+gta02v4_config:	unconfig
++gta02v4_config \
++gta02v5_config:	unconfig
 +	@sh board/neo1973/gta02/split_by_variant.sh $@
 +
  gta01_config \
@@ -92,7 +93,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,457 @@
+@@ -0,0 +1,449 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -177,7 +178,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 + * Miscellaneous platform dependent initialisations
 + */
 +
-+int board_init (void)
++int board_init(void)
 +{
 +	S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
@@ -201,7 +202,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	delay (8000);
 +
 +	/* set up the I/O ports */
-+#if defined(CONFIG_ARCH_GTA02_v1)
++#if CONFIG_GTA02_REVISION == 1
 +	gpio->GPACON = 0x007E1FFF;
 +	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
 +
@@ -227,7 +228,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	gpio->GPHUP = 0x000007FF;
 +
 +	gpio->GPJCON = 0x1545541;
-+#elif defined(CONFIG_ARCH_GTA02_v2)
++#elif CONFIG_GTA02_REVISION == 2
 +	gpio->GPACON = 0x007E1FFF;
 +	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
 +
@@ -255,7 +256,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	gpio->GPJCON = 0x1551544;
 +	gpio->GPJUP = 0x1ffff;
 +	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
-+#elif defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
++#elif CONFIG_GTA02_REVISION >= 3
 +	gpio->GPACON = 0x007E5FFF;
 +	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
 +
@@ -417,15 +418,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +u_int32_t get_board_rev(void)
 +{
-+#if defined(CONFIG_ARCH_GTA02_v1)
-+	return 0x00000310;
-+#elif defined(CONFIG_ARCH_GTA02_v2)
-+	return 0x00000320;
-+#elif defined(CONFIG_ARCH_GTA02_v3)
-+	return 0x00000330;
-+#elif defined(CONFIG_ARCH_GTA02_v4)
-+	return 0x00000340;
-+#endif
++	return 0x300+0x10*CONFIG_GTA02_REVISION;
 +}
 +
 +void neo1973_poweroff(void)
@@ -617,7 +610,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,284 @@
+@@ -0,0 +1,282 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -743,19 +736,17 @@ Index: u-boot/include/configs/neo1973_gta02.h
 + * Miscellaneous configurable options
 + */
 +#define	CFG_LONGHELP				/* undef to save memory		*/
++
++#define STRINGIFY(s) DO_STRINGIFY(s)	/* expand the argument */
++#define DO_STRINGIFY(s) #s		/* quote it */
++#define	CFG_PROMPT		"GTA02v" STRINGIFY(CONFIG_GTA02_REVISION) " # "
++						/* Monitor Command Prompt */
 +#if defined(CONFIG_ARCH_GTA02_v1)
-+#define	CFG_PROMPT		"GTA02v1 # "	/* Monitor Command Prompt	*/
 +#define	CONFIG_S3C2440		1		/* SAMSUNG S3C2440 SoC		*/
-+#elif defined(CONFIG_ARCH_GTA02_v2)
-+#define	CFG_PROMPT		"GTA02v2 # "	/* Monitor Command Prompt	*/
-+#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
-+#elif defined(CONFIG_ARCH_GTA02_v3)
-+#define	CFG_PROMPT		"GTA02v3 # "	/* Monitor Command Prompt	*/
-+#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
-+#elif defined(CONFIG_ARCH_GTA02_v4)
-+#define	CFG_PROMPT		"GTA02v4 # "	/* Monitor Command Prompt	*/
++#else
 +#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
 +#endif
++
 +#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
 +#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
 +#define	CFG_MAXARGS		64		/* max number of command args	*/
@@ -906,13 +897,13 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/split_by_variant.sh
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,65 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
 +#  Set the core module defines according to Core Module
 +# ---------------------------------------------------------
 +# ---------------------------------------------------------
-+# Set up the GTA03 type define
++# Set up the GTA02 type define
 +# ---------------------------------------------------------
 +
 +CFGINC=${obj}include/config.h
@@ -923,33 +914,45 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 +then
 +	echo "$0:: No parameters - using GTA02Bv1 config"
 +	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 1" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
 +else
 +	case "$1" in
 +	gta02v1_config)
 +	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 1" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
 +	;;
 +
 +	gta02v2_config)
 +	echo "#define CONFIG_ARCH_GTA02_v2" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 2" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0320" > $CFGTMP
 +	;;
 +
 +	gta02v3_config)
 +	echo "#define CONFIG_ARCH_GTA02_v3" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 3" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0330" > $CFGTMP
 +	;;
 +
 +	gta02v4_config)
 +	echo "#define CONFIG_ARCH_GTA02_v4" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 4" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0340" > $CFGTMP
++	;;
++
++	gta02v5_config)
++	echo "#define CONFIG_ARCH_GTA02_v5" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 5" >> $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0350" > $CFGTMP
 +	;;
 +
 +
 +	*)
 +	echo "$0:: Unrecognised config - using GTA02v3 config"
 +	echo "#define CONFIG_ARCH_GTA02_v3" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 3" >> $CFGINC
 +	echo "CONFIG_USB_DFU_REVISION=0x0330" > $CFGTMP
 +	;;
 +
@@ -1454,14 +1457,13 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  #define B1_Tah		 	0x0	/*  0clk */
  #define B1_Tacp		 	0x0
  #define B1_PMC		 	0x0
-@@ -109,16 +109,19 @@
+@@ -109,16 +109,18 @@
  
  #define B6_MT		 	0x3	/* SDRAM */
  #define B6_Trcd	 	 	0x1	/* 3clk */
 -#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
 +#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
-+    defined(CONFIG_ARCH_GTA02_v2)  || defined(CONFIG_ARCH_GTA02_v3) || \
-+    defined(CONFIG_ARCH_GTA02_v4)
++    CONFIG_GTA02_REVISION >= 2
  #define B6_SCAN		 	0x1	/* 9bit */
 +#define B7_SCAN		 	0x1	/* 9bit */
  #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
@@ -1477,7 +1479,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  
  /* REFRESH parameter */
  #define REFEN		 	0x1	/* Refresh enable */
-@@ -165,6 +168,28 @@
+@@ -165,6 +167,27 @@
  	str	r1, [r0]
  #endif
  
@@ -1491,8 +1493,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
 +	ldr	r1, [r0, #0xd4]	/* GPJDAT */
 +	orr	r1, r1, #(1 << 3)
 +	str	r1, [r0, #0xd4]
-+#elif defined(CONFIG_ARCH_GTA02_v2) || defined(CONFIG_ARCH_GTA02_v3) || \
-+      defined(CONFIG_ARCH_GTA02_v4)
++#elif CONFIG_GTA02_REVISION >= 2
 +	/* enable KEEPACT(GPJ8) to make sure PMU keeps us alive */
 +	ldr	r0, =0x56000000	/* GPJ base */
 +	ldr	r1, [r0, #0xd0]	/* GPJCON */
@@ -1506,12 +1507,11 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
-@@ -182,6 +207,11 @@
+@@ -182,6 +205,10 @@
      .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
      .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
      .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
-+#if defined(CONFIG_ARCH_GTA02_v2) || defined(CONFIG_ARCH_GTA02_v3) || \
-+    defined(CONFIG_ARCH_GTA02_v4)
++#if CONFIG_GTA02_REVISION >= 2
 +    .word 0xb1
 +#else
      .word 0xb2
@@ -1934,23 +1934,21 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -11,7 +12,9 @@
+@@ -11,7 +12,8 @@
  	switch (event) {
  	case UDC_CTRL_PULLUP_ENABLE:
  #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
 -    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
 +    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4) || \
-+    defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2) || \
-+    defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
++    defined(CONFIG_GTA02_REVISION)
  		if (param)
  			gpio->GPBDAT |= (1 << 9);
  		else
-@@ -23,6 +26,12 @@
+@@ -23,6 +25,11 @@
      defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
      defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
-+#elif defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2) || \
-+      defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
++#elif defined(CONFIG_GTA02_REVISION)
 +		if (param)
 +			pcf50633_usb_maxcurrent(500);
 +		else
