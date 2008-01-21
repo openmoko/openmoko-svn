@@ -4,10 +4,10 @@ since there's a lot of similarity between the LED and the vibrator function.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6/drivers/leds/Kconfig
+Index: linux-2.6.24-rc7/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/leds/Kconfig
-+++ linux-2.6/drivers/leds/Kconfig
+--- linux-2.6.24-rc7.orig/drivers/leds/Kconfig
++++ linux-2.6.24-rc7/drivers/leds/Kconfig
 @@ -57,7 +57,7 @@
  
  config LEDS_S3C24XX
@@ -30,10 +30,10 @@ Index: linux-2.6/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6/drivers/leds/Makefile
+Index: linux-2.6.24-rc7/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/leds/Makefile
-+++ linux-2.6/drivers/leds/Makefile
+--- linux-2.6.24-rc7.orig/drivers/leds/Makefile
++++ linux-2.6.24-rc7/drivers/leds/Makefile
 @@ -19,6 +19,7 @@
  obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
  obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
@@ -42,11 +42,11 @@ Index: linux-2.6/drivers/leds/Makefile
  
  # LED Triggers
  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
-Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
+Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/leds/leds-neo1973-vibrator.c
-@@ -0,0 +1,174 @@
++++ linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
+@@ -0,0 +1,180 @@
 +/*
 + * LED driver for the vibrator of the FIC Neo1973 GSM Phone
 + *
@@ -113,20 +113,6 @@ Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 +	},
 +};
 +
-+#ifdef CONFIG_PM
-+static int gta01vib_suspend(struct platform_device *dev, pm_message_t state)
-+{
-+	led_classdev_suspend(&gta01_vib_led.cdev);
-+	return 0;
-+}
-+
-+static int gta01vib_resume(struct platform_device *dev)
-+{
-+	led_classdev_resume(&gta01_vib_led.cdev);
-+	return 0;
-+}
-+#endif
-+
 +static int gta01vib_init_hw(struct gta01_vib_priv *vp)
 +{
 +	int rc;
@@ -150,6 +136,26 @@ Index: linux-2.6/drivers/leds/leds-neo1973-vibrator.c
 +
 +	return 0;
 +}
++
++#ifdef CONFIG_PM
++static int gta01vib_suspend(struct platform_device *dev, pm_message_t state)
++{
++	led_classdev_suspend(&gta01_vib_led.cdev);
++	return 0;
++}
++
++static int gta01vib_resume(struct platform_device *dev)
++{
++	struct gta01_vib_priv *vp = platform_get_drvdata(dev);
++
++	led_classdev_resume(&gta01_vib_led.cdev);
++
++	if (vp->has_pwm)
++		gta01vib_init_hw(vp);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
 +
 +static int __init gta01vib_probe(struct platform_device *pdev)
 +{
