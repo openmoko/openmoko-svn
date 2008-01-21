@@ -130,7 +130,7 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 -				s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, 1);
 +				pcf50633_voltage_set(pcf50633_global,
 +					PCF50633_REGULATOR_LDO4, 3200);
-+			pcf50633_ena_voltage(pcf50633_global,
++			pcf50633_onoff_set(pcf50633_global,
 +				PCF50633_REGULATOR_LDO4, on);
 +			vol = pcf50633_voltage_get(pcf50633_global,
 +				PCF50633_REGULATOR_LDO4);
@@ -178,7 +178,7 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	case MACH_TYPE_NEO1973_GTA02:
 -		/* FIXME: implementation */
 +		/* we make sure that the voltage is off */
-+		pcf50633_ena_voltage(pcf50633_global,
++		pcf50633_onoff_set(pcf50633_global,
 +				     PCF50633_REGULATOR_LDO4, 0);
 +		/* we pull reset to low to make sure that the chip doesn't
 +	 	 * drain power through the reset line */
@@ -193,74 +193,15 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_bt_attr_group);
  }
-Index: linux-2.6.24-rc7/drivers/i2c/chips/pcf50633.c
-===================================================================
---- linux-2.6.24-rc7.orig/drivers/i2c/chips/pcf50633.c
-+++ linux-2.6.24-rc7/drivers/i2c/chips/pcf50633.c
-@@ -319,6 +319,20 @@
- 	[PCF50633_REGULATOR_HCLDO]	= PCF50633_REG_HCLDOOUT,
- };
- 
-+static const u_int8_t ena_regulator_registers[__NUM_PCF50633_REGULATORS] = {
-+	[PCF50633_REGULATOR_AUTO]	= PCF50633_REG_AUTOENA,
-+	[PCF50633_REGULATOR_DOWN1]	= PCF50633_REG_DOWN1ENA,
-+	[PCF50633_REGULATOR_DOWN2]	= PCF50633_REG_DOWN2ENA,
-+	[PCF50633_REGULATOR_MEMLDO]	= PCF50633_REG_MEMLDOENA,
-+	[PCF50633_REGULATOR_LDO1]	= PCF50633_REG_LDO1ENA,
-+	[PCF50633_REGULATOR_LDO2]	= PCF50633_REG_LDO2ENA,
-+	[PCF50633_REGULATOR_LDO3]	= PCF50633_REG_LDO3ENA,
-+	[PCF50633_REGULATOR_LDO4]	= PCF50633_REG_LDO4ENA,
-+	[PCF50633_REGULATOR_LDO5]	= PCF50633_REG_LDO5ENA,
-+	[PCF50633_REGULATOR_LDO6]	= PCF50633_REG_LDO6ENA,
-+	[PCF50633_REGULATOR_HCLDO]	= PCF50633_REG_HCLDOENA,
-+};
-+
- int pcf50633_onoff_set(struct pcf50633_data *pcf,
- 		       enum pcf50633_regulator_id reg, int on)
- {
-@@ -401,6 +415,29 @@
- }
- EXPORT_SYMBOL_GPL(pcf50633_voltage_set);
- 
-+int pcf50633_ena_voltage(struct pcf50633_data *pcf,
-+			 enum pcf50633_regulator_id reg,
-+			 u_int8_t on)
-+{
-+	u_int8_t regnr;
-+
-+	DEBUGP("pcf=%p, reg=%d", pcf, reg);
-+
-+	if(reg >= __NUM_PCF50633_REGULATORS)
-+		return -EINVAL;
-+
-+	regnr = ena_regulator_registers[reg];
-+	BUG_ON(!regnr); /* in case we forgot one */
-+
-+	if (on)
-+		reg_set_bit_mask(pcf, regnr, 0x01, 0x01);
-+	else
-+		reg_set_bit_mask(pcf, regnr, 0x01, 0x00);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_ena_voltage);
-+
- unsigned int pcf50633_voltage_get(struct pcf50633_data *pcf,
- 			 enum pcf50633_regulator_id reg)
- {
 Index: linux-2.6.24-rc7/include/linux/pcf50633.h
 ===================================================================
 --- linux-2.6.24-rc7.orig/include/linux/pcf50633.h
 +++ linux-2.6.24-rc7/include/linux/pcf50633.h
-@@ -47,6 +47,11 @@
+@@ -46,6 +46,7 @@
+ extern unsigned int
  pcf50633_voltage_get(struct pcf50633_data *pcf,
  		     enum pcf50633_regulator_id reg);
- extern int
-+pcf50633_ena_voltage(struct pcf50633_data *pcf,
-+		     enum pcf50633_regulator_id reg,
-+			 u_int8_t on);
 +
-+extern int
+ extern int
  pcf50633_onoff_get(struct pcf50633_data *pcf,
  		   enum pcf50633_regulator_id reg);
- 
