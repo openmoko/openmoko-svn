@@ -1,4 +1,4 @@
-SUBDIRS = libmokoui bindings/vala doc
+SUBDIRS = libmokoui bindings/vala doc $(PYTHON_BIND_DIR)
 
 pcdata_DATA= libmokoui2.pc
 pcdatadir= $(libdir)/pkgconfig

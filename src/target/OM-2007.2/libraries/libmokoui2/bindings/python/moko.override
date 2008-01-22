@@ -1,0 +1,14 @@
+%%
+headers
+#include "pygobject.h"
+#include "moko-finger-scroll.h"
+#include "moko-type.h"
+%%
+modulename moko                     
+%%
+import gtk.EventBox as PyGtkEventBox_Type    
+import gtk.Widget as PyGtkWidget_Type
+%%
+ignore-glob
+  *_get_type                            
+%%

@@ -973,3 +973,24 @@ moko_finger_scroll_add_with_viewport (MokoFingerScroll *scroll,
 	gtk_container_add (GTK_CONTAINER (scroll), viewport);
 }
 
+GType 
+moko_finger_scroll_mode_get_type(void)
+{
+	static GType etype = 0;
+	
+	if (etype == 0) {
+		static const GEnumValue values[] = {
+			{ MOKO_FINGER_SCROLL_MODE_PUSH, 
+			  "MOKO_FINGER_SCROLL_MODE_PUSH", "" },
+			{ MOKO_FINGER_SCROLL_MODE_ACCEL, 
+			  "MOKO_FINGER_SCROLL_MODE_ACCEL", "" },
+			{0, NULL, NULL}
+		};
+
+		etype = g_flags_register_static (
+				g_intern_static_string ("MokoFingerScrollMode"),
+				values);
+	}
+	
+	return etype;
+}

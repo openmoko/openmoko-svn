@@ -1,10 +1,24 @@
-2008-01-04	Michael Lauer  <mickey@openmoko.org>
+2008-01-22  Chris Lord  <chris@openedhand.com>
 
-	* bindings/vala/libmokoui2.vapi
-	* bindings/vala/libmokoui2.deps
-	* bindings/vala/Makefile.am
-	* configure.ac
-	* Makefile.am
+	Patch by: Frank Li <frank.li@intel.com>
+
+	* Makefile.am:
+	* bindings/python/Makefile.am:
+	* bindings/python/moko.override:
+	* bindings/python/mokomodule.c: (initmoko):
+	* configure.ac:
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_mode_get_type):
+	Add python bindings for MokoFingerScroll
+
+2008-01-04  Michael Lauer  <mickey@openmoko.org>
+
+	* bindings/vala/libmokoui2.vapi:
+	* bindings/vala/libmokoui2.deps:
+	* bindings/vala/Makefile.am:
+	* configure.ac:
+	* Makefile.am:
 	Add Vala Bindings
 
 2007-12-19  Chris Lord  <chris@openedhand.com>

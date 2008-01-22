@@ -2,13 +2,14 @@ source_h = \
 	moko-stock.h \
 	moko-finger-scroll.h \
 	moko-search-bar.h \
-  moko-hint-entry.h
+	moko-hint-entry.h \
+	moko-type.h
 
 source_c = \
 	moko-stock.c \
 	moko-finger-scroll.c \
 	moko-search-bar.c \
-  moko-hint-entry.c
+	moko-hint-entry.c
 
 DATADIR=$(datadir)
 
