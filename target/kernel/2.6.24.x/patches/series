@@ -61,7 +61,7 @@ config-nr-tty-devices.patch
 pm-debug_less_verbose.patch
 s3c2410_serial-nodebug.patch
 input-nots-mousedev.patch
-#s3c2440-nand-disable-hwecc.patch
+s3c2440-nand-disable-hwecc.patch
 
 # qt2410 local hacks
 qt2410-cs8900.patch
