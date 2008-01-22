@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
 @@ -0,0 +1,821 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
@@ -501,7 +501,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +};
 +
 +static struct platform_device gta01_led_dev = {
-+	.name		= "gta01-led",
++	.name		= "neo1973-vibrator",
 +	.num_resources	= ARRAY_SIZE(gta01_led_resources),
 +	.resource	= gta01_led_resources,
 +};
@@ -824,10 +824,10 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
 +	.init_machine	= gta02_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.24-rc7/include/asm-arm/arch-s3c2410/gta02.h
+Index: linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/asm-arm/arch-s3c2410/gta02.h
++++ linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/gta02.h
 @@ -0,0 +1,97 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
@@ -926,10 +926,10 @@ Index: linux-2.6.24-rc7/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02v3_IRQ_nGSM_OC	IRQ_EINT19	/* v3 + v4 only */
 +
 +#endif /* _GTA02_H */
-Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/Kconfig
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/Kconfig
+--- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2440/Kconfig
 @@ -74,5 +74,20 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
@@ -951,19 +951,19 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/Kconfig
 +
  endmenu
  
-Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/Makefile
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/Makefile
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/Makefile
+--- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2440/Makefile
 @@ -22,3 +22,4 @@
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
-Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
+Index: linux-2.6.24-rc8/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
-+++ linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
+--- linux-2.6.24-rc8.orig/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
++++ linux-2.6.24-rc8/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
 @@ -19,7 +19,9 @@
  #include <linux/pcf50606.h>
  
@@ -1081,10 +1081,10 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
-Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
+Index: linux-2.6.24-rc8/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
-+++ linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
+--- linux-2.6.24-rc8.orig/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
++++ linux-2.6.24-rc8/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 @@ -19,8 +19,14 @@
  #include <linux/errno.h>
  
@@ -1193,11 +1193,11 @@ Index: linux-2.6.24-rc7/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
-Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
+Index: linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/leds/leds-neo1973-vibrator.c
-+++ linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
-@@ -107,7 +107,7 @@
+--- linux-2.6.24-rc8.orig/drivers/leds/leds-neo1973-vibrator.c
++++ linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
+@@ -113,7 +113,7 @@
  	struct resource *r;
  	int rc;
  
@@ -1206,10 +1206,10 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
  		return -EIO;
  
  	r = platform_get_resource(pdev, 0, 0);
-Index: linux-2.6.24-rc7/sound/soc/s3c24xx/neo1973_wm8753.c
+Index: linux-2.6.24-rc8/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
---- linux-2.6.24-rc7.orig/sound/soc/s3c24xx/neo1973_wm8753.c
-+++ linux-2.6.24-rc7/sound/soc/s3c24xx/neo1973_wm8753.c
+--- linux-2.6.24-rc8.orig/sound/soc/s3c24xx/neo1973_wm8753.c
++++ linux-2.6.24-rc8/sound/soc/s3c24xx/neo1973_wm8753.c
 @@ -672,6 +672,12 @@
  {
  	int ret;
