@@ -36,6 +36,7 @@ extern int lgsm_signal_quality(struct lgsm_handle *h);
 
 /* Operator Selection, Network Registration */
 extern int lgsm_oper_get(struct lgsm_handle *lh);
+extern int lgsm_oper_n_get(struct lgsm_handle *lh);
 extern int lgsm_opers_get(struct lgsm_handle *lh);
 extern int lgsm_netreg_register(struct lgsm_handle *lh,
 		gsmd_oper_numeric oper);

@@ -638,7 +638,8 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		gu->gsmd->dev_state.on = 0;
 		break;
 	case GSMD_PHONE_GET_IMSI:
-		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
+		return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI,
+			0, strlen(gu->gsmd->imsi), gu->gsmd->imsi);
 		break;
 
 	default:

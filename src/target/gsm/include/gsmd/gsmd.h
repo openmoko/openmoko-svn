@@ -91,6 +91,7 @@ struct gsmd {
 	unsigned int mlbuf_len;
 	int mlunsolicited;
 	int alive_responded;
+	char imsi[16];			/* imsi mem space */
 };
 
 struct gsmd_user {

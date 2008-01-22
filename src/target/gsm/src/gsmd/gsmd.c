@@ -147,6 +147,16 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+static int gsmd_get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd *g = ctx;
+
+	DEBUGP("imsi : %s\n", resp);
+	strcpy(g->imsi, resp);
+
+	return 0;
+}
+
 int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 {
 	struct gsmd_atcmd *cmd;
@@ -178,6 +188,9 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 	/* configure message format as PDU mode*/
 	/* FIXME: TEXT mode support!! */
 	rc |= gsmd_simplecmd(gsmd, "AT+CMGF=0");
+	/* reueset imsi */
+	atcmd_submit(gsmd, atcmd_fill("AT+CIMI", 7+1,
+					&gsmd_get_imsi_cb, gsmd, 0, NULL));
 
 
 	sms_cb_init(gsmd);
