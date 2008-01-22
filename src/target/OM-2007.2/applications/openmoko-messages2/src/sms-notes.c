@@ -615,9 +615,9 @@ static void
 forward_clicked_cb (GtkToolButton *button, SmsData *data)
 {
 	gchar *body;
-	GtkTreeIter iter;
+	GtkTreeIter iter, citer;
 	GtkTreeModel *model;
-	GtkTreeSelection *selection;
+	GtkTreeSelection *selection, *cselection;
 
 	/* Fill in compose box with message text and call new */
 	selection = gtk_tree_view_get_selection (
@@ -632,10 +632,18 @@ forward_clicked_cb (GtkToolButton *button, SmsData *data)
 		GTK_TEXT_VIEW (data->sms_textview)), body, -1);
 	g_free (body);
 	
-	/* TODO: Launch a contact-picker */
+	cselection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->contacts_treeview));
+	if (cselection)
+		gtk_tree_selection_get_selected (cselection, NULL, &citer);
 	
-	gtk_notebook_set_current_page (
-		GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+	if (sms_contact_picker_dialog (
+	    data, "Choose a contact to forward to:")) {
+		gtk_notebook_set_current_page (
+			GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+	} else {
+		gtk_tree_selection_select_iter (cselection, &citer);
+	}
 }
 
 static void

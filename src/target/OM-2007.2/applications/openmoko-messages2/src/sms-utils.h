@@ -31,5 +31,6 @@ GdkPixbuf *sms_contact_load_photo (EContact *contact);
 gboolean sms_contacts_note_count_update (SmsData *data);
 gboolean sms_delete_selected_contact_messages (SmsData *data);
 gboolean sms_select_contact (SmsData *data, const gchar *uid);
+gboolean sms_contact_picker_dialog (SmsData *data, const gchar *message);
 
 #endif /* SMS_UTILS_H */

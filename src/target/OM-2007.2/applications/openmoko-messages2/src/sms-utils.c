@@ -21,6 +21,7 @@
 #include "sms-utils.h"
 #include <string.h>
 #include <libmokoui2/moko-search-bar.h>
+#include <libmokoui2/moko-finger-scroll.h>
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -442,4 +443,47 @@ sms_contacts_note_count_update (SmsData *data)
 		data->contacts_store), COL_NAME, GTK_SORT_ASCENDING);
 
 	return FALSE;
+}
+
+gboolean
+sms_contact_picker_dialog (SmsData *data, const gchar *message)
+{
+	GtkWidget *dialog, *scroll, *frame;
+	gint width, height;
+	gint result;
+	
+	dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW (data->window),
+		GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+		message);
+	gtk_window_set_resizable (GTK_WINDOW (dialog), TRUE);
+	gtk_button_box_set_layout (GTK_BUTTON_BOX (
+		GTK_DIALOG (dialog)->action_area), GTK_BUTTONBOX_SPREAD);
+	gtk_window_get_size (GTK_WINDOW (data->window), &width, &height);
+	gtk_window_resize (GTK_WINDOW (dialog), width * 0.85, height * 0.85);
+	
+	/* Remove the main contacts treeview from the contacts page and add it 
+	 * to this dialog... Bit hacky...
+	 */
+	g_object_ref (data->contacts_treeview);
+	gtk_container_remove (GTK_CONTAINER (data->contacts_treeview->parent),
+		data->contacts_treeview);
+	
+	frame = gtk_frame_new (NULL);
+	scroll = moko_finger_scroll_new ();
+	gtk_container_add (GTK_CONTAINER (scroll), data->contacts_treeview);
+	gtk_container_add (GTK_CONTAINER (frame), scroll);
+	gtk_widget_show_all (frame);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox),
+		frame, TRUE, TRUE, 0);
+	result = gtk_dialog_run (GTK_DIALOG (dialog));
+	
+	gtk_container_remove (GTK_CONTAINER (data->contacts_treeview->parent),
+		data->contacts_treeview);
+	gtk_container_add (GTK_CONTAINER (data->contacts_scroll),
+		data->contacts_treeview);
+	g_object_unref (data->contacts_treeview);
+	
+	gtk_widget_destroy (dialog);
+	
+	return (result == GTK_RESPONSE_OK) ? TRUE : FALSE;
 }

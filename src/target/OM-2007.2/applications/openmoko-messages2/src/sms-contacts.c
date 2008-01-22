@@ -594,7 +594,7 @@ GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
 	EBookQuery *qrys[(E_CONTACT_LAST_PHONE_ID-E_CONTACT_FIRST_PHONE_ID)+1];
-	GtkWidget *contacts_combo, *scroll, *vbox;
+	GtkWidget *contacts_combo, *vbox;
 	GtkTreeSelection *selection;
 	GtkCellRenderer *renderer;
 	EBookQuery *tel_query;
@@ -730,13 +730,16 @@ sms_contacts_page_new (SmsData *data)
 		G_CALLBACK (jana_gtk_utils_treeview_resize), renderer);
 
 	/* Pack treeview into a finger-scroll */
-	scroll = moko_finger_scroll_new ();
-	gtk_container_add (GTK_CONTAINER (scroll), data->contacts_treeview);
+	data->contacts_scroll = moko_finger_scroll_new ();
+	gtk_container_add (GTK_CONTAINER (data->contacts_scroll),
+		data->contacts_treeview);
 	
 	/* Pack widgets into vbox and return */
 	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_search, FALSE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_search,
+		FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_scroll,
+		TRUE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	
 	/* Start book view */
