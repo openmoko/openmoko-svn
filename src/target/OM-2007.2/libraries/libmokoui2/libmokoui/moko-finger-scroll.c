@@ -56,6 +56,7 @@ struct _MokoFingerScrollPrivate {
 	guint32 last_time;	/* infinite loops */
 	gboolean moved;
 	GTimeVal click_start;
+	GTimeVal last_click;
 	gdouble vmin;
 	gdouble vmax;
 	gdouble decel;
@@ -78,6 +79,15 @@ struct _MokoFingerScrollPrivate {
 
 	GtkAdjustment *hadjust;
 	GtkAdjustment *vadjust;
+	
+	gdouble click_x;
+	gdouble click_y;
+
+	guint event_mode;
+	
+	MokoFingerScrollIndicatorMode vindicator_mode;
+	MokoFingerScrollIndicatorMode hindicator_mode;
+
 };
 
 enum {
@@ -87,7 +97,27 @@ enum {
 	PROP_VELOCITY_MAX,
 	PROP_DECELERATION,
 	PROP_SPS,
+	PROP_VINDICATOR,
+	PROP_HINDICATOR,
+
 };
+
+static gdouble
+moko_get_time_delta (GTimeVal *start, GTimeVal *end)
+{
+	gdouble x, y;
+	
+	x = start->tv_sec;
+	x *= 1000000;
+	x += start->tv_usec;
+
+	y = end->tv_sec;
+	y *= 1000000;
+	y += end->tv_usec;
+	
+	return y-x;
+
+}
 
 /* Following function inherited from libhildondesktop */
 static GList *
@@ -205,6 +235,9 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	    ((event->time == priv->last_time) &&
 	     (event->type == priv->last_type))) return TRUE;
 
+	priv->click_x = event->x;
+	priv->click_y = event->y;
+
 	if (priv->clicked && priv->child) {
 		/* Widget stole focus on last click, send crossing-out event */
 		synth_crossing (priv->child, 0, 0, event->x_root, event->y_root,
@@ -257,6 +290,7 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	} else
 		priv->child = NULL;
 
+
 	return TRUE;
 }
 
@@ -291,11 +325,31 @@ moko_finger_scroll_refresh (MokoFingerScroll *scroll)
 	
 	/* Calculate if we need scroll indicators */
 	gtk_widget_size_request (widget, NULL);
-	hscroll = (priv->hadjust->upper - priv->hadjust->lower >
-		priv->hadjust->page_size) ? TRUE : FALSE;
-	vscroll = (priv->vadjust->upper - priv->vadjust->lower >
-		priv->vadjust->page_size) ? TRUE : FALSE;
 	
+	switch (priv->hindicator_mode) {
+	    case MOKO_FINGER_SCROLL_INDICATOR_MODE_SHOW :
+		hscroll = TRUE;
+		break;
+	    case MOKO_FINGER_SCROLL_INDICATOR_MODE_HIDE :
+		hscroll = FALSE;
+		break;
+	    default :
+		hscroll = (priv->hadjust->upper - priv->hadjust->lower >
+			priv->hadjust->page_size) ? TRUE : FALSE;
+	}
+	
+	switch (priv->vindicator_mode) {
+	    case MOKO_FINGER_SCROLL_INDICATOR_MODE_SHOW :
+		vscroll = TRUE;
+		break;
+	    case MOKO_FINGER_SCROLL_INDICATOR_MODE_HIDE :
+		vscroll = FALSE;
+		break;
+	    default :
+		vscroll = (priv->vadjust->upper - priv->vadjust->lower >
+			priv->vadjust->page_size) ? TRUE : FALSE;
+	}
+
 	/* TODO: Read ltr settings to decide which corner gets scroll
 	 * indicators?
 	 */
@@ -379,7 +433,7 @@ moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	
 	if ((!priv->enabled) ||
-	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) {
+	    (priv->mode == MOKO_FINGER_SCROLL_MODE_PUSH)) {
 		priv->idle_id = 0;
 		return FALSE;
 	}
@@ -391,6 +445,8 @@ moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 			priv->idle_id = 0;
 			return FALSE;
 		}
+	} else if (priv->mode == MOKO_FINGER_SCROLL_MODE_AUTO) {
+		return TRUE;
 	}
 	
 	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y, &sx, &sy);
@@ -432,7 +488,7 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	if ((!priv->moved) && (
 	     (ABS (x) > dnd_threshold) || (ABS (y) > dnd_threshold))) {
 		priv->moved = TRUE;
-		if (priv->mode == MOKO_FINGER_SCROLL_MODE_ACCEL) {
+		if (priv->mode != MOKO_FINGER_SCROLL_MODE_PUSH) {
 			priv->idle_id = g_timeout_add (
 				(gint)(1000.0/(gdouble)priv->sps),
 				(GSourceFunc)moko_finger_scroll_timeout,
@@ -465,6 +521,13 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 				 allocation.height) *
 				(priv->vmax-priv->vmin)) + priv->vmin);
 			break;
+		    case MOKO_FINGER_SCROLL_MODE_AUTO:
+			moko_finger_scroll_scroll (scroll, x, y, NULL, NULL);
+			priv->x = event->x;
+			priv->y = event->y;
+
+			break;
+				
 		    default :
 			break;
 		}
@@ -496,6 +559,7 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	GTimeVal current;
 	gint x, y;
 	GdkWindow *child;
+	gdouble delta, speed_x, speed_y;
 	
 	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
 	    ((event->time == priv->last_time) &&
@@ -503,11 +567,33 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		return TRUE;
 
 	priv->last_type = event->type;
+	
 	priv->last_time = event->time;
 	g_get_current_time (&current);
 
 	priv->clicked = FALSE;
-		
+	
+	if (priv->mode == MOKO_FINGER_SCROLL_MODE_AUTO) {
+		delta = moko_get_time_delta (&priv->click_start, &current);
+		speed_x = event->x - priv->click_x;
+		speed_y = event->y - priv->click_y;
+	
+		speed_x = speed_x * 1000000 / delta;
+		speed_y = speed_y * 1000000 / delta;
+
+		priv->vel_x = speed_x * (gdouble)priv->sps / 1000;	
+		priv->vel_y = speed_y * (gdouble)priv->sps / 1000;
+
+		/*if( ABS(priv->vel_x )<20)
+		{
+			priv->vel_x = 0;
+		}
+		if(ABS(priv->vel_y )<20)
+		{	
+			priv->vel_y = 0;
+		}*/
+	}
+	
 	child = moko_finger_scroll_get_topmost (
 		GTK_BIN (priv->align)->child->window,
 		event->x, event->y, &x, &y);
@@ -634,8 +720,6 @@ moko_finger_scroll_destroy (GtkObject *object)
 static void
 parent_set_cb (GtkWidget *widget, GtkObject *parent, MokoFingerScroll *scroll)
 {
-	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
-	
 	if (!parent) {
 		g_signal_handlers_disconnect_by_func (widget,
 			moko_finger_scroll_refresh, scroll);
@@ -678,7 +762,7 @@ moko_finger_scroll_get_property (GObject * object, guint property_id,
 		g_value_set_boolean (value, priv->enabled);
 		break;
 	    case PROP_MODE :
-		g_value_set_int (value, priv->mode);
+		g_value_set_enum (value, priv->mode);
 		break;
 	    case PROP_VELOCITY_MIN :
 		g_value_set_double (value, priv->vmin);
@@ -692,6 +776,13 @@ moko_finger_scroll_get_property (GObject * object, guint property_id,
 	    case PROP_SPS :
 		g_value_set_uint (value, priv->sps);
 		break;
+	    case PROP_VINDICATOR:
+		g_value_set_enum (value, priv->vindicator_mode);
+		break;
+	    case PROP_HINDICATOR:
+		g_value_set_enum (value, priv->hindicator_mode);
+		break;
+		 	
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -710,7 +801,7 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 			GTK_EVENT_BOX (object), priv->enabled);
 		break;
 	    case PROP_MODE :
-		priv->mode = g_value_get_int (value);
+		priv->mode = g_value_get_enum (value);
 		break;
 	    case PROP_VELOCITY_MIN :
 		priv->vmin = g_value_get_double (value);
@@ -724,6 +815,13 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 	    case PROP_SPS :
 		priv->sps = g_value_get_uint (value);
 		break;
+	    case PROP_VINDICATOR:
+		priv->vindicator_mode = g_value_get_enum (value);
+		break;
+	    case PROP_HINDICATOR:
+		priv->hindicator_mode = g_value_get_enum (value);
+		break;
+
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -810,13 +908,34 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 
 	g_object_class_install_property (
 		object_class,
+		PROP_VINDICATOR,
+		g_param_spec_enum (
+			"vindicator_mode",
+			"vindicator mode",
+			"Mode of the vertical scrolling indicator",
+			MOKO_TYPE_FINGER_SCROLL_INDICATOR_MODE,
+			MOKO_FINGER_SCROLL_INDICATOR_MODE_AUTO,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_HINDICATOR,
+		g_param_spec_enum (
+			"hindicator_mode",
+			"hindicator mode",
+			"Mode of the horizontal scrolling indicator",
+			MOKO_TYPE_FINGER_SCROLL_INDICATOR_MODE,
+			MOKO_FINGER_SCROLL_INDICATOR_MODE_AUTO,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+	
+	g_object_class_install_property (
+		object_class,
 		PROP_MODE,
-		g_param_spec_int (
+		g_param_spec_enum (
 			"mode",
 			"Scroll mode",
 			"Change the finger-scrolling mode.",
-			MOKO_FINGER_SCROLL_MODE_PUSH,
-			MOKO_FINGER_SCROLL_MODE_ACCEL,
+			MOKO_TYPE_FINGER_SCROLL_MODE,
 			MOKO_FINGER_SCROLL_MODE_ACCEL,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -986,23 +1105,49 @@ moko_finger_scroll_add_with_viewport (MokoFingerScroll *scroll,
 }
 
 GType 
-moko_finger_scroll_mode_get_type(void)
+moko_finger_scroll_mode_get_type (void)
 {
 	static GType etype = 0;
 	
 	if (etype == 0) {
-		static const GFlagsValue values[] = {
+		static const GEnumValue values[] = {
 			{ MOKO_FINGER_SCROLL_MODE_PUSH, 
 			  "MOKO_FINGER_SCROLL_MODE_PUSH", "" },
 			{ MOKO_FINGER_SCROLL_MODE_ACCEL, 
 			  "MOKO_FINGER_SCROLL_MODE_ACCEL", "" },
-			{0, NULL, NULL}
+			{ MOKO_FINGER_SCROLL_MODE_AUTO, 
+			  "MOKO_FINGER_SCROLL_MODE_AUTO", "" },
+			{ 0, NULL, NULL }
 		};
 
-		etype = g_flags_register_static (
+		etype = g_enum_register_static (
 			g_intern_static_string ("MokoFingerScrollMode"),
 			values);
 	}
 	
 	return etype;
 }
+
+GType
+moko_finger_scroll_indicator_mode_get_type (void)
+{
+	static GType etype = 0;
+	
+	if (etype == 0) {
+		static const GEnumValue values[] = {
+			{ MOKO_FINGER_SCROLL_INDICATOR_MODE_AUTO, 
+			  "MOKO_FINGER_SCROLL_INDICATOR_MODE_AUTO", "" },
+			{ MOKO_FINGER_SCROLL_INDICATOR_MODE_SHOW, 
+			  "MOKO_FINGER_SCROLL_INDICATOR_MODE_SHOW", "" },
+			{ MOKO_FINGER_SCROLL_INDICATOR_MODE_HIDE, 
+			  "MOKO_FINGER_SCROLL_INDICATOR_MODE_HIDE", "" },
+			{ 0, NULL, NULL }
+		};
+	
+		etype = g_enum_register_static (g_intern_static_string (
+			"MokoFingerScrollIndicatorMode"), values);
+	}
+	
+	return etype;
+}
+

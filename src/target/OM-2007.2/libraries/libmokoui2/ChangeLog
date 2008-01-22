@@ -1,5 +1,22 @@
 2008-01-22  Chris Lord  <chris@openedhand.com>
 
+	Patch by: Frank Li <frank.li@intel.com>
+
+	* libmokoui/moko-finger-scroll.c: (moko_get_time_delta),
+	(moko_finger_scroll_button_press_cb), (moko_finger_scroll_refresh),
+	(moko_finger_scroll_timeout),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_button_release_cb), (parent_set_cb),
+	(moko_finger_scroll_get_property),
+	(moko_finger_scroll_set_property), (moko_finger_scroll_class_init),
+	(moko_finger_scroll_mode_get_type),
+	(moko_finger_scroll_indicator_mode_get_type):
+	* libmokoui/moko-finger-scroll.h:
+	* libmokoui/moko-type.h:
+	Add indicator display modes and new 'auto' scrolling mode
+
+2008-01-22  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	python bindings disabled by default
 

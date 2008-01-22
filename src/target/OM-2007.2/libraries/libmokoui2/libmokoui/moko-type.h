@@ -32,3 +32,4 @@ GType moko_finger_scroll_indicator_mode_get_type (void)  G_GNUC_CONST;
 G_END_DECLS
 
 #endif
+
