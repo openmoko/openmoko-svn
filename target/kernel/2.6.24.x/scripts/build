@@ -15,7 +15,7 @@
 SVN=/home/moko/svn.openmoko.org/
 #
 # KERNEL specifies the kernel version we use, e.g.,
-KERNEL=2.6.24-rc7
+KERNEL=2.6.24-rc8
 #
 # KERNELSRC_DIR, if defined, specifies the directory where the kernel source
 # tarball resides. By default, we use ".".
@@ -26,7 +26,7 @@ KERNEL=2.6.24-rc7
 UBOOT_DIR=/home/moko/fr/u-boot
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
-# SVN_REV=3801
+# SVN_REV=3911
 #
 
 # wget http://ftp.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL}.tar.bz2
