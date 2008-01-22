@@ -632,14 +632,19 @@ moko_finger_scroll_destroy (GtkObject *object)
 }
 
 static void
-moko_finger_scroll_remove_cb (GtkContainer *container,
-			      GtkWidget    *child,
-			      MokoFingerScroll *scroll)
+parent_set_cb (GtkWidget *widget, GtkObject *parent, MokoFingerScroll *scroll)
 {
-	g_signal_handlers_disconnect_by_func (child,
-		moko_finger_scroll_refresh, scroll);
-	g_signal_handlers_disconnect_by_func (child,
-		gtk_widget_queue_resize, scroll);
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
+	
+	if (!parent) {
+		g_signal_handlers_disconnect_by_func (widget,
+			moko_finger_scroll_refresh, scroll);
+		g_signal_handlers_disconnect_by_func (widget,
+			gtk_widget_queue_resize, scroll);
+		g_signal_handlers_disconnect_by_func (widget,
+			parent_set_cb, scroll);
+		gtk_widget_set_scroll_adjustments (widget, NULL, NULL);
+	}
 }
 
 static void
@@ -649,10 +654,12 @@ moko_finger_scroll_add (GtkContainer *container,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (container);
 	
 	gtk_container_add (GTK_CONTAINER (priv->align), child);
-	g_signal_connect_swapped (G_OBJECT (child), "size-allocate",
+	g_signal_connect_swapped (child, "size-allocate",
 		G_CALLBACK (moko_finger_scroll_refresh), container);
-	g_signal_connect_swapped (G_OBJECT (child), "size-request",
+	g_signal_connect_swapped (child, "size-request",
 		G_CALLBACK (gtk_widget_queue_resize), container);
+	g_signal_connect (child, "parent-set",
+		G_CALLBACK (parent_set_cb), container);
 
 	if (!gtk_widget_set_scroll_adjustments (
 	     child, priv->hadjust, priv->vadjust))
@@ -725,9 +732,16 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 static void
 moko_finger_scroll_dispose (GObject * object)
 {
-	/*MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);*/
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);
 	
-	while (g_source_remove_by_user_data (object));
+	if (priv->hadjust) {
+		g_object_unref (priv->hadjust);
+		priv->hadjust = NULL;
+	}
+	if (priv->vadjust) {
+		g_object_unref (priv->vadjust);
+		priv->vadjust = NULL;
+	}
 	
 	if (G_OBJECT_CLASS (moko_finger_scroll_parent_class)->dispose)
 		G_OBJECT_CLASS (moko_finger_scroll_parent_class)->
@@ -897,8 +911,6 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 		G_CALLBACK (moko_finger_scroll_button_release_cb), NULL);
 	g_signal_connect (G_OBJECT (self), "motion-notify-event",
 		G_CALLBACK (moko_finger_scroll_motion_notify_cb), NULL);
-	g_signal_connect (G_OBJECT (priv->align), "remove",
-		G_CALLBACK (moko_finger_scroll_remove_cb), self);
 
 	g_signal_connect_swapped (G_OBJECT (priv->hadjust), "changed",
 		G_CALLBACK (moko_finger_scroll_refresh), self);
@@ -979,7 +991,7 @@ moko_finger_scroll_mode_get_type(void)
 	static GType etype = 0;
 	
 	if (etype == 0) {
-		static const GEnumValue values[] = {
+		static const GFlagsValue values[] = {
 			{ MOKO_FINGER_SCROLL_MODE_PUSH, 
 			  "MOKO_FINGER_SCROLL_MODE_PUSH", "" },
 			{ MOKO_FINGER_SCROLL_MODE_ACCEL, 
@@ -988,8 +1000,8 @@ moko_finger_scroll_mode_get_type(void)
 		};
 
 		etype = g_flags_register_static (
-				g_intern_static_string ("MokoFingerScrollMode"),
-				values);
+			g_intern_static_string ("MokoFingerScrollMode"),
+			values);
 	}
 	
 	return etype;
