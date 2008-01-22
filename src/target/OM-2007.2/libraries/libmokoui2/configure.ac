@@ -22,9 +22,9 @@ AM_GLIB_GNU_GETTEXT
 PKG_CHECK_MODULES(DEPS, gtk+-2.0)
 
 AC_ARG_ENABLE(python, 
-  [  --enable-python   	  enable python binding [default=yes]],
+  [  --enable-python   	  enable python binding [default=no]],
 	   enable_python=$enableval,
-	   enable_python=yes)
+	   enable_python=no)
 
 if test $enable_python != no ; then
     AM_PATH_PYTHON(2.3.5)

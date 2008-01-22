@@ -1,5 +1,10 @@
 2008-01-22  Chris Lord  <chris@openedhand.com>
 
+	* configure.ac:
+	python bindings disabled by default
+
+2008-01-22  Chris Lord  <chris@openedhand.com>
+
 	* libmokoui/moko-finger-scroll.c: (parent_set_cb),
 	(moko_finger_scroll_add), (moko_finger_scroll_dispose),
 	(moko_finger_scroll_init), (moko_finger_scroll_mode_get_type):
