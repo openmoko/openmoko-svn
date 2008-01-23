@@ -46,7 +46,7 @@ Index: linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
-@@ -0,0 +1,180 @@
+@@ -0,0 +1,181 @@
 +/*
 + * LED driver for the vibrator of the FIC Neo1973 GSM Phone
 + *
@@ -148,10 +148,10 @@ Index: linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 +{
 +	struct neo1973_vib_priv *vp = platform_get_drvdata(dev);
 +
-+	led_classdev_resume(&neo1973_vib_led.cdev);
-+
 +	if (vp->has_pwm)
 +		neo1973_vib_init_hw(vp);
++
++	led_classdev_resume(&neo1973_vib_led.cdev);
 +
 +	return 0;
 +}
@@ -170,6 +170,7 @@ Index: linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 +		return -EIO;
 +
 +	neo1973_vib_led.gpio = r->start;
++	platform_set_drvdata(pdev, &neo1973_vib_led);
 +
 +	/* TOUT3 */
 +	if (neo1973_vib_led.gpio == S3C2410_GPB3) {
