@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc7/drivers/sdio/function/Kconfig
+Index: linux-2.6.24-rc8/drivers/sdio/function/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/Kconfig
++++ linux-2.6.24-rc8/drivers/sdio/function/Kconfig
 @@ -0,0 +1,11 @@
 +#menu "SDIO function drivers"
 +
@@ -15,27 +15,27 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/Kconfig
 +
 +#endmenu
 \ No newline at end of file
-Index: linux-2.6.24-rc7/drivers/sdio/function/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/function/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/function/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_SDIO_AR6000_WLAN)          += wlan/
 \ No newline at end of file
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/Makefile
 @@ -0,0 +1,4 @@
 +#
 +# SDIO wlan ar600 card function driver
 +#
 +obj-$(CONFIG_SDIO_AR6000_WLAN)          += ar6000/
 \ No newline at end of file
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/Makefile
 @@ -0,0 +1,38 @@
 +REV ?= 2
 +
@@ -75,10 +75,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/Makefile
 +               wlan/wlan_utils.o
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 @@ -0,0 +1,3069 @@
 +/*
 + *
@@ -3149,10 +3149,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +   A_UINT32 targReplyArg)
 +{
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 @@ -0,0 +1,361 @@
 +/*
 + *
@@ -3515,10 +3515,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 +#endif
 +
 +#endif /* _AR6000_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_raw_if.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_raw_if.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_raw_if.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_raw_if.c
 @@ -0,0 +1,439 @@
 +/*
 + *
@@ -3959,10 +3959,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_raw_if.c
 +    return length;
 +}
 +#endif /* HTC_RAW_INTERFACE */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6xapi_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6xapi_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6xapi_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6xapi_linux.h
 @@ -0,0 +1,128 @@
 +#ifndef _AR6XAPI_LINUX_H
 +#define _AR6XAPI_LINUX_H
@@ -4092,10 +4092,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ar6xapi_linux.h
 +#endif
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athdrv_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/athdrv_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athdrv_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/athdrv_linux.h
 @@ -0,0 +1,993 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
@@ -5090,10 +5090,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athdrv_linux.h
 +}
 +#endif
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athtypes_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/athtypes_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athtypes_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/athtypes_linux.h
 @@ -0,0 +1,47 @@
 +/*
 + * $Id: //depot/sw/releases/olca2.0-GPL/host/os/linux/include/athtypes_linux.h#1 $
@@ -5142,10 +5142,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/athtypes_linux.
 +
 +
 +#endif /* _ATHTYPES_LINUX_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/config_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/config_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/config_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/config_linux.h
 @@ -0,0 +1,44 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -5191,10 +5191,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/config_linux.h
 +#endif
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/debug_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/debug_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/debug_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/debug_linux.h
 @@ -0,0 +1,86 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
@@ -5282,10 +5282,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/debug_linux.h
 +#endif
 +
 +#endif /* _DEBUG_LINUX_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 @@ -0,0 +1,2573 @@
 +/*
 + *
@@ -7860,10 +7860,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 +    return ret;
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/netbuf.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/netbuf.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/netbuf.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/netbuf.c
 @@ -0,0 +1,225 @@
 +
 +/*
@@ -8090,10 +8090,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/netbuf.c
 +    return A_OK;
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/osapi_linux.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/osapi_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/osapi_linux.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/osapi_linux.h
 @@ -0,0 +1,319 @@
 +/*
 + * $Id: //depot/sw/releases/olca2.0-GPL/host/os/linux/include/osapi_linux.h#1 $
@@ -8414,10 +8414,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/osapi_linux.h
 +#endif /* __KERNEL__ */
 +
 +#endif /* _OSAPI_LINUX_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 @@ -0,0 +1,1866 @@
 +/*
 + *
@@ -10285,10 +10285,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +#endif /* __ATH_CENTRAL_IOCTL_DISPATCHER___ */
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
 @@ -0,0 +1,657 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -10947,10 +10947,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
 +
 +    return status;
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi_internal.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/bmi/bmi_internal.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi_internal.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/bmi/bmi_internal.h
 @@ -0,0 +1,45 @@
 +#ifndef BMI_INTERNAL_H
 +#define BMI_INTERNAL_H
@@ -10997,10 +10997,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/bmi/bmi_internal.h
 +                 A_UINT32 length);
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/hif/hif.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/hif/hif.c
 @@ -0,0 +1,818 @@
 +/*
 + * @file: hif.c
@@ -11820,10 +11820,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif.c
 +
 +    return;
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif_internal.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/hif/hif_internal.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif_internal.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/hif/hif_internal.h
 @@ -0,0 +1,102 @@
 +/*
 + * @file: hif_internal.h
@@ -11927,10 +11927,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/hif/hif_internal.h
 +
 +void
 +delHifDevice(SDDEVICE *handle);
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k.c
 @@ -0,0 +1,991 @@
 +/*
 + * AR6K device layer that handles register level I/O
@@ -12923,10 +12923,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.c
 +
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k.h
 @@ -0,0 +1,191 @@
 +/*
 + *
@@ -13119,10 +13119,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k.h
 +#endif
 +
 +#endif /*AR6K_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k_events.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k_events.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k_events.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/ar6k_events.c
 @@ -0,0 +1,638 @@
 +/*
 + * AR6K Driver layer event handling (i.e. interrupts, message polling)
@@ -13762,10 +13762,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/ar6k_events.c
 +}
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc.c
 @@ -0,0 +1,507 @@
 +/*
 + *
@@ -14274,10 +14274,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc.c
 +    return FALSE;
 +#endif
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_debug.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_debug.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_debug.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_debug.h
 @@ -0,0 +1,65 @@
 +#ifndef HTC_DEBUG_H_
 +#define HTC_DEBUG_H_
@@ -14344,10 +14344,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_debug.h
 +void DebugDumpBytes(A_UCHAR *buffer, A_UINT16 length, char *pDescription);
 +
 +#endif /*HTC_DEBUG_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_internal.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_internal.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_internal.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_internal.h
 @@ -0,0 +1,168 @@
 +/*
 + *
@@ -14517,10 +14517,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_internal.h
 +#endif
 +
 +#endif /* _HTC_INTERNAL_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_recv.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_recv.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_recv.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_recv.c
 @@ -0,0 +1,703 @@
 +/*
 + *
@@ -15225,10 +15225,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_recv.c
 +}
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_send.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_send.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_send.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_send.c
 @@ -0,0 +1,541 @@
 +/*
 + *
@@ -15771,10 +15771,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_send.c
 +    UNLOCK_HTC_TX(target);
 +
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_services.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_services.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_services.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/htc/htc_services.c
 @@ -0,0 +1,403 @@
 +/*
 + *
@@ -16179,10 +16179,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/htc/htc_services.c
 +    }
 +
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6001_regdump.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6001_regdump.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6001_regdump.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6001_regdump.h
 @@ -0,0 +1,100 @@
 +/*
 + * Copyright (c) 2006 Atheros Communications Inc.
@@ -16284,10 +16284,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6001_regdump
 +#define RD_SIZE         (34*4) /* Space for this number of words */
 +
 +#endif /* __AR6000_REGDUMP_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
 @@ -0,0 +1,36 @@
 +#define __VER_MAJOR_ 2
 +#define __VER_MINOR_ 0
@@ -16325,10 +16325,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
 +#define AR6K_SW_VERSION 	( ( __VER_MAJOR_ << VER_MAJOR_BIT_OFFSET ) + ( __VER_MINOR_ << VER_MINOR_BIT_OFFSET ) + ( __VER_PATCH_ << VER_PATCH_BIT_OFFSET ) + ( __BUILD_NUMBER_ << VER_BUILD_NUM_BIT_OFFSET ) )
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h.NEW
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h.NEW
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h.NEW
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h.NEW
 @@ -0,0 +1,36 @@
 +#define __VER_MAJOR_ 2
 +#define __VER_MINOR_ 0
@@ -16366,10 +16366,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6K_version.h
 +#define AR6K_SW_VERSION 	( ( __VER_MAJOR_ << VER_MAJOR_BIT_OFFSET ) + ( __VER_MINOR_ << VER_MINOR_BIT_OFFSET ) + ( __VER_PATCH_ << VER_PATCH_BIT_OFFSET ) + ( __BUILD_NUMBER_ << VER_BUILD_NUM_BIT_OFFSET ) )
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6Khwreg.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6Khwreg.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6Khwreg.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/AR6Khwreg.h
 @@ -0,0 +1,147 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -16518,10 +16518,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/AR6Khwreg.h
 +#endif
 +
 +#endif /* __AR6KHWREG_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_config.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_config.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_config.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_config.h
 @@ -0,0 +1,27 @@
 +#ifndef _A_CONFIG_H_
 +#define _A_CONFIG_H_
@@ -16550,10 +16550,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_config.h
 +#include "../ar6000/config_linux.h"
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_debug.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_debug.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_debug.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_debug.h
 @@ -0,0 +1,41 @@
 +#ifndef _A_DEBUG_H_
 +#define _A_DEBUG_H_
@@ -16596,10 +16596,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_debug.h
 +#include "../ar6000/debug_linux.h"
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_drv.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_drv.h
 @@ -0,0 +1,28 @@
 +#ifndef _A_DRV_H_
 +#define _A_DRV_H_
@@ -16629,10 +16629,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv.h
 +#include "../ar6000/athdrv_linux.h"
 +
 +#endif /* _ADRV_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_drv_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_drv_api.h
 @@ -0,0 +1,185 @@
 +#ifndef _A_DRV_API_H_
 +#define _A_DRV_API_H_
@@ -16819,10 +16819,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_drv_api.h
 +#endif
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_osapi.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_osapi.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_osapi.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_osapi.h
 @@ -0,0 +1,28 @@
 +#ifndef _A_OSAPI_H_
 +#define _A_OSAPI_H_
@@ -16852,10 +16852,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_osapi.h
 +#include "../ar6000/osapi_linux.h"
 +
 +#endif /* _OSAPI_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_types.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_types.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_types.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/a_types.h
 @@ -0,0 +1,28 @@
 +#ifndef _A_TYPES_H_
 +#define _A_TYPES_H_
@@ -16885,10 +16885,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/a_types.h
 +#include "../ar6000/athtypes_linux.h"
 +
 +#endif /* _ATHTYPES_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ar6000_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ar6000_api.h
 @@ -0,0 +1,29 @@
 +#ifndef _AR6000_API_H_
 +#define _AR6000_API_H_
@@ -16919,10 +16919,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_api.h
 +
 +#endif /* _AR6000_API_H */
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_diag.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ar6000_diag.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_diag.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ar6000_diag.h
 @@ -0,0 +1,38 @@
 +/*
 + *
@@ -16962,10 +16962,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ar6000_diag.h
 +                     A_UCHAR *data, A_UINT32 length);
 +
 +#endif /*AR6000_DIAG_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdefs.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athdefs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdefs.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athdefs.h
 @@ -0,0 +1,85 @@
 +#ifndef __ATHDEFS_H__
 +#define __ATHDEFS_H__
@@ -17052,10 +17052,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdefs.h
 +}WLAN_CAPABILITY;
 +
 +#endif /* __ATHDEFS_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdrv.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athdrv.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdrv.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athdrv.h
 @@ -0,0 +1,32 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
@@ -17089,10 +17089,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athdrv.h
 +#endif
 +
 +#endif /* _ATHDRV_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athendpack.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athendpack.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athendpack.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athendpack.h
 @@ -0,0 +1,41 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + * @file: athendpack.h
@@ -17135,10 +17135,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athendpack.h
 +#include "../os/wince/include/athendpack_wince.h"
 +#endif /* WINCE */
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athstartpack.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athstartpack.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athstartpack.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/athstartpack.h
 @@ -0,0 +1,42 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + * @file: athstartpack.h
@@ -17182,10 +17182,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/athstartpack.h
 +#include "../os/wince/include/athstartpack_wince.h"
 +#endif /* WINCE */
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/bmi.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/bmi.h
 @@ -0,0 +1,100 @@
 +#ifndef _BMI_H_
 +#define _BMI_H_
@@ -17287,10 +17287,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi.h
 +#endif
 +
 +#endif /* _BMI_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi_msg.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/bmi_msg.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi_msg.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/bmi_msg.h
 @@ -0,0 +1,199 @@
 +#ifndef __BMI_MSG_H__
 +#define __BMI_MSG_H__
@@ -17491,10 +17491,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/bmi_msg.h
 +
 +
 +#endif /* __BMI_MSG_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/common_drv.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/common_drv.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/common_drv.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/common_drv.h
 @@ -0,0 +1,61 @@
 +/*
 + *
@@ -17557,10 +17557,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/common_drv.h
 +#endif
 +
 +#endif /*COMMON_DRV_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog.h
 @@ -0,0 +1,107 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -17669,10 +17669,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog.h
 +#endif
 +
 +#endif /* _DBGLOG_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog_api.h
 @@ -0,0 +1,46 @@
 +#ifndef _DBGLOG_API_H_
 +#define _DBGLOG_API_H_
@@ -17720,10 +17720,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_api.h
 +#endif
 +
 +#endif /* _DBGLOG_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_id.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog_id.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_id.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dbglog_id.h
 @@ -0,0 +1,307 @@
 +/*
 + *
@@ -18032,10 +18032,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dbglog_id.h
 +#endif
 +
 +#endif /* _DBGLOG_ID_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dl_list.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dl_list.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dl_list.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dl_list.h
 @@ -0,0 +1,114 @@
 +/*
 + *
@@ -18151,10 +18151,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dl_list.h
 +}
 +
 +#endif /* __DL_LIST_H___ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dset_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dset_api.h
 @@ -0,0 +1,63 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
@@ -18219,10 +18219,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_api.h
 +
 +
 +#endif /* _DSET_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_internal.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dset_internal.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_internal.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dset_internal.h
 @@ -0,0 +1,39 @@
 +/*
 + * Copyright (c) 2007 Atheros Communications Inc.
@@ -18263,10 +18263,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dset_internal.
 +} dset_descriptor_t;
 +
 +#endif /* __DSET_INTERNAL_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dsetid.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dsetid.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dsetid.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/dsetid.h
 @@ -0,0 +1,110 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -18378,10 +18378,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/dsetid.h
 +#define DSETID_BPATCH_FLAG                0x80000000
 +
 +#endif /* __DSETID_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/gpio.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/gpio.h
 @@ -0,0 +1,34 @@
 +/*
 + * Copyright (c) 2005 Atheros Communications Inc.
@@ -18417,10 +18417,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio.h
 +
 +#define GPIO_LAST_REGISTER_ID   GPIO_ID_PIN(17)
 +#define GPIO_ID_NONE            0xffffffff
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/gpio_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/gpio_api.h
 @@ -0,0 +1,57 @@
 +#ifndef _GPIO_API_H_
 +#define _GPIO_API_H_
@@ -18479,10 +18479,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/gpio_api.h
 +A_STATUS wmi_gpio_intr_ack(struct wmi_t *wmip, A_UINT32 ack_mask);
 +
 +#endif /* _GPIO_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/hif.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/hif.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/hif.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/hif.h
 @@ -0,0 +1,291 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -18775,10 +18775,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/hif.h
 +#endif
 +
 +#endif /* _HIF_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/host_version.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/host_version.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/host_version.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/host_version.h
 @@ -0,0 +1,49 @@
 +#ifndef _HOST_VERSION_H_
 +#define _HOST_VERSION_H_
@@ -18829,10 +18829,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/host_version.h
 +#endif
 +
 +#endif /* _HOST_VERSION_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc.h
 @@ -0,0 +1,190 @@
 +/*
 + * Copyright (c) 2007 Atheros Communications Inc.
@@ -19024,10 +19024,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc.h
 +
 +#endif /* __HTC_H__ */
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_api.h
 @@ -0,0 +1,436 @@
 +/*
 + *
@@ -19465,10 +19465,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_api.h
 +#endif
 +
 +#endif /* _HTC_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_packet.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_packet.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_packet.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_packet.h
 @@ -0,0 +1,138 @@
 +/*
 + *
@@ -19608,10 +19608,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_packet.h
 +}
 +
 +#endif /*HTC_PACKET_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_services.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_services.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_services.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/htc_services.h
 @@ -0,0 +1,37 @@
 +/*
 + * Copyright (c) 2007 Atheros Communications Inc.
@@ -19650,10 +19650,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/htc_services.h
 +#define HTC_RAW_STREAMS_SVC MAKE_SERVICE_ID(HTC_TEST_GROUP,0)
 +
 +#endif /*HTC_SERVICES_H_*/
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211.h
 @@ -0,0 +1,342 @@
 +/*-
 + * Copyright (c) 2001 Atsushi Onoe
@@ -19997,10 +19997,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211.h
 +#include "athendpack.h"
 +
 +#endif /* _NET80211_IEEE80211_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_ioctl.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211_ioctl.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_ioctl.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211_ioctl.h
 @@ -0,0 +1,163 @@
 +/*
 + * Copyright (c) 2004-2005 Atheros Communications Inc.
@@ -20165,10 +20165,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_ioct
 +#endif
 +
 +#endif /* _IEEE80211_IOCTL_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_node.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211_node.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_node.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ieee80211_node.h
 @@ -0,0 +1,77 @@
 +/*-
 + * Copyright (c) 2001 Atsushi Onoe
@@ -20247,10 +20247,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ieee80211_node
 +#define WLAN_NODE_INACT_TIMEOUT_MSEC            10000
 +
 +#endif /* _IEEE80211_NODE_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ini_dset.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ini_dset.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ini_dset.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/ini_dset.h
 @@ -0,0 +1,40 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -20292,10 +20292,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/ini_dset.h
 +} POSTPACK INI_DSET_REG_OVERRIDE;
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regDb.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/regDb.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regDb.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/regDb.h
 @@ -0,0 +1,19 @@
 +/*
 + * Copyright (c) 2005 Atheros Communications, Inc.
@@ -20316,10 +20316,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regDb.h
 +#include "./regulatory/reg_dbvalues.h"
 +
 +#endif  /* __REG_DB_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regdump.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/regdump.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regdump.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/regdump.h
 @@ -0,0 +1,33 @@
 +#ifndef __REGDUMP_H__
 +#define __REGDUMP_H__
@@ -20354,10 +20354,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/regdump.h
 +};
 +#endif /* __ASSEMBLER__ */
 +#endif /* __REGDUMP_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/targaddrs.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/targaddrs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/targaddrs.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/targaddrs.h
 @@ -0,0 +1,158 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -20517,10 +20517,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/targaddrs.h
 +#endif /* !__ASSEMBLER__ */
 +
 +#endif /* __TARGADDRS_H__ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/testcmd.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/testcmd.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/testcmd.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/testcmd.h
 @@ -0,0 +1,144 @@
 +/*
 + * Copyright (c) 2004-2005 Atheros Communications Inc.
@@ -20666,10 +20666,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/testcmd.h
 +#endif
 +
 +#endif /* TESTCMD_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wlan_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wlan_api.h
 @@ -0,0 +1,101 @@
 +#ifndef _HOST_WLAN_API_H_
 +#define _HOST_WLAN_API_H_
@@ -20772,10 +20772,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_api.h
 +#endif
 +
 +#endif /* _HOST_WLAN_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_dset.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wlan_dset.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_dset.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wlan_dset.h
 @@ -0,0 +1,20 @@
 +/*
 + * Copyright (c) 2007 Atheros Communications, Inc.
@@ -20797,10 +20797,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wlan_dset.h
 +} POSTPACK WOW_CONFIG_DSET;
 +
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmi.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmi.h
 @@ -0,0 +1,1739 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
@@ -21907,7 +21907,7 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +    A_UINT8     snr;
 +    A_INT16     rssi;
 +    A_UINT8     bssid[ATH_MAC_LEN];
-+//    A_UINT32    ieMask;
++    A_UINT32    ieMask;
 +} POSTPACK WMI_BSS_INFO_HDR;
 +
 +/*
@@ -22541,10 +22541,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +#endif
 +
 +#endif /* _WMI_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi_api.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmi_api.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi_api.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmi_api.h
 @@ -0,0 +1,259 @@
 +#ifndef _WMI_API_H_
 +#define _WMI_API_H_
@@ -22805,10 +22805,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmi_api.h
 +#endif
 +
 +#endif /* _WMI_API_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmix.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmix.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmix.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/include/wmix.h
 @@ -0,0 +1,233 @@
 +/*
 + * Copyright (c) 2004-2005 Atheros Communications Inc.
@@ -23043,10 +23043,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/include/wmix.h
 +#endif
 +
 +#endif /* _WMIX_H_ */
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/common_drv.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/miscdrv/common_drv.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/common_drv.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/miscdrv/common_drv.c
 @@ -0,0 +1,467 @@
 +
 +/*
@@ -23515,10 +23515,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/common_drv.c
 +
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/credit_dist.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/miscdrv/credit_dist.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/credit_dist.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/miscdrv/credit_dist.c
 @@ -0,0 +1,346 @@
 +
 +/*
@@ -23866,10 +23866,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/miscdrv/credit_dist.c
 +    return A_OK;
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_node.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_node.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_node.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_node.c
 @@ -0,0 +1,371 @@
 +/*-
 + * Copyright (c) 2001 Atsushi Onoe
@@ -24242,10 +24242,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_node.c
 +	wlan_node_dec_free (ni);
 +	IEEE80211_NODE_UNLOCK (nt);
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_recv_beacon.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_recv_beacon.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_recv_beacon.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_recv_beacon.c
 @@ -0,0 +1,192 @@
 +/*-
 + * Copyright (c) 2001 Atsushi Onoe
@@ -24439,10 +24439,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_recv_beacon.
 +
 +    return A_OK;
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_utils.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_utils.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_utils.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wlan/wlan_utils.c
 @@ -0,0 +1,59 @@
 +/*
 + * Copyright (c) 2004-2005 Atheros Communications Inc.
@@ -24503,10 +24503,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wlan/wlan_utils.c
 +        return 15 + ((freq - 2512) / 20);
 +    return (freq - 5000) / 5;
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
 @@ -0,0 +1,3921 @@
 +/*
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -28429,10 +28429,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
 +                         NO_SYNC_WMIFLAG));
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi_doc.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi_doc.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi_doc.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi_doc.h
 @@ -0,0 +1,4421 @@
 +/*
 + *
@@ -32855,10 +32855,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi_doc.h
 +
 +=====================================================================
 +#endif
-Index: linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi_host.h
+Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi_host.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/function/wlan/ar6000/wmi/wmi_host.h
++++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/wmi/wmi_host.h
 @@ -0,0 +1,71 @@
 +#ifndef _WMI_HOST_H_
 +#define _WMI_HOST_H_

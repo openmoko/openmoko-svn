@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc7/drivers/sdio/hcd/Kconfig
+Index: linux-2.6.24-rc8/drivers/sdio/hcd/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/hcd/Kconfig
++++ linux-2.6.24-rc8/drivers/sdio/hcd/Kconfig
 @@ -0,0 +1,14 @@
 +config SDIO_S3C24XX
 +	tristate "Samsung s3c24xx host controller"
@@ -17,24 +17,24 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/Kconfig
 +	help
 +	  good luck.
 +
-Index: linux-2.6.24-rc7/drivers/sdio/hcd/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/hcd/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/hcd/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/hcd/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_PLAT_S3C24XX)	 	+= s3c24xx/
-Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/Makefile
 @@ -0,0 +1,2 @@
 +obj-$(CONFIG_PLAT_S3C24XX) += sdio_s3c24xx_hcd.o
 +sdio_s3c24xx_hcd-objs := s3c24xx_hcd.o
-Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
-@@ -0,0 +1,1491 @@
++++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+@@ -0,0 +1,1500 @@
 +/*
 + * s3c24xx_hcd.c - Samsung S3C MCI driver, Atheros SDIO API compatible.
 + *
@@ -600,14 +600,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	PSDREQUEST req;
 +	struct s3c24xx_hcd_context * context =
 +		container_of(work, struct s3c24xx_hcd_context, io_work);
-+	unsigned long flags;
-+
-+//	spin_lock_irqsave(&context->lock, flags);
 +
 +	req = GET_CURRENT_REQUEST(&context->hcd);
 +	if (req == NULL) {
 +		DBG_PRINT(SDDBG_ERROR, ("%s(): No current request\n", __FUNCTION__));
-+//		enable_irq(context->io_irq);
 +		return;
 +	}
 +
@@ -652,12 +648,12 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		if (context->complete == S3C24XX_HCD_DATA_READ ||
 +		    context->complete == S3C24XX_HCD_DATA_WRITE) {
 +			if (context->dma_en) {
++				dma_sync_single(NULL, context->io_buffer_dma,
++						req->BlockCount * req->BlockLen, DMA_BIDIRECTIONAL);
 +
 +				s3c2410_dma_ctrl(context->dma_channel, S3C2410_DMAOP_START);
 +
-+//				spin_unlock_irqrestore(&context->lock, flags);
 +				wait_for_completion(&context->dma_complete);
-+//				spin_lock_irqsave(&context->lock, flags);
 +
 +				s3c24xx_hcd_dma_complete(context);
 +			} else {
@@ -667,15 +663,11 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	}
 +
 + out:
-+//	spin_unlock_irqrestore(&context->lock, flags);
-+
 +	s3c24xx_hcd_clear_sta(context);
 +	s3c24xx_hcd_clear_imask(context);
 +
 +	writel(0, context->base + S3C2410_SDICMDARG);
 +	writel(0, context->base + S3C2410_SDICMDCON);
-+
-+//	spin_unlock_irqrestore(&context->lock, flags);
 +
 +	SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_TRANSFER_DONE);
 +}
@@ -784,9 +776,19 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +			imask &= ~S3C2410_SDIIMSK_SDIOIRQ;
 +			writel(imask, context->base + S3C2440_SDIIMSK);
 +			SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_SDIO_IRQ_PENDING);
-+		}
 +
-+		writel(S3C2410_SDIDSTA_SDIOIRQDETECT, context->base + S3C2410_SDIDSTA);
++			dsta = readl(context->base + S3C2410_SDIDSTA);
++			if (dsta & S3C2410_SDIDSTA_SDIOIRQDETECT) {
++				writel(S3C2410_SDIDSTA_SDIOIRQDETECT,
++				       context->base + S3C2410_SDIDSTA);
++				SDIO_HandleHcdEvent(&context->hcd,
++						    EVENT_HCD_SDIO_IRQ_PENDING);
++			}
++
++
++		} else {
++			context->int_pending = 1;
++		}
 +	}
 +
 +	req = GET_CURRENT_REQUEST(&context->hcd);
@@ -824,8 +826,8 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	}
 +
 +	if (cmdsta & S3C2410_SDICMDSTAT_RSPFIN ||
-+		(IS_SDREQ_WRITE_DATA(req->Flags) && (fsta &  S3C2410_SDIFSTA_TFDET)) ||
-+		(!IS_SDREQ_WRITE_DATA(req->Flags) && (fsta &  S3C2410_SDIFSTA_RFDET))) {
++	    (IS_SDREQ_WRITE_DATA(req->Flags) && (fsta &  S3C2410_SDIFSTA_TFDET)) ||
++	    (!IS_SDREQ_WRITE_DATA(req->Flags) && (fsta &  S3C2410_SDIFSTA_RFDET))) {
 +
 +		writel(S3C2410_SDICMDSTAT_RSPFIN, context->base + S3C2410_SDICMDSTAT);
 +
@@ -941,6 +943,12 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		DBG_PRINT(SDDBG_TRACE, ("config SDIO_REARM_INT\n"));
 +		spin_lock_irqsave(&context->lock,flags);
 +
++		if (context->int_pending) {
++			context->int_pending = 0;
++			SDIO_HandleHcdEvent(&context->hcd,
++					    EVENT_HCD_SDIO_IRQ_PENDING);
++		}
++
 +		context->int_sdio = 1;
 +		imsk = readl(context->base + S3C2440_SDIIMSK);
 +		imsk |= S3C2410_SDIIMSK_SDIOIRQ;
@@ -988,8 +996,6 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	struct s3c24xx_hcd_context * context =
 +		(struct s3c24xx_hcd_context *)hcd->pContext;
 +
-+//	dump_request(context);
-+
 +	req = GET_CURRENT_REQUEST(hcd);
 +	DBG_ASSERT(req != NULL);
 +
@@ -1005,7 +1011,6 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +
 +	/* Enabling irqs */
 +	imask = S3C2410_SDIIMSK_READWAIT;
-+//	imask = S3C2410_SDIIMSK_READWAIT | S3C2410_SDIIMSK_SDIOIRQ;
 +
 +	cmdcon = readl(context->base + S3C2410_SDICMDCON);
 +
@@ -1060,10 +1065,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		req->DataRemaining = req->BlockCount * req->BlockLen;
 +
 +		/* Set data size, and start the transfer */
++		dcon |= S3C2410_SDIDCON_IRQPERIOD;
 +		if (!(req->DataRemaining % 4)) {
 +			context->data_size = 4;
 +			dcon |= S3C2440_SDIDCON_DS_WORD;
-+			dcon |= (1 << 24);
 +		} else if (!(req->DataRemaining % 2)) {
 +			context->data_size = 2;
 +			dcon |= S3C2440_SDIDCON_DS_HALFWORD;
@@ -1073,12 +1078,15 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		}
 +
 +#ifdef CONFIG_SDIO_S3C24XX_DMA
-+		context->dma_en = 1;
-+#else
-+		context->dma_en = 0;
-+		context->data_size = 1;
-+		dcon |= S3C2440_SDIDCON_DS_BYTE;
++		if (req->DataRemaining > 16) {
++			context->dma_en = 1;
++		} else
 +#endif
++		{
++			context->dma_en = 0;
++			context->data_size = 1;
++			dcon |= S3C2440_SDIDCON_DS_BYTE;
++		}
 +
 +		if (context->dma_en) {
 +			dcon |= S3C2410_SDIDCON_DMAEN;
@@ -1361,6 +1369,7 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	hcd_context.dma_en = 0;
 +
 +	hcd_context.int_sdio = 0;
++	hcd_context.int_pending = 0;
 +
 +	spin_lock_init(&hcd_context.lock);
 +
@@ -1526,11 +1535,11 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +
 +module_init(s3c24xx_hcd_init);
 +module_exit(s3c24xx_hcd_exit);
-Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
+Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
-@@ -0,0 +1,66 @@
++++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
+@@ -0,0 +1,67 @@
 +#ifndef __SDIO_S3C24XX_HCD_H___
 +#define __SDIO_S3C24XX_HCD_H___
 +
@@ -1579,6 +1588,7 @@ Index: linux-2.6.24-rc7/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 +
 +	UINT32		  	  int_mask;
 +	UINT32		  	  int_sdio;            /* Do we have SDIO interrupt on ? */
++	UINT32		  	  int_pending;
 +
 +	UINT32		  	  complete;
 +

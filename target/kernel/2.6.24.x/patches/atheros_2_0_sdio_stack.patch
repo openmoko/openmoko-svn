@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc7/arch/arm/Kconfig
+Index: linux-2.6.24-rc8/arch/arm/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/Kconfig
-+++ linux-2.6.24-rc7/arch/arm/Kconfig
+--- linux-2.6.24-rc8.orig/arch/arm/Kconfig
++++ linux-2.6.24-rc8/arch/arm/Kconfig
 @@ -1064,6 +1064,8 @@
  
  source "drivers/usb/Kconfig"
@@ -11,10 +11,10 @@ Index: linux-2.6.24-rc7/arch/arm/Kconfig
  source "drivers/mmc/Kconfig"
  
  source "drivers/leds/Kconfig"
-Index: linux-2.6.24-rc7/drivers/Kconfig
+Index: linux-2.6.24-rc8/drivers/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/Kconfig
-+++ linux-2.6.24-rc7/drivers/Kconfig
+--- linux-2.6.24-rc8.orig/drivers/Kconfig
++++ linux-2.6.24-rc8/drivers/Kconfig
 @@ -74,6 +74,8 @@
  
  source "drivers/usb/Kconfig"
@@ -24,10 +24,10 @@ Index: linux-2.6.24-rc7/drivers/Kconfig
  source "drivers/mmc/Kconfig"
  
  source "drivers/leds/Kconfig"
-Index: linux-2.6.24-rc7/drivers/Makefile
+Index: linux-2.6.24-rc8/drivers/Makefile
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/Makefile
-+++ linux-2.6.24-rc7/drivers/Makefile
+--- linux-2.6.24-rc8.orig/drivers/Makefile
++++ linux-2.6.24-rc8/drivers/Makefile
 @@ -77,6 +77,7 @@
  obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
  obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
@@ -36,10 +36,10 @@ Index: linux-2.6.24-rc7/drivers/Makefile
  obj-$(CONFIG_NEW_LEDS)		+= leds/
  obj-$(CONFIG_INFINIBAND)	+= infiniband/
  obj-$(CONFIG_SGI_SN)		+= sn/
-Index: linux-2.6.24-rc7/drivers/sdio/Kconfig
+Index: linux-2.6.24-rc8/drivers/sdio/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/Kconfig
++++ linux-2.6.24-rc8/drivers/sdio/Kconfig
 @@ -0,0 +1,17 @@
 +#
 +# SDIO driver and host controller support
@@ -58,33 +58,33 @@ Index: linux-2.6.24-rc7/drivers/sdio/Kconfig
 +source "drivers/sdio/function/Kconfig"
 +
 +endmenu
-Index: linux-2.6.24-rc7/drivers/sdio/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/Makefile
 @@ -0,0 +1,4 @@
 +#Makefile for SDIO stack
 +obj-$(CONFIG_SDIO)      += stack/
 +obj-$(CONFIG_SDIO)      += hcd/
 +obj-$(CONFIG_SDIO)      += function/
-Index: linux-2.6.24-rc7/drivers/sdio/stack/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/stack/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/stack/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_SDIO)      += busdriver/ lib/
 \ No newline at end of file
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/Makefile
 @@ -0,0 +1,2 @@
 +obj-$(CONFIG_SDIO) += sdio_busdriver.o
 +sdio_busdriver-objs := sdio_bus.o sdio_function.o sdio_bus_misc.o sdio_bus_events.o sdio_bus_os.o
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/_busdriver.h
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/_busdriver.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/_busdriver.h
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/_busdriver.h
 @@ -0,0 +1,466 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: _busdriver.h
@@ -552,10 +552,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/_busdriver.h
 +      (SDREQ_FLAGS_PSEUDO | SDREQ_FLAGS_BARRIER | SDREQ_FLAGS_TRANS_ASYNC)
 +
 +#endif /*___BUSDRIVER_H___*/
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus.c
 @@ -0,0 +1,2120 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_bus.c
@@ -2677,11 +2677,11 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus.c
 +  @see also: SDLIB_IssueConfig
 +
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_events.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_events.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_events.c
-@@ -0,0 +1,1044 @@
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_events.c
+@@ -0,0 +1,1040 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_bus_events.c
 +
@@ -3396,8 +3396,6 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_events.c
 +                return status;
 +            }
 +            if (pHcd->IrqProcState != SDHCD_IDLE) {
-+                DBG_PRINT(SDDBG_ERROR, ("-SDIO Bus Driver: Already processing interrupts! (state = %d) \n",
-+                                    pHcd->IrqProcState));
 +                status = SDIO_STATUS_ERROR;
 +                status2 = _ReleaseHcdLock(pHcd);
 +            } else {
@@ -3430,8 +3428,6 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_events.c
 +        }
 +
 +        if (pHcd->IrqProcState != SDHCD_IDLE) {
-+            DBG_PRINT(SDDBG_ERROR, ("-SDIO Bus Driver: Already processing interrupts! (state = %d) \n",
-+                                    pHcd->IrqProcState));
 +            status = SDIO_STATUS_ERROR;
 +        } else {
 +                /* mark that we are processing */
@@ -3726,10 +3722,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_events.c
 +    }
 +
 +}
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_misc.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_misc.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_misc.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_misc.c
 @@ -0,0 +1,3122 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_bus_misc.c
@@ -6853,10 +6849,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_misc.c
 +    return status;
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_os.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_os.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_os.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_bus_os.c
 @@ -0,0 +1,832 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_bus_os.c
@@ -7690,10 +7686,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_bus_os.c
 +EXPORT_SYMBOL(SDIO_CheckResponse);
 +EXPORT_SYMBOL(SDIO_RegisterFunction);
 +EXPORT_SYMBOL(SDIO_UnregisterFunction);
-Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_function.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_function.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_function.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/busdriver/sdio_function.c
 @@ -0,0 +1,715 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_function.c
@@ -8410,17 +8406,17 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/busdriver/sdio_function.c
 +    return status;
 +}
 +
-Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/stack/lib/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/lib/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/stack/lib/Makefile
 @@ -0,0 +1,2 @@
 +obj-$(CONFIG_SDIO) += sdio_lib.o
 +sdio_lib-objs := sdio_lib_c.o sdio_lib_os.o
-Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/_sdio_lib.h
+Index: linux-2.6.24-rc8/drivers/sdio/stack/lib/_sdio_lib.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/lib/_sdio_lib.h
++++ linux-2.6.24-rc8/drivers/sdio/stack/lib/_sdio_lib.h
 @@ -0,0 +1,50 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: _sdio_lib.h
@@ -8472,10 +8468,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/_sdio_lib.h
 +#define ___SDIO_LIB_H___
 +
 +#endif /* ___SDIO_LIB_H___*/
-Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_c.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/lib/sdio_lib_c.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_c.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/lib/sdio_lib_c.c
 @@ -0,0 +1,908 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_lib_c.c
@@ -9385,10 +9381,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_c.c
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 +
 +
-Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_os.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/lib/sdio_lib_os.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_os.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/lib/sdio_lib_os.c
 @@ -0,0 +1,251 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_function_os.c
@@ -9641,18 +9637,18 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/lib/sdio_lib_os.c
 +EXPORT_SYMBOL(SDLIB_DeleteMessageQueue);
 +EXPORT_SYMBOL(SDLIB_PostMessage);
 +EXPORT_SYMBOL(SDLIB_GetMessage);
-Index: linux-2.6.24-rc7/drivers/sdio/stack/platform/Makefile
+Index: linux-2.6.24-rc8/drivers/sdio/stack/platform/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/platform/Makefile
++++ linux-2.6.24-rc8/drivers/sdio/stack/platform/Makefile
 @@ -0,0 +1,2 @@
 +obj-$(CONFIG_SDIO) += sdio_platform.o
 +sdio_platform-objs := sdioplatformdriver.o
 \ No newline at end of file
-Index: linux-2.6.24-rc7/drivers/sdio/stack/platform/sdioplatformdriver.c
+Index: linux-2.6.24-rc8/drivers/sdio/stack/platform/sdioplatformdriver.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/sdio/stack/platform/sdioplatformdriver.c
++++ linux-2.6.24-rc8/drivers/sdio/stack/platform/sdioplatformdriver.c
 @@ -0,0 +1,300 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdioplatformdriver.c
@@ -9954,10 +9950,10 @@ Index: linux-2.6.24-rc7/drivers/sdio/stack/platform/sdioplatformdriver.c
 +
 +
 +
-Index: linux-2.6.24-rc7/include/linux/sdio/_sdio_defs.h
+Index: linux-2.6.24-rc8/include/linux/sdio/_sdio_defs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/_sdio_defs.h
++++ linux-2.6.24-rc8/include/linux/sdio/_sdio_defs.h
 @@ -0,0 +1,638 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: _sdio_defs.h
@@ -10597,10 +10593,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/_sdio_defs.h
 +}
 +
 +#endif
-Index: linux-2.6.24-rc7/include/linux/sdio/ctsystem.h
+Index: linux-2.6.24-rc8/include/linux/sdio/ctsystem.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/ctsystem.h
++++ linux-2.6.24-rc8/include/linux/sdio/ctsystem.h
 @@ -0,0 +1,115 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: cpsystem.h
@@ -10717,10 +10713,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/ctsystem.h
 +}
 +
 +#endif /* __CPSYSTEM_H___ */
-Index: linux-2.6.24-rc7/include/linux/sdio/ctsystem_linux.h
+Index: linux-2.6.24-rc8/include/linux/sdio/ctsystem_linux.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/ctsystem_linux.h
++++ linux-2.6.24-rc8/include/linux/sdio/ctsystem_linux.h
 @@ -0,0 +1,983 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: ctsystem_linux.h
@@ -11705,10 +11701,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/ctsystem_linux.h
 +#define CT_BE32_TO_CPU_ENDIAN(x) __be32_to_cpu(x)
 +#endif /* __CPSYSTEM_LINUX_H___ */
 +
-Index: linux-2.6.24-rc7/include/linux/sdio/mmc_defs.h
+Index: linux-2.6.24-rc8/include/linux/sdio/mmc_defs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/mmc_defs.h
++++ linux-2.6.24-rc8/include/linux/sdio/mmc_defs.h
 @@ -0,0 +1,103 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: mmc_defs.h
@@ -11813,10 +11809,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/mmc_defs.h
 +#define MMC_EXT_BUS_WIDTH_8_BIT    0x02
 +
 +#endif
-Index: linux-2.6.24-rc7/include/linux/sdio/sdio_busdriver.h
+Index: linux-2.6.24-rc8/include/linux/sdio/sdio_busdriver.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/sdio_busdriver.h
++++ linux-2.6.24-rc8/include/linux/sdio/sdio_busdriver.h
 @@ -0,0 +1,1435 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_busdriver.h
@@ -13253,10 +13249,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/sdio_busdriver.h
 +
 +#include "sdio_hcd_defs.h"
 +#endif /* __SDIO_BUSDRIVER_H___ */
-Index: linux-2.6.24-rc7/include/linux/sdio/sdio_hcd_defs.h
+Index: linux-2.6.24-rc8/include/linux/sdio/sdio_hcd_defs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/sdio_hcd_defs.h
++++ linux-2.6.24-rc8/include/linux/sdio/sdio_hcd_defs.h
 @@ -0,0 +1,219 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_hcd_defs.h
@@ -13477,10 +13473,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/sdio_hcd_defs.h
 +void SDIO_BusRemoveOSDevice(POS_PNPDRIVER pDriver, POS_PNPDEVICE pDevice);
 +
 +#endif /* __SDIO_BUSDRIVER_H___ */
-Index: linux-2.6.24-rc7/include/linux/sdio/sdio_lib.h
+Index: linux-2.6.24-rc8/include/linux/sdio/sdio_lib.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/sdio_lib.h
++++ linux-2.6.24-rc8/include/linux/sdio/sdio_lib.h
 @@ -0,0 +1,270 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdio_lib.h
@@ -13752,10 +13748,10 @@ Index: linux-2.6.24-rc7/include/linux/sdio/sdio_lib.h
 +
 +
 +#endif /* __SDIO_LIB_H___*/
-Index: linux-2.6.24-rc7/include/linux/sdio/sdlist.h
+Index: linux-2.6.24-rc8/include/linux/sdio/sdlist.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/include/linux/sdio/sdlist.h
++++ linux-2.6.24-rc8/include/linux/sdio/sdlist.h
 @@ -0,0 +1,141 @@
 +/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +@file: sdlist.h
