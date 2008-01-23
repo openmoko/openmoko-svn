@@ -1,8 +1,8 @@
-Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/mach-s3c2440/mach-gta02.c
-+++ linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -372,8 +372,6 @@
+--- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -374,8 +374,6 @@
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
  	&s3c_device_ts,
@@ -11,7 +11,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
  	&gta02_nor_flash,
  };
  
-@@ -517,11 +515,6 @@
+@@ -504,11 +502,6 @@
  
  /* SPI: Accelerometers attached to SPI of s3c244x */
  
@@ -23,7 +23,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
  static const struct lis302dl_platform_data lis302_pdata[] = {
  	{
  		.name		= "lis302-1 (top)"
-@@ -551,10 +544,55 @@
+@@ -538,10 +531,55 @@
  	},
  };
  
@@ -81,7 +81,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
  };
  
  static struct resource gta02_led_resources[] = {
-@@ -716,7 +754,6 @@
+@@ -784,7 +822,6 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
@@ -89,7 +89,7 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
  	 * hot-pluggable, this is not required anyway */
-@@ -756,6 +793,7 @@
+@@ -824,6 +861,7 @@
  		break;
  	}
  
@@ -97,24 +97,10 @@ Index: linux-2.6.24-rc7/arch/arm/mach-s3c2440/mach-gta02.c
  	platform_device_register(&gta01_button_dev);
  	platform_device_register(&gta01_pm_gsm_dev);
  
-@@ -777,6 +815,13 @@
- 	s3c2410_gpio_cfgpin(GTA01_GPIO_LCD_RESET, S3C2410_GPIO_OUTPUT);
- 	s3c2410_gpio_setpin(GTA01_GPIO_LCD_RESET, 1);
- 
-+	s3c2410_gpio_cfgpin(S3C2410_GPD12, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_setpin(S3C2410_GPD12, 1);
-+
-+
-+	s3c2410_gpio_cfgpin(S3C2410_GPD13, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_setpin(S3C2410_GPD13, 1);
-+
- 	/* Make sure the modem can wake us up */
- 	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
- 	rc = request_irq(GTA02_IRQ_MODEM, gta02_modem_irq, IRQF_DISABLED,
-Index: linux-2.6.24-rc7/drivers/input/misc/lis302dl.c
+Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/input/misc/lis302dl.c
-+++ linux-2.6.24-rc7/drivers/input/misc/lis302dl.c
+--- linux-2.6.24-rc8.orig/drivers/input/misc/lis302dl.c
++++ linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
 @@ -84,6 +84,7 @@
  
  enum lis302dl_reg_ctrl3 {
