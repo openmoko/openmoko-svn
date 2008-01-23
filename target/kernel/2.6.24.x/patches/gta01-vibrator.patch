@@ -4,10 +4,10 @@ since there's a lot of similarity between the LED and the vibrator function.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.24-rc7/drivers/leds/Kconfig
+Index: linux-2.6.24-rc8/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/leds/Kconfig
-+++ linux-2.6.24-rc7/drivers/leds/Kconfig
+--- linux-2.6.24-rc8.orig/drivers/leds/Kconfig
++++ linux-2.6.24-rc8/drivers/leds/Kconfig
 @@ -57,7 +57,7 @@
  
  config LEDS_S3C24XX
@@ -30,10 +30,10 @@ Index: linux-2.6.24-rc7/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6.24-rc7/drivers/leds/Makefile
+Index: linux-2.6.24-rc8/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/leds/Makefile
-+++ linux-2.6.24-rc7/drivers/leds/Makefile
+--- linux-2.6.24-rc8.orig/drivers/leds/Makefile
++++ linux-2.6.24-rc8/drivers/leds/Makefile
 @@ -19,6 +19,7 @@
  obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
  obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
@@ -42,10 +42,10 @@ Index: linux-2.6.24-rc7/drivers/leds/Makefile
  
  # LED Triggers
  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
-Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
+Index: linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
++++ linux-2.6.24-rc8/drivers/leds/leds-neo1973-vibrator.c
 @@ -0,0 +1,180 @@
 +/*
 + * LED driver for the vibrator of the FIC Neo1973 GSM Phone
@@ -74,7 +74,7 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 +
 +#define COUNTER 64
 +
-+struct gta01_vib_priv {
++struct neo1973_vib_priv {
 +	struct led_classdev cdev;
 +	unsigned int gpio;
 +	struct mutex mutex;
@@ -82,11 +82,11 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 +	struct s3c2410_pwm pwm;
 +};
 +
-+static void gta01vib_vib_set(struct led_classdev *led_cdev,
++static void neo1973_vib_vib_set(struct led_classdev *led_cdev,
 +		enum led_brightness value)
 +{
-+	struct gta01_vib_priv *vp =
-+		container_of(led_cdev, struct gta01_vib_priv, cdev);
++	struct neo1973_vib_priv *vp =
++		container_of(led_cdev, struct neo1973_vib_priv, cdev);
 +
 +	/*
 +	 * value == 255 -> 99% duty cycle (full power)
@@ -106,14 +106,14 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 +	mutex_unlock(&vp->mutex);
 +}
 +
-+static struct gta01_vib_priv gta01_vib_led = {
++static struct neo1973_vib_priv neo1973_vib_led = {
 +	.cdev = {
 +		.name = "neo1973:vibrator",
-+		.brightness_set = gta01vib_vib_set,
++		.brightness_set = neo1973_vib_vib_set,
 +	},
 +};
 +
-+static int gta01vib_init_hw(struct gta01_vib_priv *vp)
++static int neo1973_vib_init_hw(struct neo1973_vib_priv *vp)
 +{
 +	int rc;
 +
@@ -138,26 +138,26 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 +}
 +
 +#ifdef CONFIG_PM
-+static int gta01vib_suspend(struct platform_device *dev, pm_message_t state)
++static int neo1973_vib_suspend(struct platform_device *dev, pm_message_t state)
 +{
-+	led_classdev_suspend(&gta01_vib_led.cdev);
++	led_classdev_suspend(&neo1973_vib_led.cdev);
 +	return 0;
 +}
 +
-+static int gta01vib_resume(struct platform_device *dev)
++static int neo1973_vib_resume(struct platform_device *dev)
 +{
-+	struct gta01_vib_priv *vp = platform_get_drvdata(dev);
++	struct neo1973_vib_priv *vp = platform_get_drvdata(dev);
 +
-+	led_classdev_resume(&gta01_vib_led.cdev);
++	led_classdev_resume(&neo1973_vib_led.cdev);
 +
 +	if (vp->has_pwm)
-+		gta01vib_init_hw(vp);
++		neo1973_vib_init_hw(vp);
 +
 +	return 0;
 +}
 +#endif /* CONFIG_PM */
 +
-+static int __init gta01vib_probe(struct platform_device *pdev)
++static int __init neo1973_vib_probe(struct platform_device *pdev)
 +{
 +	struct resource *r;
 +	int rc;
@@ -169,60 +169,60 @@ Index: linux-2.6.24-rc7/drivers/leds/leds-neo1973-vibrator.c
 +	if (!r || !r->start)
 +		return -EIO;
 +
-+	gta01_vib_led.gpio = r->start;
++	neo1973_vib_led.gpio = r->start;
 +
 +	/* TOUT3 */
-+	if (gta01_vib_led.gpio == S3C2410_GPB3) {
-+		rc = gta01vib_init_hw(&gta01_vib_led);
++	if (neo1973_vib_led.gpio == S3C2410_GPB3) {
++		rc = neo1973_vib_init_hw(&neo1973_vib_led);
 +		if (rc)
 +			return rc;
 +
-+		s3c2410_pwm_duty_cycle(0, &gta01_vib_led.pwm);
-+		s3c2410_gpio_cfgpin(gta01_vib_led.gpio, S3C2410_GPB3_TOUT3);
-+		gta01_vib_led.has_pwm = 1;
++		s3c2410_pwm_duty_cycle(0, &neo1973_vib_led.pwm);
++		s3c2410_gpio_cfgpin(neo1973_vib_led.gpio, S3C2410_GPB3_TOUT3);
++		neo1973_vib_led.has_pwm = 1;
 +	}
 +
-+	mutex_init(&gta01_vib_led.mutex);
++	mutex_init(&neo1973_vib_led.mutex);
 +
-+	return led_classdev_register(&pdev->dev, &gta01_vib_led.cdev);
++	return led_classdev_register(&pdev->dev, &neo1973_vib_led.cdev);
 +}
 +
-+static int gta01vib_remove(struct platform_device *pdev)
++static int neo1973_vib_remove(struct platform_device *pdev)
 +{
-+	if (gta01_vib_led.has_pwm)
-+		s3c2410_pwm_disable(&gta01_vib_led.pwm);
++	if (neo1973_vib_led.has_pwm)
++		s3c2410_pwm_disable(&neo1973_vib_led.pwm);
 +
-+	led_classdev_unregister(&gta01_vib_led.cdev);
++	led_classdev_unregister(&neo1973_vib_led.cdev);
 +
-+	mutex_destroy(&gta01_vib_led.mutex);
++	mutex_destroy(&neo1973_vib_led.mutex);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver gta01vib_driver = {
-+	.probe		= gta01vib_probe,
-+	.remove		= gta01vib_remove,
++static struct platform_driver neo1973_vib_driver = {
++	.probe		= neo1973_vib_probe,
++	.remove		= neo1973_vib_remove,
 +#ifdef CONFIG_PM
-+	.suspend	= gta01vib_suspend,
-+	.resume		= gta01vib_resume,
++	.suspend	= neo1973_vib_suspend,
++	.resume		= neo1973_vib_resume,
 +#endif
 +	.driver		= {
 +		.name		= "neo1973-vibrator",
 +	},
 +};
 +
-+static int __init gta01vib_init(void)
++static int __init neo1973_vib_init(void)
 +{
-+	return platform_driver_register(&gta01vib_driver);
++	return platform_driver_register(&neo1973_vib_driver);
 +}
 +
-+static void __exit gta01vib_exit(void)
++static void __exit neo1973_vib_exit(void)
 +{
-+	platform_driver_unregister(&gta01vib_driver);
++	platform_driver_unregister(&neo1973_vib_driver);
 +}
 +
-+module_init(gta01vib_init);
-+module_exit(gta01vib_exit);
++module_init(neo1973_vib_init);
++module_exit(neo1973_vib_exit);
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC Neo1973 vibrator driver");
