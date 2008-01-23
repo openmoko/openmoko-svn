@@ -79,7 +79,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
-@@ -0,0 +1,3069 @@
+@@ -0,0 +1,3070 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -291,7 +291,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +static void ar6000_init_control_info(AR_SOFTC_T *ar);
 +static int ar6000_data_tx(struct sk_buff *skb, struct net_device *dev);
 +
-+static void ar6000_destroy(struct net_device *dev);
++static void ar6000_destroy(struct net_device *dev, unsigned int unregister);
 +static void ar6000_detect_error(unsigned long ptr);
 +static struct net_device_stats *ar6000_get_stats(struct net_device *dev);
 +static struct iw_statistics *ar6000_get_iwstats(struct net_device * dev);
@@ -641,7 +641,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +        if (ar6000_devices[i] != NULL) {
 +            ar6000_netdev = ar6000_devices[i];
 +            ar6000_devices[i] = NULL;
-+            ar6000_destroy(ar6000_netdev);
++            ar6000_destroy(ar6000_netdev, 1);
 +        }
 +    }
 +
@@ -924,7 +924,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +    /* This runs the init function */
 +    if (register_netdev(dev)) {
 +        AR_DEBUG_PRINTF("ar6000_avail: register_netdev failed\n");
-+        ar6000_destroy(dev);
++        ar6000_destroy(dev, 0);
 +        return;
 +    }
 +
@@ -978,7 +978,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +    AR_SOFTC_T *ar = (AR_SOFTC_T *)Instance;
 +        /* NULL out it's entry in the global list */
 +    ar6000_devices[ar->arDeviceIndex] = NULL;
-+    ar6000_destroy(ar->arNetDev);
++    ar6000_destroy(ar->arNetDev, 1);
 +}
 +
 +/*
@@ -996,7 +996,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 + *   removal since they will anyway not go through.
 + */
 +static void
-+ar6000_destroy(struct net_device *dev)
++ar6000_destroy(struct net_device *dev, unsigned int unregister)
 +{
 +    AR_SOFTC_T *ar;
 +
@@ -1086,7 +1086,8 @@ Index: linux-2.6.24-rc8/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +
 +
 +    /* Free up the device data structure */
-+    unregister_netdev(dev);
++    if (unregister)
++	    unregister_netdev(dev);
 +#ifndef free_netdev
 +    kfree(dev);
 +#else
