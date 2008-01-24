@@ -177,7 +177,8 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
 +#define READ_BIT	0x80
 +#define	ADDR_MASK	0x3f
  
- static inline u_int8_t __reg_read(struct lis302dl_info *lis, u_int8_t reg)
+-static inline u_int8_t __reg_read(struct lis302dl_info *lis, u_int8_t reg)
++static u_int8_t __reg_read(struct lis302dl_info *lis, u_int8_t reg)
  {
  	int rc;
  	u_int8_t cmd;
@@ -189,7 +190,12 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
  
  	rc = spi_w8r8(lis->spi_dev, cmd);
  
-@@ -165,7 +167,9 @@
+@@ -161,11 +163,13 @@
+ 	return ret;
+ }
+ 
+-static inline int __reg_write(struct lis302dl_info *lis, u_int8_t reg, u_int8_t val)
++static int __reg_write(struct lis302dl_info *lis, u_int8_t reg, u_int8_t val)
  {
  	u_int8_t buf[2];
  
@@ -200,6 +206,21 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
  	buf[1] = val;
  
  	return spi_write(lis->spi_dev, buf, sizeof(buf));
+@@ -207,10 +211,10 @@
+ enum lis302dl_intmode {
+ 	LIS302DL_INTMODE_GND		= 0x00,
+ 	LIS302DL_INTMODE_FF_WU_1	= 0x01,
+-	LIX302DL_INTMODE_FF_WU_2	= 0x02,
+-	LIX302DL_INTMODE_FF_WU_12	= 0x03,
+-	LIX302DL_INTMODE_DATA_READY	= 0x04,
+-	LIX302DL_INTMODE_CLICK		= 0x07,
++	LIS302DL_INTMODE_FF_WU_2	= 0x02,
++	LIS302DL_INTMODE_FF_WU_12	= 0x03,
++	LIS302DL_INTMODE_DATA_READY	= 0x04,
++	LIS302DL_INTMODE_CLICK		= 0x07,
+ };
+ 
+ static void lis302dl_int_mode(struct spi_device *spi, int int_pin,
 @@ -218,10 +222,16 @@
  {
  	struct lis302dl_info *lis = dev_get_drvdata(&spi->dev);
@@ -219,7 +240,83 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
  }
  
  static void _report_btn_single(struct input_dev *inp, int btn)
-@@ -388,6 +398,7 @@
+@@ -247,34 +257,30 @@
+ 	struct lis302dl_info *lis =
+ 			container_of(work, struct lis302dl_info, work);
+ 
+-	u_int8_t status, ff_wu_src_1, click_src;
+-	u_int8_t val;
++	u_int8_t status, ff_wu_src_1, ff_wu_src_2, click_src;
++	u_int8_t val_x, val_y, val_z;
+ 
+ 	lis->working = 1;
+ 
+  	status = reg_read(lis, LIS302DL_REG_STATUS);
+ 	ff_wu_src_1 = reg_read(lis, LIS302DL_REG_FF_WU_SRC_1);
++	ff_wu_src_2 = reg_read(lis, LIS302DL_REG_FF_WU_SRC_2);
+ 	click_src = reg_read(lis, LIS302DL_REG_CLICK_SRC);
+ 
+-	if (status & LIS302DL_STATUS_XDA) {
+-		val = reg_read(lis, LIS302DL_REG_OUT_X);
++	if (status & LIS302DL_STATUS_XYZDA) {
++		val_x = reg_read(lis, LIS302DL_REG_OUT_X);
+ 		if (lis->flags & LIS302DL_F_FS)
+-			val = val << 2;
+-		input_report_rel(lis->input_dev, REL_X, val);
+-	}
+-
+-	if (status & LIS302DL_STATUS_YDA) {
+-		val = reg_read(lis, LIS302DL_REG_OUT_Y);
++			val_x = val_x << 2;
++		input_report_rel(lis->input_dev, REL_X, val_x);
++		val_y = reg_read(lis, LIS302DL_REG_OUT_Y);
+ 		if (lis->flags & LIS302DL_F_FS)
+-			val = val << 2;
+-		input_report_rel(lis->input_dev, REL_Y, val);
+-	}
+-
+-	if (status & LIS302DL_STATUS_ZDA) {
+-		val = reg_read(lis, LIS302DL_REG_OUT_Z);
++			val_y = val_y << 2;
++		input_report_rel(lis->input_dev, REL_Y, val_y);
++		val_z = reg_read(lis, LIS302DL_REG_OUT_Z);
+ 		if (lis->flags & LIS302DL_F_FS)
+-			val = val << 2;
+-		input_report_rel(lis->input_dev, REL_Z, val);
++			val_z = val_z << 2;
++		input_report_rel(lis->input_dev, REL_Z, val_z);
++//		printk("%p: x=%d, y=%d, z=%d\n", lis, val_x, val_y, val_z);
+ 	}
+ 
+ 	if (status & 0xf0)
+@@ -310,21 +316,15 @@
+ 	enable_irq(lis->spi_dev->irq);
+ }
+ 
+-static void lis302dl_schedule_work(struct lis302dl_info *lis)
+-{
+-	int status;
+-
+-	get_device(&lis->spi_dev->dev);
+-	status = schedule_work(&lis->work);
+-	if (!status && !lis->working)
+-		dev_dbg(&lis->spi_dev->dev, "work item may be lost\n");
+-}
+-
+ static irqreturn_t lis302dl_interrupt(int irq, void *_lis)
+ {
+ 	struct lis302dl_info *lis = _lis;
+ 
+-	lis302dl_schedule_work(lis);
++	get_device(&lis->spi_dev->dev);
++
++	if (!schedule_work(&lis->work))
++		if (!lis->working)
++			dev_dbg(&lis->spi_dev->dev, "work item may be lost\n");
+ 
+ 	/* Disable any further interrupts until we have processed
+ 	 * the current one */
+@@ -388,6 +388,7 @@
  static struct attribute *lis302dl_sysfs_entries[] = {
  	&dev_attr_sample_rate.attr,
  	&dev_attr_full_scale.attr,
@@ -227,26 +324,121 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
  };
  
  static struct attribute_group lis302dl_attr_group = {
-@@ -459,12 +470,15 @@
- 		kfree(lis);
- 		return -ENODEV;
+@@ -416,7 +417,7 @@
+ 			 LIS302DL_CTRL1_Zen;
+ 
+ 	/* since the input core already serializes access and makes sure we
+-	 * only see close() for the close of the lastre user, we can safely
++	 * only see close() for the close of the last user, we can safely
+ 	 * disable the data ready events */
+ 	reg_set_bit_mask(lis, LIS302DL_REG_CTRL1, ctrl1, 0x00);
+ 
+@@ -446,44 +447,44 @@
+ 
+ 	rc = spi_setup(spi);
+ 	if (rc < 0) {
+-		printk(KERN_ERR "error durign spi_setup of lis302dl driver\n");
++		dev_err(&spi->dev, "error during spi_setup\n");
+ 		dev_set_drvdata(&spi->dev, NULL);
+-		kfree(lis);
+-		return rc;
++		goto bail_free_lis;
  	}
-+	/* switch interrupt to open collector, active-low */
-+	reg_write(lis, LIS302DL_REG_CTRL3,
-+	    LIS302DL_CTRL3_PP_OD | LIS302DL_CTRL3_IHL);
-+	lis302dl_int_mode(spi, 1, LIX302DL_INTMODE_DATA_READY);
-+	lis302dl_int_mode(spi, 2, LIX302DL_INTMODE_CLICK);
+ 
+ 	wai = reg_read(lis, LIS302DL_REG_WHO_AM_I);
+ 	if (wai != LIS302DL_WHO_AM_I_MAGIC) {
+-		printk(KERN_ERR "unknown who_am_i signature 0x%02x\n", wai);
++		dev_err(&spi->dev, "unknown who_am_i signature 0x%02x\n", wai);
+ 		dev_set_drvdata(&spi->dev, NULL);
+-		kfree(lis);
+-		return -ENODEV;
++		rc = -ENODEV;
++		goto bail_free_lis;
+ 	}
  
 -	/* switch interrupt to open collector */
 -	reg_write(lis, LIS302DL_CTRL3_PP_OD, 0x7c);
--
-+	/* Fix me: always interrupt */
- 	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt, IRQF_DISABLED,
++	/* switch interrupt to open collector, active-low */
++	reg_write(lis, LIS302DL_REG_CTRL3, LIS302DL_CTRL3_PP_OD |
++					   LIS302DL_CTRL3_IHL);
++	lis302dl_int_mode(spi, 1, LIS302DL_INTMODE_DATA_READY);
++	lis302dl_int_mode(spi, 2, LIS302DL_INTMODE_DATA_READY);
+ 
+-	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt, IRQF_DISABLED,
 -			 "lis302dl", NULL);
-+			 "lis302dl", lis);
++	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt,
++			 IRQF_TRIGGER_LOW, "lis302dl", lis);
  	if (rc < 0) {
  		dev_err(&spi->dev, "error requesting IRQ %d\n",
  			lis->spi_dev->irq);
+-		/* FIXME */
+-		return rc;
++		goto bail_free_lis;
+ 	}
+ 
+ 	rc = sysfs_create_group(&spi->dev.kobj, &lis302dl_attr_group);
+ 	if (rc) {
+ 		dev_err(&spi->dev, "error creating sysfs group\n");
+-		/* FIXME */
+-		return rc;
++		goto bail_irq;
+ 	}
+ 
+ 	/* initialize input layer details */
+ 	lis->input_dev = input_allocate_device();
+ 	if (!lis->input_dev) {
+ 		dev_err(&spi->dev, "Unable to allocate input device\n");
+-		/* FIXME */
++		goto bail_sysfs;
+ 	}
+ 
+ 	set_bit(EV_REL, lis->input_dev->evbit);
+@@ -498,9 +499,35 @@
+ 	lis->input_dev->open = lis302dl_input_open;
+ 	lis->input_dev->close = lis302dl_input_close;
+ 
+-	input_register_device(lis->input_dev);
++	rc = input_register_device(lis->input_dev);
++	if (rc) {
++		dev_err(&spi->dev, "error %d registering input device\n", rc);
++		goto bail_inp_dev;
++	}
++
++	reg_write(lis, LIS302DL_REG_CTRL1, 0x47);
++	reg_write(lis, LIS302DL_REG_CTRL3, 0xc0);
++	reg_write(lis, LIS302DL_REG_FF_WU_THS_1, 0x14);
++	reg_write(lis, LIS302DL_REG_FF_WU_DURATION_1, 0x00);
++	reg_write(lis, LIS302DL_REG_FF_WU_CFG_1, 0x95);
++	reg_write(lis, LIS302DL_REG_CTRL3, 0xe4);
++
++	reg_read(lis, LIS302DL_REG_STATUS);
++	reg_read(lis, LIS302DL_REG_FF_WU_SRC_1);
++	reg_read(lis, LIS302DL_REG_FF_WU_SRC_2);
++	reg_read(lis, LIS302DL_REG_CLICK_SRC);
+ 
+ 	return 0;
++
++bail_inp_dev:
++	input_free_device(lis->input_dev);
++bail_sysfs:
++	sysfs_remove_group(&spi->dev.kobj, &lis302dl_attr_group);
++bail_irq:
++	free_irq(lis->spi_dev->irq, NULL);
++bail_free_lis:
++	kfree(lis);
++	return rc;
+ }
+ 
+ static int __devexit lis302dl_remove(struct spi_device *spi)
+@@ -511,6 +538,8 @@
+ 	reg_write(lis, LIS302DL_REG_CTRL1, 0x00);
+ 	sysfs_remove_group(&spi->dev.kobj, &lis302dl_attr_group);
+ 	input_unregister_device(lis->input_dev);
++	if (lis->input_dev)
++		input_free_device(lis->input_dev);
+ 	dev_set_drvdata(&spi->dev, NULL);
+ 	kfree(lis);
+ 
 Index: linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
 ===================================================================
 --- linux-2.6.24-rc8.orig/drivers/spi/spi_s3c24xx_gpio.c
