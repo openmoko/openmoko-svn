@@ -291,6 +291,7 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		((void *) gmh + sizeof(*gmh));
 	const struct gsmd_voicemail *vmail = (struct gsmd_voicemail *)
 		((void *) gmh + sizeof(*gmh));
+	enum gsmd_netreg_state state = *(enum gsmd_netreg_state *) gmh->data;
 	int result = *(int *) gmh->data;
 	static const char *oper_stat[] = {
 		[GSMD_OPER_UNKNOWN] = "of unknown status",
@@ -359,6 +360,28 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_NETWORK_VMAIL_GET:
 		if(vmail->addr.number)
 			printf ("voicemail number is %s \n",vmail->addr.number);
+		pending_responses --;
+		break;
+	case GSMD_NETWORK_QUERY_REG:
+		switch (state) {
+			case GSMD_NETREG_UNREG:
+				printf("not searching for network \n");
+				break;
+			case GSMD_NETREG_REG_HOME:
+				printf("registered (home network) \n");
+				break;
+			case GSMD_NETREG_UNREG_BUSY:
+				printf("searching for network \n");
+				break;
+			case GSMD_NETREG_DENIED:
+				printf("registration denied \n");
+				break;
+			case GSMD_NETREG_REG_ROAMING:
+				printf("registered (roaming) \n");
+				break;
+			default:
+				break;
+		}
 		pending_responses --;
 		break;
 	default:
@@ -647,6 +670,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strcmp(buf, "Q")) {
 				printf("Signal strength\n");
 				lgsm_signal_quality(lgsmh);
+				pending_responses ++;
+			} else if (!strcmp(buf, "nr")) {
+				printf("Query network registration\n");
+				lgsm_netreg_query(lgsmh);
 				pending_responses ++;
 			} else if (!strcmp(buf, "q")) {
 				exit(0);

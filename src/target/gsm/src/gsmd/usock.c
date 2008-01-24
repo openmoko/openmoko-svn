@@ -664,6 +664,33 @@ static int usock_rcv_modem(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return 0; 
 }
 
+static int network_query_reg_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsm_extrsp *er;
+	enum gsmd_netreg_state state;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+
+	if (strncmp(resp, "+CREG: ", 7))
+		return -EINVAL;
+	resp += 7;
+	er = extrsp_parse(gsmd_tallocs, resp);
+	if(!er)
+		return -ENOMEM;
+	//extrsp_dump(er);
+	/* +CREG: <n>,<stat>[,<lac>,<ci>] */
+	if((er->num_tokens == 4 || er->num_tokens == 2 ) &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+				state = er->tokens[1].u.numeric;
+	}
+
+	talloc_free(er);
+	return gsmd_ucmd_submit(gu, GSMD_MSG_NETWORK, GSMD_NETWORK_QUERY_REG,
+		cmd->id, sizeof(state), &state);
+}
+
 static int network_vmail_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
@@ -734,6 +761,8 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return gsmd_ucmd_submit(ctx, GSMD_MSG_NETWORK, GSMD_NETWORK_SIGQ_GET,
 			cmd->id, sizeof(gsq), &gsq);
 }
+
+
 
 static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
@@ -1003,6 +1032,9 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_NETWORK_DEREGISTER:
 		cmd = atcmd_fill("AT+COPS=2", 9+1, &null_cmd_cb, gu, 0, NULL);
+		break;
+	case GSMD_NETWORK_QUERY_REG:
+		cmd = atcmd_fill("AT+CREG?", 8+1, &network_query_reg_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_VMAIL_GET:
 		cmd = atcmd_fill("AT+CSVM?", 8+1, &network_vmail_cb, gu, 0, NULL);

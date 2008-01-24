@@ -81,6 +81,11 @@ int lgsm_netreg_deregister(struct lgsm_handle *lh)
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_DEREGISTER);
 }
 
+int lgsm_netreg_query(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_QUERY_REG);
+}
+
 int lgsm_signal_quality(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_SIGQ_GET);

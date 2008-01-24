@@ -162,6 +162,7 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_PREF_DEL   = 12,
 	GSMD_NETWORK_PREF_ADD   = 13,
 	GSMD_NETWORK_PREF_SPACE = 14,
+	GSMD_NETWORK_QUERY_REG = 15,
 };
 
 enum gsmd_msg_sms {
