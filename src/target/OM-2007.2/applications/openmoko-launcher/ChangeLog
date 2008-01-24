@@ -1,0 +1,6 @@
+2008-01-24  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/launcher-main.c: (main):
+	Fix building and make task manager work
+

@@ -43,7 +43,12 @@ workarea_changed (int x, int y, int w, int h)
 int
 main (int argc, char **argv)
 {
+	GOptionContext *context;
 	LauncherData data;
+	GtkWidget *widget;
+#ifndef STANDALONE
+	gint x, y, w, h;
+#endif
 	
 	static GOptionEntry entries[] = {
 		{ NULL }
