@@ -45,18 +45,23 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  	},
  };
  
-@@ -524,7 +521,7 @@
+@@ -522,26 +519,74 @@
+ 		.modalias	= "lis302dl",
+ 		.platform_data	= &lis302_pdata[0],
  		.irq		= GTA02_IRQ_GSENSOR_1,
- 		.max_speed_hz	= 400 * 1000,
+-		.max_speed_hz	= 400 * 1000,
++		.max_speed_hz	= 10 * 1000 * 1000,
  		.bus_num	= 1,
 -		.chip_select	= S3C2410_GPD12,
 +		.chip_select	= 0,
  		.mode		= SPI_MODE_3,
  	},
  	{
-@@ -533,15 +530,63 @@
+ 		.modalias	= "lis302dl",
+ 		.platform_data	= &lis302_pdata[1],
  		.irq		= GTA02_IRQ_GSENSOR_2,
- 		.max_speed_hz	= 400 * 1000,
+-		.max_speed_hz	= 400 * 1000,
++		.max_speed_hz	= 10 * 1000 * 1000,
  		.bus_num	= 1,
 -		.chip_select	= S3C2410_GPD13,
 +		.chip_select	= 1,
