@@ -246,8 +246,21 @@ Index: linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
 ===================================================================
 --- linux-2.6.24-rc8.orig/drivers/spi/spi_s3c24xx_gpio.c
 +++ linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
-@@ -116,6 +116,8 @@
- 	/* copy in the plkatform data */
+@@ -91,7 +91,7 @@
+ 	struct s3c2410_spigpio *sg = spidev_to_sg(dev);
+ 
+ 	if (sg->info && sg->info->chip_select)
+-		(sg->info->chip_select)(sg->info, value);
++		(sg->info->chip_select)(sg->info, dev->chip_select, value);
+ }
+ 
+ static int s3c2410_spigpio_probe(struct platform_device *dev)
+@@ -113,9 +113,11 @@
+ 
+ 	platform_set_drvdata(dev, sp);
+ 
+-	/* copy in the plkatform data */
++	/* copy in the platform data */
  	info = sp->info = dev->dev.platform_data;
  
 +	master->num_chipselect = info->num_chipselect;
@@ -255,11 +268,30 @@ Index: linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
  	/* setup spi bitbang adaptor */
  	sp->bitbang.master = spi_master_get(master);
  	sp->bitbang.master->bus_num = info->bus_num;
+@@ -146,12 +148,17 @@
+ 	/* register the chips to go with the board */
+ 
+ 	for (i = 0; i < sp->info->board_size; i++) {
++		struct spi_device *spidev;
++
+ 		dev_info(&dev->dev, "registering %p: %s\n",
+ 			 &sp->info->board_info[i],
+ 			 sp->info->board_info[i].modalias);
+ 
+ 		sp->info->board_info[i].controller_data = sp;
+-		spi_new_device(master, sp->info->board_info + i);
++		spidev = spi_new_device(master, sp->info->board_info + i);
++		if (spidev)
++			spidev->max_speed_hz =
++					  sp->info->board_info[i].max_speed_hz;
+ 	}
+ 
+ 	return 0;
 Index: linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
 ===================================================================
 --- linux-2.6.24-rc8.orig/include/asm-arm/arch-s3c2410/spi-gpio.h
 +++ linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
-@@ -22,6 +22,7 @@
+@@ -22,11 +22,12 @@
  	unsigned long		 pin_miso;
  
  	int			 bus_num;
@@ -267,6 +299,12 @@ Index: linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
  
  	unsigned long		 board_size;
  	struct spi_board_info	*board_info;
+ 
+-	void (*chip_select)(struct s3c2410_spigpio_info *spi, int cs);
++	void (*chip_select)(struct s3c2410_spigpio_info *spi, int csid, int cs);
+ };
+ 
+ 
 Index: linux-2.6.24-rc8/include/linux/lis302dl.h
 ===================================================================
 --- linux-2.6.24-rc8.orig/include/linux/lis302dl.h
@@ -279,3 +317,29 @@ Index: linux-2.6.24-rc8/include/linux/lis302dl.h
  };
  
  #endif /* _LINUX_LIS302DL_H */
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -521,7 +521,7 @@
+ 	},
+ };
+ 
+-static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int csidx, int cs)
+ {
+ 	switch (cs) {
+ 	case BITBANG_CS_ACTIVE:
+Index: linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-qt2410.c
+===================================================================
+--- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2410/mach-qt2410.c
++++ linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-qt2410.c
+@@ -217,7 +217,7 @@
+ 
+ /* SPI */
+ 
+-static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int csidx, int cs)
+ {
+ 	switch (cs) {
+ 	case BITBANG_CS_ACTIVE:
