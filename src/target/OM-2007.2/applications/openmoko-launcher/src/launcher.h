@@ -9,6 +9,7 @@
 typedef struct {
 	GtkWidget *window;
 	GtkWidget *notebook;
+	GtkWidget *launcher_table;
 
 	/* For task manager */
 	GtkWidget *root_window;

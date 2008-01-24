@@ -1,7 +1,7 @@
 INCLUDES = -I$(top_srcdir)
 
 AM_CPPFLAGS  = -DPKGDATADIR=\"$(pkgdatadir)\" 				\
-	       -DTODAY_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"	\
+	       -DLAUNCHER_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	       -DDATADIR=\""$(datadir)"\" -D_GNU_SOURCE
 
 AM_CFLAGS    = -Wall -pedantic -std=c99 @GTK_CFLAGS@ @MOKOUI_CFLAGS@
