@@ -23,7 +23,6 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
-#include <libtaku/launcher-util.h>
 #include "today-utils.h"
 
 GtkToolItem *
@@ -35,3 +34,4 @@ today_toolbutton_new (const gchar *icon_name)
 	gtk_tool_item_set_expand (button, TRUE);
 	return button;
 }
+

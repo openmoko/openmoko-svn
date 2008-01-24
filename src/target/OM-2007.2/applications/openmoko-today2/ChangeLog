@@ -1,3 +1,9 @@
+2008-01-24  Chris Lord  <chris@openedhand.com>
+
+	* src/today-utils.c:
+	* src/today-utils.h:
+        Remove unused includes
+
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
         * taku:

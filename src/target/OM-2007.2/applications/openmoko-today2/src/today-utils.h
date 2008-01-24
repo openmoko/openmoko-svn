@@ -25,8 +25,8 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <libtaku/launcher-util.h>
 
 GtkToolItem *today_toolbutton_new (const gchar *icon_name);
 
 #endif /*__TODAY_UTILS_H__*/
+
