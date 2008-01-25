@@ -322,7 +322,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 1 ) /* pressed */
                 {
                     g_debug( "triggering aux timer" );
-                    aux_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
+                    aux_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
@@ -341,7 +341,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 1 ) /* pressed */
                 {
                     g_debug( "triggering power timer" );
-                    power_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
+                    power_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
@@ -964,9 +964,9 @@ void neod_buttonactions_powersave_reset()
         return;
 
     //TODO load this from preferences
-    powersave_timer1 = g_timeout_add( 10 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout1, (gpointer)1 );
-    powersave_timer2 = g_timeout_add( 30 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout2, (gpointer)1 );
-    powersave_timer3 = g_timeout_add( 60 * 5 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout3, (gpointer)1 );
+    powersave_timer1 = g_timeout_add_seconds( 10, (GSourceFunc) neod_buttonactions_powersave_timeout1, (gpointer)1 );
+    powersave_timer2 = g_timeout_add_seconds( 50, (GSourceFunc) neod_buttonactions_powersave_timeout2, (gpointer)1 );
+    powersave_timer3 = g_timeout_add_seconds( 60 * 5, (GSourceFunc) neod_buttonactions_powersave_timeout3, (gpointer)1 );
 }
 
 void neod_buttonactions_set_display( int brightness )
