@@ -1,0 +1,50 @@
+#!/bin/sh -e
+#
+# This script illustrates how to build a specific version of the Linux kernel
+# from scratch. This is mainly intended as a template for copy & paste, and as
+# an example for individual scripts.
+#
+# This script uses the gnueabi toolchain, see the file
+# ../../u-boot/scripts/README in this
+#
+#
+# Environment variables:
+#
+# SVN points to the root of the local copy of the OpenMoko SVN tree (the tree
+# must be checked out already), e.g.,
+# SVN=/home/moko/svn.openmoko.org/
+#
+# KERNEL specifies the kernel version we use, e.g.,
+# KERNEL=2.6.22.5
+#
+# KERNELSRC_DIR, if defined, specifies the directory where the kernel source
+# tarball resides. By default, we use ".".
+# KERNELSRC_DIR=/wherever
+#
+# UBOOT_DIR, if defined, specifies the absolute (!) path to the directory where
+# u-boot has been built. By default, we use ./u-boot
+# UBOOT_DIR=/wherever/u-boot
+#
+# SVN_REV, if defined, specifies which SVN revision we use, e.g.,
+# SVN_REV=3801
+#
+
+# wget http://ftp.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL}.tar.bz2
+
+tar xfj ${KERNELSRC_DIR:-.}/linux-${KERNEL}.tar.bz2
+
+# we need this for "mkimage", which makes uImages
+PATH=$PATH:${UBOOT_DIR:-`pwd`/u-boot}/tools
+
+cd linux-$KERNEL
+
+ln -sf $SVN/trunk/src/target/kernel/patches
+
+defconfig=$SVN/trunk/src/target/kernel/config/defconfig-$KERNEL
+[ -z "$SVN_REV" ] ||
+  ( cd patches && svn update -r$SVN_REV . $defconfig; )
+
+quilt push -a
+cp $defconfig .config
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- oldconfig
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- uImage

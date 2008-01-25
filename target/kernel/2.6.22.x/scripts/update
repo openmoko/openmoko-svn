@@ -1,0 +1,26 @@
+#!/bin/sh -e
+#
+# This script illustrates how to update the Linux kernel to either a specific
+# of the latest OpenMoko version. This is mainly intended as a template for
+# copy & paste, and as an example for individual scripts.
+#
+# See ../../u-boot/scripts/README for the toolchain and "build" for environment
+# variables.
+# We use SVN, KERNEL, and SVN_REV.
+#
+
+cd linux-$KERNEL
+
+# If there are uncommitted changes, "quilt refresh" them first.
+# If the SVN repository has been updated before running this script,
+# "quilt pop -a" may fail, and you have to use "quilt pop -f" or
+# "quilt pop -a -f".
+#
+quilt pop -a
+
+defconfig=$SVN/trunk/src/target/kernel/config/defconfig-$KERNEL
+( cd patches && svn update -r${SVN_REV:-HEAD} . $defconfig; )
+
+quilt push -a
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- oldconfig
+make ARCH=arm CROSS_COMPILE=arm-angstrom-linux-gnueabi- uImage

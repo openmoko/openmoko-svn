@@ -1,0 +1,33 @@
+- arch/arm/mach-s3c2440/mach-gta02.c (gta02_glamo_pdata): initialize fields for
+  timing data
+
+Signed-off-by: Chia-I Wu <olv@openmoko.com>
+Acked-by: Werner Almesberger <werner@openmoko.org>
+
+Index: linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- linux-2.6.22.5.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22.5/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -514,11 +514,19 @@
+ /* Smedia Glamo 3362 */
+ 
+ static struct glamofb_platform_data gta02_glamo_pdata = {
+-	.width		= 480,
+-	.height		= 640,
++	.width		= 43,
++	.height		= 58,
++	.pixclock	= 50 * 1000, /* 50 ns */
++	.left_margin	= 8,
++	.right_margin	= 104,
++	.upper_margin	= 2,
++	.lower_margin	= 16,
++	.hsync_len	= 8,
++	.vsync_len	= 2,
++	.fb_mem_size	= 0x400000, /* we have 8MB of SRAM, use half for fb */
+ 	.xres		= {
+ 		.min	= 240,
+-		.max	= 480,
++		.max	= 640,
+ 		.defval	= 480,
+ 	},
+ 	.yres		= {

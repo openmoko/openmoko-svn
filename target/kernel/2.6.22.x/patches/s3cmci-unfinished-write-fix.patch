@@ -1,0 +1,24 @@
+Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+===================================================================
+--- linux-2.6.22.1.orig/drivers/mmc/host/s3cmci.c
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+@@ -318,6 +318,7 @@
+ {
+ 	struct s3cmci_host *host = (struct s3cmci_host *) data;
+ 
++	disable_irq(host->irq);
+ 
+ 	if (host->pio_active == XFER_WRITE)
+ 		do_pio_write(host);
+@@ -336,9 +337,9 @@
+ 			host->mrq->data->error = MMC_ERR_DMA;
+ 		}
+ 
+-		disable_irq(host->irq);
+ 		finalize_request(host);
+-	}
++	} else
++		enable_irq(host->irq);
+ }
+ 
+ /*
