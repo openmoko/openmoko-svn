@@ -1,6 +1,5 @@
 # fixes that should already be upstream
 explicitly-link-notes-section.patch
-s3c2410_fb-line_length.patch
 gta01-no_nand_partitions.patch
 neo1973-soc-include-fix.patch
 asoc-neo1973_wm8753-power.patch
