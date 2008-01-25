@@ -12,10 +12,10 @@
 #
 # SVN points to the root of the local copy of the OpenMoko SVN tree (the tree
 # must be checked out already), e.g.,
-SVN=/home/moko/svn.openmoko.org/
+# SVN=/home/moko/svn.openmoko.org/
 #
 # KERNEL specifies the kernel version we use, e.g.,
-KERNEL=2.6.24-rc8
+# KERNEL=2.6.24
 #
 # KERNELSRC_DIR, if defined, specifies the directory where the kernel source
 # tarball resides. By default, we use ".".
@@ -23,10 +23,10 @@ KERNEL=2.6.24-rc8
 #
 # UBOOT_DIR, if defined, specifies the absolute (!) path to the directory where
 # u-boot has been built. By default, we use ./u-boot
-UBOOT_DIR=/home/moko/fr/u-boot
+# UBOOT_DIR=/wherever/u-boot
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
-# SVN_REV=3911
+# SVN_REV=3950
 #
 
 # wget http://ftp.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL}.tar.bz2
