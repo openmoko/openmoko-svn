@@ -1,3 +1,10 @@
+2008-01-25  Chris Lord  <chris@openedhand.com>
+
+	* src/today-main.c: (bg_child_expose_cb), (reduced_notify), (main):
+	* src/today-pim-journal.c: (today_pim_journal_box_new):
+	* src/today.h:
+        Add a 'reduced' mode (controlled by /desktop/poky/interface/reduced)
+
 2008-01-24  Chris Lord  <chris@openedhand.com>
 
 	* src/today-utils.c:

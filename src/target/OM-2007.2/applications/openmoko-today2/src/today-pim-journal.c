@@ -310,10 +310,10 @@ today_pim_journal_box_new (TodayData *data)
 {
 	JanaStore *store;
 	MokoJournal *journal;
-	GtkWidget *vbox, *hbox, *image, *button, *align;
+	GtkWidget *vbox, *hbox, *image, *align;
 	
 	hbox = gtk_hbox_new (FALSE, 6);
-	button = gtk_button_new ();
+	data->date_button = gtk_button_new ();
 	data->date_label = gtk_label_new (NULL);
 	data->date_aspect = gtk_aspect_frame_new (NULL, 0.5, 0.5, 1.0, FALSE);
 	align = gtk_alignment_new (1.0, 0.5, 1.0, 1.0);
@@ -322,9 +322,9 @@ today_pim_journal_box_new (TodayData *data)
 	gtk_container_add (GTK_CONTAINER (align), data->date_aspect);
 	gtk_box_pack_start (GTK_BOX (hbox), data->date_label, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (hbox), align, TRUE, TRUE, 0);
-	gtk_container_add (GTK_CONTAINER (button), hbox);
+	gtk_container_add (GTK_CONTAINER (data->date_button), hbox);
 	gtk_widget_show_all (hbox);
-	g_signal_connect (button, "clicked",
+	g_signal_connect (data->date_button, "clicked",
 		G_CALLBACK (header_clicked_cb), data);
 	
 	/* Missed calls box */
@@ -400,7 +400,7 @@ today_pim_journal_box_new (TodayData *data)
 	
 	/* Pack widgets */
 	vbox = gtk_vbox_new (FALSE, 6);
-	gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data->date_button, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox),
 		data->missed_calls_box, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox),

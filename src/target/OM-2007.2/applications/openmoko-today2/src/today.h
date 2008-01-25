@@ -13,6 +13,7 @@
 #define GCONF_POKY_WALLPAPER "/wallpaper"
 #define GCONF_POKY_DIGITAL "/digital_clock"
 #define GCONF_POKY_SMALLCLOCK "/small_clock"
+#define GCONF_POKY_REDUCED "/reduced"
 
 typedef struct {
 	/* Home */

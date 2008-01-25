@@ -7,6 +7,7 @@
 #include <gconf/gconf-client.h>
 #include <moko-finger-scroll.h>
 #include <moko-stock.h>
+#include <moko-search-bar.h>
 #include <libtaku/launcher-util.h>
 #include <libtaku/xutil.h>
 #include <unistd.h>
@@ -79,24 +80,11 @@ static gboolean
 bg_child_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
 {
 	cairo_t *cr;
-/*	GtkWidget *parent;
-	gint x = 0, y = 0;
 	
-	if (!data->wallpaper) return FALSE;
-	
-	parent = widget;
-	do {
-		if (!GTK_WIDGET_NO_WINDOW (parent)) {
-			x += parent->allocation.x;
-			y += parent->allocation.y;
-		}
-		parent = gtk_widget_get_parent (parent);
-	} while (parent && (parent != data->bg_ebox));
-	if (!parent) return FALSE;
-	
-	gdk_draw_drawable (widget->window, widget->style->black_gc,
-		data->wallpaper, x, y,
-		0, 0, -1, -1);*/
+	if ((!GTK_WIDGET_VISIBLE (data->missed_calls_box)) &&
+	    (!GTK_WIDGET_VISIBLE (data->unread_messages_box)) &&
+	    (!GTK_WIDGET_VISIBLE (data->dates_box)) &&
+	    (!GTK_WIDGET_VISIBLE (data->tasks_box))) return FALSE;
 	
 	/* Draw a semi-transparent rounded rectangle */
 	cr = gdk_cairo_create (widget->window);
@@ -378,6 +366,38 @@ location_notify (GConfClient *client, guint cnxn_id,
 	}
 }
 
+static void
+reduced_notify (GConfClient *client, guint cnxn_id,
+		GConfEntry *entry, TodayData *data)
+{
+	GConfValue *value;
+	gboolean hide;
+	
+	value = gconf_entry_get_value (entry);
+	hide = (value && gconf_value_get_bool (value)) ? TRUE : FALSE;
+	g_object_set (G_OBJECT (data->clock), "visible", !hide, NULL);
+	g_object_set (G_OBJECT (data->search_bar), "visible", !hide, NULL);
+	g_object_set (G_OBJECT (data->date_button), "visible", !hide, NULL);
+	g_object_set (G_OBJECT (data->home_toolbar), "visible", !hide, NULL);
+	
+	/* Unset application filter */
+	if (hide) {
+		gint rows;
+		GtkTreeModel *model;
+		GtkComboBox *combo = moko_search_bar_get_combo_box (
+			MOKO_SEARCH_BAR (data->search_bar));
+		GtkEntry *entry = moko_search_bar_get_entry (
+			MOKO_SEARCH_BAR (data->search_bar));
+		
+		gtk_entry_set_text (entry, "");
+		
+		/* FIXME: Assuming last row is 'All' category... */
+		model = gtk_combo_box_get_model (combo);
+		rows = gtk_tree_model_iter_n_children (model, NULL);
+		gtk_combo_box_set_active (combo, rows - 1);
+	}
+}
+
 static gboolean active = TRUE;
 
 static void
@@ -549,6 +569,10 @@ main (int argc, char **argv)
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_SMALLCLOCK,
 		(GConfClientNotifyFunc)small_clock_notify,
 		&data, NULL, NULL);
+	gconf_client_notify_add (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_REDUCED,
+		(GConfClientNotifyFunc)reduced_notify,
+		&data, NULL, NULL);
 	
 	/* Fire off signals */
 	gconf_client_notify (gconf_client_get_default (),
@@ -557,6 +581,8 @@ main (int argc, char **argv)
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL);
 	gconf_client_notify (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_SMALLCLOCK);
+	gconf_client_notify (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_REDUCED);
 
 	gtk_main ();
 
