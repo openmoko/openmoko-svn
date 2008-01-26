@@ -3,10 +3,10 @@ of the Linux kernel.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.24/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.24/arch/arm/mach-s3c2410/Kconfig
 @@ -110,5 +110,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -21,19 +21,19 @@ Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
 +
  endmenu
  
-Index: linux-2.6/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.24/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6/arch/arm/mach-s3c2410/Makefile
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.24/arch/arm/mach-s3c2410/Makefile
 @@ -29,3 +29,4 @@
  obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
  obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_NEO1973_GTA01)+= mach-gta01.o
-Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 @@ -0,0 +1,658 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
@@ -473,7 +473,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +/* SPI */
 +
-+static struct spi_board_info gta01_spi_board_info[] __initdata = {
++static struct spi_board_info gta01_spi_board_info[] = {
 +	{
 +		.modalias	= "jbt6k74",
 +		/* platform_data */
@@ -693,10 +693,10 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	.init_machine	= gta01_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6.24/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,70 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
@@ -768,11 +768,11 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01Bv4_IRQ_PCF50606	IRQ_EINT9
 +
 +#endif /* _GTA01_H */
-Index: linux-2.6/MAINTAINERS
+Index: linux-2.6.24/MAINTAINERS
 ===================================================================
---- linux-2.6.orig/MAINTAINERS
-+++ linux-2.6/MAINTAINERS
-@@ -1530,6 +1530,14 @@
+--- linux-2.6.24.orig/MAINTAINERS
++++ linux-2.6.24/MAINTAINERS
+@@ -1536,6 +1536,14 @@
  M:	akinobu.mita@gmail.com
  S:	Supported
  
@@ -787,10 +787,10 @@ Index: linux-2.6/MAINTAINERS
  FRAMEBUFFER LAYER
  P:	Antonino Daplas
  M:	adaplas@gmail.com
-Index: linux-2.6/arch/arm/plat-s3c24xx/Kconfig
+Index: linux-2.6.24/arch/arm/plat-s3c24xx/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/arm/plat-s3c24xx/Kconfig
-+++ linux-2.6/arch/arm/plat-s3c24xx/Kconfig
+--- linux-2.6.24.orig/arch/arm/plat-s3c24xx/Kconfig
++++ linux-2.6.24/arch/arm/plat-s3c24xx/Kconfig
 @@ -46,4 +46,9 @@
  	help
  	  Common machine code for SMDK2410 and SMDK2440
