@@ -1,7 +1,7 @@
-Index: linux-2.6/arch/arm/plat-s3c24xx/devs.c
+Index: linux-2.6.24/arch/arm/plat-s3c24xx/devs.c
 ===================================================================
---- linux-2.6.orig/arch/arm/plat-s3c24xx/devs.c
-+++ linux-2.6/arch/arm/plat-s3c24xx/devs.c
+--- linux-2.6.24.orig/arch/arm/plat-s3c24xx/devs.c
++++ linux-2.6.24/arch/arm/plat-s3c24xx/devs.c
 @@ -24,6 +24,7 @@
  #include <asm/mach/map.h>
  #include <asm/mach/irq.h>
@@ -24,7 +24,7 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/devs.c
 +
 +static struct s3c2410_ts_mach_info s3c2410ts_info;
 +
-+void __init set_s3c2410ts_info(struct s3c2410_ts_mach_info *hard_s3c2410ts_info)
++void set_s3c2410ts_info(struct s3c2410_ts_mach_info *hard_s3c2410ts_info)
 +{
 +	memcpy(&s3c2410ts_info,hard_s3c2410ts_info,sizeof(struct s3c2410_ts_mach_info));
 +	s3c_device_ts.dev.platform_data = &s3c2410ts_info;
@@ -34,10 +34,10 @@ Index: linux-2.6/arch/arm/plat-s3c24xx/devs.c
  /* USB Device (Gadget)*/
  
  static struct resource s3c_usbgadget_resource[] = {
-Index: linux-2.6/include/asm-arm/plat-s3c24xx/devs.h
+Index: linux-2.6.24/include/asm-arm/plat-s3c24xx/devs.h
 ===================================================================
---- linux-2.6.orig/include/asm-arm/plat-s3c24xx/devs.h
-+++ linux-2.6/include/asm-arm/plat-s3c24xx/devs.h
+--- linux-2.6.24.orig/include/asm-arm/plat-s3c24xx/devs.h
++++ linux-2.6.24/include/asm-arm/plat-s3c24xx/devs.h
 @@ -42,6 +42,7 @@
  extern struct platform_device s3c_device_timer3;
  
@@ -46,10 +46,10 @@ Index: linux-2.6/include/asm-arm/plat-s3c24xx/devs.h
  
  /* s3c2440 specific devices */
  
-Index: linux-2.6/arch/arm/mach-s3c2410/mach-h1940.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-h1940.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2410/mach-h1940.c
-+++ linux-2.6/arch/arm/mach-s3c2410/mach-h1940.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-h1940.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-h1940.c
 @@ -38,6 +38,7 @@
  #include <asm/arch/h1940.h>
  #include <asm/arch/h1940-latch.h>
@@ -86,10 +86,10 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-h1940.c
   	s3c24xx_udc_set_platdata(&h1940_udc_cfg);
  
  	/* Turn off suspend on both USB ports, and switch the
-Index: linux-2.6/drivers/input/touchscreen/Kconfig
+Index: linux-2.6.24/drivers/input/touchscreen/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/input/touchscreen/Kconfig
-+++ linux-2.6/drivers/input/touchscreen/Kconfig
+--- linux-2.6.24.orig/drivers/input/touchscreen/Kconfig
++++ linux-2.6.24/drivers/input/touchscreen/Kconfig
 @@ -67,6 +67,24 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called fujitsu-ts.
@@ -115,19 +115,19 @@ Index: linux-2.6/drivers/input/touchscreen/Kconfig
  config TOUCHSCREEN_GUNZE
  	tristate "Gunze AHL-51S touchscreen"
  	select SERIO
-Index: linux-2.6/drivers/input/touchscreen/Makefile
+Index: linux-2.6.24/drivers/input/touchscreen/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/input/touchscreen/Makefile
-+++ linux-2.6/drivers/input/touchscreen/Makefile
+--- linux-2.6.24.orig/drivers/input/touchscreen/Makefile
++++ linux-2.6.24/drivers/input/touchscreen/Makefile
 @@ -19,3 +19,4 @@
  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
  obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
  obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
 +obj-$(CONFIG_TOUCHSCREEN_S3C2410)	+= s3c2410_ts.o
-Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
+Index: linux-2.6.24/drivers/input/touchscreen/s3c2410_ts.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
++++ linux-2.6.24/drivers/input/touchscreen/s3c2410_ts.c
 @@ -0,0 +1,437 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -566,10 +566,10 @@ Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
 +        c-basic-offset: 8
 +    End:
 +*/
-Index: linux-2.6/include/asm-arm/arch-s3c2410/ts.h
+Index: linux-2.6.24/include/asm-arm/arch-s3c2410/ts.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/asm-arm/arch-s3c2410/ts.h
++++ linux-2.6.24/include/asm-arm/arch-s3c2410/ts.h
 @@ -0,0 +1,28 @@
 +/* linux/include/asm/arch-s3c2410/ts.h
 + *
@@ -595,14 +595,14 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/ts.h
 +       int             oversampling_shift;
 +};
 +
-+void __init set_s3c2410ts_info(struct s3c2410_ts_mach_info *hard_s3c2410ts_info);
++void set_s3c2410ts_info(struct s3c2410_ts_mach_info *hard_s3c2410ts_info);
 +
 +#endif /* __ASM_ARM_TS_H */
 +
-Index: linux-2.6/arch/arm/plat-s3c24xx/s3c244x.c
+Index: linux-2.6.24/arch/arm/plat-s3c24xx/s3c244x.c
 ===================================================================
---- linux-2.6.orig/arch/arm/plat-s3c24xx/s3c244x.c
-+++ linux-2.6/arch/arm/plat-s3c24xx/s3c244x.c
+--- linux-2.6.24.orig/arch/arm/plat-s3c24xx/s3c244x.c
++++ linux-2.6.24/arch/arm/plat-s3c24xx/s3c244x.c
 @@ -67,6 +67,7 @@
  
  	s3c_device_i2c.name  = "s3c2440-i2c";
