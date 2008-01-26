@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
---- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2440/mach-gta02.c
-+++ linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 @@ -374,8 +374,6 @@
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
@@ -45,7 +45,7 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  	},
  };
  
-@@ -522,26 +519,74 @@
+@@ -522,26 +519,75 @@
  		.modalias	= "lis302dl",
  		.platform_data	= &lis302_pdata[0],
  		.irq		= GTA02_IRQ_GSENSOR_1,
@@ -71,17 +71,18 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  
 -static struct s3c2410_spi_info gta02_spi_acc_cfg = {
 -	.set_cs		= gta02_spi_acc_set_cs,
-+static void spi_acc_cs(struct s3c2410_spigpio_info *spigpio_info, int cs)
++static void spi_acc_cs(struct s3c2410_spigpio_info *spigpio_info,
++		       int csid, int cs)
 +{
 +	struct lis302dl_platform_data * plat_data =
 +				(struct lis302dl_platform_data *)spigpio_info->
 +						     board_info->platform_data;
 +	switch (cs) {
 +	case BITBANG_CS_ACTIVE:
-+		s3c2410_gpio_setpin(plat_data->pin_chip_select, 0);
++		s3c2410_gpio_setpin(plat_data[csid].pin_chip_select, 0);
 +		break;
 +	case BITBANG_CS_INACTIVE:
-+		s3c2410_gpio_setpin(plat_data->pin_chip_select, 1);
++		s3c2410_gpio_setpin(plat_data[csid].pin_chip_select, 1);
 +		break;
 +	}
 +}
@@ -126,7 +127,7 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  };
  
  static struct resource gta02_led_resources[] = {
-@@ -784,7 +829,6 @@
+@@ -784,7 +830,6 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
@@ -134,7 +135,7 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
  	 * hot-pluggable, this is not required anyway */
-@@ -796,6 +840,12 @@
+@@ -796,6 +841,12 @@
  		break;
  	}
  
@@ -147,7 +148,7 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  	INIT_WORK(&gta02_udc_vbus_drawer.work, __gta02_udc_vbus_draw);
  	s3c24xx_udc_set_platdata(&gta02_udc_cfg);
  	set_s3c2410ts_info(&gta02_ts_cfg);
-@@ -824,6 +874,7 @@
+@@ -824,6 +875,7 @@
  		break;
  	}
  
@@ -155,10 +156,10 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2440/mach-gta02.c
  	platform_device_register(&gta01_button_dev);
  	platform_device_register(&gta01_pm_gsm_dev);
  
-Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
+Index: linux-2.6.24/drivers/input/misc/lis302dl.c
 ===================================================================
---- linux-2.6.24-rc8.orig/drivers/input/misc/lis302dl.c
-+++ linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
+--- linux-2.6.24.orig/drivers/input/misc/lis302dl.c
++++ linux-2.6.24/drivers/input/misc/lis302dl.c
 @@ -84,6 +84,7 @@
  
  enum lis302dl_reg_ctrl3 {
@@ -439,10 +440,10 @@ Index: linux-2.6.24-rc8/drivers/input/misc/lis302dl.c
  	dev_set_drvdata(&spi->dev, NULL);
  	kfree(lis);
  
-Index: linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
+Index: linux-2.6.24/drivers/spi/spi_s3c24xx_gpio.c
 ===================================================================
---- linux-2.6.24-rc8.orig/drivers/spi/spi_s3c24xx_gpio.c
-+++ linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
+--- linux-2.6.24.orig/drivers/spi/spi_s3c24xx_gpio.c
++++ linux-2.6.24/drivers/spi/spi_s3c24xx_gpio.c
 @@ -91,7 +91,7 @@
  	struct s3c2410_spigpio *sg = spidev_to_sg(dev);
  
@@ -484,10 +485,10 @@ Index: linux-2.6.24-rc8/drivers/spi/spi_s3c24xx_gpio.c
  	}
  
  	return 0;
-Index: linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
+Index: linux-2.6.24/include/asm-arm/arch-s3c2410/spi-gpio.h
 ===================================================================
---- linux-2.6.24-rc8.orig/include/asm-arm/arch-s3c2410/spi-gpio.h
-+++ linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
+--- linux-2.6.24.orig/include/asm-arm/arch-s3c2410/spi-gpio.h
++++ linux-2.6.24/include/asm-arm/arch-s3c2410/spi-gpio.h
 @@ -22,11 +22,12 @@
  	unsigned long		 pin_miso;
  
@@ -502,10 +503,10 @@ Index: linux-2.6.24-rc8/include/asm-arm/arch-s3c2410/spi-gpio.h
  };
  
  
-Index: linux-2.6.24-rc8/include/linux/lis302dl.h
+Index: linux-2.6.24/include/linux/lis302dl.h
 ===================================================================
---- linux-2.6.24-rc8.orig/include/linux/lis302dl.h
-+++ linux-2.6.24-rc8/include/linux/lis302dl.h
+--- linux-2.6.24.orig/include/linux/lis302dl.h
++++ linux-2.6.24/include/linux/lis302dl.h
 @@ -5,6 +5,7 @@
  
  struct lis302dl_platform_data {
@@ -514,10 +515,10 @@ Index: linux-2.6.24-rc8/include/linux/lis302dl.h
  };
  
  #endif /* _LINUX_LIS302DL_H */
-Index: linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2410/mach-gta01.c
-+++ linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-gta01.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 @@ -521,7 +521,7 @@
  	},
  };
@@ -527,10 +528,10 @@ Index: linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-gta01.c
  {
  	switch (cs) {
  	case BITBANG_CS_ACTIVE:
-Index: linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-qt2410.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.24-rc8.orig/arch/arm/mach-s3c2410/mach-qt2410.c
-+++ linux-2.6.24-rc8/arch/arm/mach-s3c2410/mach-qt2410.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-qt2410.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-qt2410.c
 @@ -217,7 +217,7 @@
  
  /* SPI */
