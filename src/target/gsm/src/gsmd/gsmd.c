@@ -182,7 +182,8 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 	/* use +CLIP: to indicate CLIP */
 	rc |= gsmd_simplecmd(gsmd, "AT+CLIP=1");
 	/* use +COLP: to indicate COLP */
-	rc |= gsmd_simplecmd(gsmd, "AT+COLP=1");
+	/* set it 0 to disable subscriber info and avoid cme err 512 */
+	rc |= gsmd_simplecmd(gsmd, "AT+COLP=0");
 	/* use +CCWA: to indicate waiting call */
 	rc |= gsmd_simplecmd(gsmd, "AT+CCWA=1,1");
 	/* configure message format as PDU mode*/
