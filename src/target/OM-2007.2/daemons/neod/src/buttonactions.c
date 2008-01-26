@@ -531,18 +531,18 @@ void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer u
     is_fullscreen = 1 - is_fullscreen;
 }
 
-void neod_buttonactions_popup_selected_orientation( GtkWidget* button, gpointer user_data )
-{
-    gtk_widget_hide( aux_menu );
-	neod_buttonactions_set_orientation(!orientation);
-}
-
 void neod_buttonactions_set_orientation(gboolean new_o) {
     if(new_o)
         g_spawn_command_line_async( "xrandr -o 1", NULL );
     else
         g_spawn_command_line_async( "xrandr -o 0", NULL );
     orientation = new_o;
+}
+
+void neod_buttonactions_popup_selected_orientation( GtkWidget* button, gpointer user_data )
+{
+    gtk_widget_hide( aux_menu );
+    neod_buttonactions_set_orientation(!orientation);
 }
 
 void neod_buttonactions_popup_selected_screenshot( GtkWidget* button, gpointer user_data )
@@ -811,9 +811,9 @@ void neod_buttonactions_show_power_menu()
         gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(power_menu)->vbox), box );
     }
 
-    gtk_button_set_label( gsmpower, g_strdup_printf( "Turn %s GSM", is_turned_on( GSM ) ? "off" : "on" ) );
-    gtk_button_set_label( btpower, g_strdup_printf( "Turn %s Bluetooth", is_turned_on( BLUETOOTH ) ? "off" : "on" ) );
-    gtk_button_set_label( gpspower, g_strdup_printf( "Turn %s GPS", is_turned_on( GPS ) ? "off" : "on" ) );
+    gtk_button_set_label( GTK_BUTTON(gsmpower), g_strdup_printf( "Turn %s GSM", is_turned_on( GSM ) ? "off" : "on" ) );
+    gtk_button_set_label( GTK_BUTTON(btpower), g_strdup_printf( "Turn %s Bluetooth", is_turned_on( BLUETOOTH ) ? "off" : "on" ) );
+    gtk_button_set_label( GTK_BUTTON(gpspower), g_strdup_printf( "Turn %s GPS", is_turned_on( GPS ) ? "off" : "on" ) );
     int response = gtk_dialog_run( GTK_DIALOG(power_menu) );
     g_debug( "gtk_dialog_run completed, response = %d", response );
 }
@@ -1245,6 +1245,7 @@ void neod_buttonactions_lock_display() {
 		gtk_box_pack_start(GTK_BOX(box1), south, 0, 0, 0);
 
 		gtk_window_fullscreen(GTK_WINDOW(lock_display));
+        gtk_window_set_keep_above( GTK_WINDOW(lock_display), TRUE );
 		gtk_container_add(GTK_CONTAINER(lock_display), box1);
 
 		static GtkTargetEntry targetentries[] = {{"text/plain", 0, 0}};
