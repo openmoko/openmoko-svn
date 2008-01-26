@@ -674,7 +674,7 @@ static int network_query_reg_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 
 	if (strncmp(resp, "+CREG: ", 7))
 		return -EINVAL;
-	resp += 7;
+
 	er = extrsp_parse(gsmd_tallocs, resp);
 	if(!er)
 		return -ENOMEM;
