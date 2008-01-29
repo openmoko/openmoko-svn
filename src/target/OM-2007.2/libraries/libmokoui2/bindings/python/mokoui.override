@@ -4,11 +4,11 @@ headers
 #include "moko-finger-scroll.h"
 #include "moko-type.h"
 %%
-modulename moko                     
+modulename mokoui
 %%
-import gtk.EventBox as PyGtkEventBox_Type    
+import gtk.EventBox as PyGtkEventBox_Type
 import gtk.Widget as PyGtkWidget_Type
 %%
 ignore-glob
-  *_get_type                            
+  *_get_type
 %%
