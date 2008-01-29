@@ -334,7 +334,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  	 * disable the data ready events */
  	reg_set_bit_mask(lis, LIS302DL_REG_CTRL1, ctrl1, 0x00);
  
-@@ -446,44 +447,44 @@
+@@ -446,44 +447,38 @@
  
  	rc = spi_setup(spi);
  	if (rc < 0) {
@@ -359,12 +359,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  
 -	/* switch interrupt to open collector */
 -	reg_write(lis, LIS302DL_CTRL3_PP_OD, 0x7c);
-+	/* switch interrupt to open collector, active-low */
-+	reg_write(lis, LIS302DL_REG_CTRL3, LIS302DL_CTRL3_PP_OD |
-+					   LIS302DL_CTRL3_IHL);
-+	lis302dl_int_mode(spi, 1, LIS302DL_INTMODE_DATA_READY);
-+	lis302dl_int_mode(spi, 2, LIS302DL_INTMODE_DATA_READY);
- 
+-
 -	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt, IRQF_DISABLED,
 -			 "lis302dl", NULL);
 +	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt,
@@ -394,7 +389,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  	}
  
  	set_bit(EV_REL, lis->input_dev->evbit);
-@@ -498,9 +499,35 @@
+@@ -498,9 +493,44 @@
  	lis->input_dev->open = lis302dl_input_open;
  	lis->input_dev->close = lis302dl_input_close;
  
@@ -410,7 +405,16 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
 +	reg_write(lis, LIS302DL_REG_FF_WU_THS_1, 0x14);
 +	reg_write(lis, LIS302DL_REG_FF_WU_DURATION_1, 0x00);
 +	reg_write(lis, LIS302DL_REG_FF_WU_CFG_1, 0x95);
-+	reg_write(lis, LIS302DL_REG_CTRL3, 0xe4);
++
++	reg_write(lis, LIS302DL_REG_CTRL1, LIS302DL_CTRL1_Xen |
++					   LIS302DL_CTRL1_Yen |
++			 		   LIS302DL_CTRL1_Zen);
++
++	/* switch interrupt to open collector, active-low */
++	reg_write(lis, LIS302DL_REG_CTRL3, LIS302DL_CTRL3_PP_OD |
++					   LIS302DL_CTRL3_IHL);
++	lis302dl_int_mode(spi, 1, LIS302DL_INTMODE_DATA_READY);
++	lis302dl_int_mode(spi, 2, LIS302DL_INTMODE_DATA_READY);
 +
 +	reg_read(lis, LIS302DL_REG_STATUS);
 +	reg_read(lis, LIS302DL_REG_FF_WU_SRC_1);
@@ -431,7 +435,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  }
  
  static int __devexit lis302dl_remove(struct spi_device *spi)
-@@ -511,6 +538,8 @@
+@@ -511,6 +541,8 @@
  	reg_write(lis, LIS302DL_REG_CTRL1, 0x00);
  	sysfs_remove_group(&spi->dev.kobj, &lis302dl_attr_group);
  	input_unregister_device(lis->input_dev);
