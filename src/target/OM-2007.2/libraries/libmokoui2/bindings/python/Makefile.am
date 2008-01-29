@@ -12,8 +12,8 @@ mokoui.defs: ../../libmokoui/moko-finger-scroll.h
 mokoui.c: mokoui.defs mokoui.override
 	pygtk-codegen-2.0 --prefix mokoui \
 		--register $(PY_DEFS)/gdk-types.defs \
-		-register $(PY_DEFS)/gtk-types.defs \
-		-override mokoui.override \
+		--register $(PY_DEFS)/gtk-types.defs \
+		--override mokoui.override \
 		mokoui.defs > $@            
 
 pyexec_LTLIBRARIES = mokoui.la
