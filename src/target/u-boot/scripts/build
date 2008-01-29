@@ -23,7 +23,7 @@
 # GIT_HEAD=98b742489c09780be6a832eeaa4e5eff824792bb
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
-# SVN_REV=3967
+# SVN_REV=3978
 #
 
 git clone git://www.denx.de/git/u-boot.git
