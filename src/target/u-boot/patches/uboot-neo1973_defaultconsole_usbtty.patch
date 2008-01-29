@@ -23,11 +23,11 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta02.h
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -190,6 +190,7 @@
+@@ -189,6 +189,7 @@
  
  #define CONFIG_EXTRA_ENV_SETTINGS 					\
  	"usbtty=cdc_acm\0"						\
 +	"stderr=usbtty\0stdout=usbtty\0stdin=usbtty\0"			\
- 	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
+ 	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock6 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
  	""
  

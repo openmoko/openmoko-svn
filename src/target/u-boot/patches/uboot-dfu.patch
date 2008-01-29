@@ -90,7 +90,7 @@ Index: u-boot/drivers/usb/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usb/usbdfu.c
-@@ -0,0 +1,1069 @@
+@@ -0,0 +1,1018 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -714,7 +714,7 @@ Index: u-boot/drivers/usb/usbdfu.c
 +	.bNumConfigurations	= 0x01,
 +};
 +
-+static const struct _dfu_desc dfu_cfg_descriptor = {
++static struct _dfu_desc dfu_cfg_descriptor = {
 +	.ucfg = {
 +		.bLength		= USB_DT_CONFIG_SIZE,
 +		.bDescriptorType	= USB_DT_CONFIG,
@@ -726,72 +726,6 @@ Index: u-boot/drivers/usb/usbdfu.c
 +		.iConfiguration		= DFU_STR_CONFIG,
 +		.bmAttributes		= BMATTRIBUTE_RESERVED,
 +		.bMaxPower		= 50,
-+	},
-+	.uif[0] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x00,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT0,
-+	},
-+	.uif[1] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x01,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT1,
-+	},
-+	.uif[2] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x02,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT2,
-+	},
-+	.uif[3] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x03,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT3,
-+	},
-+	.uif[4] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x04,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT4,
-+	},
-+	.uif[5] = {
-+		.bLength		= USB_DT_INTERFACE_SIZE,
-+		.bDescriptorType	= USB_DT_INTERFACE,
-+		.bInterfaceNumber	= 0x00,
-+		.bAlternateSetting	= 0x05,
-+		.bNumEndpoints		= 0x00,
-+		.bInterfaceClass	= 0xfe,
-+		.bInterfaceSubClass	= 0x01,
-+		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= DFU_STR_ALT5,
 +	},
 +	.func_dfu = DFU_FUNC_DESC,
 +};
@@ -1075,6 +1009,21 @@ Index: u-boot/drivers/usb/usbdfu.c
 +
 +int dfu_init_instance(struct usb_device_instance *dev)
 +{
++	int i;
++
++	for (i = 0; i != DFU_NUM_ALTERNATES; i++) {
++		struct usb_interface_descriptor *uif =
++		    dfu_cfg_descriptor.uif+i;
++
++		uif->bLength		= USB_DT_INTERFACE_SIZE;
++		uif->bDescriptorType	= USB_DT_INTERFACE;
++		uif->bAlternateSetting	= i;
++		uif->bInterfaceClass	= 0xfe;
++		uif->bInterfaceSubClass	= 1;
++		uif->bInterfaceProtocol	= 2;
++		uif->iInterface		= DFU_STR_ALT(i);
++	}
++
 +	dev->dfu_dev_desc = &dfu_dev_descriptor;
 +	dev->dfu_cfg_desc = &dfu_cfg_descriptor;
 +	dev->dfu_state = DFU_STATE_appIDLE;
@@ -1294,7 +1243,7 @@ Index: u-boot/drivers/serial/usbtty.c
  {
  	int i;
  	for (i = 0; i < strlen (str) && str[i]; i++){
-@@ -648,6 +663,9 @@
+@@ -654,6 +669,9 @@
  	device_instance->bus = bus_instance;
  	device_instance->configurations = NUM_CONFIGS;
  	device_instance->configuration_instance_array = config_instance;
@@ -1332,7 +1281,7 @@ Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/usb_dfu.h
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,94 @@
 +#ifndef _DFU_H
 +#define _DFU_H
 +
@@ -1391,21 +1340,16 @@ Index: u-boot/include/usb_dfu.h
 +
 +#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
 +
++#ifndef DFU_NUM_ALTERNATES
 +#define DFU_NUM_ALTERNATES	6
++#endif
 +
 +#define DFU_STR_MANUFACTURER	STR_MANUFACTURER
 +#define DFU_STR_PRODUCT		STR_PRODUCT
 +#define DFU_STR_SERIAL		STR_SERIAL
 +#define DFU_STR_CONFIG		(STR_COUNT)
-+#define DFU_STR_ALT0		(STR_COUNT+1)
-+#define DFU_STR_ALT1		(STR_COUNT+2)
-+#define DFU_STR_ALT2		(STR_COUNT+3)
-+#define DFU_STR_ALT3		(STR_COUNT+4)
-+#define DFU_STR_ALT4		(STR_COUNT+5)
-+#define DFU_STR_ALT5		(STR_COUNT+6)
-+#define DFU_STR_COUNT		(STR_COUNT+7)
-+
-+#define DFU_NUM_STRINGS		(STR_COUNT+8)
++#define DFU_STR_ALT(n)		(STR_COUNT+(n)+1)
++#define DFU_STR_COUNT		DFU_STR_ALT(DFU_NUM_ALTERNATES)
 +
 +#define CONFIG_DFU_CFG_STR	"USB Device Firmware Upgrade"
 +#define CONFIG_DFU_ALT0_STR	"RAM 0x32000000"
@@ -1623,7 +1567,7 @@ Index: u-boot/tools/Makefile
  
  ifeq ($(ARCH),mips)
  BIN_FILES	+= inca-swap-bytes$(SFX)
-@@ -140,6 +140,10 @@
+@@ -141,6 +141,10 @@
  		$(CC) $(CFLAGS) $(HOST_LDFLAGS) -o $@ $^
  		$(STRIP) $@
  
@@ -1993,7 +1937,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -278,6 +278,12 @@
+@@ -298,6 +298,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  

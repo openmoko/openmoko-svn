@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2334,6 +2334,14 @@
+@@ -2423,6 +2423,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -93,7 +93,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,449 @@
+@@ -0,0 +1,448 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -507,14 +507,13 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	return 1;
 +}
 +
-+/* The sum of all part_size[]s must equal to the NAND size, i.e., 0x4000000.
-+   "initrd" is sized such that it can hold two uncompressed 16 bit 640*480
-+   images: 640*480*2*2 = 1228800 < 1245184. */
++/* The sum of all part_size[]s must equal to the NAND size, i.e., 0x8000000. */
 +
 +unsigned int dynpart_size[] = {
-+    CFG_UBOOT_SIZE, CFG_ENV_SIZE, 0x200000, 0xa0000, 0x1fce0000, 0 };
++    CFG_UBOOT_SIZE, CFG_ENV_SIZE, 0x800000, 0xa0000, 0x40000,
++    0x8000000-CFG_UBOOT_SIZE-CFG_ENV_SIZE-0x800000-0xa0000-0x40000, 0 };
 +char *dynpart_names[] = {
-+    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
++    "u-boot", "u-boot_env", "kernel", "splash", "factory", "rootfs", NULL };
 +
 +
 +const char *neo1973_get_charge_status(void)
@@ -610,7 +609,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,284 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -747,7 +746,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
 +#endif
 +
-+#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
++#define	CFG_CBSIZE		1024		/* Console I/O Buffer Size	*/
 +#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
 +#define	CFG_MAXARGS		64		/* max number of command args	*/
 +#define CFG_BARGSIZE		CFG_CBSIZE	/* Boot Argument Buffer Size	*/
@@ -801,7 +800,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +
 +#define CONFIG_EXTRA_ENV_SETTINGS 					\
 +	"usbtty=cdc_acm\0"						\
-+	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
++	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock5 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
 +	""
 +
 +/*-----------------------------------------------------------------------
@@ -888,9 +887,11 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define	CONFIG_RTC_PCF50633		1
 +
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
-+#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),128k(u-boot_env),2M(kernel),640k(splash),-(rootfs)"
++//#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),128k(u-boot_env),8M(kernel),640k(splash),256k(factory),-(rootfs)"
 +#define CFG_NAND_DYNPART_MTD_KERNEL_NAME "neo1973-nand"
 +#define CONFIG_NAND_DYNPART
++
++#define DFU_NUM_ALTERNATES	7
 +
 +#endif	/* __CONFIG_H */
 Index: u-boot/board/neo1973/gta02/split_by_variant.sh
@@ -1891,8 +1892,8 @@ Index: u-boot/drivers/misc/Makefile
  COBJS-y += pcf50606.o
 +COBJS-y += pcf50633.o
  COBJS-y += status_led.o
+ COBJS-$(CONFIG_FSL_LAW) += fsl_law.o
  
- COBJS	:= $(COBJS-y)
 Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c

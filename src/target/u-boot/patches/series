@@ -71,8 +71,11 @@ uboot-gta02.patch
 uboot-s3c2443.patch
 uboot-smdk2443.patch
 
-# need to find out how upstream feels about this one
+usb-vendor.patch
 gta02-splash.patch
+gta02-nor.patch
+
+# need to find out how upstream feels about this one
 eabi-toolchain.patch
 
 # for review, merge soon
@@ -81,4 +84,9 @@ usbtty-irq-racecondition-fix.patch
 neo1973-gsmver.patch
 uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
+
+# keep this here until we have time to bubble it into the stack
+nor-default-env.patch
+
+# remove soonish
 build-kludge.patch
