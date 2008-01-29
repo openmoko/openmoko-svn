@@ -1,3 +1,10 @@
+2008-01-29  Chris Lord  <chris@openedhand.com>
+
+	* bindings/python/Makefile.am:
+	* bindings/python/moko.override:
+	* bindings/python/mokomodule.c:
+	Rename 'moko' to 'mokoui' in python bindings
+
 2008-01-22  Chris Lord  <chris@openedhand.com>
 
 	Patch by: Frank Li <frank.li@intel.com>
