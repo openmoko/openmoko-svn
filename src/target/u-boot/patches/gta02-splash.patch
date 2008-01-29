@@ -47,7 +47,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
  	[JBT_STATE_NORMAL]		= "normal",
  };
  
-+#ifdef CONFIG_GTA01_REVISION
++#ifndef CONFIG_GTA02_REVISION
 +
  #define GTA01_SCLK	(1 << 7) 	/* GPG7 */
  #define GTA01_MOSI	(1 << 6)	/* GPG6 */
@@ -86,7 +86,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
  {
  	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
  
-+#ifdef CONFIG_GTA01_REVISION
++#ifndef CONFIG_GTA02_REVISION
  	/* initialize SPI for GPIO bitbang */
  	gpio->GPGCON &= 0xffff033f;
  	gpio->GPGCON |= 0x00005440;
