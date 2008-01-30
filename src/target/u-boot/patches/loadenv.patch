@@ -25,7 +25,7 @@ Index: u-boot/common/cmd_nvedit.c
 ===================================================================
 --- u-boot.orig/common/cmd_nvedit.c
 +++ u-boot/common/cmd_nvedit.c
-@@ -563,7 +563,33 @@
+@@ -563,7 +563,36 @@
  	return (saveenv() ? 1 : 0);
  }
  
@@ -33,13 +33,16 @@ Index: u-boot/common/cmd_nvedit.c
 +#ifdef CONFIG_CMD_LOADENV
 +int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 +{
++	extern void env_relocate_spec(void);
 +	extern char *env_name_spec;
++	extern env_t *env_ptr;
 +
 +	printf("Loading Environment from %s...\n", env_name_spec);
 +
 +	if (env_init())
 +		return 1;
-+	env_relocate();
++	env_relocate_spec();
++	gd->env_addr = (ulong) &env_ptr->data;
 +	return 0;
 +}
 +#endif /* CONFIG_CMD_LOADENV */
@@ -51,7 +54,7 @@ Index: u-boot/common/cmd_nvedit.c
 +{
 +	extern char *env_name_spec;
 +
-+	printf("Environment reset to default settings ...\n");
++	printf("Environment reset to default settings\n");
 +
 +	default_env();
 +	return 0;
@@ -60,7 +63,7 @@ Index: u-boot/common/cmd_nvedit.c
  
  
  /************************************************************************
-@@ -615,7 +641,23 @@
+@@ -615,7 +644,23 @@
  	NULL
  );
  
