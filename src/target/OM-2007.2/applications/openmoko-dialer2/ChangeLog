@@ -1,3 +1,8 @@
+2008-01-30  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-network.c: (on_network_registered):
+	Unset operator name when unregistered from network
+
 2008-01-21  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-sms-dbus.xml:

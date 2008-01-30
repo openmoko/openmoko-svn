@@ -229,6 +229,12 @@ on_network_registered (MokoListener *listener,
     priv->registered = type;
     g_signal_emit (listener, signals[STATUS_CHANGED], 0,
                    moko_network_get_status (MOKO_NETWORK (listener)));
+    
+    if ((priv->registered != GSMD_NETREG_REG_HOME) &&
+        (priv->registered != GSMD_NETREG_REG_ROAMING)) {
+      /* Unset operator name on disconnect */
+      moko_listener_on_network_name (listener, handle, NULL);
+    }
   }
 }
 
