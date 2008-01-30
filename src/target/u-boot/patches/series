@@ -73,6 +73,7 @@ uboot-smdk2443.patch
 
 usb-vendor.patch
 gta02-splash.patch
+gta02-bootmenu.patch
 gta02-nor.patch
 
 # need to find out how upstream feels about this one
@@ -87,6 +88,9 @@ uboot-neo1973_defaultconsole_usbtty.patch
 
 # keep this here until we have time to bubble it into the stack
 nor-default-env.patch
+
+# let's see what upstream thinks about this
+loadenv.patch
 
 # remove soonish
 build-kludge.patch

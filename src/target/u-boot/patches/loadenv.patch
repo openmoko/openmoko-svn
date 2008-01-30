@@ -1,0 +1,101 @@
+If we have a writeable environment in persistent storage and
+CONFIG_CMD_LOADENV is set, add the command "loadenv" to load a new environment.
+
+This is to be used for getting access to the persistent environment stored in
+NAND after we've booted the GTA02 from NOR.
+
+This patch also adds a command "defaultenv" that resets the environment to the
+hard-coded default settings, which is also useful without "loadenv".
+
+Note that we don't scan the new environment for changes in settings (e.g.,
+"stdout"). This is to ensure that we don't accidently cut ourselves off during
+environmental surgery.
+
+Signed-off-by: Werner Almesberger <werner@openmoko.org>
+
+loadenv.patch:
+- common/cmd_nvedit.c (do_loadenv): load the environment from persistent
+  storage (without updating settings derived from the environment)
+- common/cmd_nvedit.c (do_defaultenv): reset the environment to default
+  settings
+- include/configs/neo1973_gta02.h: added CONFIG_CMD_LOADENV and
+  CONFIG_CMD_DEFAULTENV
+
+Index: u-boot/common/cmd_nvedit.c
+===================================================================
+--- u-boot.orig/common/cmd_nvedit.c
++++ u-boot/common/cmd_nvedit.c
+@@ -563,7 +563,33 @@
+ 	return (saveenv() ? 1 : 0);
+ }
+ 
+-#endif
++#ifdef CONFIG_CMD_LOADENV
++int do_loadenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++{
++	extern char *env_name_spec;
++
++	printf("Loading Environment from %s...\n", env_name_spec);
++
++	if (env_init())
++		return 1;
++	env_relocate();
++	return 0;
++}
++#endif /* CONFIG_CMD_LOADENV */
++
++#endif /* we have a writeable environment */
++
++#ifdef CONFIG_CMD_DEFAULTENV
++int do_defaultenv(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++{
++	extern char *env_name_spec;
++
++	printf("Environment reset to default settings ...\n");
++
++	default_env();
++	return 0;
++}
++#endif /* CONFIG_CMD_DEFAULTENV */
+ 
+ 
+ /************************************************************************
+@@ -615,7 +641,23 @@
+ 	NULL
+ );
+ 
+-#endif
++#ifdef CONFIG_CMD_LOADENV
++U_BOOT_CMD(
++	loadenv, 1, 0,	do_loadenv,
++	"loadenv - load environment variables from persistent storage\n",
++	NULL
++);
++#endif /* CONFIG_CMD_LOADENV */
++
++#endif /* we have a writeable environment */
++
++#ifdef CONFIG_CMD_DEFAULTENV
++U_BOOT_CMD(
++	defaultenv, 1, 0, do_defaultenv,
++	"defaultenv - reset environment to default settings\n",
++	NULL
++);
++#endif /* CONFIG_CMD_DEFAULTENV */
+ 
+ #if defined(CONFIG_CMD_ASKENV)
+ 
+Index: u-boot/include/configs/neo1973_gta02.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973_gta02.h
++++ u-boot/include/configs/neo1973_gta02.h
+@@ -192,6 +192,9 @@
+ 	"stderr=usbtty\0stdout=usbtty\0stdin=usbtty\0"			\
+ 	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock6 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
+ 	""
++#define CONFIG_CMD_LOADENV
++#define CONFIG_CMD_DEFAULTENV
++
+ 
+ /*-----------------------------------------------------------------------
+  * Physical Memory Map
