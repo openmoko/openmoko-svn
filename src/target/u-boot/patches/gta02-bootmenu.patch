@@ -1,0 +1,63 @@
+Index: u-boot/board/neo1973/gta02/gta02.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta02/gta02.c
++++ u-boot/board/neo1973/gta02/gta02.c
+@@ -241,10 +241,10 @@
+ 	gpio->GPJDAT |= 0x000000001;	/* GTA02v1_GPIO_3D_RESET */
+ #endif
+ 
+-#if 0
+ 	/* if there's no other reason, must be regular reset */
+ 	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
+ 
++#if 0
+ 	if (!booted_from_nand)
+ 		goto woken_by_reset;
+ 
+@@ -274,6 +274,7 @@
+ 	}
+ 
+ woken_by_reset:
++#endif
+ 
+ 	while (neo1973_wakeup_cause == NEO1973_WAKEUP_RESET ||
+ 	    neo1973_on_key_pressed()) {
+@@ -294,7 +295,6 @@
+ 	jbt6k74_init();
+ 	jbt6k74_enter_state(JBT_STATE_NORMAL);
+ 	jbt6k74_display_onoff(1);
+-#endif
+ 
+ #if 0
+ 	{
+@@ -303,12 +303,12 @@
+ 		if (!(gpio->GPFDAT & (1 << 5)))
+ 			gpio->GPBDAT &= ~(1 << 2);
+ 	}
++#endif
+ 
+ 	if (menu_vote > 0) {
+-		bootmenu();
++		neo1973_bootmenu();
+ 		nobootdelay = 1;
+ 	}
+-#endif
+ 
+ 	return 0;
+ }
+@@ -403,13 +403,11 @@
+ 						& PCF50633_OOCSTAT_ONKEY);
+ }
+ 
+-/* FIXME: shared */
+ int neo1973_aux_key_pressed(void)
+ {
+ 	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
+-	if (gpio->GPFDAT & (1 << 6))
+-		return 0;
+-	return 1;
++
++	return !!(gpio->GPFDAT & (1 << 6));
+ }
+ 
+ /* The sum of all part_size[]s must equal to the NAND size, i.e., 0x8000000. */

@@ -43,13 +43,13 @@ Index: u-boot/drivers/video/cfb_console.c
 +static void process_sequence(char c)
 +{
 +	static int inverted = 0;
-+	int i, inv;
++	int inv;
 +
 +	switch (c) {
 +		case 'J':
 +			/* assume num1 == 2 */
-+			for (i = 0; i != CONSOLE_ROWS; i++)
-+				console_scrollup();
++			memsetl(CONSOLE_ROW_FIRST, CONSOLE_SIZE,
++			    CONSOLE_BG_COL);
 +			break;
 +		case 'H':
 +			if (num1 > CONSOLE_ROWS || num2 > CONSOLE_COLS)
