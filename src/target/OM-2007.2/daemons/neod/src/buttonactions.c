@@ -81,6 +81,8 @@ static int backlight_max_brightness = 1;
 #define BIT_TEST( bitmask, bit )    \
     ( bitmask[ (bit) / sizeof(short) / 8 ] & (1u << ( (bit) % (sizeof(short) * 8))) )
 
+static gboolean moko_debug = TRUE;
+
 GPollFD input_fd[10];
 int max_input_fd = 0;
 
@@ -286,6 +288,10 @@ gboolean neod_buttonactions_install_watcher()
     if ( error ) g_debug( "gconf error: %s", error->message );
 
     neod_buttonactions_powersave_reset();
+
+    moko_debug = getenv( "MOKO_DEBUG" );
+    g_debug( "setting debug output to %s", moko_debug ? "true" : "false" );
+
     return TRUE;
 }
 
@@ -312,7 +318,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
         {
             struct input_event event;
             int size = read( input_fd[i].fd, &event, sizeof( struct input_event ) );
-            if ( getenv( "MOKO_DEBUG" ) )
+            if ( moko_debug )
             {
                 g_debug( "read %d bytes from fd %d", size, input_fd[i].fd );
                 g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
@@ -321,12 +327,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             {
                 if ( event.value == 1 ) /* pressed */
                 {
-                    g_debug( "triggering aux timer" );
+                    if ( moko_debug ) g_debug( "triggering aux timer" );
                     aux_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
-                    g_debug( "resetting aux timer" );
+                    if ( moko_debug ) g_debug( "resetting aux timer" );
                     if ( aux_timer != -1 )
                     {
                         g_source_remove( aux_timer );
@@ -340,12 +346,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             {
                 if ( event.value == 1 ) /* pressed */
                 {
-                    g_debug( "triggering power timer" );
+                    if ( moko_debug ) g_debug( "triggering power timer" );
                     power_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
-                    g_debug( "resetting power timer" );
+                    if ( moko_debug ) g_debug( "resetting power timer" );
                     if ( power_timer != -1 )
                     {
                         g_source_remove( power_timer );
@@ -359,12 +365,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             {
                 if ( event.value == 1 ) /* pressed */
                 {
-                    g_debug( "stylus pressed" );
+                    if ( moko_debug ) g_debug( "stylus pressed" );
                     neod_buttonactions_sound_play( "touchscreen" );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
-                    g_debug( "stylus released" );
+                    if ( moko_debug ) g_debug( "stylus released" );
                 }
                 neod_buttonactions_powersave_reset();
                 if ( power_state != NORMAL )
@@ -378,13 +384,13 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             {
                 if ( event.value == 1 ) /* pressed */
                 {
-                    g_debug( "charger IN" );
+                    if ( moko_debug ) g_debug( "charger IN" );
                     neod_buttonactions_sound_play( "touchscreen" );
                     g_spawn_command_line_async( "dbus-send --system /org/freedesktop/PowerManagement org.freedesktop.PowerManagement.ChargerConnected", NULL );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
-                    g_debug( "charger OUT" );
+                    if ( moko_debug ) g_debug( "charger OUT" );
                     g_spawn_command_line_async( "dbus-send --system /org/freedesktop/PowerManagement org.freedesktop.PowerManagement.ChargerDisconnected", NULL );
                 }
                 neod_buttonactions_powersave_reset();
@@ -399,12 +405,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             {
                 if ( event.value == 0 ) /* inserted */
                 {
-                    g_debug( "headphones IN" );
+                    if ( moko_debug ) g_debug( "headphones IN" );
                     g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\"", NULL );
                 }
                 else if ( event.value == 1 ) /* released */
                 {
-                    g_debug( "headphones OUT" );
+                    if ( moko_debug ) g_debug( "headphones OUT" );
                     g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\"", NULL );
                 }
                 neod_buttonactions_powersave_reset();
