@@ -404,8 +404,8 @@ static void
 set_window_title (TodayData *data)
 {
 	gtk_window_set_title (GTK_WINDOW (data->window),
-		data->network_name ? data->network_name :
-		"Registering...");
+		(data->network_name && data->network_name[0]) ?
+			data->network_name : "Registering...");
 }
 
 static void
