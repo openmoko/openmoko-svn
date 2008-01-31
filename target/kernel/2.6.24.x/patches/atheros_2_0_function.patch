@@ -79,7 +79,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
-@@ -0,0 +1,3070 @@
+@@ -0,0 +1,3075 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -280,6 +280,8 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +USER_RSSI_THOLD rssi_map[12];
 +
 +int reconnect_flag = 0;
++
++DECLARE_WAIT_QUEUE_HEAD(ar6000_scan_queue);
 +
 +/* Function declarations */
 +static int ar6000_init_module(void);
@@ -2502,7 +2504,10 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +void
 +ar6000_scanComplete_event(AR_SOFTC_T *ar, A_STATUS status)
 +{
-+    AR_DEBUG_PRINTF("AR6000 scan complete: %d\n", status);
++	AR_DEBUG_PRINTF("AR6000 scan complete: %d\n", status);
++
++	ar->scan_complete = 1;
++	wake_up_interruptible(&ar6000_scan_queue);
 +}
 +
 +void
@@ -3154,7 +3159,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
-@@ -0,0 +1,361 @@
+@@ -0,0 +1,362 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -3441,6 +3446,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 +    A_UINT32                log_cnt;
 +    A_UINT32                dbglog_init_done;
 +    A_UINT32                arConnectCtrlFlags;
++	A_UINT32                scan_complete;
 +#ifdef USER_KEYS
 +    A_INT32                 user_savedkeys_stat;
 +    A_UINT32                user_key_ctrl;
@@ -8419,7 +8425,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
-@@ -0,0 +1,2068 @@
+@@ -0,0 +1,2072 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -8445,6 +8451,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +static void ar6000_set_quality(struct iw_quality *iq, A_INT8 rssi);
 +extern unsigned int wmitimeout;
 +extern A_WAITQUEUE_HEAD arEvent;
++extern wait_queue_head_t ar6000_scan_queue;
 +
 +#ifdef  __ATH_CENTRAL_IOCTL_DISPATCHER___
 +extern int allow_trace_signal;
@@ -10153,6 +10160,9 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +        ret = -EIO;
 +    }
 +
++    ar->scan_complete = 0;
++    wait_event_interruptible_timeout(ar6000_scan_queue, ar->scan_complete,
++				     5 * HZ);
 +
 +    return ret;
 +#undef  ACT_DWELLTIME_DEFAULT
