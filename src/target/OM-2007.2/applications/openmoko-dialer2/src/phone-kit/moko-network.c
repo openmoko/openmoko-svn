@@ -166,6 +166,9 @@ on_network_registered (MokoListener *listener,
   switch (type)
   {
     case GSMD_NETREG_UNREG:
+      /* Start searching for network */
+      /* Note: Operator name is a 6 character string, thus: */
+      if (priv->registered != type) lgsm_netreg_register (handle, "\0     ");
     case GSMD_NETREG_UNREG_BUSY:
       g_debug ("Searching for network");
       

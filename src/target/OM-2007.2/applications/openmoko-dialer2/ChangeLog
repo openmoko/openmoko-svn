@@ -1,3 +1,8 @@
+2008-01-31  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-network.c: (on_network_registered):
+	Register to network on unregister
+
 2008-01-30  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-network.c: (on_network_registered):
