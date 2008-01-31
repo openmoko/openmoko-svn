@@ -160,6 +160,16 @@ stop_retrying (MokoNetwork *network)
   }
 }
 
+static void
+stop_retrying_registration (MokoNetwork *network)
+{
+  if (network->priv->retry_register) {
+    g_source_remove (network->priv->retry_register);
+    network->priv->retry_register = 0;
+    network->priv->retry_register_n = RETRY_MAX;
+  }
+}
+
 /* Callbacks for gsmd events */
 static void
 on_network_registered (MokoListener *listener,
@@ -207,11 +217,7 @@ on_network_registered (MokoListener *listener,
     case GSMD_NETREG_REG_ROAMING:
       g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
       
-      if (priv->retry_register) {
-        g_source_remove (priv->retry_register);
-        priv->retry_register = 0;
-        priv->retry_register_n = RETRY_MAX;
-      }
+      stop_retrying_registration ((MokoNetwork *)listener);
       
       /* Retrieve details when we switch location/type */
       if ((priv->registered != type) || (priv->lac != lac)) {
@@ -276,6 +282,9 @@ on_pin_requested (MokoListener *listener, struct lgsm_handle *handle,
   priv = MOKO_NETWORK (listener)->priv;
 
   g_debug ("Pin Requested");
+  
+  /* Stop the registering time-out if we receive a pin request */
+  stop_retrying_registration ((MokoNetwork *)listener);
   
   if (priv->pin_attempts < 3) {
     const char *message;
