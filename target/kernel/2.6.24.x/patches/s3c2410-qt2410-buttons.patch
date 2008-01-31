@@ -1,7 +1,7 @@
-Index: linux-2.6/arch/arm/mach-s3c2410/mach-qt2410.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2410/mach-qt2410.c
-+++ linux-2.6/arch/arm/mach-s3c2410/mach-qt2410.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-qt2410.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-qt2410.c
 @@ -331,6 +331,24 @@
  	.ocr_avail 	= MMC_VDD_32_33,
  };
@@ -27,13 +27,13 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-qt2410.c
  static void __init qt2410_map_io(void)
  {
  	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-Index: linux-2.6/drivers/input/keyboard/Kconfig
+Index: linux-2.6.24/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/input/keyboard/Kconfig
-+++ linux-2.6/drivers/input/keyboard/Kconfig
+--- linux-2.6.24.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6.24/drivers/input/keyboard/Kconfig
 @@ -304,5 +304,10 @@
  	  To compile this driver as a module, choose M here: the
- 	  module will be called gta01kbd.
+ 	  module will be called neo1973kbd.
  
 +config KEYBOARD_QT2410
 +	tristate "QT2410 buttons"
@@ -42,10 +42,10 @@ Index: linux-2.6/drivers/input/keyboard/Kconfig
 +
  
  endif
-Index: linux-2.6/drivers/input/keyboard/Makefile
+Index: linux-2.6.24/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/input/keyboard/Makefile
-+++ linux-2.6/drivers/input/keyboard/Makefile
+--- linux-2.6.24.orig/drivers/input/keyboard/Makefile
++++ linux-2.6.24/drivers/input/keyboard/Makefile
 @@ -15,6 +15,7 @@
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
@@ -54,11 +54,11 @@ Index: linux-2.6/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
+Index: linux-2.6.24/drivers/input/keyboard/qt2410kbd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/input/keyboard/qt2410kbd.c
-@@ -0,0 +1,218 @@
++++ linux-2.6.24/drivers/input/keyboard/qt2410kbd.c
+@@ -0,0 +1,233 @@
 +/*
 + * Keyboard driver for Armzone QT2410
 + *
@@ -109,7 +109,6 @@ Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 +#ifdef CONFIG_PM
 +static int gta01kbd_suspend(struct platform_device *dev, pm_message_t state)
 +{
-+	int i;
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
 +
 +	gta01kbd->suspended = 1;
@@ -119,7 +118,6 @@ Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 +
 +static int gta01kbd_resume(struct platform_device *dev)
 +{
-+	int i;
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
 +
 +	gta01kbd->suspended = 0;
@@ -135,22 +133,30 @@ Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 +{
 +	struct gta01kbd *gta01kbd;
 +	struct input_dev *input_dev;
-+	int irq_911, irq_hold;
++	int irq_911;
++	int rc = 0;
 +
 +	gta01kbd = kzalloc(sizeof(struct gta01kbd), GFP_KERNEL);
++	if (!gta01kbd) {
++		rc = -ENOMEM;
++		goto bail;
++	}
 +	input_dev = input_allocate_device();
 +	if (!gta01kbd || !input_dev) {
-+		kfree(gta01kbd);
-+		input_free_device(input_dev);
-+		return -ENOMEM;
++		rc = -ENOMEM;
++		goto bail_free;
 +	}
 +
-+	if (pdev->resource[0].flags != 0)
-+		return -EINVAL;
++	if (pdev->resource[0].flags != 0) {\
++		rc = -EINVAL;
++		goto bail_free_dev;
++	}
 +
 +	irq_911 = s3c2410_gpio_getirq(pdev->resource[0].start);
-+	if (irq_911 < 0)
-+		return -EINVAL;
++	if (irq_911 < 0) {
++		rc = -EINVAL;
++		goto bail_free_dev;
++	}
 +
 +	platform_set_drvdata(pdev, gta01kbd);
 +
@@ -196,7 +202,9 @@ Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 +	set_bit(SW_HEADPHONE_INSERT, input_dev->swbit);
 +#endif
 +
-+	input_register_device(gta01kbd->input);
++	rc = input_register_device(gta01kbd->input);
++	if (rc)
++		goto bail_free_dev;
 +
 +	s3c2410_gpio_cfgpin(S3C2410_GPF0, S3C2410_GPF0_EINT0);
 +	if (request_irq(irq_911, gta01kbd_interrupt,
@@ -228,6 +236,13 @@ Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 +#endif
 +
 +	return 0;
++
++bail_free_dev:
++	input_free_device(input_dev);
++bail_free:
++	kfree(gta01kbd);
++bail:
++	return rc;
 +}
 +
 +static int gta01kbd_remove(struct platform_device *pdev)
