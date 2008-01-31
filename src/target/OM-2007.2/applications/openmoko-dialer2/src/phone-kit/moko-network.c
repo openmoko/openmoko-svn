@@ -66,6 +66,8 @@ struct _MokoNetworkPrivate
   gchar                     *network_number;
   gchar                     *imsi;
   
+  guint                     retry_register;
+  gint                      retry_register_n;
   guint                     retry_oper;
   gint                      retry_oper_n;
   guint                     retry_opern;
@@ -132,6 +134,14 @@ retry_get_imsi (MokoNetwork *network)
   return (--network->priv->retry_imsi_n) ? TRUE : FALSE;
 }
 
+static gboolean
+retry_register (MokoNetwork *network)
+{
+  g_debug ("Retrying network registration");
+  lgsm_netreg_register (network->priv->handle, "\0     ");
+  return (--network->priv->retry_register_n) ? TRUE : FALSE;
+}
+
 static void
 stop_retrying (MokoNetwork *network)
 {
@@ -168,7 +178,15 @@ on_network_registered (MokoListener *listener,
     case GSMD_NETREG_UNREG:
       /* Start searching for network */
       /* Note: Operator name is a 6 character string, thus: */
-      if (priv->registered != type) lgsm_netreg_register (handle, "\0     ");
+      if (priv->registered != type) {
+        if (!priv->retry_register) {
+          g_debug ("Registering to network");
+          lgsm_netreg_register (handle, "\0     ");
+          priv->retry_register = g_timeout_add_seconds (RETRY_DELAY,
+                                                    (GSourceFunc)retry_register,
+                                                    listener);
+        }
+      }
     case GSMD_NETREG_UNREG_BUSY:
       g_debug ("Searching for network");
       
@@ -188,6 +206,12 @@ on_network_registered (MokoListener *listener,
     case GSMD_NETREG_REG_HOME:
     case GSMD_NETREG_REG_ROAMING:
       g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
+      
+      if (priv->retry_register) {
+        g_source_remove (priv->retry_register);
+        priv->retry_register = 0;
+        priv->retry_register_n = RETRY_MAX;
+      }
       
       /* Retrieve details when we switch location/type */
       if ((priv->registered != type) || (priv->lac != lac)) {
@@ -828,6 +852,7 @@ moko_network_init (MokoNetwork *network)
 
   priv = network->priv = MOKO_NETWORK_GET_PRIVATE (network);
   
+  priv->retry_register_n = RETRY_MAX;
   priv->retry_oper_n = RETRY_MAX;
   priv->retry_opern_n = RETRY_MAX;
   priv->retry_imsi_n = RETRY_MAX;
