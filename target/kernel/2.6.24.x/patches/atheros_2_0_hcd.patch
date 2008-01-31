@@ -1,7 +1,7 @@
-Index: linux-2.6.24-rc8/drivers/sdio/hcd/Kconfig
+Index: linux-2.6.24/drivers/sdio/hcd/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc8/drivers/sdio/hcd/Kconfig
++++ linux-2.6.24/drivers/sdio/hcd/Kconfig
 @@ -0,0 +1,14 @@
 +config SDIO_S3C24XX
 +	tristate "Samsung s3c24xx host controller"
@@ -17,24 +17,24 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/Kconfig
 +	help
 +	  good luck.
 +
-Index: linux-2.6.24-rc8/drivers/sdio/hcd/Makefile
+Index: linux-2.6.24/drivers/sdio/hcd/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc8/drivers/sdio/hcd/Makefile
++++ linux-2.6.24/drivers/sdio/hcd/Makefile
 @@ -0,0 +1 @@
 +obj-$(CONFIG_PLAT_S3C24XX)	 	+= s3c24xx/
-Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/Makefile
+Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/Makefile
++++ linux-2.6.24/drivers/sdio/hcd/s3c24xx/Makefile
 @@ -0,0 +1,2 @@
 +obj-$(CONFIG_PLAT_S3C24XX) += sdio_s3c24xx_hcd.o
 +sdio_s3c24xx_hcd-objs := s3c24xx_hcd.o
-Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
-@@ -0,0 +1,1500 @@
++++ linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
+@@ -0,0 +1,1510 @@
 +/*
 + * s3c24xx_hcd.c - Samsung S3C MCI driver, Atheros SDIO API compatible.
 + *
@@ -598,6 +598,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +static void s3c24xx_hcd_io_work(struct work_struct *work)
 +{
 +	PSDREQUEST req;
++	SDIO_STATUS status = SDIO_STATUS_SUCCESS;
 +	struct s3c24xx_hcd_context * context =
 +		container_of(work, struct s3c24xx_hcd_context, io_work);
 +
@@ -647,6 +648,15 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		/* There is a data stage */
 +		if (context->complete == S3C24XX_HCD_DATA_READ ||
 +		    context->complete == S3C24XX_HCD_DATA_WRITE) {
++			status = SDIO_CheckResponse(&context->hcd, req,
++						    SDHCD_CHECK_DATA_TRANS_OK);
++
++			if (!SDIO_SUCCESS(status)) {
++				DBG_PRINT(SDDBG_ERROR,
++					  ("Target not ready for data xfer\n"));
++				return;
++			}
++
 +			if (context->dma_en) {
 +				dma_sync_single(NULL, context->io_buffer_dma,
 +						req->BlockCount * req->BlockLen, DMA_BIDIRECTIONAL);
@@ -670,6 +680,20 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	writel(0, context->base + S3C2410_SDICMDCON);
 +
 +	SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_TRANSFER_DONE);
++}
++
++static void s3c24xx_hcd_irq_work(struct work_struct *work)
++{
++	struct s3c24xx_hcd_context * context =
++		container_of(work, struct s3c24xx_hcd_context, irq_work);
++
++	disable_irq(context->io_irq);
++
++	writel(S3C2410_SDIDSTA_SDIOIRQDETECT, context->base + S3C2410_SDIDSTA);
++
++	SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_SDIO_IRQ_PENDING);
++
++	enable_irq(context->io_irq);
 +}
 +
 +void s3c24xx_hcd_dma_done(struct s3c2410_dma_chan *dma_ch, void *buf_id,
@@ -775,17 +799,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +			imask = readl(context->base + S3C2440_SDIIMSK);
 +			imask &= ~S3C2410_SDIIMSK_SDIOIRQ;
 +			writel(imask, context->base + S3C2440_SDIIMSK);
-+			SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_SDIO_IRQ_PENDING);
-+
-+			dsta = readl(context->base + S3C2410_SDIDSTA);
-+			if (dsta & S3C2410_SDIDSTA_SDIOIRQDETECT) {
-+				writel(S3C2410_SDIDSTA_SDIOIRQDETECT,
-+				       context->base + S3C2410_SDIDSTA);
-+				SDIO_HandleHcdEvent(&context->hcd,
-+						    EVENT_HCD_SDIO_IRQ_PENDING);
-+			}
-+
-+
++			schedule_work(&context->irq_work);
 +		} else {
 +			context->int_pending = 1;
 +		}
@@ -886,7 +900,6 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
 +{
 +	u32 con, imsk;
-+	unsigned long flags;
 +	SDIO_STATUS status = SDIO_STATUS_SUCCESS;
 +	PSDCONFIG_SDIO_INT_CTRL_DATA int_data;
 +	struct s3c24xx_hcd_context * context = (struct s3c24xx_hcd_context *)hcd->pContext;
@@ -941,20 +954,16 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		break;
 +        case SDCONFIG_SDIO_REARM_INT:
 +		DBG_PRINT(SDDBG_TRACE, ("config SDIO_REARM_INT\n"));
-+		spin_lock_irqsave(&context->lock,flags);
 +
 +		if (context->int_pending) {
 +			context->int_pending = 0;
-+			SDIO_HandleHcdEvent(&context->hcd,
-+					    EVENT_HCD_SDIO_IRQ_PENDING);
++			schedule_work(&context->irq_work);
 +		}
 +
 +		context->int_sdio = 1;
 +		imsk = readl(context->base + S3C2440_SDIIMSK);
 +		imsk |= S3C2410_SDIIMSK_SDIOIRQ;
 +		writel(imsk, context->base + S3C2440_SDIIMSK);
-+
-+		spin_unlock_irqrestore(&context->lock,flags);
 +
 +		status = SDIO_STATUS_SUCCESS;
 +		break;
@@ -1377,6 +1386,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	init_completion(&hcd_context.xfer_complete);
 +
 +	INIT_WORK(&hcd_context.io_work, s3c24xx_hcd_io_work);
++	INIT_WORK(&hcd_context.irq_work, s3c24xx_hcd_irq_work);
 +
 +	mdelay(100);
 +
@@ -1535,11 +1545,11 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +
 +module_init(s3c24xx_hcd_init);
 +module_exit(s3c24xx_hcd_exit);
-Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
+Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
-@@ -0,0 +1,67 @@
++++ linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
+@@ -0,0 +1,68 @@
 +#ifndef __SDIO_S3C24XX_HCD_H___
 +#define __SDIO_S3C24XX_HCD_H___
 +
@@ -1599,6 +1609,7 @@ Index: linux-2.6.24-rc8/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 +	spinlock_t		  lock;
 +
 +	struct work_struct        io_work;
++	struct work_struct        irq_work;
 +};
 +
 +SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config);
