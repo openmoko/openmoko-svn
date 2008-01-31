@@ -1277,15 +1277,3 @@ Index: linux-2.6.24/sound/soc/s3c24xx/neo1973_wm8753.c
 -MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973 GTA01");
  MODULE_LICENSE("GPL");
-Index: linux-2.6.24/include/asm/arch-s3c2410/gta02.h
-===================================================================
---- linux-2.6.24.orig/include/asm/arch-s3c2410/gta02.h
-+++ linux-2.6.24/include/asm/arch-s3c2410/gta02.h
-@@ -9,6 +9,7 @@
- #define GTA02v2_SYSTEM_REV	0x00000320
- #define GTA02v3_SYSTEM_REV	0x00000330
- #define GTA02v4_SYSTEM_REV	0x00000340
-+#define GTA02v5_SYSTEM_REV	0x00000350
- 
- #define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
- 
