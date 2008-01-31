@@ -1,7 +1,7 @@
-Index: linux-2.6/drivers/i2c/chips/Kconfig
+Index: linux-2.6.24/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6/drivers/i2c/chips/Kconfig
+--- linux-2.6.24.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.24/drivers/i2c/chips/Kconfig
 @@ -61,6 +61,15 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called pcf50606.
@@ -18,10 +18,10 @@ Index: linux-2.6/drivers/i2c/chips/Kconfig
  
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
-Index: linux-2.6/drivers/i2c/chips/Makefile
+Index: linux-2.6.24/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6/drivers/i2c/chips/Makefile
+--- linux-2.6.24.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.24/drivers/i2c/chips/Makefile
 @@ -10,6 +10,7 @@
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
@@ -30,10 +30,10 @@ Index: linux-2.6/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6/drivers/i2c/chips/pcf50633.c
+Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/i2c/chips/pcf50633.c
++++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
 @@ -0,0 +1,1736 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
@@ -945,9 +945,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50633.c
 +static ssize_t show_battemp(struct device *dev, struct device_attribute *attr,
 +			    char *buf)
 +{
++#if 0
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50633_data *pcf = i2c_get_clientdata(client);
-+#if 0
 +	u_int16_t adc;
 +
 +	adc = adc_read(pcf, PCF50633_ADCC1_MUX_BATTEMP, 0, NULL);
@@ -969,9 +969,9 @@ Index: linux-2.6/drivers/i2c/chips/pcf50633.c
 +static ssize_t show_chgcur(struct device *dev, struct device_attribute *attr,
 +			   char *buf)
 +{
++#if 0
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50633_data *pcf = i2c_get_clientdata(client);
-+#if 0
 +	u_int16_t adc_batvolt, adc_adcin1;
 +	u_int16_t ma;
 +
@@ -1771,10 +1771,10 @@ Index: linux-2.6/drivers/i2c/chips/pcf50633.c
 +
 +module_init(pcf50633_init);
 +module_exit(pcf50633_exit);
-Index: linux-2.6/include/linux/pcf50633.h
+Index: linux-2.6.24/include/linux/pcf50633.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/linux/pcf50633.h
++++ linux-2.6.24/include/linux/pcf50633.h
 @@ -0,0 +1,113 @@
 +#ifndef _LINUX_PCF50633_H
 +#define _LINUX_PCF50633_H
@@ -1889,11 +1889,11 @@ Index: linux-2.6/include/linux/pcf50633.h
 +};
 +
 +#endif /* _PCF50633_H */
-Index: linux-2.6/include/linux/i2c-id.h
+Index: linux-2.6.24/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.orig/include/linux/i2c-id.h
-+++ linux-2.6/include/linux/i2c-id.h
-@@ -165,6 +165,7 @@
+--- linux-2.6.24.orig/include/linux/i2c-id.h
++++ linux-2.6.24/include/linux/i2c-id.h
+@@ -169,6 +169,7 @@
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
  #define I2C_DRIVERID_PCF50606 1049
  #define I2C_DRIVERID_TSL256X 1050
@@ -1901,10 +1901,10 @@ Index: linux-2.6/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6/drivers/i2c/chips/pcf50633.h
+Index: linux-2.6.24/drivers/i2c/chips/pcf50633.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/i2c/chips/pcf50633.h
++++ linux-2.6.24/drivers/i2c/chips/pcf50633.h
 @@ -0,0 +1,402 @@
 +#ifndef _PCF50633_H
 +#define _PCF50633_H
