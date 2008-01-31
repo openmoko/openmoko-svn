@@ -895,7 +895,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02_GPIO_INT0		S3C2440_GPJ3	/* v2 + v3 + v4 only */
 +#define GTA02_GPIO_nGSM_EN	S3C2440_GPJ4
 +#define GTA02_GPIO_3D_RESET	S3C2440_GPJ5
-+#define GTA02v4_GPIO_nDL_GSM	S3C2440_GPJ6	/* v4 only */
++#define GTA02_GPIO_nDL_GSM	S3C2440_GPJ6	/* v4 + v5 only */
 +#define GTA02_GPIO_WLAN_GPIO0	S3C2440_GPJ7
 +#define GTA02v1_GPIO_BAT_ID	S3C2440_GPJ8
 +#define GTA02_GPIO_KEEPACT	S3C2440_GPJ8
@@ -1085,7 +1085,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +++ linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
-@@ -19,8 +19,14 @@
+@@ -19,8 +19,15 @@
  #include <linux/errno.h>
  
  #include <asm/hardware.h>
@@ -1095,12 +1095,32 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +#ifdef CONFIG_MACH_NEO1973_GTA02
 +#include <asm/arch/gta02.h>
 +#include <linux/pcf50633.h>
++#include <asm/arch/regs-gpioj.h>
 +#endif
 +
  struct gta01pm_priv {
  	int gpio_ngsm_en;
  	struct console *con;
-@@ -70,27 +76,51 @@
+@@ -54,8 +61,16 @@
+ 		if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_RST))
+ 			goto out_1;
+ 	} else if (!strcmp(attr->attr.name, "download")) {
+-		if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_DNLOAD))
+-			goto out_1;
++#ifdef CONFIG_MACH_NEO1973_GTA01
++		if (machine_is_neo1973_gta01())
++			if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_DNLOAD))
++				goto out_1;
++#endif
++#ifdef CONFIG_MACH_NEO1973_GTA02
++		if (machine_is_neo1973_gta02())
++			if (s3c2410_gpio_getpin(GTA02_GPIO_nDL_GSM))
++				goto out_1;
++#endif
+ 	}
+ 
+ 	return strlcpy(buf, "0\n", 3);
+@@ -70,32 +85,63 @@
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -1158,7 +1178,29 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -158,8 +188,16 @@
+ 	} else if (!strcmp(attr->attr.name, "download")) {
+-		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_DNLOAD, on);
++#ifdef CONFIG_MACH_NEO1973_GTA01
++		if (machine_is_neo1973_gta01())
++			s3c2410_gpio_setpin(GTA01_GPIO_MODEM_DNLOAD, on);
++#endif
++#ifdef CONFIG_MACH_NEO1973_GTA02
++		if (machine_is_neo1973_gta02())
++			s3c2410_gpio_setpin(GTA02_GPIO_nDL_GSM, on);
++#endif
+ 	}
+ 
+ 	return count;
+@@ -134,7 +180,7 @@
+ static struct attribute *gta01_gsm_sysfs_entries[] = {
+ 	&dev_attr_power_on.attr,
+ 	&dev_attr_reset.attr,
+-	NULL,
++	&dev_attr_download.attr,
+ 	NULL
+ };
+ 
+@@ -158,8 +204,16 @@
  		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  		break;
@@ -1176,7 +1218,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  			 "some PM features not available!!!\n",
  			 system_rev);
  		break;
-@@ -175,9 +213,13 @@
+@@ -175,9 +229,13 @@
  		break;
  	}
  
