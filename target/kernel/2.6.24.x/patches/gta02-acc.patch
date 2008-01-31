@@ -2,7 +2,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/mach-gta02.c
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -374,8 +374,6 @@
+@@ -375,8 +375,6 @@
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
  	&s3c_device_ts,
@@ -11,7 +11,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	&gta02_nor_flash,
  };
  
-@@ -475,10 +473,12 @@
+@@ -476,10 +474,12 @@
  	},
  };
  
@@ -24,7 +24,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  static struct glamo_spigpio_info glamo_spigpio_cfg = {
  	.pin_clk	= GLAMO_GPIO10_OUTPUT,
-@@ -504,16 +504,93 @@
+@@ -505,16 +505,93 @@
  
  /* SPI: Accelerometers attached to SPI of s3c244x */
  
@@ -123,7 +123,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	},
  };
  
-@@ -522,26 +599,75 @@
+@@ -523,26 +600,75 @@
  		.modalias	= "lis302dl",
  		.platform_data	= &lis302_pdata[0],
  		.irq		= GTA02_IRQ_GSENSOR_1,
@@ -205,7 +205,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  };
  
  static struct resource gta02_led_resources[] = {
-@@ -784,7 +910,6 @@
+@@ -785,7 +911,6 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
@@ -213,7 +213,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
  	 * hot-pluggable, this is not required anyway */
-@@ -796,6 +921,12 @@
+@@ -797,6 +922,12 @@
  		break;
  	}
  
@@ -226,7 +226,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	INIT_WORK(&gta02_udc_vbus_drawer.work, __gta02_udc_vbus_draw);
  	s3c24xx_udc_set_platdata(&gta02_udc_cfg);
  	set_s3c2410ts_info(&gta02_ts_cfg);
-@@ -824,6 +955,7 @@
+@@ -825,6 +956,7 @@
  		break;
  	}
  
@@ -663,7 +663,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
 +	reg_write(lis, LIS302DL_REG_FF_WU_THS_1, 0x14);
 +	reg_write(lis, LIS302DL_REG_FF_WU_DURATION_1, 0x00);
 +	reg_write(lis, LIS302DL_REG_FF_WU_CFG_1, 0x95);
-+
+ 
 +	reg_write(lis, LIS302DL_REG_CTRL1, LIS302DL_CTRL1_Xen |
 +					   LIS302DL_CTRL1_Yen |
 +			 		   LIS302DL_CTRL1_Zen);
@@ -680,7 +680,7 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
 +	reg_read(lis, LIS302DL_REG_CLICK_SRC);
 +
 +	dev_info(&spi->dev, "Found %s\n", pdata->name);
- 
++
 +	lis->pdata = pdata;
 +
 +	rc = request_irq(lis->spi_dev->irq, lis302dl_interrupt,
@@ -722,17 +722,18 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  	dev_set_drvdata(&spi->dev, NULL);
  	kfree(lis);
  
-@@ -521,6 +418,9 @@
+@@ -521,6 +418,10 @@
  static int lis302dl_suspend(struct spi_device *spi, pm_message_t state)
  {
  	struct lis302dl_info *lis = dev_get_drvdata(&spi->dev);
 +	unsigned long flags;
 +
++	disable_irq(lis->spi_dev->irq);
 +	local_save_flags(flags);
  
  	/* save registers */
  	lis->regs[LIS302DL_REG_CTRL1] = reg_read(lis, LIS302DL_REG_CTRL1);
-@@ -561,12 +461,17 @@
+@@ -561,12 +462,17 @@
  		reg_write(lis, LIS302DL_REG_CTRL1, tmp);
  	}
  
@@ -750,11 +751,12 @@ Index: linux-2.6.24/drivers/input/misc/lis302dl.c
  
  	/* restore registers after resume */
  	reg_write(lis, LIS302DL_REG_CTRL1, lis->regs[LIS302DL_REG_CTRL1]);
-@@ -597,6 +502,8 @@
+@@ -597,6 +503,9 @@
  	reg_write(lis, LIS302DL_REG_CLICK_WINDOW,
  		  lis->regs[LIS302DL_REG_CLICK_WINDOW]);
  
 +	local_irq_restore(flags);
++	enable_irq(lis->spi_dev->irq);
 +
  	return 0;
  }
