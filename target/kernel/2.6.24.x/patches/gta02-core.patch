@@ -2,7 +2,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,821 @@
+@@ -0,0 +1,822 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -259,6 +259,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +	case GTA02v2_SYSTEM_REV:
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
++	case GTA02v5_SYSTEM_REV:
 +		/* we need to keep the 1.8V going since this is the SDRAM
 +		 * self-refresh voltage */
 +		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].flags =
@@ -609,7 +610,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		break;
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
-+/*	case GTA02v5_SYSTEM_REV: */
++	case GTA02v5_SYSTEM_REV:
 +		/* depend on pcf50633 driver init */
 +		if (!pcf50633_global)
 +			while (!pcf50633_global)
@@ -828,7 +829,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,98 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -840,6 +841,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02v2_SYSTEM_REV	0x00000320
 +#define GTA02v3_SYSTEM_REV	0x00000330
 +#define GTA02v4_SYSTEM_REV	0x00000340
++#define GTA02v5_SYSTEM_REV	0x00000350
 +
 +#define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
 +
@@ -1120,7 +1122,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return strlcpy(buf, "0\n", 3);
-@@ -70,32 +85,63 @@
+@@ -70,32 +85,65 @@
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -1142,6 +1144,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			case GTA02v2_SYSTEM_REV:
 +			case GTA02v3_SYSTEM_REV:
 +			case GTA02v4_SYSTEM_REV:
++			case GTA02v5_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 1);
 +				break;
@@ -1157,6 +1160,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			case GTA02v2_SYSTEM_REV:
 +			case GTA02v3_SYSTEM_REV:
 +			case GTA02v4_SYSTEM_REV:
++			case GTA02v5_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 0);
 +				break;
@@ -1191,7 +1195,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return count;
-@@ -134,7 +180,7 @@
+@@ -134,7 +182,7 @@
  static struct attribute *gta01_gsm_sysfs_entries[] = {
  	&dev_attr_power_on.attr,
  	&dev_attr_reset.attr,
@@ -1200,7 +1204,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	NULL
  };
  
-@@ -158,8 +204,16 @@
+@@ -158,8 +206,17 @@
  		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  		break;
@@ -1209,6 +1213,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +	case GTA02v2_SYSTEM_REV:
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
++	case GTA02v5_SYSTEM_REV:
 +		gta01_gsm.gpio_ngsm_en = 0;
 +		break;
 +#endif
@@ -1218,7 +1223,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  			 "some PM features not available!!!\n",
  			 system_rev);
  		break;
-@@ -175,9 +229,13 @@
+@@ -175,9 +232,13 @@
  		break;
  	}
  
@@ -1272,3 +1277,15 @@ Index: linux-2.6.24/sound/soc/s3c24xx/neo1973_wm8753.c
 -MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973 GTA01");
  MODULE_LICENSE("GPL");
+Index: linux-2.6.24/include/asm/arch-s3c2410/gta02.h
+===================================================================
+--- linux-2.6.24.orig/include/asm/arch-s3c2410/gta02.h
++++ linux-2.6.24/include/asm/arch-s3c2410/gta02.h
+@@ -9,6 +9,7 @@
+ #define GTA02v2_SYSTEM_REV	0x00000320
+ #define GTA02v3_SYSTEM_REV	0x00000330
+ #define GTA02v4_SYSTEM_REV	0x00000340
++#define GTA02v5_SYSTEM_REV	0x00000350
+ 
+ #define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
+ 
