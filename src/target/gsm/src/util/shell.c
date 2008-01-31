@@ -527,6 +527,7 @@ static void shell_help(void)
 		"\tN\tPrint current operator in numeric\n"
 		"\tL\tList available operators\n"
 		"\tQ\tRead signal quality\n"
+		"\tnr\tQuery network registration\n"
 		"\tS\tSleep (S[=second], default 5)\n"
 		"\tT\tSend DTMF Tone\n"
 		"\tn\tPrint subscriber numbers\n"

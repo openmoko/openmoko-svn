@@ -41,6 +41,7 @@ extern int lgsm_opers_get(struct lgsm_handle *lh);
 extern int lgsm_netreg_register(struct lgsm_handle *lh,
 		gsmd_oper_numeric oper);
 extern int lgsm_netreg_deregister(struct lgsm_handle *lh);
+extern int lgsm_netreg_query(struct lgsm_handle *lh);
 
 enum lgsm_netreg_state {
 	LGSM_NETREG_ST_NOTREG		= 0,
