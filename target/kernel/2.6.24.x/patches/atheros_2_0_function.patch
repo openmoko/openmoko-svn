@@ -8377,7 +8377,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
-@@ -0,0 +1,1914 @@
+@@ -0,0 +1,1941 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -9270,7 +9270,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +              struct iw_request_info *info,
 +              struct iw_point *erq, char *key)
 +{
-+    AR_SOFTC_T *ar = (AR_SOFTC_T *)dev->priv;
++    AR_SOFTC_T *ar = (AR_SOFTC_T *)netdev_priv(dev);
 +    A_UINT8 keyIndex;
 +    struct ar_wep_key *wk;
 +
@@ -9310,6 +9310,33 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    }
 +
 +    return 0;
++}
++
++static int ar6000_ioctl_siwpower(struct net_device *dev,
++				 struct iw_request_info *info,
++				 union iwreq_data *wrqu, char *extra)
++{
++	AR_SOFTC_T *ar = (AR_SOFTC_T *)netdev_priv(dev);
++	WMI_POWER_MODE power_mode;
++
++	if (wrqu->power.disabled)
++		power_mode = MAX_PERF_POWER;
++	else
++		power_mode = REC_POWER;
++
++	if (wmi_powermode_cmd(ar->arWmi, power_mode) < 0)
++		return -EIO;
++
++	return 0;
++}
++
++static int ar6000_ioctl_giwpower(struct net_device *dev,
++				 struct iw_request_info *info,
++				 union iwreq_data *wrqu, char *extra)
++{
++	AR_SOFTC_T *ar = (AR_SOFTC_T *)netdev_priv(dev);
++
++	return wmi_get_power_mode_cmd(ar->arWmi);
 +}
 +
 +static int ar6000_ioctl_siwgenie(struct net_device *dev,
@@ -10221,8 +10248,8 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    (iw_handler) ar6000_ioctl_giwretry,         /* SIOCGIWRETRY */
 +    (iw_handler) ar6000_ioctl_siwencode,        /* SIOCSIWENCODE */
 +    (iw_handler) ar6000_ioctl_giwencode,        /* SIOCGIWENCODE */
-+    (iw_handler) NULL,         /* SIOCSIWPOWER */
-+    (iw_handler) NULL,         /* SIOCGIWPOWER */
++    (iw_handler) ar6000_ioctl_siwpower,         /* SIOCSIWPOWER */
++    (iw_handler) ar6000_ioctl_giwpower,         /* SIOCGIWPOWER */
 +    (iw_handler) NULL,	/* -- hole -- */
 +    (iw_handler) NULL,	/* -- hole -- */
 +    (iw_handler) ar6000_ioctl_siwgenie,	/* SIOCSIWGENIE */
