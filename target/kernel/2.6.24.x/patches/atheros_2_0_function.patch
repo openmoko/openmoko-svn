@@ -79,7 +79,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
-@@ -0,0 +1,3075 @@
+@@ -0,0 +1,3062 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -340,14 +340,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +   AR6001_HOST_INTEREST_ITEM_ADDRESS(item) :    \
 +   AR6002_HOST_INTEREST_ITEM_ADDRESS(item))
 +
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
-+/* Looks like we need this for 2.4 kernels */
-+static inline void *netdev_priv(struct net_device *dev)
-+{
-+    return(dev->priv);
-+}
-+#endif
 +
 +/* Debug log support */
 +
@@ -905,16 +897,11 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.c
 +    dev->get_stats = &ar6000_get_stats;
 +
 +    /* dev->tx_timeout = ar6000_tx_timeout; */
-+    dev->do_ioctl = &ar6000_ioctl_dispatcher;
++    dev->do_ioctl = &ar6000_ioctl;
 +    dev->watchdog_timeo = AR6000_TX_TIMEOUT;
 +    ar6000_ioctl_iwsetup(&ath_iw_handler_def);
 +    dev->wireless_handlers = &ath_iw_handler_def;
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
-+    dev->get_wireless_stats = ar6000_get_iwstats; /*Displayed via proc fs */
-+#else
 +    ath_iw_handler_def.get_wireless_stats = ar6000_get_iwstats; /*Displayed via proc fs */
-+#endif
 +
 +    /*
 +     * We need the OS to provide us with more headroom in order to
@@ -3159,7 +3146,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
-@@ -0,0 +1,362 @@
+@@ -0,0 +1,360 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -3233,8 +3220,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ar6000_drv.h
 +#ifndef  __dev_put
 +#define  __dev_put(dev) dev_put(dev)
 +#endif
-+
-+#define  __ATH_CENTRAL_IOCTL_DISPATCHER___  /* To become compile time flag */
 +
 +#ifdef USER_KEYS
 +
@@ -5293,7 +5278,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
-@@ -0,0 +1,2573 @@
+@@ -0,0 +1,2540 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -5323,10 +5308,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 +extern int tspecCompliance;
 +extern int bmienable;
 +extern int bypasswmi;
-+#ifdef __ATH_CENTRAL_IOCTL_DISPATCHER___
-+extern int allow_trace_signal;
-+extern void ath_external_trigger(int val);
-+#endif
 +
 +static int
 +ar6000_ioctl_get_roam_tbl(struct net_device *dev, struct ifreq *rq)
@@ -6258,35 +6239,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 +    return wmi_gpio_intr_ack(ar->arWmi, ack_mask);
 +}
 +#endif /* CONFIG_HOST_GPIO_SUPPORT */
-+
-+/* This would basically hold all the private ioctls that are not related to
-+   WLAN operation */
-+#ifdef __ATH_CENTRAL_IOCTL_DISPATCHER___
-+int ar6000_ioctl_dispatcher(struct net_device *dev, struct ifreq *rq, int cmd)
-+{
-+    int ret;
-+
-+    /* We need to find out what IOCTL is this.
-+     * This is non-prive IOCTL, which is called by
-+     * kernel, every second. This will mess up and confuse
-+     * the scope instrumentation(for time calculation)
-+     */
-+    if(cmd == 35142)
-+        return -EOPNOTSUPP;
-+
-+    ath_external_trigger(1);
-+    ret = ar6000_ioctl(dev, rq,cmd);
-+    /* Some calls are way too fast. Add a fixed delay
-+     * to all by 5ms. This will be clear on scope
-+     */
-+    if (allow_trace_signal) {
-+        /* Add some (fixed) delay for scope viewing */
-+        mdelay(5);
-+    }
-+    ath_external_trigger(0);
-+    return ret;
-+}
-+#endif /* __ATH_CENTRAL_IOCTL_DISPATCHER___ */
 +
 +int ar6000_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
 +{
@@ -7548,29 +7500,29 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/ioctl.c
 +            A_UINT8           appIeInfo[IEEE80211_APPIE_FRAME_MAX_LEN];
 +            A_UINT32            fType,ieLen;
 +
-+			if (ar->arWmiReady == FALSE) {
-+				return -EIO;
-+			}
-+			get_user(fType, (A_UINT32 *)userdata);
-+			appIEcmd.mgmtFrmType = fType;
-+			if (appIEcmd.mgmtFrmType >= IEEE80211_APPIE_NUM_OF_FRAME) {
-+				ret = -EIO;
-+			} else {
-+				get_user(ieLen, (A_UINT32 *)(userdata + 4));
-+				appIEcmd.ieLen = ieLen;
-+				if (appIEcmd.ieLen > IEEE80211_APPIE_FRAME_MAX_LEN) {
-+					ret = -EIO;
-+					break;
-+				}
-+				if (copy_from_user(appIeInfo, userdata + 8, appIEcmd.ieLen)) {
-+					ret = -EFAULT;
-+				} else {
-+					if (wmi_set_appie_cmd(ar->arWmi, appIEcmd.mgmtFrmType,
-+										  appIEcmd.ieLen,  appIeInfo) != A_OK)
-+					{
-+						ret = -EIO;
-+					}
-+				}
++	    if (ar->arWmiReady == FALSE) {
++		    return -EIO;
++	    }
++	    get_user(fType, (A_UINT32 *)userdata);
++	    appIEcmd.mgmtFrmType = fType;
++	    if (appIEcmd.mgmtFrmType >= IEEE80211_APPIE_NUM_OF_FRAME) {
++		    ret = -EIO;
++	    } else {
++		    get_user(ieLen, (A_UINT32 *)(userdata + 4));
++		    appIEcmd.ieLen = ieLen;
++		    if (appIEcmd.ieLen > IEEE80211_APPIE_FRAME_MAX_LEN) {
++			    ret = -EIO;
++			    break;
++		    }
++		    if (copy_from_user(appIeInfo, userdata + 8, appIEcmd.ieLen)) {
++			    ret = -EFAULT;
++		    } else {
++			    if (wmi_set_appie_cmd(ar->arWmi, appIEcmd.mgmtFrmType,
++						  appIEcmd.ieLen,  appIeInfo) != A_OK)
++			    {
++				    ret = -EIO;
++			    }
++		    }
 +            }
 +            break;
 +        }
@@ -8425,7 +8377,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
-@@ -0,0 +1,2072 @@
+@@ -0,0 +1,1914 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -8452,13 +8404,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +extern unsigned int wmitimeout;
 +extern A_WAITQUEUE_HEAD arEvent;
 +extern wait_queue_head_t ar6000_scan_queue;
-+
-+#ifdef  __ATH_CENTRAL_IOCTL_DISPATCHER___
-+extern int allow_trace_signal;
-+static int ath_ioctl_dispatcher(struct net_device *dev,
-+                struct iw_request_info *info, struct iw_point *erq, char *key);
-+#endif
-+
 +
 +/*
 + * Encode a WPA or RSN information element as a custom
@@ -8567,25 +8512,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    iwe.u.data.length = 0;
 +    current_ev = iwe_stream_add_point(current_ev, end_buf, &iwe, "");
 +
-+#ifdef NOTYET
-+    A_MEMZERO(&iwe, sizeof(iwe));
-+    iwe.cmd = SIOCGIWRATE;
-+    current_val = current_ev + IW_EV_LCP_LEN;
-+    for (j = 0; j < ni->ni_rates.rs_nrates; j++) {
-+            if (ni->ni_rates.rs_rates[j]) {
-+                iwe.u.bitrate.value = ((ni->ni_rates.rs_rates[j] &
-+                    IEEE80211_RATE_VAL) / 2) * 1000000;
-+                current_val = iwe_stream_add_value(current_ev,
-+                    current_val, end_buf, &iwe,
-+                    IW_EV_PARAM_LEN);
-+            }
-+        }
-+        /* remove fixed header if no rates were added */
-+        if ((current_val - current_ev) > IW_EV_LCP_LEN)
-+            current_ev = current_val;
-+#endif /* NOTYET */
-+
-+#if WIRELESS_EXT > 14
 +    A_MEMZERO(&iwe, sizeof(iwe));
 +    iwe.cmd = IWEVCUSTOM;
 +    snprintf(buf, sizeof(buf), "bcn_int=%d", cie->ie_beaconInt);
@@ -8645,7 +8571,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +            current_ev = iwe_stream_add_point(current_ev, end_buf, &iwe, buf);
 +        }
 +    }
-+#endif /* WIRELESS_EXT > 14 */
 +
 +    param->current_ev = current_ev;
 +}
@@ -9387,12 +9312,12 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    return 0;
 +}
 +
-+#if 0
 +static int ar6000_ioctl_siwgenie(struct net_device *dev,
 +				 struct iw_request_info *info,
 +				 struct iw_point *dwrq,
 +				 char *extra)
 +{
++	/* The target does that for us */
 +	return 0;
 +}
 +
@@ -9507,6 +9432,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +		break;
 +
 +	default:
++		printk("%s(): Unknown flag 0x%x\n", __FUNCTION__, param->flags);
 +		return -EOPNOTSUPP;
 +	}
 +
@@ -9526,41 +9452,84 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +
 +static int ar6000_ioctl_siwencodeext(struct net_device *dev,
 +				     struct iw_request_info *info,
-+				     struct iw_point *dwrq,
++				     union iwreq_data *wrqu,
 +				     char *extra)
 +{
 +	AR_SOFTC_T *ar = (AR_SOFTC_T *)netdev_priv(dev);
++	struct iw_point *encoding = &wrqu->encoding;
 +	struct iw_encode_ext *ext = (struct iw_encode_ext *)extra;
-+	int alg = ext->alg;
++	int alg = ext->alg, idx;
 +
 +	if (ar->arWlanState == WLAN_DISABLED) {
 +		return -EIO;
 +	}
 +
-+	if ((alg == IW_ENCODE_ALG_NONE) || (dwrq->flags & IW_ENCODE_DISABLED)) {
-+
-+	} else if (alg == IW_ENCODE_ALG_WEP) {
-+
-+	} else if ((alg == IW_ENCODE_ALG_TKIP) || (alg == IW_ENCODE_ALG_CCMP)) {
-+		KEY_USAGE keyUsage;
-+		A_STATUS status;
-+		CRYPTO_TYPE keyType = NONE_CRYPT;
-+
-+
-+		if (((alg == IW_ENCODE_ALG_TKIP) && (ext->key_len != KEY_LEN_WPA_TKIP))
-+		    || ((alg == IW_ENCODE_ALG_CCMP) && (ext->key_len != KEY_LEN_WPA_AES))) {
-+			printk("Wrong length %d\n", ext->key_len);
++	/* Determine and validate the key index */
++	idx = (encoding->flags & IW_ENCODE_INDEX) - 1;
++	if (idx) {
++		if (idx < 0 || idx > 3)
 +			return -EINVAL;
-+		}
++	}
 +
-+		if (ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY) {
++	if ((alg == IW_ENCODE_ALG_TKIP) || (alg == IW_ENCODE_ALG_CCMP)) {
++		struct ieee80211req_key ik;
++		KEY_USAGE key_usage;
++		CRYPTO_TYPE key_type = NONE_CRYPT;
++		int status;
 +
++		ar->user_saved_keys.keyOk = FALSE;
++
++		if (alg == IW_ENCODE_ALG_TKIP) {
++			key_type = TKIP_CRYPT;
++			ik.ik_type = IEEE80211_CIPHER_TKIP;
 +		} else {
++			key_type = AES_CRYPT;
++			ik.ik_type = IEEE80211_CIPHER_AES_CCM;
 +		}
 +
++		ik.ik_keyix = idx;
++		ik.ik_keylen = ext->key_len;
++		ik.ik_flags = IEEE80211_KEY_RECV;
++		if (ext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY) {
++			ik.ik_flags |= IEEE80211_KEY_XMIT
++				| IEEE80211_KEY_DEFAULT;
++		}
++
++		if (ext->ext_flags & IW_ENCODE_EXT_RX_SEQ_VALID) {
++			memcpy(&ik.ik_keyrsc, ext->rx_seq, 8);
++		}
++
++		memcpy(ik.ik_keydata, ext->key, ext->key_len);
++
++		ar->user_saved_keys.keyType = key_type;
++		if (ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY) {
++			key_usage = GROUP_USAGE;
++			memset(ik.ik_macaddr, 0, ETH_ALEN);
++			memcpy(&ar->user_saved_keys.bcast_ik, &ik,
++			       sizeof(struct ieee80211req_key));
++		} else {
++			key_usage = PAIRWISE_USAGE;
++			memcpy(ik.ik_macaddr, ext->addr.sa_data, ETH_ALEN);
++			memcpy(&ar->user_saved_keys.ucast_ik, &ik,
++			       sizeof(struct ieee80211req_key));
++		}
++
++		status = wmi_addKey_cmd(ar->arWmi, ik.ik_keyix, key_type,
++					key_usage, ik.ik_keylen,
++					(A_UINT8 *)&ik.ik_keyrsc,
++					ik.ik_keydata,
++					KEY_OP_INIT_VAL, SYNC_BEFORE_WMIFLAG);
++
++		if (status < 0)
++			return -EIO;
++
++		ar->user_saved_keys.keyOk = TRUE;
++
++		return 0;
 +
 +	} else {
-+		printk("Wrong alg %d\n", alg);
++		/* WEP falls back to SIWENCODE */
++		return -EOPNOTSUPP;
 +	}
 +
 +	return 0;
@@ -9574,7 +9543,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +{
 +	return 0;
 +}
-+#endif
++
 +
 +static int
 +ar6000_ioctl_setparam(struct net_device *dev,
@@ -10242,20 +10211,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    (iw_handler) NULL,                          /* -- hole -- */
 +    (iw_handler) ar6000_ioctl_siwrate,          /* SIOCSIWRATE */
 +    (iw_handler) ar6000_ioctl_giwrate,          /* SIOCGIWRATE */
-+#ifdef NOTYET
-+    (iw_handler) ar6000_ioctl_siwrts,           /* SIOCSIWRTS */
-+    (iw_handler) ar6000_ioctl_giwrts,           /* SIOCGIWRTS */
-+    (iw_handler) ar6000_ioctl_siwfrag,          /* SIOCSIWFRAG */
-+    (iw_handler) ar6000_ioctl_giwfrag,          /* SIOCGIWFRAG */
-+    (iw_handler) ar6000_ioctl_siwtxpow,         /* SIOCSIWTXPOW */
-+    (iw_handler) ar6000_ioctl_giwtxpow,         /* SIOCGIWTXPOW */
-+    (iw_handler) ar6000_ioctl_siwretry,         /* SIOCSIWRETRY */
-+    (iw_handler) ar6000_ioctl_giwretry,         /* SIOCGIWRETRY */
-+    (iw_handler) ar6000_ioctl_siwencode,        /* SIOCSIWENCODE */
-+    (iw_handler) ar6000_ioctl_giwencode,        /* SIOCGIWENCODE */
-+    (iw_handler) ar6000_ioctl_siwpower,         /* SIOCSIWPOWER */
-+    (iw_handler) ar6000_ioctl_giwpower,         /* SIOCGIWPOWER */
-+#else
 +    (iw_handler) NULL,           /* SIOCSIWRTS */
 +    (iw_handler) NULL,           /* SIOCGIWRTS */
 +    (iw_handler) NULL,          /* SIOCSIWFRAG */
@@ -10270,7 +10225,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    (iw_handler) NULL,         /* SIOCGIWPOWER */
 +    (iw_handler) NULL,	/* -- hole -- */
 +    (iw_handler) NULL,	/* -- hole -- */
-+#if 0
 +    (iw_handler) ar6000_ioctl_siwgenie,	/* SIOCSIWGENIE */
 +    (iw_handler) ar6000_ioctl_giwgenie,	/* SIOCGIWGENIE */
 +    (iw_handler) ar6000_ioctl_siwauth,	/* SIOCSIWAUTH */
@@ -10278,9 +10232,6 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    (iw_handler) ar6000_ioctl_siwencodeext,/* SIOCSIWENCODEEXT */
 +    (iw_handler) ar6000_ioctl_giwencodeext,/* SIOCGIWENCODEEXT */
 +    (iw_handler) NULL,		/* SIOCSIWPMKSA */
-+#endif
-+
-+#endif  /* NOTYET */
 +};
 +
 +static const iw_handler ath_priv_handlers[] = {
@@ -10293,97 +10244,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    (iw_handler) ar6000_ioctl_setoptie,         /* SIOCWFIRSTPRIV+6 */
 +    (iw_handler) ar6000_ioctl_setmlme,          /* SIOCWFIRSTPRIV+7 */
 +    (iw_handler) ar6000_ioctl_addpmkid,         /* SIOCWFIRSTPRIV+8 */
-+    (iw_handler) NULL,                          /* SIOCWFIRSTPRIV+9 */
-+#ifdef NOT_YET
-+    (iw_handler) ar6000_ioctl_setauthalg,       /* SIOCWFIRSTPRIV+10 */
-+#endif
 +};
-+
-+
-+#ifdef __ATH_CENTRAL_IOCTL_DISPATCHER___
-+/* Structures to export the Wireless Handlers */
-+static const iw_handler ath_central_public_ioctl_handler[] = {
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWCOMMIT */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWNAME */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWNWID */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWNWID */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWFREQ */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWFREQ */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWMODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWMODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWSENS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWSENS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* not _used */          /* SIOCSIWRANGE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRANGE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* not used */           /* SIOCSIWPRIV */
-+    (iw_handler) ath_ioctl_dispatcher,          /* kernel code */        /* SIOCGIWPRIV */
-+    (iw_handler) ath_ioctl_dispatcher,          /* not used */           /* SIOCSIWSTATS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* kernel code */        /* SIOCGIWSTATS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWSPY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWSPY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWTHRSPY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWTHRSPY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWAP */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWAP */
-+    (iw_handler) ath_ioctl_dispatcher,          /* -- hole -- */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWAPLIST */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWSCAN */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWSCAN */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWESSID */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWESSID */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWNICKN */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWNICKN */
-+    (iw_handler) ath_ioctl_dispatcher,          /* -- hole -- */
-+    (iw_handler) ath_ioctl_dispatcher,          /* -- hole -- */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWRATE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRATE */
-+#ifdef NOTYET
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWRTS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRTS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWFRAG */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWFRAG */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWTXPOW */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWTXPOW */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWRETRY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRETRY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWENCODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWENCODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWPOWER */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWPOWER */
-+#else
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWRTS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRTS */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWFRAG */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWFRAG */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWTXPOW */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWTXPOW */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWRETRY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWRETRY */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWENCODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWENCODE */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCSIWPOWER */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCGIWPOWER */
-+#endif  /* NOTYET */
-+};
-+
-+static const iw_handler ath_central_priv_ioctl_handler[] = {
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+0 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+1 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+2 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+3 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+4 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+5 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+6 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+7 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+8 */
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+9 */
-+#ifdef NOT_YET
-+    (iw_handler) ath_ioctl_dispatcher,          /* SIOCWFIRSTPRIV+10 */
-+#endif
-+};
-+
-+#endif /* __ATH_CENTRAL_IOCTL_DISPATCHER___ */
-+
 +
 +#define IW_PRIV_TYPE_KEY \
 +    (IW_PRIV_TYPE_BYTE | sizeof(struct ieee80211req_key))
@@ -10419,83 +10280,16 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +
 +void ar6000_ioctl_iwsetup(struct iw_handler_def *def)
 +{
-+#define N(a) (sizeof(a) / sizeof(a[0]))
 +    def->private_args = (struct iw_priv_args *)ar6000_priv_args;
-+    def->num_private_args = N(ar6000_priv_args);
-+#undef N
++    def->num_private_args = ARRAY_SIZE(ar6000_priv_args);
 +}
 +
 +struct iw_handler_def ath_iw_handler_def = {
-+#define N(a) (sizeof (a) / sizeof (a[0]))
-+#ifdef  __ATH_CENTRAL_IOCTL_DISPATCHER___
-+    .standard         = (iw_handler *)ath_central_public_ioctl_handler,
-+    .num_standard     = N(ath_central_public_ioctl_handler),
-+    .private          = (iw_handler *)ath_central_priv_ioctl_handler,
-+    .num_private      = N(ath_central_priv_ioctl_handler),
-+#else
 +    .standard         = (iw_handler *)ath_handlers,
-+    .num_standard     = N(ath_handlers),
++    .num_standard     = ARRAY_SIZE(ath_handlers),
 +    .private          = (iw_handler *)ath_priv_handlers,
-+    .num_private      = N(ath_priv_handlers),
-+#endif /* __ATH_CENTRAL_IOCTL_DISPATCHER___ */
-+#undef N
++    .num_private      = ARRAY_SIZE(ath_priv_handlers),
 +};
-+
-+#ifdef __ATH_CENTRAL_IOCTL_DISPATCHER___
-+/* When this function is required on some platform other IBM-PC,
-+ * porting is required for that platform
-+ */
-+void
-+ath_external_trigger(int val)
-+{
-+#ifdef CONFIG_X86
-+    unsigned short iobase = 0x3f8; /* COM1 */
-+    unsigned short offset = 0x4;   /* Modem Control Register */
-+    unsigned char reg = 0;
-+
-+    if (!allow_trace_signal) {
-+            /* the setting of DTR can actually affect some terminal console programs (like TeraTerm)
-+             * provide a way to bypass this incase this is on by default */
-+        return;
-+    }
-+
-+    /* Bit 0 is DTR. Drive DTR */
-+    reg |= (val) ? 0x1 : 0;
-+
-+    outb(reg, iobase+offset);
-+#endif  /* CONFIG_X86 */
-+}
-+
-+static int
-+ath_ioctl_dispatcher(struct net_device *dev,
-+              struct iw_request_info *info,
-+              struct iw_point *erq, char *key)
-+{
-+    unsigned int index;
-+    int ret = -EOPNOTSUPP;
-+    const iw_handler *handlers;
-+
-+    if (info->cmd >= SIOCIWFIRSTPRIV && info->cmd <= SIOCIWLASTPRIV) {
-+        handlers = ath_priv_handlers;
-+        index = info->cmd - SIOCIWFIRSTPRIV;
-+    } else {
-+        handlers = ath_handlers;
-+        index = info->cmd - SIOCIWFIRST;
-+    }
-+
-+    if (handlers[index]) {
-+        ath_external_trigger(1);
-+        ret =  (handlers[index](dev, info, (union iwreq_data *)erq, key));
-+        if (allow_trace_signal) {
-+            /* Add some (fixed) delay for scope viewing */
-+            mdelay(5);
-+        }
-+        ath_external_trigger(0);
-+    }
-+
-+    return ret;
-+}
-+#endif /* __ATH_CENTRAL_IOCTL_DISPATCHER___ */
 +
 +
 Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/bmi/bmi.c
