@@ -69,6 +69,9 @@ s3c2410-qt2410-buttons.patch
 # local hack
 fail-unless-uimage.patch
 
+# upstream issue
+montour-audio.patch
+
 # OE patches
 fix-EVIOCGRAB-semantics.patch
 iis-suspend.patch
