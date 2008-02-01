@@ -69,8 +69,13 @@ s3c2410-qt2410-buttons.patch
 # local hack
 fail-unless-uimage.patch
 
-# upstream issue
+# also pushed upstream - remove when it trickled back down
 montour-audio.patch
+
+# FIQ code
+introduce-fiq-basis.patch
+introduce-fiq-use-timer3-as-source.patch
+introduce-fiq-migrate-vibrator-gta02-only.patch
 
 # OE patches
 fix-EVIOCGRAB-semantics.patch
