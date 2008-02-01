@@ -784,6 +784,7 @@ io_func (GIOChannel *source, GIOCondition condition, MokoNetwork *self)
   GError *error = NULL;
   
   switch (condition) {
+    case G_IO_PRI :
     case G_IO_IN :
       if (g_io_channel_read_chars (source, buf, sizeof (buf), &length, &error)
           == G_IO_STATUS_NORMAL) {
@@ -802,10 +803,13 @@ io_func (GIOChannel *source, GIOCondition condition, MokoNetwork *self)
     case G_IO_HUP :
       g_warning ("Gsmd hung up - TODO: Reconnect/restart gsmd?");
       return FALSE;
+    
+    case G_IO_OUT :
+      break;
 
     default :
-      g_warning ("Unhandled IO condition");
-      break;
+      g_warning ("Unhandled IO condition, bailing");
+      return FALSE;
   }
 
   return TRUE;

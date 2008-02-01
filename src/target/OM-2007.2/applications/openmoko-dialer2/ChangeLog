@@ -1,3 +1,9 @@
+2008-02-01  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-network.c: (io_func):
+	Handle all IO conditions, bail on unknown conditions (noticed problems
+	when doing otherwise)
+
 2008-01-31  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-network.c: (stop_retrying_registration),
