@@ -1,7 +1,11 @@
+[ FIXME:
+ include/asm-arm/arch-s3c2410/irqs.h shouldn't contain device-specific
+ changes. ]
+
 This is a Linux kernel driver for the Smedia Glamo336x / Glamo337x
 multi-function peripheral device.
 
-Signedo-off-by: Harald Welte <laforge@openmoko.org>
+Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: linux-2.6.24/drivers/mfd/Kconfig
 ===================================================================

@@ -1,17 +1,3 @@
-[ Two issues to look into later:
-
-- include/asm-arm/arch-s3c2410/irqs.h shouldn't contain device-specific
-  changes (this is not a problem introduced by the FIQ patch per se, but
-  shows up here as well)
-
-- "struct _fiq_ipc" in include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
-  isn't really just the usual "internal use only" declaration, so it
-  should probably be "struct _fiq_ipc". In general, I think we should
-  try to keep the number of _xxx or (better) __xxx items low and
-  perhaps try to limit them to cases where there's a related xxx.
-
-- Werner ]
-
 Adds a C-based FIQ ISR which is very convenient (and unusual --
 normally you have to do FIQ ISR in assembler only).
 Based on my article:
@@ -396,7 +382,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 + * the definition in there and include the same definition in your kernel
 + * module that wants to interoperate with your FIQ code.
 + */
-+struct _fiq_ipc fiq_ipc;
++struct fiq_ipc fiq_ipc;
 +EXPORT_SYMBOL(fiq_ipc);
 +
 +/* define FIQ ISR */
@@ -507,12 +493,12 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
 + * for testing
 + */
 +
-+struct _fiq_ipc {
++struct fiq_ipc {
 +	u8 u8a[0]; /* placeholder */
 +};
 +
 +/* actual definition lives in arch/arm/mach-s3c2440/fiq_c_isr.c */
-+extern struct _fiq_ipc fiq_ipc;
++extern struct fiq_ipc fiq_ipc;
 +
 +extern void fiq_kick(void);  /* provoke a FIQ "immediately" */
 +

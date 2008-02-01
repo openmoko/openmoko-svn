@@ -202,7 +202,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
 @@ -22,7 +22,7 @@
  
  /* actual definition lives in arch/arm/mach-s3c2440/fiq_c_isr.c */
- extern struct _fiq_ipc fiq_ipc;
+ extern struct fiq_ipc fiq_ipc;
 -
 +extern unsigned long _fiq_count_fiqs;
  extern void fiq_kick(void);  /* provoke a FIQ "immediately" */

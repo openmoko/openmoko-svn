@@ -77,7 +77,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/mach-gta02.c
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 @@ -92,12 +92,50 @@
- struct _fiq_ipc fiq_ipc;
+ struct fiq_ipc fiq_ipc;
  EXPORT_SYMBOL(fiq_ipc);
  
 +#define DIVISOR_FROM_US(x) ((x) << 1)
@@ -221,7 +221,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
 +#include <asm/plat-s3c/regs-timer.h>
 +
 +
- struct _fiq_ipc {
+ struct fiq_ipc {
 -	u8 u8a[0]; /* placeholder */
 +	/* vibrator */
 +	unsigned long vib_gpio_pin; /* which pin to meddle with */
