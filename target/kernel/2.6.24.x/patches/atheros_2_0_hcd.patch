@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
-@@ -0,0 +1,1510 @@
+@@ -0,0 +1,1502 @@
 +/*
 + * s3c24xx_hcd.c - Samsung S3C MCI driver, Atheros SDIO API compatible.
 + *
@@ -800,8 +800,6 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +			imask &= ~S3C2410_SDIIMSK_SDIOIRQ;
 +			writel(imask, context->base + S3C2440_SDIIMSK);
 +			schedule_work(&context->irq_work);
-+		} else {
-+			context->int_pending = 1;
 +		}
 +	}
 +
@@ -954,11 +952,6 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +		break;
 +        case SDCONFIG_SDIO_REARM_INT:
 +		DBG_PRINT(SDDBG_TRACE, ("config SDIO_REARM_INT\n"));
-+
-+		if (context->int_pending) {
-+			context->int_pending = 0;
-+			schedule_work(&context->irq_work);
-+		}
 +
 +		context->int_sdio = 1;
 +		imsk = readl(context->base + S3C2440_SDIIMSK);
@@ -1378,7 +1371,6 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +	hcd_context.dma_en = 0;
 +
 +	hcd_context.int_sdio = 0;
-+	hcd_context.int_pending = 0;
 +
 +	spin_lock_init(&hcd_context.lock);
 +
@@ -1549,7 +1541,7 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,67 @@
 +#ifndef __SDIO_S3C24XX_HCD_H___
 +#define __SDIO_S3C24XX_HCD_H___
 +
@@ -1598,7 +1590,6 @@ Index: linux-2.6.24/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.h
 +
 +	UINT32		  	  int_mask;
 +	UINT32		  	  int_sdio;            /* Do we have SDIO interrupt on ? */
-+	UINT32		  	  int_pending;
 +
 +	UINT32		  	  complete;
 +
