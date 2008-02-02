@@ -8377,7 +8377,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
-@@ -0,0 +1,1941 @@
+@@ -0,0 +1,1946 @@
 +/*
 + *
 + * Copyright (c) 2004-2007 Atheros Communications Inc.
@@ -10159,6 +10159,11 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/ar6000/wireless_ext.c
 +    ar->scan_complete = 0;
 +    wait_event_interruptible_timeout(ar6000_scan_queue, ar->scan_complete,
 +				     5 * HZ);
++
++    if (wmi_bssfilter_cmd(ar->arWmi, NONE_BSS_FILTER, 0) != A_OK) {
++	    printk("Couldn't set filtering\n");
++	    ret = -EIO;
++    }
 +
 +    return ret;
 +#undef  ACT_DWELLTIME_DEFAULT
