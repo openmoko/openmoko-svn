@@ -92,5 +92,8 @@ atheros_2_0_sdio_stack.patch
 # bad bug
 fix-hwecc-2410.patch
 
+# leapfrogged from upstream
+kexec-atags.patch
+
 # Preliminary suspend/resume power saving improvements
 suspend-prelim1.patch
