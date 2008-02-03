@@ -26,7 +26,7 @@
 # UBOOT_DIR=/wherever/u-boot
 #
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
-# SVN_REV=4009
+# SVN_REV=4014
 #
 
 # wget http://ftp.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL}.tar.bz2
