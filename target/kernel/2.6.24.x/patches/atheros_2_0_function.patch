@@ -20840,7 +20840,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
-@@ -0,0 +1,1739 @@
+@@ -0,0 +1,1743 @@
 +/*
 + * Copyright (c) 2004-2006 Atheros Communications Inc.
 + * All rights reserved.
@@ -21088,7 +21088,10 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +    CONNECT_IGNORE_WPAx_GROUP_CIPHER = 0x0004,
 +    CONNECT_PROFILE_MATCH_DONE = 0x0008,
 +    CONNECT_IGNORE_AAC_BEACON = 0x0010,
++    CONNECT_CSA_FOLLOW_BSS = 0x0020,
 +} WMI_CONNECT_CTRL_FLAGS_BITS;
++
++#define DEFAULT_CONNECT_CTRL_FLAGS         (CONNECT_CSA_FOLLOW_BSS)
 +
 +typedef PREPACK struct {
 +    A_UINT8     networkType;
@@ -21362,8 +21365,8 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +typedef PREPACK struct {
 +    A_UINT16    psPollTimeout;          /* msec */
 +    A_UINT16    triggerTimeout;         /* msec */
-+    APSD_TIM_POLICY apsdTimPolicy;      /* TIM behavior with  ques APSD enabled. Default is IGNORE_TIM_ALL_QUEUES_APSD */
-+    APSD_TIM_POLICY simulatedAPSDTimPolicy;      /* TIM behavior with  simulated APSD enabled. Default is PROCESS_TIM_SIMULATED_APSD */
++    A_UINT32    apsdTimPolicy;      /* TIM behavior with  ques APSD enabled. Default is IGNORE_TIM_ALL_QUEUES_APSD */
++    A_UINT32    simulatedAPSDTimPolicy;      /* TIM behavior with  simulated APSD enabled. Default is PROCESS_TIM_SIMULATED_APSD */
 +} POSTPACK WMI_POWERSAVE_TIMERS_POLICY_CMD;
 +
 +/*
@@ -21893,7 +21896,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +    A_UINT8     bssid[ATH_MAC_LEN];
 +    A_UINT16    listenInterval;
 +    A_UINT16    beaconInterval;
-+    NETWORK_TYPE  networkType;
++    A_UINT32    networkType;
 +    A_UINT8     beaconIeLen;
 +    A_UINT8     assocReqLen;
 +    A_UINT8     assocRespLen;
@@ -21913,6 +21916,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/include/wmi.h
 +    NO_RESOURCES_AVAIL = 0x07,
 +    CSERV_DISCONNECT   = 0x08,
 +    INVALID_PROFILE    = 0x0a,
++    DOT11H_CHANNEL_SWITCH = 0x0b,
 +} WMI_DISCONNECT_REASON;
 +
 +typedef PREPACK struct {
@@ -24554,7 +24558,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
 + * This module implements the hardware independent layer of the
 + * Wireless Module Interface (WMI) protocol.
 + *
-+ * $Id: //depot/sw/releases/olca2.0-GPL/host/wmi/wmi.c#2 $
++ * $Id: //depot/sw/releases/olca2.0-GPL/host/wmi/wmi.c#3 $
 + *
 + *
 + *  This program is free software; you can redistribute it and/or modify
@@ -26109,7 +26113,7 @@ Index: linux-2.6.24/drivers/sdio/function/wlan/ar6000/wmi/wmi.c
 +       need to do a SYNC before.*/
 +    status = (wmi_cmd_send(wmip, osbuf, WMI_DISCONNECT_CMDID,
 +                         NO_SYNC_WMIFLAG));
-+    wmi_qos_state_init(wmip);
++
 +    return status;
 +}
 +
