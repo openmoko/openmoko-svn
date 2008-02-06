@@ -115,6 +115,13 @@ public class OpenMokoTerminal2.MainWindow : Window
             OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( (int)num ); btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
             btn_zoom_out.set_sensitive( terminal.get_font_size() > 1 );
         };
+        notebook.page_removed += (o, page, num) => {
+            stdout.printf( "on_page_removed\n");
+            if ( notebook.get_n_pages() == 0 )
+                Gtk.main_quit();
+            else
+                update_toolbar();
+        };
         return false;
     }
 
@@ -133,7 +140,7 @@ public class OpenMokoTerminal2.MainWindow : Window
         stdout.printf( "on_delete_clicked\n" );
         var page = notebook.get_nth_page( notebook.get_current_page() );
         page.destroy();
-        update_toolbar();
+        // update_toolbar will be called through the page-removed signal handler
     }
 
     private void on_zoom_in_clicked( Gtk.ToolButton b )
@@ -163,6 +170,11 @@ public class OpenMokoTerminal2.MainWindow : Window
     public void update_toolbar()
     {
         stdout.printf( "update_toolbar\n" );
+        if ( null == notebook )
+        {
+            stdout.printf( "notebook no longer present\n" );
+            return;
+        }
         btn_delete.set_sensitive( notebook.get_n_pages() > 1 );
         OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
         stdout.printf( "current font size for terminal is %d\n", terminal.get_font_size() );

@@ -40,8 +40,9 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
         fontsize = 5;
 
         terminal = new Vte.Terminal();
-        terminal.child_exited += term => { stdout.printf( "unhandled eof\n" ); };
-        terminal.eof += term => { stdout.printf( "unhandled eof\n" ); };
+        // auto-exit may become a preference at some point?
+        terminal.child_exited += term => { destroy(); };
+        terminal.eof += term => { destroy(); };
         terminal.window_title_changed += term => { Gtk.Window toplevel = get_toplevel(); toplevel.set_title( term.window_title ); };
         pack_start( terminal, true, true, 0 );
 
