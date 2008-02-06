@@ -100,5 +100,10 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
     {
         terminal.paste_primary();
     }
+
+    public void paste_command( string command )
+    {
+        terminal.feed_child( command, command.size() );
+    }
 }
 

@@ -36,6 +36,8 @@ public class OpenMokoTerminal2.MainWindow : Window
     private ToolButton btn_zoom_out;
     private ToolButton btn_paste;
 
+    private string initial_command;
+
     public MainWindow()
     {
         title = "Terminal";
@@ -50,7 +52,13 @@ public class OpenMokoTerminal2.MainWindow : Window
         setup_notebook();
         update_toolbar();
         idle_add( on_idle, this );
+        idle_add( on_idle_first_command, this );
         //window.add_filter( on_gdk_filter, this );
+    }
+
+    public void setup_command( string command )
+    {
+        initial_command = command + "\n";
     }
 
     public void setup_toolbar()
@@ -125,6 +133,15 @@ public class OpenMokoTerminal2.MainWindow : Window
         return false;
     }
 
+    private bool on_idle_first_command()
+    {
+        stdout.printf( "on_idle_first_command\n" );
+        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( 0 );
+        if ( initial_command != null )
+            terminal.paste_command( initial_command );
+        return false;
+    }
+
     private void on_new_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_new_clicked\n" );
@@ -189,10 +206,18 @@ public class OpenMokoTerminal2.MainWindow : Window
     }
 
     static int main (string[] args) {
-        Gtk.init(ref args);
+        if ( args.length == 2 || args.length > 3 )
+        {
+            stdout.printf( "Usage: %s [ -e <initial command> ]\n", args[0] );
+            return 0;
+        }
 
+        Gtk.init(ref args);
         var window = new MainWindow();
+        if ( args.length == 3 && args[1] == "-e" )
+            window.setup_command( args[2] );
         window.run();
+
         return 0;
     }
 
