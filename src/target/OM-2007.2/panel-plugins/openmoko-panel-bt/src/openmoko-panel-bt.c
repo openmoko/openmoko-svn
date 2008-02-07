@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 #define BT_POWERON_FILENAME "/sys/class/i2c-dev/i2c-0/device/0-0008/gta01-pm-bt.0/power_on"
+#define BT_POWERON_FILENAME2 "/sys/class/i2c-dev/i2c-0/device/0-0008/neo1973-pm-bt.0/power_on"
 
 typedef struct {
   MokoPanelApplet *mokoapplet;
@@ -35,6 +36,7 @@ read_bt_power(void)
   FILE * f = fopen(BT_POWERON_FILENAME, "r+");
   int val;
 
+  if (f == NULL) f = fopen(BT_POWERON_FILENAME2, "r+");
   if (f == NULL) return -1;
 
   fscanf(f, "%i", &val);
@@ -47,6 +49,7 @@ set_bt_power(int val)
 {
   FILE * f = fopen(BT_POWERON_FILENAME, "w");
 
+  if (f == NULL) f = fopen(BT_POWERON_FILENAME2, "w");
   if (f == NULL) return -1;
 
   fprintf(f, "%i\n", val);
