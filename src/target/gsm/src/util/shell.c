@@ -605,6 +605,8 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				break;
 			}
 			rc = lgsm_handle_packet(lgsmh, buf, rc);
+			if (rc < 0)
+				printf("ERROR processing packet: %d(%s)\n", rc, strerror(-rc));
 		}
 		if (FD_ISSET(0, &readset)) {
 			/* we've received something on stdin.  */
