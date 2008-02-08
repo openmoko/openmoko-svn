@@ -609,7 +609,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,284 @@
+@@ -0,0 +1,286 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -872,6 +872,8 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define CONFIG_VIDEO_BMP_GZIP
 +#define CONFIG_VGA_AS_SINGLE_DEVICE
 +#define CONFIG_CMD_UNZIP
++
++#define VIDEO_FB_16BPP_PIXEL_SWAP
 +
 +#define VIDEO_KBD_INIT_FCT	0
 +#define VIDEO_TSTC_FCT		serial_tstc

@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2323,6 +2323,14 @@
+@@ -2417,6 +2417,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -873,7 +873,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
 +	lcd->LCDCON2 = 0x019fc3c1;
 +	lcd->LCDCON3 = 0x0039df67;
 +	lcd->LCDCON4 = 0x00000007;
-+	lcd->LCDCON5 = 0x0001cf08;
++	lcd->LCDCON5 = 0x0001cf09;
 +	lcd->LPCSEL  = 0x00000000;
 +}
 Index: u-boot/board/neo1973/common/jbt6k74.h
@@ -1908,7 +1908,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -0,0 +1,255 @@
+@@ -0,0 +1,257 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2150,6 +2150,8 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +#define CONFIG_VIDEO_LOGO
 +#define CONFIG_VGA_AS_SINGLE_DEVICE
 +
++#define VIDEO_FB_16BPP_PIXEL_SWAP
++
 +#define VIDEO_KBD_INIT_FCT	0
 +#define VIDEO_TSTC_FCT		serial_tstc
 +#define VIDEO_GETC_FCT		serial_getc
@@ -2250,8 +2252,8 @@ Index: u-boot/drivers/misc/Makefile
  COBJS-y += ns87308.o
 +COBJS-y += pcf50606.o
  COBJS-y += status_led.o
+ COBJS-$(CONFIG_FSL_LAW) += fsl_law.o
  
- COBJS	:= $(COBJS-y)
 Index: u-boot/drivers/misc/pcf50606.c
 ===================================================================
 --- /dev/null
