@@ -90,7 +90,7 @@ Index: u-boot/drivers/usb/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usb/usbdfu.c
-@@ -0,0 +1,1018 @@
+@@ -0,0 +1,1050 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1006,6 +1006,38 @@ Index: u-boot/drivers/usb/usbdfu.c
 +		usb_strings[STR_COUNT+i+1] = strdesc;
 +	}
 +}
++
++
++#ifdef CONFIG_NAND_DYNPART
++
++void dfu_update_strings(void)
++{
++	int i;
++
++	if (!system_dfu_state) {
++		printf("NASTY SURPRISE: system_dfu_state not set\n");
++		return;
++	}
++
++	for (i = 1; i != DFU_NUM_ALTERNATES; i++) {
++		struct part_info *part = get_partition_nand(i-1);
++		struct usb_string_descriptor *strdesc, **slot;
++
++		if (part)
++			strdesc = create_usbstring(part->name);
++		else
++			strdesc = create_usbstring("undefined partition");
++		if (!strdesc)
++			continue;
++		slot = usb_strings+STR_COUNT+i+1;
++		if (*slot)
++			free(*slot);
++		*slot = strdesc;
++	}
++}
++
++#endif /* CONFIG_NAND_DYNPART */
++
 +
 +int dfu_init_instance(struct usb_device_instance *dev)
 +{

@@ -15,7 +15,7 @@ the 'dynpart' command at the prompt.  Use 'saveenv' to make the setting permanen
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot/drivers/nand/nand_bbt.c
+Index: u-boot/drivers/mtd/nand/nand_bbt.c
 ===================================================================
 --- u-boot.orig/drivers/mtd/nand/nand_bbt.c
 +++ u-boot/drivers/mtd/nand/nand_bbt.c
@@ -110,7 +110,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -91,6 +91,7 @@
+@@ -92,6 +92,7 @@
  #define CONFIG_CMD_BSP
  #define CONFIG_CMD_ELF
  #define CONFIG_CMD_MISC
@@ -118,7 +118,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_CMD_DIAG
  #define CONFIG_CMD_SAVES
  #define CONFIG_CMD_NAND
-@@ -199,13 +200,13 @@
+@@ -201,13 +202,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT
  
@@ -135,7 +135,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #endif
  
  /* ATAG configuration */
-@@ -245,4 +246,9 @@
+@@ -249,4 +250,9 @@
  #define CONFIG_DRIVER_PCF50606		1
  #define CONFIG_RTC_PCF50606		1
  
@@ -149,7 +149,7 @@ Index: u-boot/common/cmd_jffs2.c
 ===================================================================
 --- u-boot.orig/common/cmd_jffs2.c
 +++ u-boot/common/cmd_jffs2.c
-@@ -1841,6 +1841,29 @@
+@@ -1838,6 +1838,29 @@
  	return NULL;
  }
  
@@ -179,7 +179,7 @@ Index: u-boot/common/cmd_jffs2.c
  /***************************************************/
  /* U-boot commands				   */
  /***************************************************/
-@@ -2132,6 +2155,24 @@
+@@ -2129,6 +2152,30 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -189,12 +189,18 @@ Index: u-boot/common/cmd_jffs2.c
 +
 +int do_dynpart(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 +{
++	extern void dfu_update_strings(void);
++
 +#if 0
 +	int i = simple_strtoul(argv[1], NULL, 0);
 +	if (i >= CFG_MAX_NAND_DEVICE)
 +		return -EINVAL;
 +#endif
 +	nand_create_mtd_dynpart(&nand_info[0]);
++
++#ifdef CONFIG_USBD_DFU
++	dfu_update_strings();
++#endif
 +
 +	return 0;
 +}
@@ -204,7 +210,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2197,6 +2238,15 @@
+@@ -2194,6 +2241,15 @@
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );
@@ -254,7 +260,7 @@ Index: u-boot/common/cmd_nand.c
  			}
  			idx = dev->id->num;
  			*nand = nand_info[idx];
-@@ -253,7 +260,7 @@
+@@ -257,7 +264,7 @@
  
  		printf("\nNAND %s: ", scrub ? "scrub" : "erase");
  		/* skip first two or three arguments, look for offset and size */
@@ -263,7 +269,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		memset(&opts, 0, sizeof(opts));
-@@ -315,7 +322,7 @@
+@@ -319,7 +326,7 @@
  
  		read = strncmp(cmd, "read", 4) == 0; /* 1 = read, 0 = write */
  		printf("\nNAND %s: ", read ? "read" : "write");
@@ -272,7 +278,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		s = strchr(cmd, '.');
-@@ -437,7 +444,7 @@
+@@ -441,7 +448,7 @@
  	}
  
  	if (strcmp(cmd, "unlock") == 0) {
@@ -324,9 +330,9 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/gta01.c
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -425,3 +425,14 @@
- 	return 0;
+@@ -494,3 +494,14 @@
  }
+ 
  
 +
 +/* The sum of all part_size[]s must equal to the NAND size, i.e., 0x4000000.
