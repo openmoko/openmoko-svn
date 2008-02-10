@@ -37,6 +37,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private ToolButton btn_paste;
 
     private static string initial_command;
+    private static string[] initial_command_line;
 
     public MainWindow()
     {
@@ -206,7 +207,8 @@ public class OpenMokoTerminal2.MainWindow : Window
     }
 
     const OptionEntry[] options = {
-        { "command", 'e', 0, OptionArg.STRING, out initial_command, "Execute COMMAND inside the terminal.", "COMMAND"},
+        { "command", 'e', 0, OptionArg.STRING, out initial_command, "Execute COMMAND inside the terminal.", "COMMAND" },
+        { "", 'x', 0, OptionArg.STRING_ARRAY, out initial_command_line, "Execute remainder of command line inside the terminal.", "COMMANDS" },
         { null }
     };
 
@@ -224,6 +226,12 @@ public class OpenMokoTerminal2.MainWindow : Window
         {
             window.setup_command( initial_command );
         }
+        else if ( initial_command_line != null )
+        {
+            initial_command = string.joinv( " ", initial_command_line );
+            window.setup_command( initial_command );
+        }
+
         window.run();
 
         return 0;
