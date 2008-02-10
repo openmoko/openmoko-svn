@@ -328,7 +328,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 1 ) /* pressed */
                 {
                     if ( moko_debug ) g_debug( "triggering aux timer" );
-                    aux_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
+                    aux_timer = g_timeout_add( 1000, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
@@ -347,7 +347,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 1 ) /* pressed */
                 {
                     if ( moko_debug ) g_debug( "triggering power timer" );
-                    power_timer = g_timeout_add_seconds( 1, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
+                    power_timer = g_timeout_add( 1000, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
