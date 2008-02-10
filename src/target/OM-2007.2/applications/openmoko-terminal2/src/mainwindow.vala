@@ -36,7 +36,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private ToolButton btn_zoom_out;
     private ToolButton btn_paste;
 
-    private string initial_command;
+    private static string initial_command;
 
     public MainWindow()
     {
@@ -205,17 +205,25 @@ public class OpenMokoTerminal2.MainWindow : Window
         Gtk.main();
     }
 
+    const OptionEntry[] options = {
+        { "command", 'e', 0, OptionArg.STRING, out initial_command, "Execute COMMAND inside the terminal.", "COMMAND"},
+        { null }
+    };
+
     static int main (string[] args) {
-        if ( args.length == 2 || args.length > 3 )
+        try {
+            Gtk.init_with_args(ref args.length, ref args, " - a lightweight terminal for the OpenMoko environment", options, null);
+        } catch (Error e)
         {
-            stdout.printf( "Usage: %s [ -e <initial command> ]\n", args[0] );
-            return 0;
+            stderr.printf("Error: %s\n", e.message);
+            return 1; 
         }
 
-        Gtk.init(ref args);
         var window = new MainWindow();
-        if ( args.length == 3 && args[1] == "-e" )
-            window.setup_command( args[2] );
+        if ( initial_command != null )
+        {
+            window.setup_command( initial_command );
+        }
         window.run();
 
         return 0;
