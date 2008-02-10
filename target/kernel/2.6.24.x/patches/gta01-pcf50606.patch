@@ -4,10 +4,10 @@ The PCF50606 is used in the FIC/OpenMoko Neo1973 GTA01 GSM phone.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1946 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
@@ -258,7 +258,7 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +	if (data2) {
 +		adcs1 = __reg_read(pcf, PCF50606_REG_ADCS3);
-+		*data2 = (adcs1 << 2) | (adcs2 & 0x0c);
++		*data2 = (adcs1 << 2) | ((adcs2 & 0x0c) >> 2);
 +	}
 +
 +	mutex_unlock(&pcf->lock);
@@ -965,12 +965,12 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +}
 +static DEVICE_ATTR(battemp, S_IRUGO | S_IWUSR, show_battemp, NULL);
 +
-+static inline u_int16_t adc_to_chg_milliamps(struct pcf50606_data *pcf,
++static inline int16_t adc_to_chg_milliamps(struct pcf50606_data *pcf,
 +					     u_int16_t adc_adcin1,
 +					     u_int16_t adc_batvolt)
 +{
-+	u_int32_t res = ((adc_adcin1 - adc_batvolt) * 6000);
-+	return res / (pcf->pdata->r_sense_milli * 1024 / 1000);
++	int32_t res = (adc_adcin1 - adc_batvolt) * 2400;
++	return (res * 1000) / (pcf->pdata->r_sense_milli * 1024);
 +}
 +
 +static ssize_t show_chgcur(struct device *dev, struct device_attribute *attr,
@@ -979,13 +979,13 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	u_int16_t adc_batvolt, adc_adcin1;
-+	u_int16_t ma;
++	int16_t ma;
 +
 +	adc_batvolt = adc_read(pcf, PCF50606_ADCMUX_BATVOLT_ADCIN1,
 +			       &adc_adcin1);
 +	ma = adc_to_chg_milliamps(pcf, adc_adcin1, adc_batvolt);
 +
-+	return sprintf(buf, "%u\n", ma);
++	return sprintf(buf, "%d\n", ma);
 +}
 +static DEVICE_ATTR(chgcur, S_IRUGO | S_IWUSR, show_chgcur, NULL);
 +
@@ -1955,10 +1955,10 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.24/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.24/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2262,10 +2262,10 @@ Index: linux-2.6/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6/drivers/i2c/chips/Kconfig
+Index: linux-2.6.24/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6/drivers/i2c/chips/Kconfig
+--- linux-2.6.24.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.24/drivers/i2c/chips/Kconfig
 @@ -51,6 +51,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2284,10 +2284,10 @@ Index: linux-2.6/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on EXPERIMENTAL
-Index: linux-2.6/drivers/i2c/chips/Makefile
+Index: linux-2.6.24/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6/drivers/i2c/chips/Makefile
+--- linux-2.6.24.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.24/drivers/i2c/chips/Makefile
 @@ -9,6 +9,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2296,11 +2296,11 @@ Index: linux-2.6/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6/include/linux/i2c-id.h
+Index: linux-2.6.24/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.orig/include/linux/i2c-id.h
-+++ linux-2.6/include/linux/i2c-id.h
-@@ -163,6 +163,7 @@
+--- linux-2.6.24.orig/include/linux/i2c-id.h
++++ linux-2.6.24/include/linux/i2c-id.h
+@@ -167,6 +167,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
@@ -2308,10 +2308,10 @@ Index: linux-2.6/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6/include/linux/pcf50606.h
+Index: linux-2.6.24/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/linux/pcf50606.h
++++ linux-2.6.24/include/linux/pcf50606.h
 @@ -0,0 +1,108 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
