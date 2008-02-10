@@ -47,6 +47,7 @@ lowlevel_foo.patch
 
 # move these later, once the dust has settled
 default-env.patch
+env-override.patch
 console-ansi.patch
 boot-menu.patch
 
@@ -84,7 +85,7 @@ uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
 
 # keep this here until we have time to bubble it into the stack
-nor-default-env.patch
+##nor-default-env.patch
 
 # let's see what upstream thinks about this
 loadenv.patch

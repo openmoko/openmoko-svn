@@ -1,0 +1,46 @@
+Index: u-boot/common/env_common.c
+===================================================================
+--- u-boot.orig/common/env_common.c
++++ u-boot/common/env_common.c
+@@ -34,6 +34,10 @@
+ extern char *preboot_override;
+ #endif
+ 
++#ifdef CFG_ENV_OVERRIDE
++extern void *env_override;
++#endif
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #ifdef CONFIG_AMIGAONEG3SE
+@@ -207,6 +211,12 @@
+ 	memcpy (env_ptr->data,
+ 		default_environment,
+ 		sizeof(default_environment));
++
++#ifdef CFG_ENV_OVERRIDE
++	if (env_override)
++		memcpy(env_ptr->data, env_override, ENV_SIZE);
++#endif
++
+ #ifdef CFG_REDUNDAND_ENVIRONMENT
+ 	env_ptr->flags = 0xFF;
+ #endif
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -85,6 +85,13 @@
+ 	.word	0
+ #endif
+ 
++/* Must follow preboot_override , so we get a well-known address ! */
++#ifdef CFG_ENV_OVERRIDE
++.globl	env_override
++env_override:
++	.word	0
++#endif
++
+ #ifdef CONFIG_S3C2410_NAND_BOOT
+ .globl	booted_from_nand
+ booted_from_nand:

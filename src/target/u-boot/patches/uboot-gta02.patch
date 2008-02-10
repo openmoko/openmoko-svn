@@ -609,7 +609,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,286 @@
+@@ -0,0 +1,287 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -822,6 +822,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define CFG_ENV_SIZE		0x40000	/* 128k Total Size of Environment Sector */
 +#define CFG_ENV_OFFSET_OOB	1	/* Location of ENV stored in block 0 OOB */
 +#define	CFG_PREBOOT_OVERRIDE	1	/* allow preboot from memory */
++#define CFG_ENV_OVERRIDE		/* allow pre-loading the environment */
 +
 +#define NAND_MAX_CHIPS		1
 +#define CFG_NAND_BASE		0x4e000000
