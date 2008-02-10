@@ -23,6 +23,7 @@ uboot-neo1973-resume.patch
 
 # this will be somewhat more difficult
 nand-dynamic_partitions.patch
+uboot-s3c2410-nand.patch
 uboot-s3c2410-norelocate_irqvec_cpy.patch
 uboot-usbtty-acm.patch
 uboot-s3c2410_udc.patch
