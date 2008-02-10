@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+# mknor - Make a GTA02 NOR binary (containing u-boot and a new environment)
+#
+# Copyright (C) 2008 by OpenMoko, Inc.
+# Written by Werner Almesberger <werner@openmoko.org>
+# All Rights Reserved
+#
+
+#
+# WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING
+#
+# This isn't the final version of NOR image creation yet, and some things may
+# not work as expected.
+#
+# WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING
+#
+
+#
+# Write to NOR with the following commands:
+#
+# flash_unlock /dev/mtd0
+# flash_eraseall /dev/mtd0
+# cat nor.bin >/dev/mtd0
+#
+
+#
+# NOR map:
+#
+# Physical address in MCU address space
+# |    Offset in NOR
+# |    |        Description
+# |    |        |
+# 0x18 00 0000	beginning of NOR, u-boot (256kB)
+# 0x18 04 0000	splash image
+# 0x18 05 0000	preboot command
+# 0x18 05 0100	preboot script
+# 0x18 05 1000	environment
+# 0x18 1F FFFF	end of NOR (2MB)
+#
+
+#unzip 0x18070000 0x8800000 0x96000
+
+./scriptify.pl <<EOF >_script
+neo backlight off
+neo backlight on
+unzip 0x18040000 0x885dc00 0x38400
+dynpart
+echo READY.
+EOF
+
+pngtopnm tmp/System_boot.png |
+  pamcut 0 145 480 240 |
+  ../splash/splashimg.pl -pnm - |
+  gzip -9 >_splash
+
+./envedit.pl -f - -o _env <<EOF
+mtdids=nor0=physmap-flash,nand0=neo1973-nand
+
+stdin=usbtty
+stdout=usbtty
+stderr=usbtty
+
+bootdelay=5
+
+usbtty=cdc_acm
+
+boot_menu_timeout=72000
+
+bootargs_base=
+  rootfstype=jffs2
+  root=/dev/mtdblock5
+  console=ttySAC2,115200
+  console=tty0
+  loglevel=8
+  regular_boot
+
+bootcmd=
+  setenv bootargs \${bootargs_base} \${mtdparts};
+  nand read.e 0x32000000 kernel 0x200000;
+  bootm 0x32000000
+
+menu_1=
+  Copy u-boot from NOR to NAND:
+  cp.l 0x18000000 0x32000000 0x10000;
+  mw.l 0x32000040 0 2;
+  nand write.e 0x32000000 0 0x40000;
+  dynenv set u-boot_env
+
+menu_2=
+  Set console to USB:
+  setenv stdin usbtty;
+  setenv stdout usbtty;
+  setenv stderr usbtty
+
+menu_3=
+  Set console to serial:
+  setenv stdin serial;
+  setenv stdout serial;
+  setenv stderr serial
+
+menu_4=
+  Reset:
+  reset
+
+menu_5=
+  Power off:
+  neo1973 power-off
+EOF
+
+./blink.pl \
+  /home/moko/fr/u-boot/u-boot.udfu@0 \
+  _splash@0x40000 \
+  '"autoscr 0x18050100"'@0x50000 \
+  _script@0x050100 \
+  _env@0x51000 \
+  0x18050000@=0x40 \
+  0x18051004@0x44 \
+  >nor.bin || { rm -rf nor.bin; exit 1; }
+
+rm -f _splash _script _env
