@@ -78,6 +78,7 @@ introduce-fiq-use-timer3-as-source.patch
 introduce-fiq-migrate-vibrator-gta02-only.patch
 
 # OE patches
+fiq-hdq.patch
 fix-EVIOCGRAB-semantics.patch
 iis-suspend.patch
 s3c24xx-pcm-suspend.patch

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.24
-# Sat Feb  2 15:15:40 2008
+# Sun Feb 10 20:32:17 2008
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1016,6 +1016,7 @@ CONFIG_SPI_S3C24XX_GPIO=y
 # CONFIG_SPI_TLE62X0 is not set
 # CONFIG_W1 is not set
 # CONFIG_POWER_SUPPLY is not set
+CONFIG_GTA02_HDQ=y
 # CONFIG_HWMON is not set
 CONFIG_WATCHDOG=y
 # CONFIG_WATCHDOG_NOWAYOUT is not set
