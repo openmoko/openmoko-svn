@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1746 @@
+@@ -0,0 +1,1802 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -926,6 +926,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		pcf->flags &= ~PCF50633_F_CHG_ENABLED;
 +		bits = 0;
 +	}
++	reg_set_bit_mask(pcf, PCF50633_REG_MBCC1, PCF50633_MBCC1_CHGENA,
++			 bits);
 +}
 +EXPORT_SYMBOL_GPL(pcf50633_charge_enable);
 +
@@ -1336,6 +1338,48 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +	.update_status	= pcf50633bl_set_intensity,
 +};
 +
++/*
++ * Dump regs
++ */
++
++static ssize_t show_dump_regs(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50633_data *pcf = i2c_get_clientdata(client);
++	u8 dump[16];
++	int n, n1, idx = 0;
++	char *buf1 = buf;
++	static u8 address_no_read[] = { /* must be ascending */
++		PCF50633_REG_INT1,
++		PCF50633_REG_INT2,
++		PCF50633_REG_INT3,
++		PCF50633_REG_INT4,
++		PCF50633_REG_INT5,
++		0 /* terminator */
++	};
++
++	for (n = 0; n < 256; n += sizeof(dump)) {
++
++		for (n1 = 0; n1 < sizeof(dump); n1++)
++			if (n == address_no_read[idx]) {
++				idx++;
++				dump[n1] = 0x00;
++			} else
++				dump[n1] = reg_read(pcf, n + n1);
++
++		hex_dump_to_buffer(dump, sizeof(dump), 16, 1, buf1, 128, 0);
++		buf1 += strlen(buf1);
++		*buf1++ = '\n';
++		*buf1 = '\0';
++	}
++
++	return buf1 - buf;
++}
++
++static DEVICE_ATTR(dump_regs, 0400, show_dump_regs, NULL);
++
++
 +/***********************************************************************
 + * Driver initialization
 + ***********************************************************************/
@@ -1352,7 +1396,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +};
 +#endif
 +
-+static struct attribute *pcf_sysfs_entries[18] = {
++static struct attribute *pcf_sysfs_entries[] = {
 +	&dev_attr_voltage_auto.attr,
 +	&dev_attr_voltage_down1.attr,
 +	&dev_attr_voltage_down2.attr,
@@ -1364,6 +1408,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +	&dev_attr_voltage_ldo5.attr,
 +	&dev_attr_voltage_ldo6.attr,
 +	&dev_attr_voltage_hcldo.attr,
++	&dev_attr_dump_regs.attr,
 +	NULL
 +};
 +
@@ -1536,6 +1581,17 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		platform_device_register(&gta01_pm_gps_dev);
 +	}
 +#endif
++
++	/* coldplug the USB if present */
++	if (reg_read(data, PCF50633_REG_MBCS1) & 3) { /* usb present, power ok */
++		DEBUGPC("USBINS ");
++		input_report_key(data->input_dev, KEY_POWER2, 1);
++		apm_queue_event(APM_POWER_STATUS_CHANGE);
++		data->flags |= PCF50633_F_USB_PRESENT;
++		if (data->pdata->cb)
++			data->pdata->cb(&data->client.dev,
++				       PCF50633_FEAT_MBC, PMU_EVT_USB_INSERT);
++	}
 +
 +	return 0;
 +exit_rtc:
