@@ -76,9 +76,10 @@ montour-audio.patch
 introduce-fiq-basis.patch
 introduce-fiq-use-timer3-as-source.patch
 introduce-fiq-migrate-vibrator-gta02-only.patch
+fiq-hdq.patch
+#bq27000-battery-driver.patch
 
 # OE patches
-fiq-hdq.patch
 fix-EVIOCGRAB-semantics.patch
 iis-suspend.patch
 s3c24xx-pcm-suspend.patch
@@ -92,6 +93,9 @@ atheros_2_0_sdio_stack.patch
 
 # bad bug
 fix-hwecc-2410.patch
+
+# this may not be the last word on this issue, but the patch certainly helps
+fix-pcf50633-LOWBAT-kill-init.patch
 
 # leapfrogged from upstream
 kexec-atags.patch

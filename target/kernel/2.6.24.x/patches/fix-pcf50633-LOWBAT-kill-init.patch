@@ -1,0 +1,37 @@
+Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
+===================================================================
+--- linux-2.6.24.orig/drivers/i2c/chips/pcf50633.c
++++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
+@@ -637,15 +637,25 @@
+ 	}
+ 
+ 	if (int4 & (PCF50633_INT4_LOWBAT|PCF50633_INT4_LOWSYS)) {
+-		/* Really low battery voltage, we have 8 seconds left */
+-		DEBUGPC("LOWBAT ");
+-		apm_queue_event(APM_LOW_BATTERY);
+-		DEBUGPC("SIGPWR(init) ");
+-		kill_proc(1, SIGPWR, 1);
++		if ((__reg_read(pcf, PCF50633_REG_MBCS1) &
++		    (PCF50633_MBCS1_USBPRES | PCF50633_MBCS1_USBOK)) ==
++		    (PCF50633_MBCS1_USBPRES | PCF50633_MBCS1_USBOK)) {
++			/*
++			 * hey no need to freak out, we have some kind of
++			 * valid charger power
++			 */
++			DEBUGPC("(NO)BAT ");
++		} else {
++			/* Really low battery voltage, we have 8 seconds left */
++			DEBUGPC("LOWBAT ");
++			apm_queue_event(APM_LOW_BATTERY);
++			DEBUGPC("SIGPWR(init) ");
++			kill_proc(1, SIGPWR, 1);
++		}
+ 		/* Tell PMU we are taking care of this */
+ 		reg_set_bit_mask(pcf, PCF50633_REG_OOCSHDWN,
+-				 PCF50633_OOCSHDWN_TOTRST,
+-				 PCF50633_OOCSHDWN_TOTRST);
++				PCF50633_OOCSHDWN_TOTRST,
++				PCF50633_OOCSHDWN_TOTRST);
+ 	}
+ 	if (int4 & PCF50633_INT4_HIGHTMP) {
+ 		/* High temperature */
