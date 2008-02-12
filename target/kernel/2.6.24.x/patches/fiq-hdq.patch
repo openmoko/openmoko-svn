@@ -376,7 +376,7 @@ Index: linux-2.6.24/drivers/power/gta02_hdq.c
 +	int n;
 +	int v;
 +	u8 u8a[128]; /* whole address space for HDQ */
-+	char *buf1 = buf;
++	char *end = buf;
 +
 +	/* the dump does not take care about 16 bit regs, because at this
 +	 * bus level we don't know about the chip details
@@ -385,16 +385,16 @@ Index: linux-2.6.24/drivers/power/gta02_hdq.c
 +		v = gta02hdq_read(n);
 +		if (v < 0)
 +			goto bail;
-+		u8a[n] = (u8)v;
++		u8a[n] = v;
 +	}
 +
 +	for (n = 0; n < sizeof(u8a); n += 16) {
-+		hex_dump_to_buffer(u8a + n, sizeof(u8a), 16, 1, buf1, 4096, 0);
-+		buf1 += strlen(buf1);
-+		*buf1++ = '\n';
-+		*buf1 = '\0';
++		hex_dump_to_buffer(u8a + n, sizeof(u8a), 16, 1, end, 4096, 0);
++		end += strlen(end);
++		*end++ = '\n';
++		*end = '\0';
 +	}
-+	return (buf1 - buf);
++	return (end - buf);
 +
 +bail:
 +	return sprintf(buf, "ERROR %d\n", v);
@@ -408,19 +408,19 @@ Index: linux-2.6.24/drivers/power/gta02_hdq.c
 +			       struct device_attribute *attr,
 +			       const char *buf, size_t count)
 +{
-+	const char *buf1 = buf + count;
++	const char *end = buf + count;
 +	int address = atoi(buf);
 +
-+	while ((buf < buf1) && (*buf != ' '))
++	while ((buf != end) && (*buf != ' '))
 +		buf++;
-+	if (buf >= buf1)
++	if (buf >= end)
 +		return 0;
-+	while ((buf < buf1) && (*buf == ' '))
++	while ((buf < end) && (*buf == ' '))
 +		buf++;
-+	if (buf >= buf1)
++	if (buf >= end)
 +		return 0;
 +
-+	gta02hdq_write(address, (u8)atoi(buf));
++	gta02hdq_write(address, atoi(buf));
 +
 +	return count;
 +}
@@ -514,7 +514,7 @@ Index: linux-2.6.24/drivers/power/gta02_hdq.c
 +module_exit(gta02hdq_exit);
 +
 +MODULE_AUTHOR("Andy Green <andy@openmoko.com>");
-+MODULE_DESCRIPTION("FIC Neo1973 GTA02 HDQ driver");
++MODULE_DESCRIPTION("Neo Freerunner HDQ driver");
 +MODULE_LICENSE("GPL");
 Index: linux-2.6.24/include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
 ===================================================================
@@ -568,3 +568,16 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
  
  #define GTA02_GPIO_nG1_INT	S3C2410_GPF0
  #define GTA02_GPIO_IO1		S3C2410_GPF1
+Index: linux-2.6.24/include/linux/gta02_hdq.h
+===================================================================
+--- /dev/null
++++ linux-2.6.24/include/linux/gta02_hdq.h
+@@ -0,0 +1,8 @@
++#ifndef __GTA02HDQ_H__
++#define __GTA02HDQ_H__
++
++int gta02hdq_read(int address);
++int gta02hdq_write(int address, u8 data);
++int gta02hdq_initialized(void);
++
++#endif
