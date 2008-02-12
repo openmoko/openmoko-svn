@@ -48,18 +48,24 @@ Index: linux-2.6.24/drivers/power/Kconfig
 ===================================================================
 --- linux-2.6.24.orig/drivers/power/Kconfig
 +++ linux-2.6.24/drivers/power/Kconfig
-@@ -49,6 +49,11 @@
+@@ -49,7 +49,10 @@
  	help
  	  Say Y to enable support for the battery on the OLPC laptop.
  
+-endif # POWER_SUPPLY
 +config BATTERY_BQ27000_HDQ
 +	tristate "BQ27000 HDQ battery monitor driver"
 +	help
 +	  Say Y to enable support for the battery on the Neo Freerunner
-+
- endif # POWER_SUPPLY
  
  config GTA02_HDQ
+ 	tristate "Neo Freerunner HDQ"
+@@ -58,3 +61,5 @@
+ 	  Say Y to enable support for communicating with an HDQ battery
+ 	  on the Neo Freerunner.  You probably want to select
+ 	  at least BATTERY_BQ27000_HDQ as well
++
++endif # POWER_SUPPLY
 Index: linux-2.6.24/drivers/power/Makefile
 ===================================================================
 --- linux-2.6.24.orig/drivers/power/Makefile
@@ -468,3 +474,16 @@ Index: linux-2.6.24/include/linux/bq27000_battery.h
 +};
 +
 +#endif
+Index: linux-2.6.24/arch/arm/mach-s3c2440/Kconfig
+===================================================================
+--- linux-2.6.24.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.24/arch/arm/mach-s3c2440/Kconfig
+@@ -85,6 +85,8 @@
+ 	bool "FIC Neo1973 GSM Phone (GTA02 Hardware)"
+ 	select CPU_S3C2442
+ 	select SENSORS_PCF50633
++	select POWER_SUPPLY
++	select GTA02_HDQ
+ 	help
+ 	   Say Y here if you are using the FIC Neo1973 GSM Phone
+ 
