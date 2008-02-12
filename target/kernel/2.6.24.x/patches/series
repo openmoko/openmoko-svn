@@ -77,7 +77,7 @@ introduce-fiq-basis.patch
 introduce-fiq-use-timer3-as-source.patch
 introduce-fiq-migrate-vibrator-gta02-only.patch
 fiq-hdq.patch
-#bq27000-battery-driver.patch
+bq27000-battery-driver.patch
 
 # OE patches
 fix-EVIOCGRAB-semantics.patch
