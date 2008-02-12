@@ -514,7 +514,7 @@ Index: linux-2.6.24/drivers/power/gta02_hdq.c
 +module_exit(gta02hdq_exit);
 +
 +MODULE_AUTHOR("Andy Green <andy@openmoko.com>");
-+MODULE_DESCRIPTION("Neo Freerunner HDQ driver");
++MODULE_DESCRIPTION("GTA02 HDQ driver");
 +MODULE_LICENSE("GPL");
 Index: linux-2.6.24/include/asm-arm/arch-s3c2410/fiq_ipc_gta02.h
 ===================================================================
