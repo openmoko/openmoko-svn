@@ -613,14 +613,6 @@ static int phone_powerdown_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
-static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
-{
-	DEBUGP("resp: %s\n", resp);
-
-	return gsmd_ucmd_submit(ctx, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI,
-			cmd->id, strlen(resp) + 1, resp);
-}
-
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -639,7 +631,7 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_PHONE_GET_IMSI:
 		return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI,
-			0, strlen(gu->gsmd->imsi), gu->gsmd->imsi);
+			0, strlen(gu->gsmd->imsi) + 1, gu->gsmd->imsi);
 		break;
 
 	default:
