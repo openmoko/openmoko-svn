@@ -1,8 +1,8 @@
-Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
+Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
---- linux-2.6.24.orig/drivers/i2c/chips/pcf50633.c
-+++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -570,8 +570,20 @@
+--- linux-2.6.24.orig/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
+@@ -628,8 +628,20 @@
  			if (pcf->onkey_seconds >=
  			    pcf->pdata->onkey_seconds_required) {
  				/* Ask init to do 'ctrlaltdel' */
@@ -19,24 +19,22 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +				 * PID #1 exists before issuing the signal
 +				 */
 +				if (find_task_by_pid(1)) {
-+					DEBUGPC("SIGINT(init) ");
 +					kill_proc(1, SIGINT, 1);
++					DEBUGPC("SIGINT(init) ");
 +				}
- 				/* FIXME: what if userspace doesn't shut down? */
+ 				/* FIXME: what to do if userspace doesn't
+ 				 * shut down? Do we want to force it? */
  			}
- 		}
-@@ -641,11 +653,41 @@
+@@ -723,11 +735,38 @@
  	}
- 
- 	if (pcfirq[3] & (PCF50633_INT4_LOWBAT|PCF50633_INT4_LOWSYS)) {
+ 	/* FIXME: TSCPRES */
+ 	if (pcfirq[2] & PCF50606_INT3_LOWBAT) {
 -		/* Really low battery voltage, we have 8 seconds left */
 -		DEBUGPC("LOWBAT ");
 -		apm_queue_event(APM_LOW_BATTERY);
 -		DEBUGPC("SIGPWR(init) ");
 -		kill_proc(1, SIGPWR, 1);
-+		if ((__reg_read(pcf, PCF50633_REG_MBCS1) &
-+		    (PCF50633_MBCS1_USBPRES | PCF50633_MBCS1_USBOK)) ==
-+		    (PCF50633_MBCS1_USBPRES | PCF50633_MBCS1_USBOK)) {
++		if (__reg_read(pcf, PCF50606_REG_OOCS) & PCF50606_OOCS_EXTON) {
 +			/*
 +			 * hey no need to freak out, we have some kind of
 +			 * valid charger power
@@ -68,7 +66,6 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +				 */
 +				apm_queue_event(APM_CRITICAL_SUSPEND);
 +		}
-+
  		/* Tell PMU we are taking care of this */
- 		reg_set_bit_mask(pcf, PCF50633_REG_OOCSHDWN,
- 				 PCF50633_OOCSHDWN_TOTRST,
+ 		reg_set_bit_mask(pcf, PCF50606_REG_OOCC1,
+ 				 PCF50606_OOCC1_TOTRST,

@@ -94,10 +94,9 @@ atheros_2_0_sdio_stack.patch
 # bad bug
 fix-hwecc-2410.patch
 
-# this may not be the last word on this issue, but the patch certainly helps
-# backed out temporarily since the patch fails and there's a new version of
-# this just around the corner anyway
-##fix-pcf50633-LOWBAT-kill-init.patch
+# pending further review
+fix-pcf50606-LOWBAT-kill-init.patch
+fix-pcf50633-LOWBAT-kill-init.patch
 
 # temporary work-around. awaiting decision on correct fix from upstream.
 gta01-dehang-printk.patch
