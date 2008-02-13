@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1789 @@
+@@ -0,0 +1,1791 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -526,22 +526,24 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +{
 +	struct pcf50633_data *pcf =
 +			container_of(work, struct pcf50633_data, work);
-+	u_int8_t int1, int2, int3, int4, int5;
++	u_int8_t pcfirq[5];
++	int ret;
 +
 +	mutex_lock(&pcf->working_lock);
 +	pcf->working = 1;
-+
-+	/* FIXME: read in one i2c transaction */
-+	int1 = __reg_read(pcf, PCF50633_REG_INT1);
-+	int2 = __reg_read(pcf, PCF50633_REG_INT2);
-+	int3 = __reg_read(pcf, PCF50633_REG_INT3);
-+	int4 = __reg_read(pcf, PCF50633_REG_INT4);
-+	int5 = __reg_read(pcf, PCF50633_REG_INT5);
++	/*
++	 * datasheet says we have to read the five IRQ
++	 * status regs in one transaction
++	 */
++	ret = i2c_smbus_read_i2c_block_data(&pcf->client, PCF50633_REG_INT1, 5,
++					    pcfirq);
++	if (ret != 5)
++		DEBUGP("Oh crap PMU IRQ register read failed %d\n", ret);
 +
 +	DEBUGP("INT1=0x%02x INT2=0x%02x INT3=0x%02x INT4=0x%02x INT5=0x%02x\n",
-+		int1, int2, int3, int4, int5);
++		pcfirq[0], pcfirq[1], pcfirq[2], pcfirq[3], pcfirq[4]);
 +
-+	if (int1 & PCF50633_INT1_ADPINS) {
++	if (pcfirq[0] & PCF50633_INT1_ADPINS) {
 +		/* Charger inserted */
 +		DEBUGPC("ADPINS ");
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 1);
@@ -553,7 +555,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_ADD);
 +	}
-+	if (int1 & PCF50633_INT1_ADPREM) {
++	if (pcfirq[0] & PCF50633_INT1_ADPREM) {
 +		/* Charger removed */
 +		DEBUGPC("ADPREM ");
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 0);
@@ -565,7 +567,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_ADD);
 +	}
-+	if (int1 & PCF50633_INT1_USBINS) {
++	if (pcfirq[0] & PCF50633_INT1_USBINS) {
 +		DEBUGPC("USBINS ");
 +		input_report_key(pcf->input_dev, KEY_POWER2, 1);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
@@ -575,7 +577,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +				       PCF50633_FEAT_MBC, PMU_EVT_USB_INSERT);
 +
 +	}
-+	if (int1 & PCF50633_INT1_USBREM) {
++	if (pcfirq[0] & PCF50633_INT1_USBREM) {
 +		DEBUGPC("USBREM ");
 +		input_report_key(pcf->input_dev, KEY_POWER2, 0);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
@@ -584,13 +586,13 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50633_FEAT_MBC, PMU_EVT_USB_REMOVE);
 +	}
-+	if (int1 & PCF50633_INT1_ALARM) {
++	if (pcfirq[0] & PCF50633_INT1_ALARM) {
 +		DEBUGPC("ALARM ");
 +		if (pcf->pdata->used_features & PCF50633_FEAT_RTC)
 +			rtc_update_irq(pcf->rtc, 1,
 +				       RTC_AF | RTC_IRQF);
 +	}
-+	if (int1 & PCF50633_INT1_SECOND) {
++	if (pcfirq[0] & PCF50633_INT1_SECOND) {
 +		DEBUGPC("SECOND ");
 +		if (pcf->flags & PCF50633_F_RTC_SECOND)
 +			rtc_update_irq(pcf->rtc, 1,
@@ -612,13 +614,13 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		}
 +	}
 +
-+	if (int2 & PCF50633_INT2_ONKEYF) {
++	if (pcfirq[1] & PCF50633_INT2_ONKEYF) {
 +		/* ONKEY falling edge (start of button press) */
 +		DEBUGPC("ONKEYF ");
 +		pcf->flags |= PCF50633_F_PWR_PRESSED;
 +		input_report_key(pcf->input_dev, KEY_POWER, 1);
 +	}
-+	if (int2 & PCF50633_INT2_ONKEYR) {
++	if (pcfirq[1] & PCF50633_INT2_ONKEYR) {
 +		/* ONKEY rising edge (end of button press) */
 +		DEBUGPC("ONKEYR ");
 +		pcf->flags &= ~PCF50633_F_PWR_PRESSED;
@@ -633,37 +635,37 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +	}
 +	/* FIXME: we don't use EXTON1/2/3. thats why we skip it */
 +
-+	if (int3 & PCF50633_INT3_BATFULL) {
++	if (pcfirq[2] & PCF50633_INT3_BATFULL) {
 +		DEBUGPC("BATFULL ");
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_CHGHALT) {
++	if (pcfirq[2] & PCF50633_INT3_CHGHALT) {
 +		DEBUGPC("CHGHALT ");
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_THLIMON) {
++	if (pcfirq[2] & PCF50633_INT3_THLIMON) {
 +		DEBUGPC("THLIMON ");
 +		pcf->flags |= PCF50633_F_CHG_PROT;
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_THLIMOFF) {
++	if (pcfirq[2] & PCF50633_INT3_THLIMOFF) {
 +		DEBUGPC("THLIMOFF ");
 +		pcf->flags &= ~PCF50633_F_CHG_PROT;
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_USBLIMON) {
++	if (pcfirq[2] & PCF50633_INT3_USBLIMON) {
 +		DEBUGPC("USBLIMON ");
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_USBLIMOFF) {
++	if (pcfirq[2] & PCF50633_INT3_USBLIMOFF) {
 +		DEBUGPC("USBLIMOFF ");
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int3 & PCF50633_INT3_ADCRDY) {
++	if (pcfirq[2] & PCF50633_INT3_ADCRDY) {
 +		/* ADC result ready */
 +		DEBUGPC("ADCRDY ");
 +	}
-+	if (int3 & PCF50633_INT3_ONKEY1S) {
++	if (pcfirq[2] & PCF50633_INT3_ONKEY1S) {
 +		/* ONKEY pressed for more than 1 second */
 +		pcf->onkey_seconds = 0;
 +		DEBUGPC("ONKEY1S ");
@@ -675,7 +677,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		reg_clear_bits(pcf, PCF50633_REG_INT1M, PCF50633_INT1_SECOND);
 +	}
 +
-+	if (int4 & (PCF50633_INT4_LOWBAT|PCF50633_INT4_LOWSYS)) {
++	if (pcfirq[3] & (PCF50633_INT4_LOWBAT|PCF50633_INT4_LOWSYS)) {
 +		/* Really low battery voltage, we have 8 seconds left */
 +		DEBUGPC("LOWBAT ");
 +		apm_queue_event(APM_LOW_BATTERY);
@@ -686,12 +688,12 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +				 PCF50633_OOCSHDWN_TOTRST,
 +				 PCF50633_OOCSHDWN_TOTRST);
 +	}
-+	if (int4 & PCF50633_INT4_HIGHTMP) {
++	if (pcfirq[3] & PCF50633_INT4_HIGHTMP) {
 +		/* High temperature */
 +		DEBUGPC("HIGHTMP ");
 +		apm_queue_event(APM_CRITICAL_SUSPEND);
 +	}
-+	if (int4 & (PCF50633_INT4_AUTOPWRFAIL|PCF50633_INT4_DWN1PWRFAIL|
++	if (pcfirq[3] & (PCF50633_INT4_AUTOPWRFAIL|PCF50633_INT4_DWN1PWRFAIL|
 +		   PCF50633_INT4_DWN2PWRFAIL|PCF50633_INT4_LEDPWRFAIL|
 +		   PCF50633_INT4_LEDOVP)) {
 +		/* Some regulator failed */

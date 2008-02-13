@@ -8,7 +8,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1933 @@
+@@ -0,0 +1,1941 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -566,25 +566,33 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +{
 +	struct pcf50606_data *pcf =
 +			container_of(work, struct pcf50606_data, work);
-+	u_int8_t int1, int2, int3;
++	u_int8_t pcfirq[3];
++	int ret;
 +
 +	mutex_lock(&pcf->working_lock);
 +	pcf->working = 1;
-+
-+	int1 = __reg_read(pcf, PCF50606_REG_INT1);
-+	int2 = __reg_read(pcf, PCF50606_REG_INT2);
-+	int3 = __reg_read(pcf, PCF50606_REG_INT3);
++	/*
++	 * p35 pcf50606 datasheet rev 2.2:
++	 * ''The system controller shall read all interrupt registers in
++	 *   one I2C read action''
++	 * because if you don't INT# gets stuck asserted forever after a
++	 * while
++	 */
++	ret = i2c_smbus_read_i2c_block_data(&pcf->client, PCF50606_REG_INT1, 3,
++					    pcfirq);
++	if (ret != 3)
++		DEBUGPC("Oh crap PMU IRQ register read failed %d\n", ret);
 +
 +	dev_dbg(&pcf->client.dev, "INT1=0x%02x INT2=0x%02x INT3=0x%02x:",
-+		int1, int2, int3);
++		pcfirq[0], pcfirq[1], pcfirq[2]);
 +
-+	if (int1 & PCF50606_INT1_ONKEYF) {
++	if (pcfirq[0] & PCF50606_INT1_ONKEYF) {
 +		/* ONKEY falling edge (start of button press) */
 +		DEBUGPC("ONKEYF ");
 +		pcf->flags |= PCF50606_F_PWR_PRESSED;
 +		input_report_key(pcf->input_dev, KEY_POWER, 1);
 +	}
-+	if (int1 & PCF50606_INT1_ONKEY1S) {
++	if (pcfirq[0] & PCF50606_INT1_ONKEY1S) {
 +		/* ONKEY pressed for more than 1 second */
 +		pcf->onkey_seconds = 0;
 +		DEBUGPC("ONKEY1S ");
@@ -595,7 +603,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +		/* enable SECOND interrupt (hz tick) */
 +		reg_clear_bits(pcf, PCF50606_REG_INT1M, PCF50606_INT1_SECOND);
 +	}
-+	if (int1 & PCF50606_INT1_ONKEYR) {
++	if (pcfirq[0] & PCF50606_INT1_ONKEYR) {
 +		/* ONKEY rising edge (end of button press) */
 +		DEBUGPC("ONKEYR ");
 +		pcf->flags &= ~PCF50606_F_PWR_PRESSED;
@@ -608,15 +616,15 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +					 PCF50606_INT1_SECOND,
 +					 PCF50606_INT1_SECOND);
 +	}
-+	if (int1 & PCF50606_INT1_EXTONR) {
++	if (pcfirq[0] & PCF50606_INT1_EXTONR) {
 +		DEBUGPC("EXTONR ");
 +		input_report_key(pcf->input_dev, KEY_POWER2, 1);
 +	}
-+	if (int1 & PCF50606_INT1_EXTONF) {
++	if (pcfirq[0] & PCF50606_INT1_EXTONF) {
 +		DEBUGPC("EXTONF ");
 +		input_report_key(pcf->input_dev, KEY_POWER2, 0);
 +	}
-+	if (int1 & PCF50606_INT1_SECOND) {
++	if (pcfirq[0] & PCF50606_INT1_SECOND) {
 +		DEBUGPC("SECOND ");
 +		if (pcf->flags & PCF50606_F_RTC_SECOND)
 +			rtc_update_irq(pcf->rtc, 1,
@@ -638,14 +646,14 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +			}
 +		}
 +	}
-+	if (int1 & PCF50606_INT1_ALARM) {
++	if (pcfirq[0] & PCF50606_INT1_ALARM) {
 +		DEBUGPC("ALARM ");
 +		if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
 +			rtc_update_irq(pcf->rtc, 1,
 +				       RTC_AF | RTC_IRQF);
 +	}
 +
-+	if (int2 & PCF50606_INT2_CHGINS) {
++	if (pcfirq[1] & PCF50606_INT2_CHGINS) {
 +		/* Charger inserted */
 +		DEBUGPC("CHGINS ");
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 1);
@@ -656,7 +664,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
 +		/* FIXME: how to signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGRM) {
++	if (pcfirq[1] & PCF50606_INT2_CHGRM) {
 +		/* Charger removed */
 +		DEBUGPC("CHGRM ");
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 0);
@@ -667,57 +675,57 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
 +		/* FIXME: how signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGFOK) {
++	if (pcfirq[1] & PCF50606_INT2_CHGFOK) {
 +		/* Battery ready for fast charging */
 +		DEBUGPC("CHGFOK ");
 +		pcf->flags |= PCF50606_F_CHG_FOK;
 +		/* FIXME: how to signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGERR) {
++	if (pcfirq[1] & PCF50606_INT2_CHGERR) {
 +		/* Error in charge mode */
 +		DEBUGPC("CHGERR ");
 +		pcf->flags |= PCF50606_F_CHG_ERR;
 +		pcf->flags &= ~(PCF50606_F_CHG_FOK|PCF50606_F_CHG_READY);
 +		/* FIXME: how to signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGFRDY) {
++	if (pcfirq[1] & PCF50606_INT2_CHGFRDY) {
 +		/* Fast charge completed */
 +		DEBUGPC("CHGFRDY ");
 +		pcf->flags |= PCF50606_F_CHG_READY;
 +		pcf->flags &= ~PCF50606_F_CHG_FOK;
 +		/* FIXME: how to signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGPROT) {
++	if (pcfirq[1] & PCF50606_INT2_CHGPROT) {
 +		/* Charging protection interrupt */
 +		DEBUGPC("CHGPROT ");
 +		pcf->flags &= ~(PCF50606_F_CHG_FOK|PCF50606_F_CHG_READY);
 +		/* FIXME: signal this to userspace */
 +	}
-+	if (int2 & PCF50606_INT2_CHGWD10S) {
++	if (pcfirq[1] & PCF50606_INT2_CHGWD10S) {
 +		/* Charger watchdog will expire in 10 seconds */
 +		DEBUGPC("CHGWD10S ");
 +		reg_set_bit_mask(pcf, PCF50606_REG_OOCC1,
 +				 PCF50606_OOCC1_WDTRST,
 +				 PCF50606_OOCC1_WDTRST);
 +	}
-+	if (int2 & PCF50606_INT2_CHGWDEXP) {
++	if (pcfirq[1] & PCF50606_INT2_CHGWDEXP) {
 +		/* Charger watchdog expires */
 +		DEBUGPC("CHGWDEXP ");
 +		/* FIXME: how to signal this to userspace */
 +	}
 +
-+	if (int3 & PCF50606_INT3_ADCRDY) {
++	if (pcfirq[2] & PCF50606_INT3_ADCRDY) {
 +		/* ADC result ready */
 +		DEBUGPC("ADCRDY ");
 +	}
-+	if (int3 & PCF50606_INT3_ACDINS) {
++	if (pcfirq[2] & PCF50606_INT3_ACDINS) {
 +		/* Accessory insertion detected */
 +		DEBUGPC("ACDINS ");
 +		if (pcf->pdata->cb)
 +			pcf->pdata->cb(&pcf->client.dev,
 +				       PCF50606_FEAT_ACD, PMU_EVT_INSERT);
 +	}
-+	if (int3 & PCF50606_INT3_ACDREM) {
++	if (pcfirq[2] & PCF50606_INT3_ACDREM) {
 +		/* Accessory removal detected */
 +		DEBUGPC("ACDREM ");
 +		if (pcf->pdata->cb)
@@ -725,7 +733,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +				       PCF50606_FEAT_ACD, PMU_EVT_REMOVE);
 +	}
 +	/* FIXME: TSCPRES */
-+	if (int3 & PCF50606_INT3_LOWBAT) {
++	if (pcfirq[2] & PCF50606_INT3_LOWBAT) {
 +		/* Really low battery voltage, we have 8 seconds left */
 +		DEBUGPC("LOWBAT ");
 +		apm_queue_event(APM_LOW_BATTERY);
@@ -736,7 +744,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +				 PCF50606_OOCC1_TOTRST,
 +				 PCF50606_OOCC1_TOTRST);
 +	}
-+	if (int3 & PCF50606_INT3_HIGHTMP) {
++	if (pcfirq[2] & PCF50606_INT3_HIGHTMP) {
 +		/* High temperature */
 +		DEBUGPC("HIGHTMP ");
 +		apm_queue_event(APM_CRITICAL_SUSPEND);
