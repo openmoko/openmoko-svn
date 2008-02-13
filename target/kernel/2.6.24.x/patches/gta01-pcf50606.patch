@@ -8,7 +8,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1946 @@
+@@ -0,0 +1,1933 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -106,6 +106,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +	struct mutex lock;
 +	unsigned int flags;
 +	unsigned int working;
++	struct mutex working_lock;
 +	struct work_struct work;
 +	struct rtc_device *rtc;
 +	struct input_dev *input_dev;
@@ -567,6 +568,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +			container_of(work, struct pcf50606_data, work);
 +	u_int8_t int1, int2, int3;
 +
++	mutex_lock(&pcf->working_lock);
 +	pcf->working = 1;
 +
 +	int1 = __reg_read(pcf, PCF50606_REG_INT1);
@@ -745,20 +747,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +	pcf->working = 0;
 +	input_sync(pcf->input_dev);
 +	put_device(&pcf->client.dev);
-+
-+	enable_irq(pcf->irq);
++	mutex_unlock(&pcf->working_lock);
 +}
-+
-+static void pcf50606_schedule_work(struct pcf50606_data *pcf)
-+{
-+	int status;
-+
-+	get_device(&pcf->client.dev);
-+	status = schedule_work(&pcf->work);
-+	if (!status && !pcf->working)
-+		dev_dbg(&pcf->client.dev, "work item may be lost\n");
-+}
-+
 +
 +static irqreturn_t pcf50606_irq(int irq, void *_pcf)
 +{
@@ -766,11 +756,9 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +
 +	dev_dbg(&pcf->client.dev, "entering(irq=%u, pcf=%p): scheduling work\n",
 +		irq, _pcf);
-+	pcf50606_schedule_work(pcf);
-+
-+	/* Disable any further interrupts until we have processed
-+	 * the current one */
-+	disable_irq(irq);
++	get_device(&pcf->client.dev);
++	if (!schedule_work(&pcf->work) && !pcf->working)
++		dev_dbg(&pcf->client.dev, "work item may be lost\n");
 +
 +	return IRQ_HANDLED;
 +}
@@ -1601,6 +1589,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +		return -ENOMEM;
 +
 +	mutex_init(&data->lock);
++ 	mutex_init(&data->working_lock);
 +	INIT_WORK(&data->work, pcf50606_work);
 +	data->irq = irq;
 +	data->working = 0;
@@ -1662,12 +1651,10 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +	reg_write(data, PCF50606_REG_INT2M, 0x00);
 +	reg_write(data, PCF50606_REG_INT3M, PCF50606_INT3_TSCPRES);
 +
-+	err = request_irq(irq, pcf50606_irq, IRQF_DISABLED,
++	err = request_irq(irq, pcf50606_irq, IRQF_TRIGGER_FALLING,
 +			  "pcf50606", data);
 +	if (err < 0)
 +		goto exit_input;
-+
-+	set_irq_type(irq, IRQT_FALLING);
 +
 +	if (enable_irq_wake(irq) < 0)
 +		dev_err(&new_client->dev, "IRQ %u cannot be enabled as wake-up"
