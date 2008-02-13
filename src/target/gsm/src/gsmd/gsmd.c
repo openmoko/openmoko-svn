@@ -152,7 +152,7 @@ static int gsmd_get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd *g = ctx;
 
 	DEBUGP("imsi : %s\n", resp);
-	strcpy(g->imsi, resp);
+	strlcpy(g->imsi, resp, sizeof(g->imsi));
 
 	return 0;
 }

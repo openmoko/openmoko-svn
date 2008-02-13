@@ -122,12 +122,8 @@ struct gsm_extrsp *extrsp_parse(const void *ctx, const char *input)
 			break;
 		case TOKEN_STRING:
 			if (*cur == '"') {
-				int len = strlen(buf);
-				if (len > sizeof(cur_token->u.string)-1)
-					len = sizeof(cur_token->u.string)-1;
-
 				/* end of string token */
-				strncpy(cur_token->u.string, buf, len);
+				strlcpy(cur_token->u.string, buf, GSM_EXTRSP_MAX_STRBUF);
 				er->num_tokens++;
 				state = TOKEN_STRING_LASTQUOTE;
 			} else {

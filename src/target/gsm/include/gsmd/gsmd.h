@@ -12,6 +12,7 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/select.h>
 #include <gsmd/state.h>
+#include <gsmd/strl.h>
 
 void *gsmd_tallocs;
 

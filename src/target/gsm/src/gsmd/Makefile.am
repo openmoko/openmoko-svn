@@ -18,7 +18,7 @@ sbin_PROGRAMS = gsmd
 gsmd_CFLAGS = -D PLUGINDIR=\"$(plugindir)\"
 gsmd_SOURCES = gsmd.c atcmd.c select.c machine.c vendor.c unsolicited.c log.c \
 	       usock.c talloc.c timer.c operator_cache.c ext_response.c \
-	       sms_cb.c sms_pdu.c
+	       sms_cb.c sms_pdu.c strl.c
 gsmd_LDADD = -ldl
 gsmd_LDFLAGS = -Wl,--export-dynamic
 

@@ -68,7 +68,7 @@ static int cpri_parse(const char *buf, int len, const char *param, struct gsmd *
 	char *tok1, *tok2;
 	char tx_buf[20];
 	
-	strcpy(tx_buf, buf);
+	strlcpy(tx_buf, buf, sizeof(tx_buf));
 	tok1 = strtok(tx_buf, ",");
 	if (!tok1)
 		return -EIO;
@@ -122,7 +122,7 @@ static int cpi_parse(const char *buf, int len, const char *param, struct gsmd *g
 						   sizeof(*aux));
 	char tx_buf[64];
 
-	strcpy(tx_buf, buf);
+	strlcpy(tx_buf, buf, sizeof(tx_buf));
 	DEBUGP("entering cpi_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;

@@ -7,6 +7,8 @@
 /* how many individual sub-ranges can one range contain */
 #define GSM_EXTRSP_MAX_RANGES	16
 
+/* how many character we are going to store in string buffer */
+#define GSM_EXTRSP_MAX_STRBUF	64
 
 struct gsm_extrsp_range_item {
 	int min;
@@ -28,7 +30,7 @@ struct gsm_extrsp_tok {
 			struct gsm_extrsp_range_item item[GSM_EXTRSP_MAX_RANGES];
 			int num_items;
 		} range;
-		char string[64];
+		char string[GSM_EXTRSP_MAX_STRBUF];
 		int numeric;
 	} u;
 };

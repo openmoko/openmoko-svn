@@ -82,7 +82,7 @@ int gsmd_opname_add(struct gsmd *g, const char *numeric_bcd_string,
 	strncpy(mcc, numeric_bcd_string, 3);
 	strncpy(mnc, numeric_bcd_string+3, 2);
 
-	strncpy(op->alnum_long, alnum_long, sizeof(op->alnum_long-1));
+	strlcpy(op->alnum_long, alnum_long, sizeof(op->alnum_long));
 	op->numeric.mcc = atoi(mcc);
 	op->numeric.mnc = atoi(mnc);
 
