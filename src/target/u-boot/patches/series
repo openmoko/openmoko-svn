@@ -73,9 +73,10 @@ usb-vendor.patch
 gta02-splash.patch
 gta02-bootmenu.patch
 gta02-nor.patch
+glamo-mmc.patch
+glamo-regs.patch
 
 # need to find out how upstream feels about this one
-glamo-mmc.patch
 eabi-toolchain.patch
 
 # for review, merge soon
