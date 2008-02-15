@@ -619,8 +619,7 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 	atcmd->cb = cb;
 	atcmd->resp = NULL;
 	atcmd->timeout = NULL;
-	strlcpy(atcmd->buf, cmd, buflen);
-
+	strncpy(atcmd->buf, cmd, buflen-1);
 	if (!ct)
 		atcmd->create_timer_func = discard_timer; 
 	else
