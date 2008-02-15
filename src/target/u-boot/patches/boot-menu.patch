@@ -24,7 +24,7 @@ Index: u-boot/board/neo1973/common/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/bootmenu.c
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,113 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -95,14 +95,6 @@ Index: u-boot/board/neo1973/common/bootmenu.c
 +}
 +
 +
-+static void factory_reset(void *user)
-+{
-+	default_env();
-+	run_command("dynpart", 0);
-+	run_command("bootd", 0);
-+}
-+
-+
 +static int seconds(void *user)
 +{
 +	return neo1973_new_second();
@@ -144,7 +136,6 @@ Index: u-boot/board/neo1973/common/bootmenu.c
 +{
 +	bootmenu_add("Boot", NULL, "bootd");
 +	bootmenu_init(&bootmenu_setup);
-+	bootmenu_add("Factory reset", factory_reset, NULL);
 +	bootmenu();
 +}
 Index: u-boot/board/neo1973/gta01/gta01.c
@@ -361,7 +352,7 @@ Index: u-boot/common/Makefile
 +COBJS-y += bootmenu.o
  COBJS-y += circbuf.o
  COBJS-y += cmd_autoscript.o
- COBJS-y += cmd_bdinfo.o
+ COBJS-$(CONFIG_CMD_BDI) += cmd_bdinfo.o
 Index: u-boot/common/bootmenu.c
 ===================================================================
 --- /dev/null
