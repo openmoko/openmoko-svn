@@ -1,0 +1,27 @@
+norwp - Control the GTA02 NOR_WP line through the debug v3 board
+=================================================================
+
+Usage:
+
+norwp
+
+  Queries the state of the NOR_WP line. Prints "rw" if writing to the
+  NOR is enabled, "ro" if it isn't.
+
+norwp rw
+
+  Enables writing to the NOR.
+
+norwp ro
+
+  Disables writing to the NOR.
+
+
+Known issues
+------------
+
+Something's wrong with the communication with the FT2232 chip. We have
+to send commands several times before they have an effect.
+
+OpenOCD doesn't have that problem, so it's something that's wrong in
+norwp.c
