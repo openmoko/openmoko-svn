@@ -116,28 +116,3 @@ Index: u-boot/board/neo1973/common/gsmver.c
 +
 +	return 0;
 +}
-Index: u-boot/board/neo1973/gta01/Makefile
-===================================================================
---- u-boot.orig/board/neo1973/gta01/Makefile
-+++ u-boot/board/neo1973/gta01/Makefile
-@@ -25,7 +25,7 @@
- 
- LIB	= lib$(BOARD).a
- 
--OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
-+OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/gsmver.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
- SOBJS	:= ../common/lowlevel_init.o
- 
- .PHONY:	all
-Index: u-boot/board/neo1973/gta02/Makefile
-===================================================================
---- u-boot.orig/board/neo1973/gta02/Makefile
-+++ u-boot/board/neo1973/gta02/Makefile
-@@ -26,6 +26,7 @@
- LIB	= lib$(BOARD).a
- 
- OBJS	:= gta02.o pcf50633.o nand.o nor.o ../common/cmd_neo1973.o \
-+	   ../common/gsmver.o \
- 	   ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
- SOBJS	:= ../common/lowlevel_init.o
- 

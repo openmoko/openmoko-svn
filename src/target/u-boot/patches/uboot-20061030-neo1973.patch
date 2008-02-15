@@ -326,7 +326,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -0,0 +1,124 @@
+@@ -0,0 +1,126 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -414,8 +414,10 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +			goto out_help;
 +		if (!strcmp(argv[2], "on"))
 +			neo1973_gsm(1);
-+		else
++		else if (!strcmp(argv[2], "off"))
 +			neo1973_gsm(0);
++		else if (!strcmp(argv[2], "version"))
++			neo1973_gsmver();
 +	} else if (!strcmp(argv[1], "gps")) {
 +		if (argc < 3)
 +			goto out_help;
@@ -447,7 +449,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +	"neo1973 backlight (on|off) - switch backlight on or off\n"
 +	"neo1973 led num (on|off) - switch LED number 'num' on or off\n"
 +	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
-+	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
++	"neo1973 gsm (on|off|version) - switch GSM Modem on/off or print firmware version\n"
 +	"neo1973 gps (on|off) - switch GPS system on or off\n"
 +);
 +#endif	/* CONFIG_CMD_BDI */
@@ -1091,7 +1093,7 @@ Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta01/Makefile
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,48 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
 +# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
@@ -1119,7 +1121,8 @@ Index: u-boot/board/neo1973/gta01/Makefile
 +
 +LIB	= lib$(BOARD).a
 +
-+OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o
++OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o \
++	   ../common/gsmver.o
 +SOBJS	:= ../common/lowlevel_init.o
 +
 +$(LIB):	$(OBJS) $(SOBJS)
@@ -2420,3 +2423,88 @@ Index: u-boot/drivers/misc/pcf50606.c
 +#endif /* CONFIG_RTC_PCF50606 && CONFIG_CMD_DATE */
 +
 +#endif /* CONFIG DRIVER_PCF50606 */
+Index: u-boot/board/neo1973/common/gsmver.c
+===================================================================
+--- /dev/null
++++ u-boot/board/neo1973/common/gsmver.c
+@@ -0,0 +1,80 @@
++/*
++ * (C) Copyright 2007 OpenMoko, Inc.
++ * Written by Jim Huang <jserv@openmoko.org>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++/*
++ * Boot support
++ */
++#include <common.h>
++#include <devices.h>
++
++#define GSM_UART_DEVICE  "s3ser0"
++
++int neo1973_gsmver()
++{
++	int i;
++	device_t *dev = NULL;
++	int string_end_count = 0;
++
++	/* Scan for selected output/input device */
++	for (i = 1; i <= ListNumItems (devlist); i++) {
++		device_t *tmp = ListGetPtrToItem (devlist, i);
++		if (!strcmp(tmp->name, GSM_UART_DEVICE)) {
++			dev = tmp;
++			break;
++		}
++	}
++	if (!dev)
++		return -1;
++
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++	defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++	defined(CONFIG_ARCH_GTA01B_v4)
++	neo1973_gta01_serial0_gsm(1);
++#endif
++
++	/* Query GSM firmware information by AT command */
++	dev->puts("AT+CGMR\r\n");
++	puts("GSM firmware version: ");
++
++	/* read from serial and display version information */
++	while (1) {
++		if (dev->tstc()) {
++			i = dev->getc();
++			putc(i);
++			/* FIXME: should we just dump straightforward
++			 * version string such as "moko1" or "moko4"?
++			 */
++			if (i == '\n' || i == '\r')
++				continue;
++		}
++	}
++	putc('\n');
++
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++    defined(CONFIG_ARCH_GTA01B_v4)
++	neo1973_gta01_serial0_gsm(0);
++#endif
++
++	return 0;
++}

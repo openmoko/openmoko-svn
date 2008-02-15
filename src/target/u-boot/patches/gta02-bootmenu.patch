@@ -60,4 +60,4 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	return !!(gpio->GPFDAT & (1 << 6));
  }
  
- /* The sum of all part_size[]s must equal to the NAND size, i.e., 0x8000000. */
+ /* The sum of all part_size[]s must equal to or greater than the NAND size,

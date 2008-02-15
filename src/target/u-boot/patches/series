@@ -75,12 +75,12 @@ gta02-bootmenu.patch
 gta02-nor.patch
 
 # need to find out how upstream feels about this one
+glamo-mmc.patch
 eabi-toolchain.patch
 
 # for review, merge soon
 unbusy-i2c.patch 
 usbtty-irq-racecondition-fix.patch
-neo1973-gsmver.patch
 uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
 
