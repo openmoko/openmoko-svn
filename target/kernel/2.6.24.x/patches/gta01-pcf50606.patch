@@ -8,7 +8,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1941 @@
+@@ -0,0 +1,1937 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -140,18 +140,19 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +
 +static struct platform_device *pcf50606_pdev;
 +
-+/* This is a mitsubishi TN11-3H103J T,B NTC Thermistor -10..79 centigrade */
-+static const u_int16_t ntc_table_tn11_3h103j[] = {
++/* This is a 10k, B=3370 NTC Thermistor -10..79 centigrade */
++/* Table entries are offset by +0.5C so a properly rounded value is generated */
++static const u_int16_t ntc_table_10k_3370B[] = {
 +	/* -10 */
-+	40260, 38560, 36950, 35410, 33950, 32550, 31220, 29960, 28750, 27590,
-+	26490, 25440, 24440, 23480, 22560, 21680, 20830, 20020, 19240, 18500,
-+	17780, 17710, 16440, 15810, 15210, 14630, 14070, 13540, 13030, 12540,
-+	12070, 11620, 11190, 10780, 10380, 10000, 9635, 9286, 8950, 8629,
-+	8320, 8024, 7740, 7467, 7205, 6954, 6713, 6481, 6258, 6044,
-+	5839, 5641, 5451, 5269, 5093, 4924, 4762, 4605, 4455, 4310,
-+	4171, 4037, 3908, 3784, 3664, 3549, 3438, 3313, 3227, 3128,
-+	3032, 2939, 2850, 2763, 2680, 2600, 2522, 2448, 2375, 2306,
-+	2239, 2174, 2111, 2050, 1922, 1935, 1881, 1828, 1776, 1727,
++	43888, 41819, 39862, 38010, 36257, 34596, 33024, 31534, 30121, 28781,
++	27510, 26304, 25159, 24071, 23038, 22056, 21122, 20234, 19390, 18586,
++	17821, 17093, 16399, 15738, 15107, 14506, 13933, 13387, 12865, 12367,
++	11891, 11437, 11003, 10588, 10192, 9813, 9450, 9103, 8771, 8453,
++	8149, 7857, 7578, 7310, 7054, 6808, 6572, 6346, 6129, 5920,
++	5720, 5528, 5344, 5167, 4996, 4833, 4675, 4524, 4379, 4239,
++	4104, 3975, 3850, 3730, 3614, 3503, 3396, 3292, 3193, 3097,
++	3004, 2915, 2829, 2745, 2665, 2588, 2513, 2441, 2371, 2304,
++	2239, 2176, 2116, 2057, 2000, 1945, 1892, 1841, 1791, 1743,
 +};
 +
 +
@@ -925,14 +926,9 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +}
 +EXPORT_SYMBOL_GPL(pcf50606_charge_fast);
 +
-+#define ONE			1000000
 +static inline u_int16_t adc_to_rntc(struct pcf50606_data *pcf, u_int16_t adc)
 +{
-+	u_int32_t r_batt = (adc * pcf->pdata->r_fix_batt) / (1023 - adc);
-+	u_int16_t r_ntc;
-+
-+	/* The battery NTC has a parallell 10kOhms resistor */
-+	r_ntc = ONE / ((ONE/r_batt) - (ONE/pcf->pdata->r_fix_batt_par));
++	u_int32_t r_ntc = (adc * (u_int32_t)pcf->pdata->r_fix_batt) / (1023 - adc);
 +
 +	return r_ntc;
 +}
@@ -941,11 +937,11 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +{
 +	int i;
 +
-+	for (i = 0; i < ARRAY_SIZE(ntc_table_tn11_3h103j); i++) {
-+		if (rntc > ntc_table_tn11_3h103j[i])
-+			return i - 10;
++	for (i = 0; i < ARRAY_SIZE(ntc_table_10k_3370B); i++) {
++		if (rntc > ntc_table_10k_3370B[i])
++			return i - 10;	/* First element is -10 */
 +	}
-+	return 2342;
++	return -99;	/* Below our range */
 +}
 +
 +static ssize_t show_battemp(struct device *dev, struct device_attribute *attr,
