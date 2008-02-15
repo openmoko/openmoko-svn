@@ -613,6 +613,58 @@ static int phone_powerdown_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
+static int gsmd_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+	if (strncmp(resp, "+CGMI: ", 7))
+		return -EINVAL;
+	resp += 7;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_MANUF,
+			cmd->id, strlen(resp) + 1, resp);
+	return 0;
+}
+
+static int gsmd_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+	if (strncmp(resp, "+CGMM: ", 7))
+		return -EINVAL;
+	resp += 7;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_MODEL,
+			cmd->id, strlen(resp) + 1, resp);
+	return 0;
+}
+
+static int gsmd_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+	if (strncmp(resp, "+CGMR: ", 7))
+		return -EINVAL;
+	resp += 7;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_REVISION,
+			cmd->id, strlen(resp) + 1, resp);
+	return 0;
+}
+
+static int gsmd_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+	if (strncmp(resp, "+CGSN: ", 7))
+		return -EINVAL;
+	resp += 7;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_SERIAL,
+			cmd->id, strlen(resp) + 1, resp);
+	return 0;
+}
+
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -621,17 +673,33 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	switch (gph->msg_subtype) {
 	case GSMD_PHONE_POWERUP:
 		cmd = atcmd_fill("AT+CFUN=1", 9+1,
-				 &phone_powerup_cb, gu, 0, NULL);
+				&phone_powerup_cb, gu, 0, NULL);
 		break;
 
 	case GSMD_PHONE_POWERDOWN:
 		cmd = atcmd_fill("AT+CFUN=0", 9+1,
-				 &phone_powerdown_cb, gu, 0, NULL);
+				&phone_powerdown_cb, gu, 0, NULL);
 		gu->gsmd->dev_state.on = 0;
 		break;
 	case GSMD_PHONE_GET_IMSI:
 		return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI,
 			0, strlen(gu->gsmd->imsi) + 1, gu->gsmd->imsi);
+		break;
+	case GSMD_PHONE_GET_MANUF:
+		cmd = atcmd_fill("AT+CGMI", 7+1,
+				&gsmd_get_manuf_cb, gu, 0, NULL);
+		break;
+	case GSMD_PHONE_GET_MODEL:
+		cmd = atcmd_fill("AT+CGMM", 7+1,
+				&gsmd_get_model_cb, gu, 0, NULL);
+		break;
+	case GSMD_PHONE_GET_REVISION:
+		cmd = atcmd_fill("AT+CGMR", 7+1,
+				&gsmd_get_revision_cb, gu, 0, NULL);
+		break;
+	case GSMD_PHONE_GET_SERIAL:
+		cmd = atcmd_fill("AT+CGSN", 7+1,
+				&gsmd_get_serial_cb, gu, 0, NULL);
 		break;
 
 	default:

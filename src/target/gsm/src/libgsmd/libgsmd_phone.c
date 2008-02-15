@@ -50,3 +50,23 @@ int lgsm_get_imsi(struct lgsm_handle *lh)
 	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI);
 }
 
+int lgsm_get_manufacturer(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_MANUF);
+}
+
+int lgsm_get_model(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_MODEL);
+}
+
+int lgsm_get_revision(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_REVISION);
+}
+
+int lgsm_get_serial(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_SERIAL);
+}
+

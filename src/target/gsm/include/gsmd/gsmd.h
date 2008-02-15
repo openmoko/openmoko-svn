@@ -73,6 +73,7 @@ struct gsmd;
 #define GSMD_FLAG_SMS_FMT_TEXT	0x0002	/* TODO Use TEXT rather than PDU mode */
 
 #define GSMD_ATCMD_TIMEOUT	60	/* If doesn get respond within 60 secs, discard */
+#define GSMD_MAX_INFO_LEN	64	/* by the standard it should be 2048, way too much :) */
 
 struct gsmd {
 	unsigned int flags;

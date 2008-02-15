@@ -11,20 +11,6 @@
 extern int lgsm_phone_power(struct lgsm_handle *lh, int power);
 extern int lgsm_modem_power(struct lgsm_handle *lh, int power);
 
-enum lgsm_info_type {
-	LGSM_INFO_TYPE_NONE		= 0,
-	LGSM_INFO_TYPE_MANUF		= 1,
-	LGSM_INFO_TYPE_MODEL		= 2,
-	LGSM_INFO_TYPE_REVISION		= 3,
-	LGSM_INFO_TYPE_SERIAL		= 4,
-	LGSM_INFO_TYPE_IMSI		= 5,
-};
-
-/* Get some information about the handset */
-extern int lgsm_get_info(struct lgsm_handle *lh,
-			 enum lgsm_info_type type,
-			 char *ret_string, u_int16_t len);
-
 /* Authenticate to SIM Card using specified null-terminated pin */
 extern int lgsm_pin_auth(struct lgsm_handle *lh, const char *pin);
 
@@ -73,6 +59,14 @@ extern int lgsm_get_subscriber_num(struct lgsm_handle *lh);
 
 /* Retrieve IMSI information */
 extern int lgsm_get_imsi(struct lgsm_handle *lh);
+/* Retrieve manufacturer information */
+extern int lgsm_get_manufacturer(struct lgsm_handle *lh);
+/* Retrieve model information */
+extern int lgsm_get_model(struct lgsm_handle *lh);
+/* Retrieve revision information */
+extern int lgsm_get_revision(struct lgsm_handle *lh);
+/* Retrieve serial information */
+extern int lgsm_get_serial(struct lgsm_handle *lh);
 /* Set voice mail number */
 extern int lgsm_voicemail_set(struct lgsm_handle *lh, const char *number);
 /* Get currently configured voice mail number */

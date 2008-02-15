@@ -400,6 +400,22 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
 		break;
+	case GSMD_PHONE_GET_MANUF:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("manufacturer: %s\n", payload);
+		break;
+	case GSMD_PHONE_GET_MODEL:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("model: %s\n", payload);
+		break;
+	case GSMD_PHONE_GET_REVISION:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("revision: %s\n", payload);
+		break;
+	case GSMD_PHONE_GET_SERIAL:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("serial: %s\n", payload);
+		break;
 	case GSMD_PHONE_POWERUP:
 		if (*intresult)
 			printf("Modem power-up failed: %i\n", *intresult);
@@ -551,6 +567,10 @@ static void shell_help(void)
 		"\tgvm\tGet Voicemail number\n"
 		"\tsvm\tSet Voicemail number(svm=number)\n"
 		"\tim\tGet imsi\n"
+		"\tmf\tGet manufacturer\n"
+		"\tml\tGet model\n"
+		"\trv\tGet revision\n"
+		"\tsn\tGet serial number\n"
 		"\tcs\tGet Call status\n"
 		"\tgp\tGet PIN status\n"
 		"\tRh\tRelease all held calls (+CHLD=0)\n"
@@ -863,6 +883,22 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strncmp(buf, "im", 2)) {
 				printf("Get imsi\n");
 				lgsm_get_imsi(lgsmh);
+				pending_responses ++;
+			} else if (!strncmp(buf, "mf", 2)) {
+				printf("Get manufacturer\n");
+				lgsm_get_manufacturer(lgsmh);
+				pending_responses ++;
+			} else if (!strncmp(buf, "ml", 2)) {
+				printf("Get model\n");
+				lgsm_get_model(lgsmh);
+				pending_responses ++;
+			} else if (!strncmp(buf, "rv", 2)) {
+				printf("Get revision\n");
+				lgsm_get_revision(lgsmh);
+				pending_responses ++;
+			} else if (!strncmp(buf, "sn", 2)) {
+				printf("Get serial number\n");
+				lgsm_get_serial(lgsmh);
 				pending_responses ++;
 			} else if ( strlen(buf)==1 && !strncmp(buf, "M", 1)) {
 				printf("Modem Power On\n");
