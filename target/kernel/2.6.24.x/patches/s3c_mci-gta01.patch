@@ -31,7 +31,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 +			break;
 +		case MMC_POWER_ON:
 +			/* translate MMC_VDD_* VDD bit to mv */
-+			for (bit = 7; bit != 24; bit++)
++			for (bit = 8; bit != 24; bit++)
 +				if (vdd == (1 << bit))
 +					mv += 100 * (bit - 4);
 +			pcf50606_voltage_set(pcf50606_global,
