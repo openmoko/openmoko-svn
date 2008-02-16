@@ -5,7 +5,8 @@
 #
 # Memory map:
 #
-# 0x33FFFFFF    end of RAM
+# 0x37FFFFFF    end of RAM (GTA02)
+# 0x33FFFFFF    end of RAM (GTA01)
 # 0x33F80000    u-boot
 # 0x33D00000    frame buffer
 # 0x32300000    interim logo
@@ -21,9 +22,11 @@ reset halt
 wait_halt
 sleep 2000
 
+#ifdef GTA01
 # turn on the backlight
 mww 0x56000010 0x1
 mww 0x56000014 1
+#endif
 
 # load and run the low-level hardware setup
 load_binary $LOWLEVEL 0

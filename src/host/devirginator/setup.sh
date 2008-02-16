@@ -2,7 +2,7 @@
 #
 # setup.sh - Set up the devirginator
 #
-# Copyright (C) 2006-2007 by OpenMoko, Inc.
+# Copyright (C) 2006-2008 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
 # All Rights Reserved
 #
@@ -80,6 +80,12 @@ add_file()
 }
 
 
+cppify()
+{
+    sed '/^#[a-z]/{n;};s/#.*$//' | cpp -D$U_PLATFORM -D$U_PLATFORM$U_BOARD
+}
+
+
 # --- Configuration defaults --------------------------------------------------
 
 
@@ -135,6 +141,9 @@ if [ -z "$RELEASE_DIR" ]; then
     RELEASE_DIR=http://buildhost.openmoko.org/releases/
     RELEASE_DIR=${RELEASE_DIR}/${PLATFORM}-${SNAPSHOT}/tmp/deploy/images
 fi
+
+U_PLATFORM="`echo \"$PLATFORM\" | LANG=C tr a-z A-Z`"
+U_BOARD="`echo \"$BOARD\" | LANG=C tr a-z A-Z`"
 
 # lowlevel_foo.bin
 
@@ -236,11 +245,11 @@ probe telnet </dev/null
 # --- Stage 1: OpenOCD script -------------------------------------------------
 
 
-{
+cppify <openocd.in | {
     while read l; do
        eval "echo $l"
     done
-} <openocd.in >tmp/script.ocd
+} >tmp/script.ocd
 add_file tmp/script.ocd
 
 
@@ -263,7 +272,7 @@ add_file tmp/preboot_override.noscrub
 # --- Stage 1: u-boot script --------------------------------------------------
 
 
-perl ./scriptify.pl u-boot.in >tmp/u-boot.out
+cppify <u-boot.in | perl ./scriptify.pl >tmp/u-boot.out
 add_file tmp/u-boot.out
 
 
@@ -353,11 +362,13 @@ if \$stage2; then
     $DFU_UTIL $USB_ID -a kernel -D $UIMAGE
     $DFU_UTIL $USB_ID -a rootfs -D $ROOTFS
     $DFU_UTIL $USB_ID -a splash -D tmp/splash.gz
+    rm -f tmp/env.old tmp/env.new
     $DFU_UTIL $USB_ID -a u-boot_env -U tmp/env.old
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
       "reset halt" wait_halt resume exit
     sleep 5
-    ./envedit.pl -i tmp/env.old -o tmp/env.new -f tmp/environment
+    ./envedit.pl -i tmp/env.old -o tmp/env.new \
+       -D$U_PLATFORM -D$U_PLATFORM$U_BOARD -f tmp/environment
     $DFU_UTIL $USB_ID -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
 fi

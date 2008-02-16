@@ -1,7 +1,7 @@
 #
 # Makefile - Setup and handling of prerequisites
 #
-# Copyright (C) 2006-2007 by OpenMoko, Inc.
+# Copyright (C) 2006-2008 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
 # All Rights Reserved
 #
@@ -26,7 +26,7 @@ SCRIPTS=crc32.pl envedit.pl openocdcmd.pl scriptify.pl devirginate
 TARDIR=devirginate-$(TARBALL_VERSION)
 TARBALL=$(TARDIR).tar.gz
 
-.PHONY:		tarball
+.PHONY:		tarball clean
 
 #devirginate:	config environment.in openocd.in u-boot.in \
 #		  setup.sh smiley.gz \
@@ -63,3 +63,6 @@ $(TARBALL):	$(SCRIPTS) $(TMP_FILES)
 		    $(TMP_FILES:%=$(TARDIR)/%) || \
 		  { rm -f $(TARDIR); exit 1; }
 		rm -f $(TARDIR)
+
+clean:
+		rm -f smiley.ppm smiley.png smiley.gz

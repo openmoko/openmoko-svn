@@ -6,7 +6,7 @@
 # interactive testing one may wish to do.
 #
 
-# switch on the backlight, so one can see that we're alive
+# toggle the backlight, so one can see that we're alive
 
 neo1973 backlight off
 
@@ -16,7 +16,12 @@ setenv dontask y
 
 # remove any pre-existing bad block table and create a new one
 
+#ifndef GTA02
 setenv scrub_true nand scrub 0x3ff0000 0x10000
+#else
+setenv scrub_true nand scrub 0x7f80000 0x80000	
+#endif
+
 setenv scrub_ echo Not scrubbing
 run scrub_${scrub}
 
@@ -45,7 +50,13 @@ setenv scrub
 
 setenv bootcmd
 setenv bootdelay 604800
+
+#ifndef GTA02
 setenv splashimage nand read.e 0x32000000 splash 0x1000\; unzip 0x32000000 0x33d00000 0x96000
+#else
+setenv splashimage nand read.e 0x32000000 splash 0x1000\; unzip 0x32000000 0x8800000 0x96000
+#endif
+
 setenv usbtty cdc_acm
 saveenv
 
