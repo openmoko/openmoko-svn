@@ -1,6 +1,8 @@
 CFLAGS=-Wall -I/usr/local/include
 LDFLAGS=-L/usr/local/lib -lftdi
 
+PREFIX=/usr
+
 .PHONY:		all install uninstall clean spotless
 
 all:		norwp
