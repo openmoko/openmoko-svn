@@ -12,10 +12,10 @@ After a potential kernel inclusion, we would co-maintain the driver.
 Acked-by: Thomas Kleffel <tk@maintech.de>
 Signed-off-by: Harald Welte <laforge@gnumonks.org>
 
-Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
+Index: linux-2.6.24/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
---- linux-2.6.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
-+++ linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
+--- linux-2.6.24.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
++++ linux-2.6.24/include/asm-arm/arch-s3c2410/regs-sdi.h
 @@ -28,9 +28,17 @@
  #define S3C2410_SDIDCNT               (0x30)
  #define S3C2410_SDIDSTA               (0x34)
@@ -85,10 +85,10 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6/drivers/mmc/host/s3cmci.c
+Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mmc/host/s3cmci.c
++++ linux-2.6.24/drivers/mmc/host/s3cmci.c
 @@ -0,0 +1,1411 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -348,7 +348,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +		/* and a major chunk of data in the middle */
 +		for (; fifo >= 4; fifo -=4) {
-+			*(host->pio_ptr) = readl(from_ptr);
++			*(u32 *) host->pio_ptr = readl(from_ptr);
 +			host->pio_ptr+= 4;
 +		}
 +
@@ -412,7 +412,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +		/* and a major chunk of data in the middle */
 +		for (; fifo >= 4; fifo -=4) {
-+			writel(*(host->pio_ptr), to_ptr);
++			writel(*(u32 *) host->pio_ptr, to_ptr);
 +			host->pio_ptr += 4;
 +		}
 +
@@ -1501,10 +1501,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +MODULE_DESCRIPTION("Samsung S3C MMC/SD Card Interface driver");
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
-Index: linux-2.6/drivers/mmc/host/s3cmci.h
+Index: linux-2.6.24/drivers/mmc/host/s3cmci.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/mmc/host/s3cmci.h
++++ linux-2.6.24/drivers/mmc/host/s3cmci.h
 @@ -0,0 +1,69 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1575,10 +1575,10 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.h
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
-Index: linux-2.6/drivers/mmc/host/Kconfig
+Index: linux-2.6.24/drivers/mmc/host/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/mmc/host/Kconfig
-+++ linux-2.6/drivers/mmc/host/Kconfig
+--- linux-2.6.24.orig/drivers/mmc/host/Kconfig
++++ linux-2.6.24/drivers/mmc/host/Kconfig
 @@ -130,3 +130,14 @@
  
  	  If unsure, or if your system has no SPI master driver, say N.
@@ -1594,20 +1594,20 @@ Index: linux-2.6/drivers/mmc/host/Kconfig
 +
 +	  If unsure, say N.
 +
-Index: linux-2.6/drivers/mmc/host/Makefile
+Index: linux-2.6.24/drivers/mmc/host/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/mmc/host/Makefile
-+++ linux-2.6/drivers/mmc/host/Makefile
+--- linux-2.6.24.orig/drivers/mmc/host/Makefile
++++ linux-2.6.24/drivers/mmc/host/Makefile
 @@ -17,4 +17,4 @@
  obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
  obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
  obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
 -
 +obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
-Index: linux-2.6/include/asm-arm/arch-s3c2410/mci.h
+Index: linux-2.6.24/include/asm-arm/arch-s3c2410/mci.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6/include/asm-arm/arch-s3c2410/mci.h
++++ linux-2.6.24/include/asm-arm/arch-s3c2410/mci.h
 @@ -0,0 +1,13 @@
 +#ifndef _ARCH_MCI_H
 +#define _ARCH_MCI_H
@@ -1622,10 +1622,10 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/mci.h
 +};
 +
 +#endif /* _ARCH_NCI_H */
-Index: linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+Index: linux-2.6.24/arch/arm/mach-s3c2412/s3c2412.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2412/s3c2412.c
-+++ linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2412/s3c2412.c
++++ linux-2.6.24/arch/arm/mach-s3c2412/s3c2412.c
 @@ -214,5 +214,8 @@
  {
  	printk("S3C2412: Initialising architecture\n");
@@ -1635,10 +1635,10 @@ Index: linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
 +
  	return sysdev_register(&s3c2412_sysdev);
  }
-Index: linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+Index: linux-2.6.24/arch/arm/mach-s3c2440/s3c2440.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2440/s3c2440.c
-+++ linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2440/s3c2440.c
++++ linux-2.6.24/arch/arm/mach-s3c2440/s3c2440.c
 @@ -46,6 +46,9 @@
  	s3c_device_wdt.resource[1].start = IRQ_S3C2440_WDT;
  	s3c_device_wdt.resource[1].end   = IRQ_S3C2440_WDT;
@@ -1649,10 +1649,10 @@ Index: linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
  	/* register our system device for everything else */
  
  	return sysdev_register(&s3c2440_sysdev);
-Index: linux-2.6/arch/arm/mach-s3c2442/s3c2442.c
+Index: linux-2.6.24/arch/arm/mach-s3c2442/s3c2442.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2442/s3c2442.c
-+++ linux-2.6/arch/arm/mach-s3c2442/s3c2442.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2442/s3c2442.c
++++ linux-2.6.24/arch/arm/mach-s3c2442/s3c2442.c
 @@ -21,6 +21,7 @@
  
  #include <asm/plat-s3c24xx/s3c2442.h>
