@@ -1,7 +1,7 @@
-Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-s3c2410/mach-gta01.c
-+++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 @@ -59,6 +59,7 @@
  
  #include <asm/arch/regs-gpio.h>
@@ -10,29 +10,15 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
  #include <asm/arch/spi.h>
  #include <asm/arch/spi-gpio.h>
  #include <asm/arch/usb-control.h>
-@@ -381,6 +382,70 @@
+@@ -382,6 +383,59 @@
  	.sets		= gta01_nand_sets,
  };
  
-+static unsigned int mmc_millivolts[] = {
-+	[MMC_VDD_165_195]	= 1700,
-+	[MMC_VDD_20_21]		= 2100,
-+	[MMC_VDD_21_22]		= 2200,
-+	[MMC_VDD_22_23]		= 2300,
-+	[MMC_VDD_23_24]		= 2400,
-+	[MMC_VDD_24_25]		= 2500,
-+	[MMC_VDD_25_26]		= 2600,
-+	[MMC_VDD_26_27]		= 2700,
-+	[MMC_VDD_27_28]		= 2800,
-+	[MMC_VDD_28_29]		= 2900,
-+	[MMC_VDD_29_30]		= 3000,
-+	[MMC_VDD_30_31]		= 3100,
-+	[MMC_VDD_31_32]		= 3200,
-+	[MMC_VDD_32_33]		= 3300,
-+};
-+
 +static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
 +{
++	int bit;
++	int mv = 1700; /* 1.7V for MMC_VDD_165_195 */
++
 +	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
 +	       power_mode, vdd);
 +
@@ -44,9 +30,12 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +					   PCF50606_REGULATOR_D2REG, 0);
 +			break;
 +		case MMC_POWER_ON:
++			/* translate MMC_VDD_* VDD bit to mv */
++			for (bit = 7; bit != 24; bit++)
++				if (vdd == (1 << bit))
++					mv += 100 * (bit - 4);
 +			pcf50606_voltage_set(pcf50606_global,
-+					     PCF50606_REGULATOR_D2REG,
-+					     mmc_millivolts[vdd]);
++					     PCF50606_REGULATOR_D2REG, mv);
 +			pcf50606_onoff_set(pcf50606_global,
 +					   PCF50606_REGULATOR_D2REG, 1);
 +			break;
@@ -81,7 +70,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
  static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
  {
  	printk(KERN_DEBUG "%s(%d)\n", __func__, cmd);
-@@ -597,10 +662,12 @@
+@@ -598,10 +652,12 @@
  	    system_rev == GTA01Bv3_SYSTEM_REV ||
  	    system_rev == GTA01Bv4_SYSTEM_REV) {
  		gta01_udc_cfg.udc_command = gta01_udc_command;
