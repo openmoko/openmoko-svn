@@ -8,7 +8,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1937 @@
+@@ -0,0 +1,1939 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1220,6 +1220,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +	struct pcf50606_time pcf_tm;
 +
 +	mutex_lock(&pcf->lock);
++	alrm->enabled = 
++             __reg_read(pcf, PCF50606_REG_INT1M) & PCF50606_INT1_ALARM ? 0 : 1;
 +	pcf_tm.sec = __reg_read(pcf, PCF50606_REG_RTCSCA);
 +	pcf_tm.min = __reg_read(pcf, PCF50606_REG_RTCMNA);
 +	pcf_tm.hour = __reg_read(pcf, PCF50606_REG_RTCHRA);

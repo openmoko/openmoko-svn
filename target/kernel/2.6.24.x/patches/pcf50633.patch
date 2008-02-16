@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1954 @@
+@@ -0,0 +1,1956 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1340,6 +1340,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +	struct pcf50633_time pcf_tm;
 +
 +	mutex_lock(&pcf->lock);
++	alrm->enabled =
++	     __reg_read(pcf, PCF50633_REG_INT1M) & PCF50633_INT1_ALARM ? 0 : 1;
 +	pcf_tm.sec = __reg_read(pcf, PCF50633_REG_RTCSCA);
 +	pcf_tm.min = __reg_read(pcf, PCF50633_REG_RTCMNA);
 +	pcf_tm.hour = __reg_read(pcf, PCF50633_REG_RTCHRA);
