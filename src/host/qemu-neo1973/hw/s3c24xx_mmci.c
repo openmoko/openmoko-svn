@@ -180,7 +180,11 @@ complete:
     } else if (((s->dcontrol >> 12) & 3) == 3)			/* DatMode */
         if (s->dcontrol & (1 << 20))				/* RACMD */
             s->data = 1;
-    s->data &= s->ccontrol >> 11;				/* WithData */
+    /* HACK:  This bit only matters for SDIO but we don't have a good
+     * way to tell if the card is an SDIO, so only check if this is
+     * CMD53, the only SDIO command potentially using the DAT lines.  */
+    if (request.cmd == 53)
+        s->data &= s->ccontrol >> 11;				/* WithData */
     return;
 
 timeout:
