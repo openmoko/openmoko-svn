@@ -343,7 +343,7 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 +		host->pio_count += fifo;
 +
 +		/* we might have an unaligned start of data */
-+		while ((unsigned long)host->pio_ptr & 0x03)
++		while (((unsigned long)host->pio_ptr & 0x03) && fifo--)
 +			*(host->pio_ptr++) = readb(host->base + host->sdidata_b);
 +
 +		/* and a major chunk of data in the middle */
