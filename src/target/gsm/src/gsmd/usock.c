@@ -618,12 +618,10 @@ static int gsmd_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_user *gu = ctx;
 
 	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
-	if (strncmp(resp, "+CGMI: ", 7))
-		return -EINVAL;
-	resp += 7;
+	if (!strncmp(resp, "+CGMI: ", 7))
+		resp += 7;
 	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_MANUF,
 			cmd->id, strlen(resp) + 1, resp);
-	return 0;
 }
 
 static int gsmd_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -631,12 +629,10 @@ static int gsmd_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_user *gu = ctx;
 
 	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
-	if (strncmp(resp, "+CGMM: ", 7))
-		return -EINVAL;
-	resp += 7;
+	if (!strncmp(resp, "+CGMM: ", 7))
+		resp += 7;
 	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_MODEL,
 			cmd->id, strlen(resp) + 1, resp);
-	return 0;
 }
 
 static int gsmd_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -644,12 +640,10 @@ static int gsmd_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_user *gu = ctx;
 
 	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
-	if (strncmp(resp, "+CGMR: ", 7))
-		return -EINVAL;
-	resp += 7;
+	if (!strncmp(resp, "+CGMR: ", 7))
+		resp += 7;
 	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_REVISION,
 			cmd->id, strlen(resp) + 1, resp);
-	return 0;
 }
 
 static int gsmd_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -657,12 +651,10 @@ static int gsmd_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_user *gu = ctx;
 
 	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
-	if (strncmp(resp, "+CGSN: ", 7))
-		return -EINVAL;
-	resp += 7;
+	if (!strncmp(resp, "+CGSN: ", 7))
+		resp += 7;
 	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_SERIAL,
 			cmd->id, strlen(resp) + 1, resp);
-	return 0;
 }
 
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
@@ -868,7 +860,7 @@ static int network_oper_n_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 
 	if ( !er )
 		return -ENOMEM;
-	
+
 	//extrsp_dump(er);	
 
 	/* Format: <mode>[,<format>,<oper>] */
@@ -878,12 +870,11 @@ static int network_oper_n_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		/* In case we're not registered, return an empty string */
 		buf[0] = '\0';
 	}
-	else if ( er->num_tokens == 3 &&
+	else if ( er->num_tokens >= 3 &&
 			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
 			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
 			er->tokens[2].type == GSMD_ECMD_RTT_STRING ) {
 
-		
 		strlcpy(buf, er->tokens[2].u.string, sizeof(buf));
 	}
 	else {

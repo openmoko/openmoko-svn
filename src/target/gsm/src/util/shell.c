@@ -392,28 +392,23 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 
 static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
-	char *payload;
+	char *payload  = (char *)gmh + sizeof(*gmh);
 	int *intresult = (void *)gmh + sizeof(*gmh);
 
 	switch (gmh->msg_subtype) {
 	case GSMD_PHONE_GET_IMSI:
-		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
 		break;
 	case GSMD_PHONE_GET_MANUF:
-		payload = (char *)gmh + sizeof(*gmh);
 		printf("manufacturer: %s\n", payload);
 		break;
 	case GSMD_PHONE_GET_MODEL:
-		payload = (char *)gmh + sizeof(*gmh);
 		printf("model: %s\n", payload);
 		break;
 	case GSMD_PHONE_GET_REVISION:
-		payload = (char *)gmh + sizeof(*gmh);
 		printf("revision: %s\n", payload);
 		break;
 	case GSMD_PHONE_GET_SERIAL:
-		payload = (char *)gmh + sizeof(*gmh);
 		printf("serial: %s\n", payload);
 		break;
 	case GSMD_PHONE_POWERUP:
