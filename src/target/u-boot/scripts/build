@@ -18,6 +18,7 @@
 # DEVICE=gta01bv4
 # DEVICE=gta02v3
 # DEVICE=gta02v4
+# DEVICE=gta02v5
 #
 # GIT_HEAD, if defined, specifies which git head we use, e.g.,
 # GIT_HEAD=37e3c62fa07a823e7569c872e3a9395d227ed8e3
