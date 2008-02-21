@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2423,6 +2423,14 @@ omap730p2_cs3boot_config :	unconfig
+@@ -2428,6 +2428,14 @@ omap730p2_cs3boot_config :	unconfig
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -902,7 +902,7 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/split_by_variant.sh
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,71 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
 +#  Set the core module defines according to Core Module
@@ -953,12 +953,18 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 +	echo "CONFIG_USB_DFU_REVISION=0x0350" > $CFGTMP
 +	;;
 +
++	gta02v6_config)
++	echo "#define CONFIG_ARCH_GTA02_v6" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 6" >> $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0360" > $CFGTMP
++	;;
++
 +
 +	*)
-+	echo "$0:: Unrecognised config - using GTA02v3 config"
-+	echo "#define CONFIG_ARCH_GTA02_v3" > $CFGINC
-+	echo "#define CONFIG_GTA02_REVISION 3" >> $CFGINC
-+	echo "CONFIG_USB_DFU_REVISION=0x0330" > $CFGTMP
++	echo "$0:: Unrecognised config - using GTA02v5 config"
++	echo "#define CONFIG_ARCH_GTA02_v5" > $CFGINC
++	echo "#define CONFIG_GTA02_REVISION 5" >> $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0350" > $CFGTMP
 +	;;
 +
 +	esac
