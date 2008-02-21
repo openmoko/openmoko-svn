@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2423,6 +2423,14 @@
+@@ -2423,6 +2423,14 @@ omap730p2_cs3boot_config :	unconfig
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -972,7 +972,7 @@ Index: u-boot/include/pcf50633.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/pcf50633.h
-@@ -0,0 +1,237 @@
+@@ -0,0 +1,403 @@
 +#ifndef _PCF50633_H
 +#define _PCF50633_H
 +
@@ -1193,6 +1193,172 @@ Index: u-boot/include/pcf50633.h
 +
 +#define PCF50633_OOCSTAT_ONKEY		0x01
 +
++
++enum pcf50633_reg_adcc1 {
++	PCF50633_ADCC1_ADCSTART		= 0x01,
++	PCF50633_ADCC1_RES_10BIT	= 0x02,
++	PCF50633_ADCC1_AVERAGE_NO	= 0x00,
++	PCF50633_ADCC1_AVERAGE_4	= 0x04,
++	PCF50633_ADCC1_AVERAGE_8	= 0x08,
++	PCF50633_ADCC1_AVERAGE_16	= 0x0c,
++
++	PCF50633_ADCC1_MUX_BATSNS_RES	= 0x00,
++	PCF50633_ADCC1_MUX_BATSNS_SUBTR	= 0x10,
++	PCF50633_ADCC1_MUX_ADCIN2_RES	= 0x20,
++	PCF50633_ADCC1_MUX_ADCIN2_SUBTR	= 0x30,
++	PCF50633_ADCC1_MUX_BATTEMP	= 0x60,
++	PCF50633_ADCC1_MUX_ADCIN1	= 0x70,
++};
++#define PCF50633_ADCC1_AVERAGE_MASK	0x0c
++#define	PCF50633_ADCC1_ADCMUX_MASK	0xf0
++
++enum pcf50633_reg_adcc2 {
++	PCF50633_ADCC2_RATIO_NONE	= 0x00,
++	PCF50633_ADCC2_RATIO_BATTEMP	= 0x01,
++	PCF50633_ADCC2_RATIO_ADCIN1	= 0x02,
++	PCF50633_ADCC2_RATIO_BOTH	= 0x03,
++	PCF50633_ADCC2_RATIOSETTL_100US	= 0x04,
++};
++#define PCF50633_ADCC2_RATIO_MASK	0x03
++
++enum pcf50633_reg_adcc3 {
++	PCF50633_ADCC3_ACCSW_EN		= 0x01,
++	PCF50633_ADCC3_NTCSW_EN		= 0x04,
++	PCF50633_ADCC3_RES_DIV_TWO	= 0x10,
++	PCF50633_ADCC3_RES_DIV_THREE	= 0x00,
++};
++
++enum pcf50633_reg_adcs3 {
++	PCF50633_ADCS3_REF_NTCSW	= 0x00,
++	PCF50633_ADCS3_REF_ACCSW	= 0x10,
++	PCF50633_ADCS3_REF_2V0		= 0x20,
++	PCF50633_ADCS3_REF_VISA		= 0x30,
++	PCF50633_ADCS3_REF_2V0_2	= 0x70,
++	PCF50633_ADCS3_ADCRDY		= 0x80,
++};
++#define PCF50633_ADCS3_ADCDAT1L_MASK	0x03
++#define PCF50633_ADCS3_ADCDAT2L_MASK	0x0c
++#define PCF50633_ADCS3_ADCDAT2L_SHIFT	2
++#define PCF50633_ASCS3_REF_MASK		0x70
++
++enum pcf50633_regulator_enable {
++	PCF50633_REGULATOR_ON		= 0x01,
++	PCF50633_REGULATOR_ON_GPIO1	= 0x02,
++	PCF50633_REGULATOR_ON_GPIO2	= 0x04,
++	PCF50633_REGULATOR_ON_GPIO3	= 0x08,
++};
++#define PCF50633_REGULATOR_ON_MASK	0x0f
++
++enum pcf50633_regulator_phase {
++	PCF50633_REGULATOR_ACTPH1	= 0x00,
++	PCF50633_REGULATOR_ACTPH2	= 0x10,
++	PCF50633_REGULATOR_ACTPH3	= 0x20,
++	PCF50633_REGULATOR_ACTPH4	= 0x30,
++};
++#define PCF50633_REGULATOR_ACTPH_MASK	0x30
++
++enum pcf50633_reg_gpocfg {
++	PCF50633_GPOCFG_GPOSEL_0	= 0x00,
++	PCF50633_GPOCFG_GPOSEL_LED_NFET	= 0x01,
++	PCF50633_GPOCFG_GPOSEL_SYSxOK	= 0x02,
++	PCF50633_GPOCFG_GPOSEL_CLK32K	= 0x03,
++	PCF50633_GPOCFG_GPOSEL_ADAPUSB	= 0x04,
++	PCF50633_GPOCFG_GPOSEL_USBxOK	= 0x05,
++	PCF50633_GPOCFG_GPOSEL_ACTPH4	= 0x06,
++	PCF50633_GPOCFG_GPOSEL_1	= 0x07,
++	PCF50633_GPOCFG_GPOSEL_INVERSE	= 0x08,
++};
++#define PCF50633_GPOCFG_GPOSEL_MASK	0x07
++
++#if 0
++enum pcf50633_reg_mbcc1 {
++	PCF50633_MBCC1_CHGENA		= 0x01,
++	PCF50633_MBCC1_AUTOSTOP		= 0x02,
++	PCF50633_MBCC1_AUTORES		= 0x04,
++	PCF50633_MBCC1_RESUME		= 0x08,
++	PCF50633_MBCC1_RESTART		= 0x10,
++	PCF50633_MBCC1_PREWDTIME_30MIN	= 0x00,
++	PCF50633_MBCC1_PREWDTIME_60MIN	= 0x20,
++	PCF50633_MBCC1_WDTIME_2HRS	= 0x40,
++	PCF50633_MBCC1_WDTIME_4HRS	= 0x80,
++	PCF50633_MBCC1_WDTIME_6HRS	= 0xc0,
++};
++
++enum pcf50633_reg_mbcc2 {
++	PCF50633_MBCC2_VBATCOND_2V7	= 0x00,
++	PCF50633_MBCC2_VBATCOND_2V85	= 0x01,
++	PCF50633_MBCC2_VBATCOND_3V0	= 0x02,
++	PCF50633_MBCC2_VBATCOND_3V15	= 0x03,
++	PCF50633_MBCC2_VRESDEBTIME_64S	= 0x80,
++};
++#define PCF50633_MBCC2_VMAX_MASK	0x3c
++#endif
++
++enum pcf50633_reg_mbcc7 {
++	PCF50633_MBCC7_USB_100mA	= 0x00,
++	PCF50633_MBCC7_USB_500mA	= 0x01,
++	PCF50633_MBCC7_USB_1000mA	= 0x02,
++	PCF50633_MBCC7_USB_SUSPEND	= 0x03,
++	PCF50633_MBCC7_BATTEMP_EN	= 0x04,
++	PCF50633_MBCC7_BATSYSIMAX_1A6	= 0x00,
++	PCF50633_MBCC7_BATSYSIMAX_1A8	= 0x40,
++	PCF50633_MBCC7_BATSYSIMAX_2A0	= 0x80,
++	PCF50633_MBCC7_BATSYSIMAX_2A2	= 0xc0,
++};
++#define PCF56033_MBCC7_USB_MASK		0x03
++
++enum pcf50633_reg_mbcc8 {
++	PCF50633_MBCC8_USBENASUS	= 0x10,
++};
++
++enum pcf50633_reg_mbcs1 {
++	PCF50633_MBCS1_USBPRES		= 0x01,
++	PCF50633_MBCS1_USBOK		= 0x02,
++	PCF50633_MBCS1_ADAPTPRES	= 0x04,
++	PCF50633_MBCS1_ADAPTOK		= 0x08,
++	PCF50633_MBCS1_TBAT_OK		= 0x00,
++	PCF50633_MBCS1_TBAT_ABOVE	= 0x10,
++	PCF50633_MBCS1_TBAT_BELOW	= 0x20,
++	PCF50633_MBCS1_TBAT_UNDEF	= 0x30,
++	PCF50633_MBCS1_PREWDTEXP	= 0x40,
++	PCF50633_MBCS1_WDTEXP		= 0x80,
++};
++
++enum pcf50633_reg_mbcs2_mbcmod {
++	PCF50633_MBCS2_MBC_PLAY		= 0x00,
++	PCF50633_MBCS2_MBC_USB_PRE	= 0x01,
++	PCF50633_MBCS2_MBC_USB_PRE_WAIT	= 0x02,
++	PCF50633_MBCS2_MBC_USB_FAST	= 0x03,
++	PCF50633_MBCS2_MBC_USB_FAST_WAIT= 0x04,
++	PCF50633_MBCS2_MBC_USB_SUSPEND	= 0x05,
++	PCF50633_MBCS2_MBC_ADP_PRE	= 0x06,
++	PCF50633_MBCS2_MBC_ADP_PRE_WAIT	= 0x07,
++	PCF50633_MBCS2_MBC_ADP_FAST	= 0x08,
++	PCF50633_MBCS2_MBC_ADP_FAST_WAIT= 0x09,
++	PCF50633_MBCS2_MBC_BAT_FULL	= 0x0a,
++	PCF50633_MBCS2_MBC_HALT		= 0x0b,
++};
++#define PCF50633_MBCS2_MBC_MASK		0x0f
++enum pcf50633_reg_mbcs2_chgstat {
++	PCF50633_MBCS2_CHGS_NONE	= 0x00,
++	PCF50633_MBCS2_CHGS_ADAPTER	= 0x10,
++	PCF50633_MBCS2_CHGS_USB		= 0x20,
++	PCF50633_MBCS2_CHGS_BOTH	= 0x30,
++};
++#define PCF50633_MBCS2_RESSTAT_AUTO	0x40
++
++enum pcf50633_reg_mbcs3 {
++	PCF50633_MBCS3_USBLIM_PLAY	= 0x01,
++	PCF50633_MBCS3_USBLIM_CGH	= 0x02,
++	PCF50633_MBCS3_TLIM_PLAY	= 0x04,
++	PCF50633_MBCS3_TLIM_CHG		= 0x08,
++	PCF50633_MBCS3_ILIM		= 0x10,	/* 1: Ibat > Icutoff */
++	PCF50633_MBCS3_VLIM		= 0x20,	/* 1: Vbat == Vmax */
++	PCF50633_MBCS3_VBATSTAT		= 0x40,	/* 1: Vbat > Vbatcond */
++	PCF50633_MBCS3_VRES		= 0x80, /* 1: Vbat > Vth(RES) */
++};
++
++
 +/* this is to be provided by the board implementation */
 +extern const u_int8_t pcf50633_initial_regs[__NUM_PCF50633_REGS];
 +
@@ -1214,7 +1380,7 @@ Index: u-boot/drivers/misc/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/misc/pcf50633.c
-@@ -0,0 +1,218 @@
+@@ -0,0 +1,278 @@
 +#include <common.h>
 +
 +#ifdef CONFIG_DRIVER_PCF50633
@@ -1223,6 +1389,10 @@ Index: u-boot/drivers/misc/pcf50633.c
 +#include <pcf50633.h>
 +#include <asm/atomic.h>
 +#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
++
++
++#define ADC_NOMINAL_RES_1A 6
++#define ADC_NOMINAL_RES_NC_R_USB 43
 +
 +#define PCF50633_I2C_ADDR		0x73
 +
@@ -1324,12 +1494,48 @@ Index: u-boot/drivers/misc/pcf50633.c
 +	return 0;
 +}
 +
++/* figure out our charger situation */
++int pcf50633_read_charger_type(void)
++{
++	u_int16_t ret;
++
++	/* kill ratiometric, but enable ACCSW biasing */
++	pcf50633_reg_write(PCF50633_REG_ADCC2, 0x00);
++	pcf50633_reg_write(PCF50633_REG_ADCC3, 0x01);
++
++	/* start ADC conversion of selected channel */
++	pcf50633_reg_write(PCF50633_REG_ADCC1, PCF50633_ADCC1_MUX_ADCIN1 |
++					       PCF50633_ADCC1_AVERAGE_16 |
++					       PCF50633_ADCC1_ADCSTART |
++					       PCF50633_ADCC1_RES_10BIT);
++
++	/* spin until completed */
++	while (!(pcf50633_reg_read(PCF50633_REG_ADCS3) & 0x80))
++		;
++
++	/* grab the result */
++	ret = (pcf50633_reg_read(PCF50633_REG_ADCS1) << 2) |
++	      (pcf50633_reg_read(PCF50633_REG_ADCS3) &
++	      PCF50633_ADCS3_ADCDAT1L_MASK);
++
++	/* well it is nearest to the 1A resistor */
++	if (ret < ((ADC_NOMINAL_RES_1A + ADC_NOMINAL_RES_NC_R_USB) / 2))
++		return 1000;
++
++	/* ok all we know is there is no resistor, it can be USB pwr or none */
++	if ((pcf50633_reg_read(PCF50633_REG_MBCS1) & 0x3) == 0x3)
++		return 500; /* USB power then */
++
++	return 0; /* nope, no power, just battery */
++}
++
++
 +
 +/* initialize PCF50633 register set */
 +void pcf50633_init(void)
 +{
 +	unsigned long flags;
-+	u_int8_t i;
++	u_int8_t i, limit;
 +
 +	local_irq_save(flags);
 +	for (i = 0; i < PCF50633_LAST_REG; i++) {
@@ -1338,6 +1544,25 @@ Index: u-boot/drivers/misc/pcf50633.c
 +		__pcf50633_reg_write(i, pcf50633_initial_regs[i]);
 +	}
 +	local_irq_restore(flags);
++
++	printf("Power: ");
++	switch (pcf50633_read_charger_type()) {
++	case 0: /* no charger, battery only */
++		printf("Battery\n");
++		limit = PCF50633_MBCC7_USB_SUSPEND;
++		break;
++	case 500:
++		printf("USB / 500mA\n");
++		limit = PCF50633_MBCC7_USB_500mA;
++		break;
++	default:
++		printf("1A\n");
++		limit = PCF50633_MBCC7_USB_1000mA;
++		break;
++	}
++	pcf50633_reg_write(PCF50633_REG_MBCC7,
++			   (pcf50633_reg_read(PCF50633_REG_MBCC7) &
++			   (~PCF56033_MBCC7_USB_MASK)) | limit);
 +}
 +
 +void pcf50633_usb_maxcurrent(unsigned int ma)
@@ -1355,6 +1580,7 @@ Index: u-boot/drivers/misc/pcf50633.c
 +
 +	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
 +}
++
 +
 +static const char *charger_states[] = {
 +	[0]	= "play_only",
@@ -1484,7 +1710,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  
  /* REFRESH parameter */
  #define REFEN		 	0x1	/* Refresh enable */
-@@ -165,6 +167,27 @@
+@@ -165,6 +167,27 @@ lowlevel_init:
  	str	r1, [r0]
  #endif
  
@@ -1512,7 +1738,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
-@@ -182,6 +205,10 @@
+@@ -182,6 +205,10 @@ SMRDATA:
      .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
      .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
      .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
@@ -1639,7 +1865,7 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +	[PCF50633_REG_MBCC4]	= 0xff, /* 255/255 == 1A adapter fast */
 +	[PCF50633_REG_MBCC5]	= 0x7f,	/* 127/255 == 500mA usb fast */
 +	[PCF50633_REG_MBCC6]	= 0x00, /* cutoff current 1/32 * Ichg */
-+	[PCF50633_REG_MBCC7]	= 0x00,	/* 1.6A max bat curr, USB 100mA */
++	[PCF50633_REG_MBCC7]	= 0x01,	/* 1.6A max bat curr, USB 500mA */
 +	[PCF50633_REG_MBCC8]	= 0x00,
 +
 +	[PCF50633_REG_BBCCTL]	= 0x19,	/* 3V, 200uA, on */
@@ -1878,7 +2104,7 @@ Index: u-boot/drivers/video/Makefile
 ===================================================================
 --- u-boot.orig/drivers/video/Makefile
 +++ u-boot/drivers/video/Makefile
-@@ -33,6 +33,7 @@
+@@ -33,6 +33,7 @@ COBJS-y += s3c2410_fb.o
  COBJS-y += sed13806.o
  COBJS-y += sed156x.o
  COBJS-y += sm501.o
@@ -1890,7 +2116,7 @@ Index: u-boot/drivers/misc/Makefile
 ===================================================================
 --- u-boot.orig/drivers/misc/Makefile
 +++ u-boot/drivers/misc/Makefile
-@@ -28,6 +28,7 @@
+@@ -28,6 +28,7 @@ LIB 	:= $(obj)libmisc.a
  COBJS-y += ali512x.o
  COBJS-y += ns87308.o
  COBJS-y += pcf50606.o
@@ -1902,7 +2128,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -204,8 +204,10 @@
+@@ -204,8 +204,10 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  		putc('\n');
  		for (i = 0; i < CFG_MAX_NAND_DEVICE; i++) {
  			if (nand_info[i].name)
@@ -1918,7 +2144,7 @@ Index: u-boot/drivers/mtd/nand/nand_ids.c
 ===================================================================
 --- u-boot.orig/drivers/mtd/nand/nand_ids.c
 +++ u-boot/drivers/mtd/nand/nand_ids.c
-@@ -67,7 +67,7 @@
+@@ -67,7 +67,7 @@ struct nand_flash_dev nand_flash_ids[] =
  
  	{"NAND 256MiB 3,3V 8-bit", 	0x71, 512, 256, 0x4000, 0},
  
@@ -1939,7 +2165,7 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -11,7 +12,8 @@
+@@ -11,7 +12,8 @@ void udc_ctrl(enum usbd_event event, int
  	switch (event) {
  	case UDC_CTRL_PULLUP_ENABLE:
  #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
@@ -1949,7 +2175,7 @@ Index: u-boot/board/neo1973/common/udc.c
  		if (param)
  			gpio->GPBDAT |= (1 << 9);
  		else
-@@ -23,6 +25,11 @@
+@@ -23,6 +25,11 @@ void udc_ctrl(enum usbd_event event, int
      defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
      defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
