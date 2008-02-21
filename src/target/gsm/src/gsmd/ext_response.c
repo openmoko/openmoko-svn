@@ -202,13 +202,14 @@ void extrsp_dump(const struct gsm_extrsp *er)
 		case GSMD_ECMD_RTT_STRING:
 			DEBUGP("%s\n", tok->u.string);
 			break;
+		case GSMD_ECMD_RTT_NONE:
+			break;
 		case GSMD_ECMD_RTT_RANGE: {
 			int j;
 			for (j = 0; j < tok->u.range.num_items; j++)
 				DEBUGP("%d-%d, ", tok->u.range.item[j].min,
 					tok->u.range.item[j].max);
 			}
-			
 			break;
 		}
 	}

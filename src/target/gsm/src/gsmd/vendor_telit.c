@@ -59,7 +59,6 @@ static int telit_detect(struct gsmd *g)
 static int telit_initsettings(struct gsmd *g)
 {
 	int rc = 0;
-	struct gsmd_atcmd *cmd;
 
 	/* Get network registration events with full information. */
 	rc |= gsmd_simplecmd(g, "AT+CGREG=2");

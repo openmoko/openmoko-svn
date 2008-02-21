@@ -33,6 +33,7 @@
 #include <gsmd/talloc.h>
 #include <gsmd/extrsp.h>
 #include <gsmd/machineplugin.h>
+#include <gsmd/atcmd.h>
 
 #define GSMD_MODEM_POWEROFF_TIMEOUT 6
 

@@ -876,7 +876,6 @@ static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 static int network_oper_n_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	int format, s, ret;
 	char buf[16+1] = {'\0'};
 	struct gsm_extrsp *er;
 
@@ -923,7 +922,7 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 	if (strncmp(str, "+COPS: ", 7))
 		return -EINVAL;
 
-	ptr = str;
+	ptr = (char *) str;
 	while (*str) {
 		if ( *str == '(' && isdigit(*(str+1)) ) {
 			len++;	
@@ -943,9 +942,9 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 
 	while (*str) {
 		if ( *str == '(' )
-			head = str;
+			head = (char *) str;
 		else if ( *str == ')' ) {
-			tail = str;
+			tail = (char *) str;
 			
 			memset(buf, '\0', sizeof(buf));
 			strncpy(buf, head+1, (tail-head-1));
