@@ -921,6 +921,13 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 
 	if (strncmp(str, "+COPS: ", 7))
 		return -EINVAL;
+	/*
+	 * string ",," means the begginig of extended parameters and we
+	 * don't want to scan them for operators.
+	 */
+	ptr = strstr(str, ",,");
+	if(ptr)
+		ptr[0] = '\0';
 
 	ptr = (char *) str;
 	while (*str) {
@@ -958,7 +965,7 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper **out)
 
 			//extrsp_dump(er);	
 				
-			if ( er->num_tokens == 4 &&
+			if ( er->num_tokens >= 4 &&
 					er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
 					er->tokens[1].type == GSMD_ECMD_RTT_STRING &&
 					er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
@@ -1002,6 +1009,8 @@ static int network_opers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	int len, ret;
 
 	len = network_opers_parse(resp, &buf);
+	if(len < 0)
+		return len;	/* error we got from network_opers_parse */
 
 	ret = gsmd_ucmd_submit(gu, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_LIST,
 			cmd->id, sizeof(*buf) * (len + 1), buf);
