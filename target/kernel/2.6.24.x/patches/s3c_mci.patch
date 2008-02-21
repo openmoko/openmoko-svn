@@ -89,7 +89,7 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/mmc/host/s3cmci.c
-@@ -0,0 +1,1411 @@
+@@ -0,0 +1,1419 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -343,8 +343,10 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 +		host->pio_count += fifo;
 +
 +		/* we might have an unaligned start of data */
-+		while (((unsigned long)host->pio_ptr & 0x03) && fifo--)
++		while (((unsigned long)host->pio_ptr & 0x03) && fifo) {
 +			*(host->pio_ptr++) = readb(host->base + host->sdidata_b);
++			fifo--;
++		}
 +
 +		/* and a major chunk of data in the middle */
 +		for (; fifo >= 4; fifo -=4) {
@@ -353,8 +355,10 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 +		}
 +
 +		/* as well as some non-modulo-four trailer */
-+		while (fifo)
++		while (fifo) {
 +			*(host->pio_ptr++) = readb(host->base + host->sdidata_b);
++			fifo--;
++		}
 +	}
 +
 +	if (!host->pio_bytes) {
@@ -407,8 +411,10 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 +		host->pio_count += fifo;
 +
 +		/* we might have an unaligned start of data */
-+		while ((unsigned long)host->pio_ptr & 0x03)
++		while (((unsigned long)host->pio_ptr & 0x03) && fifo) {
 +			writeb(*(host->pio_ptr++), host->base + host->sdidata_b);
++			fifo--;
++		}
 +
 +		/* and a major chunk of data in the middle */
 +		for (; fifo >= 4; fifo -=4) {
@@ -417,8 +423,10 @@ Index: linux-2.6.24/drivers/mmc/host/s3cmci.c
 +		}
 +
 +		/* as well as some non-modulo-four trailer */
-+		while (fifo--)
++		while (fifo) {
 +			writeb(*(host->pio_ptr++), host->base + host->sdidata_b);
++			fifo--;
++		}
 +	}
 +
 +	enable_imask(host, S3C2410_SDIIMSK_TXFIFOHALF);
@@ -1579,7 +1587,7 @@ Index: linux-2.6.24/drivers/mmc/host/Kconfig
 ===================================================================
 --- linux-2.6.24.orig/drivers/mmc/host/Kconfig
 +++ linux-2.6.24/drivers/mmc/host/Kconfig
-@@ -130,3 +130,14 @@
+@@ -130,3 +130,14 @@ config MMC_SPI
  
  	  If unsure, or if your system has no SPI master driver, say N.
  
@@ -1598,7 +1606,7 @@ Index: linux-2.6.24/drivers/mmc/host/Makefile
 ===================================================================
 --- linux-2.6.24.orig/drivers/mmc/host/Makefile
 +++ linux-2.6.24/drivers/mmc/host/Makefile
-@@ -17,4 +17,4 @@
+@@ -17,4 +17,4 @@ obj-$(CONFIG_MMC_OMAP)		+= omap.o
  obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
  obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
  obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
@@ -1626,7 +1634,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2412/s3c2412.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2412/s3c2412.c
 +++ linux-2.6.24/arch/arm/mach-s3c2412/s3c2412.c
-@@ -214,5 +214,8 @@
+@@ -214,5 +214,8 @@ int __init s3c2412_init(void)
  {
  	printk("S3C2412: Initialising architecture\n");
  
@@ -1639,7 +1647,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/s3c2440.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/s3c2440.c
 +++ linux-2.6.24/arch/arm/mach-s3c2440/s3c2440.c
-@@ -46,6 +46,9 @@
+@@ -46,6 +46,9 @@ int __init s3c2440_init(void)
  	s3c_device_wdt.resource[1].start = IRQ_S3C2440_WDT;
  	s3c_device_wdt.resource[1].end   = IRQ_S3C2440_WDT;
  
@@ -1661,7 +1669,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2442/s3c2442.c
  
  static struct sys_device s3c2442_sysdev = {
  	.cls		= &s3c2442_sysclass,
-@@ -30,5 +31,8 @@
+@@ -30,5 +31,8 @@ int __init s3c2442_init(void)
  {
  	printk("S3C2442: Initialising architecture\n");
  
