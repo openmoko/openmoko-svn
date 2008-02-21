@@ -90,6 +90,3 @@ uboot-neo1973_defaultconsole_usbtty.patch
 
 # let's see what upstream thinks about this
 loadenv.patch
-
-# remove soonish
-build-kludge.patch
