@@ -12,7 +12,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  
  #define DRVMSG "FIC Neo1973 Bluetooth Power Management"
  
-@@ -27,14 +29,30 @@
+@@ -27,14 +29,30 @@ static ssize_t bt_read(struct device *de
  		       char *buf)
  {
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -50,7 +50,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	}
  
  	return strlcpy(buf, "0\n", 3);
-@@ -48,20 +66,37 @@
+@@ -48,20 +66,37 @@ static ssize_t bt_write(struct device *d
  	unsigned long on = simple_strtoul(buf, NULL, 10);
  
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -99,7 +99,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	}
  
  	return count;
-@@ -107,9 +142,16 @@
+@@ -107,9 +142,16 @@ static int __init gta01_bt_probe(struct 
  {
  	dev_info(&pdev->dev, DRVMSG ": starting\n");
  
@@ -139,7 +139,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  struct gta01pm_priv {
  	int gpio_ngsm_en;
  	struct console *con;
-@@ -54,8 +61,16 @@
+@@ -54,8 +61,16 @@ static ssize_t gsm_read(struct device *d
  		if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_RST))
  			goto out_1;
  	} else if (!strcmp(attr->attr.name, "download")) {
@@ -158,7 +158,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return strlcpy(buf, "0\n", 3);
-@@ -70,32 +85,65 @@
+@@ -70,32 +85,65 @@ static ssize_t gsm_write(struct device *
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -231,7 +231,26 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return count;
-@@ -134,7 +182,7 @@
+@@ -111,6 +159,9 @@ static int gta01_gsm_suspend(struct plat
+ 	/* GPIO state is saved/restored by S3C2410 core GPIO driver, so we
+ 	 * don't need to do anything here */
+ 
++	/* disable DL GSM to prevent jack_insert becoming flaoting */
++	if (machine_is_neo1973_gta02())
++		s3c2410_gpio_setpin(GTA02_GPIO_nDL_GSM, 1);
+ 	return 0;
+ }
+ 
+@@ -124,6 +175,8 @@ static int gta01_gsm_resume(struct platf
+ 	if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_ON) && gta01_gsm.con)
+ 		console_stop(gta01_gsm.con);
+ 
++	if (machine_is_neo1973_gta02())
++		s3c2410_gpio_setpin(GTA02_GPIO_nDL_GSM, 0);
+ 	return 0;
+ }
+ #else
+@@ -134,7 +187,7 @@ static int gta01_gsm_resume(struct platf
  static struct attribute *gta01_gsm_sysfs_entries[] = {
  	&dev_attr_power_on.attr,
  	&dev_attr_reset.attr,
@@ -240,7 +259,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	NULL
  };
  
-@@ -158,8 +206,17 @@
+@@ -158,8 +211,17 @@ static int __init gta01_gsm_probe(struct
  		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  		break;
@@ -259,7 +278,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  			 "some PM features not available!!!\n",
  			 system_rev);
  		break;
-@@ -175,9 +232,13 @@
+@@ -175,9 +237,13 @@ static int __init gta01_gsm_probe(struct
  		break;
  	}
  
