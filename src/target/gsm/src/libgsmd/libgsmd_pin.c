@@ -28,6 +28,8 @@
 #include <gsmd/event.h>
 #include <libgsmd/libgsmd.h>
 
+#include "lgsm_internals.h"
+
 static const char *pin_type_names[__NUM_GSMD_PIN] = {
 	[GSMD_PIN_READY]	= "READY",
 	[GSMD_PIN_SIM_PIN]	= "SIM PIN",

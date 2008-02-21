@@ -394,6 +394,8 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	char *payload  = (char *)gmh + sizeof(*gmh);
 	int *intresult = (void *)gmh + sizeof(*gmh);
+	const struct gsmd_battery_charge *bc = (struct gsmd_battery_charge *)
+		((void *) gmh + sizeof(*gmh));
 
 	switch (gmh->msg_subtype) {
 	case GSMD_PHONE_GET_IMSI:
@@ -423,6 +425,9 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		else
 			printf("Modem down\n");
 		break;
+	case GSMD_PHONE_GET_BATTERY:
+		printf("<BCS>: %d <BCL>: %d \n", bc->bcs, bc->bcl);
+		break;		
 	default:
 		return -EINVAL;
 	}
@@ -568,6 +573,7 @@ static void shell_help(void)
 		"\tsn\tGet serial number\n"
 		"\tcs\tGet Call status\n"
 		"\tgp\tGet PIN status\n"
+		"\tcbc\tGet Battery status\n"
 		"\tRh\tRelease all held calls (+CHLD=0)\n"
 		"\tUDUB\tUser Determined User Busy (+CHLD=0)\n"
 		"\tRa\tRelease all active calls (+CHLD=1)\n"
@@ -987,6 +993,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				ptr = strchr(buf, '=');
 				lgsm_voice_fwd_erase(lgsmh, atoi(ptr+1));
 				pending_responses ++;
+			}else if ( !strncmp(buf, "cbc", 3)) {
+				printf("Battery Connection status and Battery Charge Level\n");
+				lgsm_get_battery(lgsmh);
+				pending_responses++;
 			}else {
 				printf("Unknown command `%s'\n", buf);
 			}

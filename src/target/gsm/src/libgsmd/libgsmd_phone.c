@@ -70,3 +70,7 @@ int lgsm_get_serial(struct lgsm_handle *lh)
 	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_SERIAL);
 }
 
+int lgsm_get_battery(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_BATTERY);
+}

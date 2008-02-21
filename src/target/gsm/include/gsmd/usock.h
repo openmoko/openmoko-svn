@@ -139,6 +139,7 @@ enum gsmd_msg_phone {
 	GSMD_PHONE_GET_MODEL	= 5,
 	GSMD_PHONE_GET_REVISION	= 6,
 	GSMD_PHONE_GET_SERIAL	= 7,
+	GSMD_PHONE_GET_BATTERY  = 8,
 };
 
 enum gsmd_msg_modem {
@@ -371,6 +372,14 @@ enum gsmd_toa_reserved {
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
 
+/* battery connection status from 3GPP TS 07.07 subclause 8.4 */
+enum gsmd_bat_conn_status {
+	GSMD_BAT_NORMAL		= 0,
+	GSMD_BAT_NOT_POWERED	= 1,
+	GSMD_BAT_NO_BAT		= 2,
+	GSMD_BAT_POWER_FAULT	= 3,
+};
+
 #define GSMD_ADDR_MAXLEN	32
 struct gsmd_addr {
 	u_int8_t type;
@@ -390,6 +399,11 @@ struct gsmd_signal_quality {
 struct gsmd_voicemail {
 	u_int8_t enable;
 	struct gsmd_addr addr;
+} __attribute__ ((packed));
+
+struct gsmd_battery_charge {
+	enum gsmd_bat_conn_status bcs;
+	u_int8_t bcl;
 } __attribute__ ((packed));
 
 #define GSMD_ALPHA_MAXLEN	20

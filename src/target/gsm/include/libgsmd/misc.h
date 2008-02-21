@@ -71,4 +71,6 @@ extern int lgsm_get_serial(struct lgsm_handle *lh);
 extern int lgsm_voicemail_set(struct lgsm_handle *lh, const char *number);
 /* Get currently configured voice mail number */
 extern int lgsm_voicemail_get(struct lgsm_handle *lh);
+/* Get Battery Connection status and charge level */
+extern int lgsm_get_battery(struct lgsm_handle *lh);
 #endif

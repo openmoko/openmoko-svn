@@ -613,7 +613,7 @@ static int phone_powerdown_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
-static int gsmd_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+static int phone_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 
@@ -624,7 +624,7 @@ static int gsmd_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, strlen(resp) + 1, resp);
 }
 
-static int gsmd_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+static int phone_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 
@@ -635,7 +635,7 @@ static int gsmd_get_model_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, strlen(resp) + 1, resp);
 }
 
-static int gsmd_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+static int phone_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 
@@ -646,7 +646,7 @@ static int gsmd_get_revision_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, strlen(resp) + 1, resp);
 }
 
-static int gsmd_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+static int phone_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 
@@ -655,6 +655,28 @@ static int gsmd_get_serial_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		resp += 7;
 	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_SERIAL,
 			cmd->id, strlen(resp) + 1, resp);
+}
+
+static int phone_get_battery_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_battery_charge gbs;
+	struct gsm_extrsp *er;
+
+	DEBUGP("cmd = '%s', resp: '%s'\n", cmd->buf, resp);
+	er = extrsp_parse(gsmd_tallocs, resp);
+	if(!er)
+		return -ENOMEM;
+	/* +CBC: 0,0 */
+	if((er->num_tokens == 2) &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+				gbs.bcs = er->tokens[0].u.numeric;
+				gbs.bcl = er->tokens[1].u.numeric;
+	}
+	talloc_free(er);
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_BATTERY,
+		cmd -> id, sizeof(gbs), &gbs);
 }
 
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
@@ -679,21 +701,23 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_PHONE_GET_MANUF:
 		cmd = atcmd_fill("AT+CGMI", 7+1,
-				&gsmd_get_manuf_cb, gu, 0, NULL);
+				&phone_get_manuf_cb, gu, 0, NULL);
 		break;
 	case GSMD_PHONE_GET_MODEL:
 		cmd = atcmd_fill("AT+CGMM", 7+1,
-				&gsmd_get_model_cb, gu, 0, NULL);
+				&phone_get_model_cb, gu, 0, NULL);
 		break;
 	case GSMD_PHONE_GET_REVISION:
 		cmd = atcmd_fill("AT+CGMR", 7+1,
-				&gsmd_get_revision_cb, gu, 0, NULL);
+				&phone_get_revision_cb, gu, 0, NULL);
 		break;
 	case GSMD_PHONE_GET_SERIAL:
 		cmd = atcmd_fill("AT+CGSN", 7+1,
-				&gsmd_get_serial_cb, gu, 0, NULL);
+				&phone_get_serial_cb, gu, 0, NULL);
 		break;
-
+	case GSMD_PHONE_GET_BATTERY:
+		cmd = atcmd_fill("AT+CBC", 6+1, &phone_get_battery_cb, gu, 0, NULL);
+		break;
 	default:
 		return -EINVAL;
 	}
