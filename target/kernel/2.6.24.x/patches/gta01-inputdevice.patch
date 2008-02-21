@@ -2,11 +2,11 @@ This provides support for the GTA01 keyboard
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6/drivers/input/keyboard/Kconfig
+Index: linux-2.6.24/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/input/keyboard/Kconfig
-+++ linux-2.6/drivers/input/keyboard/Kconfig
-@@ -293,4 +293,16 @@
+--- linux-2.6.24.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6.24/drivers/input/keyboard/Kconfig
+@@ -293,4 +293,16 @@ config KEYBOARD_BFIN
  	  To compile this driver as a module, choose M here: the
  	  module will be called bf54x-keys.
  
@@ -23,11 +23,11 @@ Index: linux-2.6/drivers/input/keyboard/Kconfig
 +
 +
  endif
-Index: linux-2.6/drivers/input/keyboard/Makefile
+Index: linux-2.6.24/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/input/keyboard/Makefile
-+++ linux-2.6/drivers/input/keyboard/Makefile
-@@ -14,6 +14,7 @@
+--- linux-2.6.24.orig/drivers/input/keyboard/Makefile
++++ linux-2.6.24/drivers/input/keyboard/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_KEYBOARD_LOCOMO)		+= locomo
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
@@ -35,11 +35,11 @@ Index: linux-2.6/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
+Index: linux-2.6.24/drivers/input/keyboard/neo1973kbd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/input/keyboard/neo1973kbd.c
-@@ -0,0 +1,236 @@
++++ linux-2.6.24/drivers/input/keyboard/neo1973kbd.c
+@@ -0,0 +1,239 @@
 +/*
 + * Keyboard driver for FIC Neo1973 GSM phone
 + *
@@ -66,6 +66,7 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +
 +#include <asm/hardware.h>
 +#include <asm/arch/gta01.h>
++#include <asm/mach-types.h>
 +
 +struct neo1973kbd {
 +	struct input_dev *input;
@@ -200,7 +201,9 @@ Index: linux-2.6/drivers/input/keyboard/neo1973kbd.c
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_aux);
 +		goto out_aux;
 +	}
-+	enable_irq_wake(irq_aux);
++
++	if (machine_is_neo1973_gta01())
++		enable_irq_wake(irq_aux);
 +
 +	if (request_irq(irq_hold, neo1973kbd_hold_irq, IRQF_DISABLED |
 +			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
