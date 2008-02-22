@@ -1,0 +1,87 @@
+gpio - Read and set GPIO pins (of the Samsung S3C2442 MCU)
+==========================================================
+
+Copyright (C) 2008 by OpenMoko, Inc.
+Written by Werner Almesberger <werner@openmoko.org>
+All Rights Reserved
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+
+Displaying all GPIOs
+--------------------
+
+# gpio
+
+If invoked without arguments, "gpio" displays the state of all GPIO
+pins of the MCU. The state is represented as follows:
+
+   0  Input, reads 0
+   1  Input, reads 1
+  >0  Output, reads 0 (1)
+  >1  Output, reads 1 (1)
+  F0  Function, reads 0 (2)
+  F1  Function, reads 1 (2)
+  X0  Secondary function or reserved, reads 0 (2)
+  X1  Idem, reads 1 (2)
+
+(1) The value read back from a port pin reflects the voltage level on
+    that pin. For an output, this is normally the value that we try to
+    output. However, if the pin is externally forced high or low, the
+    value read back may be different from the value we try to output.
+
+(2) According to Samsung documentation, the value read back from a
+    function pin is undefined. However, it usually represents the real
+    state of that pin.
+
+The pin state can be followed by "R", which indicates that the
+corresponding pull-down resistor is active.
+
+Changes in the GPIO settings can be monitored by running "gpio" under
+"watch", e.g., with
+
+# watch -n 1 -d ./gpio
+
+
+Displaying individual GPIOs
+---------------------------
+
+Individual GPIOs can be displayed by specifying their names on the command
+line, e.g.,
+
+# gpio b0 b1 b2
+
+Names are case-insensitive. The GPIO's state is displayed as described
+above.
+
+
+Setting GPIOs
+-------------
+
+A GPIO can be set by specifying an assignment on the command line, as
+follows:
+
+# gpio gpio=value
+
+The GPIO is specified in the same way as when displaying individual
+GPIOs. The following values can be set:
+
+  0  Output 0
+  1  Output 1
+  Z  Input
+  F  Function
+  X  Secondary function
+
+In addition to this, the value can be followed by "R" to set the
+pull-down resistor. "ZR" can be abbreviates to "R".
+
+Example:
+# gpio b0=1 b1=r b2=z
+
+Assignments can be mixed with reads, e.g.,
+# gpio b0=1 b0
+
+
