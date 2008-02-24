@@ -2,7 +2,7 @@ Index: linux-2.6.24/drivers/i2c/chips/Kconfig
 ===================================================================
 --- linux-2.6.24.orig/drivers/i2c/chips/Kconfig
 +++ linux-2.6.24/drivers/i2c/chips/Kconfig
-@@ -61,6 +61,15 @@
+@@ -61,6 +61,15 @@ config SENSORS_PCF50606
  	  This driver can also be built as a module.  If so, the module
  	  will be called pcf50606.
  
@@ -22,7 +22,7 @@ Index: linux-2.6.24/drivers/i2c/chips/Makefile
 ===================================================================
 --- linux-2.6.24.orig/drivers/i2c/chips/Makefile
 +++ linux-2.6.24/drivers/i2c/chips/Makefile
-@@ -10,6 +10,7 @@
+@@ -10,6 +10,7 @@ obj-$(CONFIG_SENSORS_MAX6875)	+= max6875
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
  obj-$(CONFIG_SENSORS_PCF50606)	+= pcf50606.o
@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1956 @@
+@@ -0,0 +1,1958 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1923,6 +1923,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +	}
 +
 +	mutex_unlock(&pcf->lock);
++
++	pcf50633_irq(pcf->irq, pcf);
 +
 +	return 0;
 +}
