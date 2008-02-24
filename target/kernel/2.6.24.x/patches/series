@@ -102,6 +102,9 @@ fix-pcf50633-LOWBAT-kill-init.patch
 # temporary work-around. awaiting decision on correct fix from upstream.
 gta01-dehang-printk.patch
 
+# debugging support
+#dump-gpio.patch
+
 # leapfrogged from upstream
 kexec-atags.patch
 
