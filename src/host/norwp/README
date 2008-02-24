@@ -6,7 +6,7 @@ Usage:
 norwp
 
   Queries the state of the NOR_WP line. Prints "rw" if writing to the
-  NOR is enabled, "ro" if it isn't.
+  NOR is enabled, "ro" if it isn't. See "known issue" below.
 
 norwp rw
 
@@ -25,3 +25,8 @@ to send commands several times before they have an effect.
 
 OpenOCD doesn't have that problem, so it's something that's wrong in
 norwp.c
+
+Querying the state of NOR_WP only works after the line has been
+configured as an output. After board reset, the state is not clearly
+defined, and we may read back "rw" even though the board may not be
+protected.
