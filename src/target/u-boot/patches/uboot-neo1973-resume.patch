@@ -6,7 +6,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -223,18 +223,68 @@
+@@ -181,18 +181,68 @@ copyex:
  	str	r1, [r0]
  # endif
  
@@ -75,12 +75,52 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
 -#endif
  
- #ifdef	CONFIG_AT91RM9200
- #ifdef CONFIG_BOOTBINFUNC
-@@ -292,9 +342,33 @@
+ #if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410)
+ 
+@@ -210,10 +260,8 @@ copyex:
+ #endif /* CONFIG_S3C2410_NAND_BOOT */
+ 
+ relocate:				/* relocate U-Boot to RAM	    */
+-#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
+ 	teq	r0, #0			/* running at address 0 ?	    */
+-	bleq	cpu_init_crit		/* yes -> do low-level setup	    */
+-#endif /* !CONFIG_SKIP_LOWLEVEL_INIT && CONFIG_LL_INIT_NAND_ONLY */
++	bleq	may_resume		/* yes -> do low-level setup	    */
+ 
+ 	adr	r0, _start		/* the above may have clobbered r0  */
+ 
+@@ -239,11 +287,7 @@ _done_relocate:
  
  #ifdef CONFIG_S3C2410_NAND_BOOT
  nand_load:
+-#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
+-	bl	cpu_init_crit
+-#endif
+-
+-	/* mov	r10, lr */
++	bl	may_resume		/* low-level setup and resume */
+ 
+ 	@ reset NAND
+ 	mov	r1, #S3C2410_NAND_BASE
+@@ -398,6 +442,51 @@ cpu_init_crit:
+ 	mov	pc, lr
+ #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
+ 
++
++/*
++ *************************************************************************
++ *
++ * may_resume
++ *
++ * Bring up memory and check if we're coming out of suspend.
++ *
++ *************************************************************************
++ */
++
++
++may_resume:
++	mov	r10, lr			/* we may call cpu_init_crit */
++
 +	/* take sdram out of power down */
 +	ldr	r0, =0x56000080		/* misccr */
 +	ldr	r1, [ r0 ]
@@ -92,9 +132,9 @@ Index: u-boot/cpu/arm920t/start.S
 +1:	subs	r1, r1, #1
 +	bpl	1b
 +
- #if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
- 	bl	cpu_init_crit
- #endif
++#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
++	bl	cpu_init_crit
++#endif
 +#if defined(CONFIG_S3C2410)
 +	/* ensure some refresh has happened */
 +	ldr	r1, =0xfffff
@@ -108,6 +148,9 @@ Index: u-boot/cpu/arm920t/start.S
 +	ldrne	pc, [r1, #4]		/* gstatus3 */
 +#endif /* CONFIG_S3C2410 */
 +#endif /* CONFIG_SKIP_LOWLEVEL_INIT */
- 
- 	/* mov	r10, lr */
- 
++
++	mov	pc, r10
++
+ /*
+  *************************************************************************
+  *

@@ -11,7 +11,7 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
  #include <status_led.h>
  
-@@ -164,7 +166,7 @@
+@@ -171,7 +173,7 @@ copyex:
  #endif
  
  #if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
@@ -20,7 +20,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* turn off the watchdog */
  
  # if defined(CONFIG_S3C2400)
-@@ -205,6 +207,11 @@
+@@ -212,6 +214,11 @@ copyex:
  # endif
  # define CLKDIVN_val  7 /* FCLK:HCLK:PCLK = 1:3:6 */
  # define CAMDIVN      0x4C000018
@@ -32,7 +32,7 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
  
  	ldr     r0, =pWTCON
-@@ -217,7 +224,8 @@
+@@ -224,7 +231,8 @@ copyex:
  	mov	r1, #0xffffffff
  	ldr	r0, =INTMSK
  	str	r1, [r0]
@@ -42,7 +42,7 @@ Index: u-boot/cpu/arm920t/start.S
  	ldr	r1, =INTSUBMSK_val
  	ldr	r0, =INTSUBMSK
  	str	r1, [r0]
-@@ -236,6 +244,43 @@
+@@ -243,6 +251,43 @@ copyex:
  	mcr	p15, 0, r1, c1, c0, 0
  
  
@@ -86,7 +86,7 @@ Index: u-boot/cpu/arm920t/start.S
  #define LOCKTIME	0x4c000000
  #define UPLLCON		0x4c000008
  
-@@ -263,6 +308,7 @@
+@@ -270,6 +315,7 @@ copyex:
  	ldr	r0, =CLKDIVN
  	mov	r1, #CLKDIVN_val
  	str	r1, [r0]
@@ -94,7 +94,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #if 1
  	/* enable uart */
-@@ -289,7 +335,8 @@
+@@ -296,7 +342,8 @@ copyex:
  	str	r1, [r0, #0x28]
  #endif
  
@@ -104,7 +104,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  #ifndef CONFIG_LL_INIT_NAND_ONLY
-@@ -297,7 +344,8 @@
+@@ -304,7 +351,8 @@ copyex:
  #endif
  
  #if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410) || \
@@ -136,7 +136,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
  #endif
  
  int timer_load_val = 0;
-@@ -187,6 +189,7 @@
+@@ -187,6 +189,7 @@ ulong get_tbclk (void)
  #elif defined(CONFIG_SBC2410X) || \
        defined(CONFIG_SMDK2410) || \
        defined(CONFIG_SMDK2440) || \
