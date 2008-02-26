@@ -72,7 +72,7 @@ static const char *pin_a(int con, int dat)
 	if (con)
 		return dat ? "F1" : "F0";
 	else
-		return dat ? " 1" : " 0";
+		return dat ? ">1" : ">0";
 }
 
 
