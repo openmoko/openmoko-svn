@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2428,6 +2428,14 @@ omap730p2_cs3boot_config :	unconfig
+@@ -2432,6 +2432,14 @@ omap730p2_cs3boot_config :	unconfig
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -94,7 +94,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,448 @@
+@@ -0,0 +1,452 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -284,7 +284,9 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +	gpio->GPJCON = 0x1551544;
 +	gpio->GPJUP = 0x1ffff;
-+	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
++	gpio->GPJDAT |= (1 << 4) | (1 << 6);
++					/* Set GPJ4 to high (nGSM_EN) */
++					/* Set GPJ6 to high (nDL_GSM) */
 +#else
 +#error Please define GTA02 version
 +#endif
@@ -472,11 +474,13 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#endif
 +		gpio->GPBDAT &= ~(1 << 5);	/* GTA02_GPIO_MODEM_RST */
 +		gpio->GPBDAT |= (1 << 7);	/* GTA02_GPIO_MODEM_ON */
++		gpio->GPJDAT &= ~(1 << 6);	/* GTA02_GPIO_nDL_GSM */
 +	} else {
 +		gpio->GPBDAT &= ~(1 << 7);	/* GTA02_GPIO_MODEM_ON */
 +#if !defined(CONFIG_ARCH_GTA02_v1)
 +		pcf50633_reg_write(PCF50633_REG_GPIO2CFG, 0x00);
 +#endif
++		gpio->GPJDAT |= (1 << 6);	/* GTA02_GPIO_nDL_GSM */
 +	}
 +}
 +

@@ -43,7 +43,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
 ===================================================================
 --- u-boot.orig/board/neo1973/common/jbt6k74.c
 +++ u-boot/board/neo1973/common/jbt6k74.c
-@@ -95,6 +95,8 @@
+@@ -95,6 +95,8 @@ static const char *jbt_state_names[] = {
  	[JBT_STATE_NORMAL]		= "normal",
  };
  
@@ -52,7 +52,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
  #define GTA01_SCLK	(1 << 7) 	/* GPG7 */
  #define GTA01_MOSI	(1 << 6)	/* GPG6 */
  #define GTA01_MISO	(1 << 5)	/* GPG5 */
-@@ -111,6 +113,20 @@
+@@ -111,6 +113,20 @@ static const char *jbt_state_names[] = {
  #define SPI_SCL(bit)    if (bit) gpio->GPGDAT |=  GTA01_SCLK; \
  			else    gpio->GPGDAT &= ~GTA01_SCLK
  
@@ -73,7 +73,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
  /* 150uS minimum clock cycle, we have two of this plus our other
   * instructions */
  #define SPI_DELAY	udelay(100)	/* 200uS */
-@@ -298,6 +314,8 @@
+@@ -298,6 +314,8 @@ static int sleep_to_normal(struct jbt_in
  	/* Sleep mode off */
  	rc |= jbt_reg_write_nodata(jbt, JBT_REG_SLEEP_OUT);
  
@@ -82,7 +82,7 @@ Index: u-boot/board/neo1973/common/jbt6k74.c
  	/* initialize register set */
  	rc |= jbt_init_regs(jbt);
  	return rc;
-@@ -392,13 +410,16 @@
+@@ -392,13 +410,16 @@ int jbt6k74_init(void)
  {
  	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
  
@@ -104,10 +104,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta02/gta02.c
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -188,6 +188,14 @@
- 	gpio->GPJCON = 0x1551544;
- 	gpio->GPJUP = 0x1ffff;
- 	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
+@@ -190,6 +190,14 @@ int board_init(void)
+ 	gpio->GPJDAT |= (1 << 4) | (1 << 6);
+ 					/* Set GPJ4 to high (nGSM_EN) */
+ 					/* Set GPJ6 to high (nDL_GSM) */
 +	gpio->GPJDAT &= ~(1 << 5);	/* Set GPJ5 to low 3D RST */
 +	gpio->GPJDAT &= ~(1 << 5);	/* Set GPJ5 to low 3D RST */
 +
@@ -119,7 +119,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  #else
  #error Please define GTA02 version
  #endif
-@@ -221,7 +229,7 @@
+@@ -223,7 +231,7 @@ int board_late_init(void)
  
  	/* issue a short pulse with the vibrator */
  	neo1973_vibrator(1);
@@ -128,7 +128,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  	neo1973_vibrator(0);
  
  #if defined(CONFIG_ARCH_GTA02_v1)
-@@ -231,10 +239,6 @@
+@@ -233,10 +241,6 @@ int board_late_init(void)
  	udelay(50*1000);
  	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0x2);
  	gpio->GPJDAT |= 0x000000001;	/* GTA02v1_GPIO_3D_RESET */
@@ -139,7 +139,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  #endif
  
  #if 0
-@@ -292,9 +296,6 @@
+@@ -294,9 +298,6 @@ continue_boot:
  	jbt6k74_display_onoff(1);
  #endif
  
@@ -153,7 +153,7 @@ Index: u-boot/common/devices.c
 ===================================================================
 --- u-boot.orig/common/devices.c
 +++ u-boot/common/devices.c
-@@ -204,7 +204,6 @@
+@@ -204,7 +204,6 @@ int devices_init (void)
  #ifdef CONFIG_NETCONSOLE
  	drv_nc_init ();
  #endif
@@ -175,7 +175,7 @@ Index: u-boot/drivers/video/smedia3362.c
  
  #define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
  
-@@ -34,134 +37,184 @@
+@@ -34,134 +37,184 @@ GraphicDevice smi;
  
  #define GLAMO_REG(x)	(*(volatile unsigned short *)(CONFIG_GLAMO_BASE + x))
  
@@ -461,7 +461,7 @@ Index: u-boot/drivers/video/smedia3362.c
  	pGD->winSizeX = pGD->plnSizeX = 480;
  	pGD->winSizeY = pGD->plnSizeY = 640;
  	pGD->gdfBytesPP = 2;
-@@ -170,16 +223,21 @@
+@@ -170,16 +223,21 @@ void *video_hw_init(void)
  	pGD->frameAdrs = CONFIG_GLAMO_BASE + 0x00800000;
  	pGD->memSize = 0x200000; /* 480x640x16bit = 614400 bytes */
  
@@ -493,7 +493,7 @@ Index: u-boot/drivers/video/smedia3362.h
 ===================================================================
 --- u-boot.orig/drivers/video/smedia3362.h
 +++ u-boot/drivers/video/smedia3362.h
-@@ -101,6 +101,42 @@
+@@ -101,6 +101,42 @@ enum glamo_register_generic {
  	GLAMO_REG_PLL_GEN7	= 0x01f0,
  };
  
@@ -536,7 +536,7 @@ Index: u-boot/drivers/video/smedia3362.h
  #define GLAMO_REG_HOSTBUS(x)	(GLAMO_REGOFS_HOSTBUS-2+(x*2))
  
  #define REG_MEM(x)		(GLAMO_REGOFS_MEMORY+(x))
-@@ -330,6 +366,7 @@
+@@ -330,6 +366,7 @@ enum glamo_reg_lcd {
  	GLAMO_REG_LCD_SRAM_DRIVING3	= REG_LCD(0x164),
  };
  
@@ -544,7 +544,7 @@ Index: u-boot/drivers/video/smedia3362.h
  enum glamo_reg_lcd_mode1 {
  	GLAMO_LCD_MODE1_PWRSAVE		= 0x0001,
  	GLAMO_LCD_MODE1_PARTIAL_PRT	= 0x0002,
-@@ -382,4 +419,41 @@
+@@ -382,4 +419,41 @@ enum glamo_reg_lcd_mode3 {
  	GLAMO_LCD_MODE3_18BITS		= 0x0040,
  };
  
@@ -590,7 +590,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta02.h
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -250,12 +250,12 @@
+@@ -251,12 +251,12 @@
  /* we have a board_late_init() function */
  #define BOARD_LATE_INIT			1
  
