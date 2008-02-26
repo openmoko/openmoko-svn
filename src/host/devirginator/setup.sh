@@ -303,6 +303,12 @@ add_file tmp/splash.gz
 # --- "devirginate" shell script ----------------------------------------------
 
 
+if [ "$PLATFORM" = gta01 ]; then
+    env_size_opt=
+else
+    env_size_opt=0x40000
+fi
+
 cat <<EOF >devirginate
 #!/bin/sh -e
 # MACHINE-GENERATED. DO NOT EDIT !
@@ -367,7 +373,7 @@ if \$stage2; then
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
       "reset halt" wait_halt resume exit
     sleep 5
-    ./envedit.pl -i tmp/env.old -o tmp/env.new \
+    ./envedit.pl $env_size_opt -i tmp/env.old -o tmp/env.new \
        -D$U_PLATFORM -D$U_PLATFORM$U_BOARD -f tmp/environment
     $DFU_UTIL $USB_ID -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
