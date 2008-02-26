@@ -73,4 +73,8 @@ extern int lgsm_voicemail_set(struct lgsm_handle *lh, const char *number);
 extern int lgsm_voicemail_get(struct lgsm_handle *lh);
 /* Get Battery Connection status and charge level */
 extern int lgsm_get_battery(struct lgsm_handle *lh);
+
+/* Enable vibrator */
+extern int lgsm_phone_vibrator(struct lgsm_handle *lh, int enable);
+
 #endif

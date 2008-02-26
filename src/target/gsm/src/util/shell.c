@@ -428,6 +428,18 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_PHONE_GET_BATTERY:
 		printf("<BCS>: %d <BCL>: %d \n", bc->bcs, bc->bcl);
 		break;		
+	case GSMD_PHONE_VIB_ENABLE:
+		if(*intresult)
+			printf("Vibrator enable failed: %i\n", *intresult);
+		else
+			printf("Vibrator enabled\n");
+		break;
+	case GSMD_PHONE_VIB_DISABLE:
+		if(*intresult)
+			printf("Vibrator disable failed: %i\n", *intresult);
+		else
+			printf("VIbrator disabled\n");
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -534,7 +546,9 @@ static void shell_help(void)
 		"\tH\tHangup call\n"
 		"\tO\tAntenna Power On\n"
 		"\to\tAntenna Power Off\n"
-		"\tM\tModem Power On\n"
+		"\tV\tVibrator Enable (CVIB=1)\n"
+		"\tv\tVibrator Disable (CVIB=0)\n"
+	       	"\tM\tModem Power On\n"
 		"\tm\tModem Power Off\n"
 		"\tr\tRegister to network\n"
 		"\tR\tRegister to given operator (R=number)\n"
@@ -666,6 +680,12 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strcmp(buf, "o")) {
 				printf("Power-Off\n");
 				lgsm_phone_power(lgsmh, 0);
+			} else if (!strcmp(buf, "V")) {
+				printf("Vibrator-Enable\n");
+				lgsm_phone_vibrator(lgsmh, 1);
+			} else if (!strcmp(buf, "v")) {
+				printf("Vibrator-Disable\n");
+				lgsm_phone_vibrator(lgsmh, 0);
 			} else if (!strcmp(buf, "r")) {
 				printf("Register\n");
 				lgsm_netreg_register(lgsmh, "\0     ");

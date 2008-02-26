@@ -679,6 +679,32 @@ static int phone_get_battery_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		cmd -> id, sizeof(gbs), &gbs);
 }
 
+static int phone_vibrator_enable_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	int ret = cmd->ret;
+
+	switch(ret) {
+	case 0:
+		gsmd_log(GSMD_DEBUG, "Vibrator enabled\n");
+		gu->gsmd->dev_state.vibrator = 1;
+		break;
+	default:
+		gsmd_log(GSMD_DEBUG, "AT+CVIB=1 operation failed\n");
+		break;
+	}
+	
+	return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_VIB_ENABLE,
+				cmd->id, sizeof(ret), &ret);
+}
+
+static int phone_vibrator_disable_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	int ret = cmd->ret;
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_PHONE, GSMD_PHONE_VIB_DISABLE,
+				cmd->id, sizeof(ret), &ret);
+}
+	
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -717,6 +743,13 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_PHONE_GET_BATTERY:
 		cmd = atcmd_fill("AT+CBC", 6+1, &phone_get_battery_cb, gu, 0, NULL);
+		break;
+	case GSMD_PHONE_VIB_ENABLE:
+		cmd = atcmd_fill("AT+CVIB=1", 9+1, &phone_vibrator_enable_cb, gu, 0, NULL);
+		break;
+	case GSMD_PHONE_VIB_DISABLE:
+		cmd = atcmd_fill("AT+CVIB=0", 9+1, &phone_vibrator_disable_cb, gu, 0, NULL);
+		gu->gsmd->dev_state.vibrator = 0;
 		break;
 	default:
 		return -EINVAL;

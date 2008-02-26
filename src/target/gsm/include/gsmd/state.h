@@ -13,6 +13,7 @@ struct gsmd_device_state {
 		unsigned int network_state_gsm;
 		unsigned int network_state_gprs;
 	} ciph_ind;
+	unsigned int vibrator;
 	unsigned int on;
 	unsigned int registered;
         unsigned int ringing;
