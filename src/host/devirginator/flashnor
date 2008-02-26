@@ -1,0 +1,55 @@
+#!/bin/sh -e
+#
+# flashnor - Flash a file into NOR (M58WR016KB)
+#
+# Copyright (C) 2008 by OpenMoko, Inc.
+# Written by Werner Almesberger <werner@openmoko.org>
+# All Rights Reserved
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+
+
+DEV=/dev/mtd0
+
+
+usage()
+{
+    echo "usage: $0 nor.bin" 1>&2
+    exit 1
+}
+
+
+check()
+{
+    nor=`dd if=$DEV bs=$size count=1 | md5sum`
+    [ "$nor" = "$ref" ]
+}
+
+
+empty()
+{
+    ff=`dd if=/dev/zero bs=$size count=1 | tr '\000' '\377' | md5sum`
+    [ "$ff" = "$nor" ]
+}
+
+
+[ -z "$1" -o ! -z "$2" ] && usage
+
+size=`ls -l "$1" | awk '{ print $5 }'`
+if [ $size -lt 65536 ]; then
+    blocks=`expr \( $size + 8191 \) / 8192`
+else
+    blocks=`expr \( $size - 65536 + 65535 \) / 65536 + 8`
+fi
+
+ref=`md5sum <"$1"`
+check && exit
+flash_unlock $DEV
+empty || flash_erase $DEV 0 $blocks
+cat "$1" >$DEV
+flash_lock /dev/mtd0 0 -1
+check
