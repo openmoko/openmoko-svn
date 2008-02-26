@@ -537,7 +537,7 @@ struct gsmd_sms {
 	int is_voicemail;
 	struct gsmd_sms_datacodingscheme dcs;
 	enum gsmd_sms_tp_mti tp_mti;
-	char data[GSMD_SMS_DATA_MAXLEN+1];	
+	u_int8_t data[GSMD_SMS_DATA_MAXLEN+1];	
 } __attribute__ ((packed));
 
 /* Refer to GSM 03.40 subclause 9.2.2.2 */
