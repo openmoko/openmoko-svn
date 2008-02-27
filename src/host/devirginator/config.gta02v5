@@ -1,0 +1,20 @@
+#
+# config.gta02v5 - Devirginator configuration file
+#
+# This is a shell script sourced by "setup.sh".
+#
+
+OPENOCD_HOST=localhost
+PLATFORM=gta02
+BOARD=v5
+
+stuff=http://buildhost.openmoko.org/daily/neo1973/deploy/glibc/images/neo1973/
+
+LOWLEVEL=$stuff/lowlevel-foo-$PLATFORM$BOARD-latest.bin
+UBOOT=$stuff/uboot-$PLATFORM$BOARD-latest.bin
+UIMAGE=$stuff/uImage-neo1973-latest.bin
+ROOTFS=$stuff/openmoko-devel-image-fic-$PLATFORM.jffs2
+
+DFU_UTIL=$stuff/dfu-util
+#OPENOCD=$stuff/openocd
+OPENOCD_CFG=http://people.openmoko.org/werner/openocd.cfg
