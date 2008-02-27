@@ -46,6 +46,7 @@ s3c2442b-cpuid.patch
 
 # gta02 feature set
 pcf50633.patch
+pcf50633-suspend-hacks.patch
 smedia-glamo.patch
 glamo-mmc.patch
 gta02-core.patch
