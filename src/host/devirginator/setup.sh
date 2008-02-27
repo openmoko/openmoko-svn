@@ -22,8 +22,9 @@
 #
 
 
-# USB ID of DFU target (Neo)
-USB_ID=-d1457:5119
+# USB ID of DFU target
+USB_ID_GTA01=-d1457:5119
+USB_ID_GTA02=-d1d50:5119
 
 mkdir -p tmp
 
@@ -305,8 +306,10 @@ add_file tmp/splash.gz
 
 if [ "$PLATFORM" = gta01 ]; then
     env_size_opt=
+    usb_id=$USB_ID_GTA01
 else
-    env_size_opt=0x40000
+    env_size_opt="-s 0x40000"
+    usb_id=$USB_ID_GTA02
 fi
 
 cat <<EOF >devirginate
@@ -365,17 +368,17 @@ fi
 if \$stage2; then
     echo === STAGE 2: DFU upload
     sleep 5
-    $DFU_UTIL $USB_ID -a kernel -D $UIMAGE
-    $DFU_UTIL $USB_ID -a rootfs -D $ROOTFS
-    $DFU_UTIL $USB_ID -a splash -D tmp/splash.gz
+    $DFU_UTIL $usb_id -a kernel -D $UIMAGE
+    $DFU_UTIL $usb_id -a rootfs -D $ROOTFS
+    $DFU_UTIL $usb_id -a splash -D tmp/splash.gz
     rm -f tmp/env.old tmp/env.new
-    $DFU_UTIL $USB_ID -a u-boot_env -U tmp/env.old
+    $DFU_UTIL $usb_id -a u-boot_env -U tmp/env.old
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
       "reset halt" wait_halt resume exit
     sleep 5
     ./envedit.pl $env_size_opt -i tmp/env.old -o tmp/env.new \
-       -D$U_PLATFORM -D$U_PLATFORM$U_BOARD -f tmp/environment
-    $DFU_UTIL $USB_ID -a u-boot_env -D tmp/env.new
+       -D $U_PLATFORM -D $U_PLATFORM$U_BOARD -f tmp/environment
+    $DFU_UTIL $usb_id -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
 fi
 
@@ -420,7 +423,7 @@ To set up a device,
 - connect it to power and JTAG
 - switch it on
 - run ./devirginate
-- follow the progress, as described in README
+- follow the process, as described in README
 
 -------------------------------------------------------------------------------
 EOF
