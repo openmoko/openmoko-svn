@@ -1,0 +1,62 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "macro within macro" <<EOF
+EOF
+
+edit -D bar=blah -p <<EOF
+#define foo bar
+a=foo
+EOF
+
+expect <<EOF
+a=blah
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "macro within macro within macro" <<EOF
+EOF
+
+edit -p <<EOF
+#define a b
+#define c d
+#define b c
+a=foo
+EOF
+
+expect <<EOF
+d=foo
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "self-recursive macro" <<EOF
+EOF
+
+edit -p <<EOF
+#define foo foo
+a=foo
+EOF
+
+expect <<EOF
+a=foo
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "two-macro recursion" <<EOF
+EOF
+
+edit -p <<EOF
+#define foo bar
+#define bar blah
+#define blah bar
+a=foo
+EOF
+
+expect <<EOF
+a=bar
+EOF

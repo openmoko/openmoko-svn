@@ -58,59 +58,7 @@ pngtopnm tmp/System_boot.png |
   ../splash/splashimg.pl -pnm - |
   gzip -9 >_splash
 
-./envedit.pl -f - -o _env <<EOF
-mtdids=nor0=physmap-flash,nand0=neo1973-nand
-
-stdin=usbtty
-stdout=usbtty
-stderr=usbtty
-
-bootdelay=5
-
-usbtty=cdc_acm
-
-boot_menu_timeout=72000
-
-bootargs_base=
-  rootfstype=jffs2
-  root=/dev/mtdblock6
-  console=ttySAC2,115200
-  console=tty0
-  loglevel=8
-  regular_boot
-
-bootcmd=
-  setenv bootargs \${bootargs_base} \${mtdparts};
-  nand read.e 0x32000000 kernel 0x200000;
-  bootm 0x32000000
-
-menu_1=
-  Copy u-boot from NOR to NAND:
-  cp.l 0x18000000 0x32000000 0x10000;
-  mw.l 0x32000040 0 2;
-  nand write.e 0x32000000 0 0x40000;
-  dynenv set u-boot_env
-
-menu_2=
-  Set console to USB:
-  setenv stdin usbtty;
-  setenv stdout usbtty;
-  setenv stderr usbtty
-
-menu_3=
-  Set console to serial:
-  setenv stdin serial;
-  setenv stdout serial;
-  setenv stderr serial
-
-menu_4=
-  Reset:
-  reset
-
-menu_5=
-  Power off:
-  neo1973 power-off
-EOF
+./envedit.pl -D GTA02 -D NOR -f environment.in -o _env
 
 ./blink.pl \
   /home/moko/2624/u-boot/u-boot.udfu@0 \

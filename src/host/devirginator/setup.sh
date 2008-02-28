@@ -26,6 +26,8 @@
 USB_ID_GTA01=-d1457:5119
 USB_ID_GTA02=-d1d50:5119
 
+DEFAULT_CONFIG=config
+
 mkdir -p tmp
 
 
@@ -34,15 +36,25 @@ mkdir -p tmp
 
 download()
 {
+    base="`basename \"$2\"`"
+
+    # if it is a local file, just use it
     if [ -r "$2" ]; then
 	if $tarball; then
-	    base="`basename \"$2\"`"
 	    cp "$2" "tmp/$base"
 	    eval $1=\"tmp/$base\"
 	    add_file "tmp/$base"
 	fi
 	return
     fi
+
+    # don't look for updates if we can use cached files
+    if [ -r "tmp/$base" ] && $local; then
+	eval $1=\"tmp/$base\"
+	add_file "tmp/$base"
+	return
+    fi
+
     index=tmp/index-${SNAPSHOT}.html
     rm -f $index
     wget -O $index "`dirname \"$2\"`/"
@@ -108,13 +120,20 @@ SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
 
 usage()
 {
-    echo "usage: $0 [-c config_file] [-t] [variable=value ...]" 1>&2
+cat <<EOF 1>&2
+usage: $0 [-c config_file] [-l] [-t] [variable=value ...]
+
+  -c config_file  use the specified file (default: $DEFAULT_CONFIG)
+  -l              use locally cached files (in tmp/), if present
+  -t              make a tarball of all the downloaded and generated files
+EOF
     exit 1
 }
 
 
 tarball=false
-config=config
+local=false
+config=$DEFAULT_CONFIG
 
 while [ ! -z "$*" ]; do
     case "$1" in
@@ -122,6 +141,7 @@ while [ ! -z "$*" ]; do
 		[ ! -z "$1" ] || usage
 		config=$1;;
 	-t)	tarball=true;;
+	-l)	local=true;;
 	*=*)	eval "$1";;
 	*)	usage;;
     esac

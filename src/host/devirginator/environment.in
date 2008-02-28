@@ -12,14 +12,29 @@
 #define CONSOLE ttySAC2
 #define ROOTDEV /dev/mtdblock6
 #define FRAMEBUFFER 0x8800000
+#define MMC_NUM 1
 
 #else # GTA01
 
 #define CONSOLE ttySAC0
 #define ROOTDEV /dev/mtdblock4
 #define FRAMEBUFFER 0x33d00000
+#define MMC_NUM 0
 
 #endif
+
+#ifdef INIT
+#define INIT_OPT init=INIT
+#else
+#define INIT_OPT
+#endif
+
+#ifndef SD_KERNEL
+#define SD_KERNEL uImage
+#endif
+
+
+##### Common settings #########################################################
 
 
 bootargs_base=
@@ -28,12 +43,30 @@ bootargs_base=
   console=CONSOLE,115200
   console=tty0
   loglevel=8
+  INIT_OPT
   regular_boot
 
 bootcmd=
   setenv bootargs ${bootargs_base} ${mtdparts};
   nand read.e 0x32000000 kernel 0x200000;
   bootm 0x32000000
+
+stdout=usbtty
+stderr=usbtty
+stdin=usbtty
+
+sd_image_name=SD_KERNEL
+
+
+##### Appearance and mode of interaction ######################################
+
+
+#ifdef NOR
+
+bootdelay=5
+boot_menu_timeout=60
+
+#else
 
 bootdelay=1
 
@@ -43,39 +76,67 @@ splashimage=
   nand read.e 0x32000000 splash 0x5000;
   unzip 0x32000000 FRAMEBUFFER 0x96000
 
-stdout=usbtty
-stderr=usbtty
-stdin=usbtty
+#endif
 
-sd_image_name=uImage
+
+##### Menu items ##############################################################
+
 
 menu_1=
-  Boot from microSD:
+  Boot from microSD (FAT+ext2):
+  setenv bootargs
+    ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p2 rootdelay=5
+    ${mtdparts} ro;
+  mmcinit;
+  fatload mmc MMC_NUM 0x32000000 ${sd_image_name};
+  bootm 0x32000000
+
+menu_2=
+  Boot from microSD (ext2):
   setenv bootargs
     ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p1 rootdelay=5
     ${mtdparts} ro;
   mmcinit;
-  ext2load mmc 0 0x32000000 /boot/${sd_image_name};
+  ext2load mmc MMC_NUM 0x32000000 /boot/${sd_image_name};
   bootm 0x32000000
 
-menu_2=
+#ifdef NOR
+
+menu_3=
+  Copy u-boot from NOR to NAND:
+  cp.l 0x18000000 0x32000000 0x10000;
+  mw.l 0x32000040 0 2;
+  nand write.e 0x32000000 0 0x40000;
+  dynenv set u-boot_env
+
+#endif
+
+menu_4=
   Set console to USB:
   setenv stdin usbtty;
   setenv stdout usbtty;
   setenv stderr usbtty
 
-menu_3=
+menu_5=
   Set console to serial:
   setenv stdin serial;
   setenv stdout serial;
   setenv stderr serial
 
-menu_4=
-  Power off:
-  neo1973 power-off
+menu_6=
+  Reset:
+  reset
 
-menu_5=
+#ifdef UNUSED
+
+menu_7=
   Factory reset:
   defaultenv;
   dynpart;
   bootd
+
+#endif
+
+menu_8=
+  Power off:
+  neo1973 power-off

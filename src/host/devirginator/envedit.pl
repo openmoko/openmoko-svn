@@ -33,6 +33,7 @@
 #
 # Macro expansion:
 #
+# #define MACRO
 # #define MACRO TEXT ...
 # MACRO
 # MACRO##TOKEN
@@ -151,6 +152,35 @@ sub set_err
 }
 
 
+sub expand
+{
+    local ($s, @key) = @_;
+    local ($tmp, $pre, $exp, $post);
+    local ($i, @tmp);
+
+    $tmp = "";
+    while (length $s) {
+	$pre = $s;
+	$exp = "";
+	$post = "";
+	for ($i = 0; $i <= $#key; $i++) {
+	    @tmp = @key;
+	    splice(@tmp, $i, 1);
+	    if ($s =~ /(##)?\b$key[$i]\b(##)?/) {
+		if (length $` < length $pre) {
+		    $pre = $`;
+		    $post = $';
+		    $exp = &expand($def{$key[$i]}, @tmp);
+		}
+	    }
+	}
+	$tmp .= $pre.$exp;
+	$s = $post;
+    }
+    return $tmp;
+}
+
+
 if ($0 =~ m#/[^/]*$#) {
     push(@INC, $`);
 }
@@ -254,24 +284,7 @@ while (@ARGV) {
 		$def{$1} = $3;
 	    }
 
-	    $tmp = "";
-	    while (length $_) {
-		$pre = $_;
-		$exp = "";
-		$post = "";
-		for $def (keys %def) {
-		    if (/(##)?\b$def\b(##)?/) {
-			if (length $` < length $pre) {
-			    $pre = $`;
-			    $exp = $def{$def};
-			    $post = $';
-			}
-		    }
-		}
-		$tmp .= $pre.$exp;
-		$_ = $post;
-	    }
-	    $_ = $tmp;
+	    $_ = &expand($_, keys %def);
 
 	    s/#.*//;
 	    s/\s*$//;
