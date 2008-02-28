@@ -5,8 +5,9 @@ neo1973-soc-include-fix.patch
 asoc-neo1973_wm8753-power.patch
 asoc-core-suspend_resume.patch
 
-# this looks like a bug in upstream
+# these looks like bugs in upstream
 fix-i2c-s3c2410-resume-race.patch
+resume-timers-wq.patch
 
 # GTA01 core feature set
 s3c2410-bbt.patch
