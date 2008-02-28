@@ -61,7 +61,7 @@ sd_image_name=SD_KERNEL
 ##### Appearance and mode of interaction ######################################
 
 
-#ifdef NOR
+#ifdef NOR_ENV
 
 bootdelay=5
 boot_menu_timeout=60
@@ -100,7 +100,7 @@ menu_2=
   ext2load mmc MMC_NUM 0x32000000 /boot/${sd_image_name};
   bootm 0x32000000
 
-#ifdef NOR
+#ifdef NOR_ENV
 
 menu_3=
   Copy u-boot from NOR to NAND:

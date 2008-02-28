@@ -95,7 +95,8 @@ add_file()
 
 cppify()
 {
-    sed '/^#[a-z]/{n;};s/#.*$//' | cpp -D$U_PLATFORM -D$U_PLATFORM$U_BOARD
+    sed '/^#[a-z]/{n;};s/#.*$//' | 
+      cpp -D$U_PLATFORM -D$U_PLATFORM$U_BOARD $defines
 }
 
 
@@ -121,11 +122,12 @@ SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
 usage()
 {
 cat <<EOF 1>&2
-usage: $0 [-c config_file] [-l] [-t] [variable=value ...]
+usage: $0 [-c config_file] [-l] [-t] [-Dvar[=value]] [variable=value ...]
 
   -c config_file  use the specified file (default: $DEFAULT_CONFIG)
   -l              use locally cached files (in tmp/), if present
   -t              make a tarball of all the downloaded and generated files
+  -D var[=value]  pass a cpp-style -D option to cpp and envedit.pl
 EOF
     exit 1
 }
@@ -134,6 +136,7 @@ EOF
 tarball=false
 local=false
 config=$DEFAULT_CONFIG
+defines=
 
 while [ ! -z "$*" ]; do
     case "$1" in
@@ -142,6 +145,10 @@ while [ ! -z "$*" ]; do
 		config=$1;;
 	-t)	tarball=true;;
 	-l)	local=true;;
+	-D)	shift
+		[ ! -z "$1" ] || usage
+		defines="$defines -D $1"
+		;;
 	*=*)	eval "$1";;
 	*)	usage;;
     esac
@@ -397,7 +404,7 @@ if \$stage2; then
       "reset halt" wait_halt resume exit
     sleep 5
     ./envedit.pl $env_size_opt -i tmp/env.old -o tmp/env.new \
-       -D $U_PLATFORM -D $U_PLATFORM$U_BOARD -f tmp/environment
+       -D $U_PLATFORM -D $U_PLATFORM$U_BOARD $defines -f tmp/environment
     $DFU_UTIL $usb_id -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
 fi

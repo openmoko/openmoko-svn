@@ -58,7 +58,7 @@ pngtopnm tmp/System_boot.png |
   ../splash/splashimg.pl -pnm - |
   gzip -9 >_splash
 
-./envedit.pl -D GTA02 -D NOR -f environment.in -o _env
+./envedit.pl -D GTA02 -D NOR_ENV -f environment.in -o _env
 
 ./blink.pl \
   /home/moko/2624/u-boot/u-boot.udfu@0 \
