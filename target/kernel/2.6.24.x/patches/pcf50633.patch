@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1958 @@
+@@ -0,0 +1,1963 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -494,8 +494,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +/* go into 'STANDBY' mode, i.e. power off the main CPU and peripherals */
 +void pcf50633_go_standby(void)
 +{
-+	reg_write(pcf50633_global, PCF50633_REG_OOCSHDWN,
-+		  PCF50633_OOCSHDWN_GOSTDBY);
++	reg_set_bit_mask(pcf50633_global, PCF50633_REG_OOCSHDWN,
++		  PCF50633_OOCSHDWN_GOSTDBY, PCF50633_OOCSHDWN_GOSTDBY);
 +}
 +EXPORT_SYMBOL_GPL(pcf50633_go_standby);
 +
@@ -707,11 +707,16 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +				reg_read(pcf, PCF50633_REG_OOCSTAT));
 +			pcf->onkey_seconds++;
 +			if (pcf->onkey_seconds >=
-+			    pcf->pdata->onkey_seconds_required) {
++			    pcf->pdata->onkey_seconds_sig_init) {
 +				/* Ask init to do 'ctrlaltdel' */
 +				DEBUGPC("SIGINT(init) ");
 +				kill_proc(1, SIGINT, 1);
 +				/* FIXME: what if userspace doesn't shut down? */
++			}
++			if (pcf->onkey_seconds >=
++				pcf->pdata->onkey_seconds_shutdown) {
++				DEBUGPC("Power Off ");
++				pcf50633_go_standby();
 +			}
 +		}
 +	}
@@ -1997,7 +2002,7 @@ Index: linux-2.6.24/include/linux/pcf50633.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/include/linux/pcf50633.h
-@@ -0,0 +1,113 @@
+@@ -0,0 +1,114 @@
 +#ifndef _LINUX_PCF50633_H
 +#define _LINUX_PCF50633_H
 +
@@ -2093,7 +2098,8 @@ Index: linux-2.6.24/include/linux/pcf50633.h
 +struct pcf50633_platform_data {
 +	/* general */
 +	unsigned int used_features;
-+	unsigned int onkey_seconds_required;
++	unsigned int onkey_seconds_sig_init;
++	unsigned int onkey_seconds_shutdown;
 +
 +	/* voltage regulator related */
 +	struct pmu_voltage_rail rails[__NUM_PCF50633_REGULATORS];
