@@ -8,15 +8,6 @@
 #
 
 #
-# WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING
-#
-# This isn't the final version of NOR image creation yet, and some things may
-# not work as expected.
-#
-# WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING * WARNING
-#
-
-#
 # Write to NOR with the following commands:
 #
 # flash_unlock /dev/mtd0
@@ -26,6 +17,13 @@
 # To save time, the NOR can also be erased with
 # flash_erase /dev/mtd0 0 13
 # (or similar, depending on the image size)
+#
+# Or just use the "flashnor" script:
+#
+# norwp rw
+# ifconfig usb0 192.168.0.200 up
+# scp tmp/nor.bin flashnor 192.168.0.202:
+# ssh 192.168.0.202 ./flashnor nor.bin
 #
 
 #
@@ -43,7 +41,22 @@
 # 0x18 1F FFFF	end of NOR (2MB)
 #
 
-#unzip 0x18070000 0x8800000 0x96000
+
+usage()
+{
+    echo "usage: $0 [-o outfile ] u-boot" 1>&2
+    exit 1
+}
+
+
+out=nor.bin
+if [ "$1" = -o ]; then
+    [ ! -z "$2" ] || usage
+    out="$2"
+    shift 2
+fi
+[ ! -z "$1" -a -z "$2" ] || usage
+uboot="$1"
 
 ./scriptify.pl <<EOF >_script
 neo backlight off
@@ -61,13 +74,13 @@ pngtopnm tmp/System_boot.png |
 ./envedit.pl -D GTA02 -D NOR_ENV -f environment.in -o _env
 
 ./blink.pl \
-  /home/moko/2624/u-boot/u-boot.udfu@0 \
+  "$1"@0 \
   _splash@0x40000 \
   '"autoscr 0x18050100"'@0x50000 \
   _script@0x050100 \
   _env@0x51000 \
   0x18050000@=0x40 \
   0x18051004@0x44 \
-  >nor.bin || { rm -rf nor.bin; exit 1; }
+  >$out || { rm -rf $out; exit 1; }
 
 rm -f _splash _script _env

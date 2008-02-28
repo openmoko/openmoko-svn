@@ -328,6 +328,15 @@ add_file tmp/environment
 add_file tmp/splash.gz
 
 
+# --- Stage 3: the NOR --------------------------------------------------------
+
+
+if [ "$PLATFORM" != gta01 ]; then
+    ./mknor -o tmp/nor.bin "$UBOOT"
+    add_file tmp/nor.bin
+fi
+
+
 # --- "devirginate" shell script ----------------------------------------------
 
 
