@@ -39,7 +39,7 @@ Index: linux-2.6.24/drivers/input/keyboard/neo1973kbd.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/input/keyboard/neo1973kbd.c
-@@ -0,0 +1,243 @@
+@@ -0,0 +1,242 @@
 +/*
 + * Keyboard driver for FIC Neo1973 GSM phone
 + *
@@ -215,7 +215,6 @@ Index: linux-2.6.24/drivers/input/keyboard/neo1973kbd.c
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_hold);
 +		goto out_hold;
 +	}
-+	enable_irq_wake(irq_hold);
 +
 +	if (request_irq(irq_jack, neo1973kbd_headphone_irq, IRQF_DISABLED |
 +			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
