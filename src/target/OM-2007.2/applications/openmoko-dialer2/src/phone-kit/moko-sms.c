@@ -298,10 +298,21 @@ on_incoming_sms (MokoListener *listener, struct lgsm_handle *handle,
     message = g_strdup (sms->payload.data);
     break;
   case ALPHABET_UCS2 :
-    g_debug ("Decoding UCS-2 message");
-    message = g_utf16_to_utf8 ((const gunichar2 *)sms->payload.data,
-                               sms->payload.length, NULL, NULL, NULL);
-    break;
+    {
+      gint i;
+      gunichar2 *ucs2 = sms->payload.data;
+
+      g_debug ("Decoding UCS-2 message");
+
+      for (i = 0; i < sms->payload.length / 2; i++) {
+        ucs2[i] = GUINT16_FROM_BE(ucs2[i]);
+
+        message = g_utf16_to_utf8 ((const gunichar2 *)sms->payload.data,
+                                   sms->payload.length, NULL, NULL, NULL);
+      }
+
+      break;
+    }
   }
   
   /* Store message in the journal */

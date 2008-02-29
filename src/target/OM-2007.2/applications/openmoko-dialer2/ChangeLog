@@ -1,3 +1,8 @@
+2008-02-29  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-sms.c: (on_incoming_sms):
+	Decode UCS-2 messages correctly (thanks Erin Yueh)
+
 2008-02-01  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-network.c: (io_func):
