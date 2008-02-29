@@ -52,12 +52,14 @@ Index: linux-2.6.24/drivers/i2c/busses/i2c-s3c2410.c
  		goto out_ack;
  
  	case STATE_START:
-@@ -502,6 +512,12 @@ static int s3c24xx_i2c_doxfer(struct s3c
+@@ -502,6 +512,14 @@ static int s3c24xx_i2c_doxfer(struct s3c
  	unsigned long timeout;
  	int ret;
  
 +	if (i2c->suspended) {
-+		dev_err(i2c->dev, "Hey I am still asleep, retry later\n");
++		dev_err(i2c->dev,
++		    "Hey I am still asleep (suspended: %d), retry later\n",
++		    i2c->suspended);
 +		ret = -EAGAIN;
 +		goto out;
 +	}
@@ -65,7 +67,7 @@ Index: linux-2.6.24/drivers/i2c/busses/i2c-s3c2410.c
  	ret = s3c24xx_i2c_set_master(i2c);
  	if (ret != 0) {
  		dev_err(i2c->dev, "cannot get bus (error %d)\n", ret);
-@@ -886,6 +902,17 @@ static int s3c24xx_i2c_remove(struct pla
+@@ -886,6 +904,17 @@ static int s3c24xx_i2c_remove(struct pla
  }
  
  #ifdef CONFIG_PM
@@ -83,7 +85,7 @@ Index: linux-2.6.24/drivers/i2c/busses/i2c-s3c2410.c
  static int s3c24xx_i2c_resume(struct platform_device *dev)
  {
  	struct s3c24xx_i2c *i2c = platform_get_drvdata(dev);
-@@ -893,6 +920,8 @@ static int s3c24xx_i2c_resume(struct pla
+@@ -893,6 +922,8 @@ static int s3c24xx_i2c_resume(struct pla
  	if (i2c != NULL)
  		s3c24xx_i2c_init(i2c);
  
@@ -92,7 +94,15 @@ Index: linux-2.6.24/drivers/i2c/busses/i2c-s3c2410.c
  	return 0;
  }
  
-@@ -915,6 +944,7 @@ static struct platform_driver s3c2410_i2
+@@ -905,6 +936,7 @@ static int s3c24xx_i2c_resume(struct pla
+ static struct platform_driver s3c2410_i2c_driver = {
+ 	.probe		= s3c24xx_i2c_probe,
+ 	.remove		= s3c24xx_i2c_remove,
++	.suspend	= s3c24xx_i2c_suspend,
+ 	.resume		= s3c24xx_i2c_resume,
+ 	.driver		= {
+ 		.owner	= THIS_MODULE,
+@@ -915,6 +947,7 @@ static struct platform_driver s3c2410_i2
  static struct platform_driver s3c2440_i2c_driver = {
  	.probe		= s3c24xx_i2c_probe,
  	.remove		= s3c24xx_i2c_remove,
