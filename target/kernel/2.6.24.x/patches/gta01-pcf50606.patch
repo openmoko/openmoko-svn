@@ -8,7 +8,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1939 @@
+@@ -0,0 +1,1945 @@
 +/* Philips/NXP PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1721,6 +1721,12 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50606.c
 +			break;
 +		}
 +		platform_device_register(&gta01_pm_gps_dev);
++		/* a link for gllin compatibility */
++		err = sysfs_create_link(&platform_bus_type.devices.kobj,
++		    &gta01_pm_gps_dev.dev.kobj, "gta01-pm-gps.0");
++		if (err)
++			printk(KERN_ERR
++			    "sysfs_create_link (gta01-pm-gps.0): %d\n", err);
 +	}
 +#endif
 +
@@ -2259,7 +2265,7 @@ Index: linux-2.6.24/drivers/i2c/chips/Kconfig
 ===================================================================
 --- linux-2.6.24.orig/drivers/i2c/chips/Kconfig
 +++ linux-2.6.24/drivers/i2c/chips/Kconfig
-@@ -51,6 +51,17 @@
+@@ -51,6 +51,17 @@ config SENSORS_EEPROM
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
  
@@ -2281,7 +2287,7 @@ Index: linux-2.6.24/drivers/i2c/chips/Makefile
 ===================================================================
 --- linux-2.6.24.orig/drivers/i2c/chips/Makefile
 +++ linux-2.6.24/drivers/i2c/chips/Makefile
-@@ -9,6 +9,7 @@
+@@ -9,6 +9,7 @@ obj-$(CONFIG_SENSORS_EEPROM)	+= eeprom.o
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
