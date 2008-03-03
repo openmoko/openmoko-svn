@@ -74,6 +74,7 @@ gta02-splash.patch
 gta02-bootmenu.patch
 gta02-nor.patch
 nor-bootmenu.patch
+nor-irqvec.patch
 glamo-mmc.patch
 glamo-regs.patch
 
