@@ -300,17 +300,16 @@ on_incoming_sms (MokoListener *listener, struct lgsm_handle *handle,
   case ALPHABET_UCS2 :
     {
       gint i;
-      gunichar2 *ucs2 = sms->payload.data;
+      gunichar2 *ucs2 = (gunichar2 *)sms->payload.data;
 
       g_debug ("Decoding UCS-2 message");
 
-      for (i = 0; i < sms->payload.length / 2; i++) {
+      for (i = 0; i < sms->payload.length / 2; i++)
         ucs2[i] = GUINT16_FROM_BE(ucs2[i]);
 
-        message = g_utf16_to_utf8 ((const gunichar2 *)sms->payload.data,
-                                   sms->payload.length, NULL, NULL, NULL);
-      }
-
+      message = g_utf16_to_utf8 (ucs2,
+                                 sms->payload.length, NULL, NULL, NULL);
+      
       break;
     }
   }

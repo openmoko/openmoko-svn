@@ -1,3 +1,9 @@
+2008-03-03  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-sms.c: (on_incoming_sms):
+	Move g_utf16_to_utf8 outside of the for loop - error inserted by
+	myself while integrating previous patch
+
 2008-02-29  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-sms.c: (on_incoming_sms):
