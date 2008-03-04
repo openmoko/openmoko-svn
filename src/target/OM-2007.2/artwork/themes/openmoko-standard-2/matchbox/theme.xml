@@ -33,7 +33,7 @@
    type="plain" color="black" />
 
   <layer x="0" y="47" w="100%" h="3"
-   type = "plain" color="lightmid" />
+   type="plain" color="lightmid" />
 
   <layer x="5" y="10" w="33%" h="37" 
    type="label" color="white" justify="left" font="titlefont" />
