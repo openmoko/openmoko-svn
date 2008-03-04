@@ -288,13 +288,13 @@ on_incoming_sms (MokoListener *listener, struct lgsm_handle *handle,
   message = NULL;
   switch (sms->payload.coding_scheme) {
   case ALPHABET_DEFAULT :
-    g_debug ("Decoding 7-bit ASCII message");
+    g_debug ("Decoding 7-bit ASCII message:");
     message = g_malloc0 (GSMD_SMS_DATA_MAXLEN);
     unpacking_7bit_character (&sms->payload, message);
     break;
   case ALPHABET_8BIT :
     /* TODO: Verify: Is this encoding just UTF-8? (it is on my Samsung phone) */
-    g_debug ("Decoding UTF-8 message");
+    g_debug ("Decoding UTF-8 message:");
     message = g_strdup (sms->payload.data);
     break;
   case ALPHABET_UCS2 :
@@ -302,7 +302,7 @@ on_incoming_sms (MokoListener *listener, struct lgsm_handle *handle,
       gint i;
       gunichar2 *ucs2 = (gunichar2 *)sms->payload.data;
 
-      g_debug ("Decoding UCS-2 message");
+      g_debug ("Decoding UCS-2 message:");
 
       for (i = 0; i < sms->payload.length / 2; i++)
         ucs2[i] = GUINT16_FROM_BE(ucs2[i]);
