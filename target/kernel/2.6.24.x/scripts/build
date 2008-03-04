@@ -25,6 +25,11 @@
 # u-boot has been built. By default, we use ./u-boot
 # UBOOT_DIR=/wherever/u-boot
 #
+# PLATFORM specifies the name of the platform we build the kernel for, e.g.,
+# one of
+# PLATFORM=gta01
+# PLATFORM=gta02
+#
 # SVN_REV, if defined, specifies which SVN revision we use, e.g.,
 # SVN_REV=4014
 #
@@ -42,7 +47,7 @@ base=$SVN/branches/src/target/kernel/2.6.24.x
 
 ln -sf $base/patches
 
-defconfig=$base/config/defconfig-$KERNEL
+defconfig=$base/config/defconfig-$PLATFORM
 [ -z "$SVN_REV" ] ||
   ( cd patches && svn update -r$SVN_REV . $defconfig; )
 

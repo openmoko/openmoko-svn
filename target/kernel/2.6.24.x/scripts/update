@@ -7,7 +7,7 @@
 # See ../../../../../../trunk/src/target/u-boot/scripts/README
 # for the toolchain and ./build for environment variables.
 #
-# We use SVN, KERNEL, and SVN_REV.
+# We use SVN, KERNEL, PLATFORM, and SVN_REV.
 #
 
 cd linux-$KERNEL
@@ -21,7 +21,7 @@ quilt pop -a
 
 base=$SVN/branches/src/target/kernel/2.6.24.x
 
-defconfig=$base/config/defconfig-$KERNEL
+defconfig=$base/config/defconfig-$PLATFORM
 ( cd patches && svn update -r${SVN_REV:-HEAD} . $defconfig; )
 
 quilt push -a
