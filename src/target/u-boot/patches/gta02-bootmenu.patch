@@ -2,35 +2,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta02/gta02.c
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -241,10 +241,10 @@
- 	gpio->GPJDAT |= 0x000000001;	/* GTA02v1_GPIO_3D_RESET */
- #endif
- 
--#if 0
- 	/* if there's no other reason, must be regular reset */
- 	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
- 
-+#if 0
- 	if (!booted_from_nand)
- 		goto woken_by_reset;
- 
-@@ -274,6 +274,7 @@
- 	}
- 
- woken_by_reset:
-+#endif
- 
- 	while (neo1973_wakeup_cause == NEO1973_WAKEUP_RESET ||
- 	    neo1973_on_key_pressed()) {
-@@ -294,7 +295,6 @@
- 	jbt6k74_init();
- 	jbt6k74_enter_state(JBT_STATE_NORMAL);
- 	jbt6k74_display_onoff(1);
--#endif
- 
- #if 0
- 	{
-@@ -303,12 +303,12 @@
+@@ -306,12 +306,12 @@ continue_boot:
  		if (!(gpio->GPFDAT & (1 << 5)))
  			gpio->GPBDAT &= ~(1 << 2);
  	}
@@ -45,7 +17,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  
  	return 0;
  }
-@@ -403,13 +403,11 @@
+@@ -408,13 +408,11 @@ int neo1973_on_key_pressed(void)
  						& PCF50633_OOCSTAT_ONKEY);
  }
  
