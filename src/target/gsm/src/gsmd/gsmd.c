@@ -193,7 +193,6 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 	atcmd_submit(gsmd, atcmd_fill("AT+CIMI", 7+1,
 					&gsmd_get_imsi_cb, gsmd, 0, NULL));
 
-	rc |= gsmd_simplecmd(gsmd, "AT+CSCS=\"UCS2\"");
 
 	sms_cb_init(gsmd);
 
