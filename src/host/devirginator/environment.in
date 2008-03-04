@@ -85,20 +85,24 @@ splashimage=
 menu_1=
   Boot from microSD (FAT+ext2):
   setenv bootargs
-    ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p2 rootdelay=5
+    ${bootargs_base} rootfstype=ext2 root=/dev/mmcblk0p2 rootdelay=5
     ${mtdparts} ro;
   mmcinit;
   fatload mmc MMC_NUM 0x32000000 ${sd_image_name};
   bootm 0x32000000
 
+#ifdef ext2_not_broken_in_uboot
+
 menu_2=
   Boot from microSD (ext2):
   setenv bootargs
-    ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p1 rootdelay=5
+    ${bootargs_base} rootfstype=ext2 root=/dev/mmcblk0p1 rootdelay=5
     ${mtdparts} ro;
   mmcinit;
   ext2load mmc MMC_NUM 0x32000000 /boot/${sd_image_name};
   bootm 0x32000000
+
+#endif
 
 #ifdef look_into_this_later_NOR_ENV
 
