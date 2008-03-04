@@ -8,6 +8,7 @@ asoc-core-suspend_resume.patch
 # these looks like bugs in upstream
 fix-i2c-s3c2410-resume-race.patch
 resume-timers-wq.patch
+wm8753-rout2-inv.patch
 
 # GTA01 core feature set
 s3c2410-bbt.patch
