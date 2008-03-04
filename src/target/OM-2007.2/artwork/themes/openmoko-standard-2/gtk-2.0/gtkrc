@@ -1,5 +1,10 @@
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
+# Note: libtaku supports multiple orientations. To enable:
+# TakuIconTile::orientation = GTK_ORIENTATION_VERTICAL
+# Might also want to set
+# TakuIconTile::show-secondary-text = False
+
 gtk_button_images = 0
 gtk_menu_images = 0
 
