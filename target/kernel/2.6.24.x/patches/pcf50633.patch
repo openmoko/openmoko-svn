@@ -34,7 +34,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1963 @@
+@@ -0,0 +1,1964 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1194,8 +1194,8 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +        struct pcf50633_data *pcf = pcf50633_global;
 +	u_int8_t chgmod = reg_read(pcf, PCF50633_REG_MBCS2) &
 +				   PCF50633_MBCS2_MBC_MASK;
-+	u_int16_t battvolt = 0; /* FIXME */
-+	//u_int16_t battvolt = pcf50606_battvolt(pcf);
++
++	u_int16_t battvolt = pcf50633_battvolt(pcf);
 +
 +	if (reg_read(pcf, PCF50633_REG_MBCS1) &
 +			(PCF50633_MBCS1_USBPRES|PCF50633_MBCS1_ADAPTPRES))
@@ -1204,6 +1204,7 @@ Index: linux-2.6.24/drivers/i2c/chips/pcf50633.c
 +		info->ac_line_status = APM_AC_OFFLINE;
 +
 +	switch (chgmod) {
++	case PCF50633_MBCS2_MBC_PLAY:
 +	case PCF50633_MBCS2_MBC_USB_PRE:
 +	case PCF50633_MBCS2_MBC_USB_PRE_WAIT:
 +	case PCF50633_MBCS2_MBC_USB_FAST_WAIT:
