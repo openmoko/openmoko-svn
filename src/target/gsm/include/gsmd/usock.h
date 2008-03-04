@@ -638,7 +638,7 @@ struct gsmd_phonebook_readrg {
 /* Refer to GSM 07.07 subclause 8.14 */
 /* FIXME: the nlength and tlength depend on SIM, use +CPBR=? to get */ 
 #define	GSMD_PB_NUMB_MAXLEN	44
-#define GSMD_PB_TEXT_MAXLEN	14
+#define GSMD_PB_TEXT_MAXLEN	(14*4)
 struct gsmd_phonebook {
 	int8_t index;
 	char numb[GSMD_PB_NUMB_MAXLEN+1];
