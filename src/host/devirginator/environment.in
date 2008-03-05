@@ -55,6 +55,8 @@ stdout=usbtty
 stderr=usbtty
 stdin=usbtty
 
+usbtty=cdc_acm
+
 sd_image_name=SD_KERNEL
 
 
