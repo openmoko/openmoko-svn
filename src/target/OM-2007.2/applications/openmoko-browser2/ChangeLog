@@ -1,3 +1,17 @@
+2008-03-05  Koen Kooi  <k.kooi@student.utwente.nl>
+
+	Keep track of the API changes.
+
+        * configure.ac:
+        * src/browser-data.h:
+        * src/current-page.c:
+        (current_back_clicked_closure):
+        (current_progress_changed):
+        (update_current_page_from_iter):
+        * src/main.c:
+        (main):
+        * src/open-pages-page.c:
+
 2007-12-12  Holger Freyther  <zecke@selfish.org>
 
         Update to the recent API of WebKit/Gtk

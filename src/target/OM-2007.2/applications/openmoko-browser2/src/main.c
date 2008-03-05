@@ -33,7 +33,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
-#include <webkit.h>
+#include <webkit/webkit.h>
 
 #include <moko-finger-scroll.h>
 #include <moko-stock.h>
@@ -55,7 +55,6 @@ int main (int argc, char** argv)
     gdk_threads_init ();
     gdk_threads_enter ();
     gtk_init (&argc, &argv);
-    webkit_init ();
     moko_stock_register ();
     g_set_application_name (_("Browser"));
 

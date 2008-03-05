@@ -40,7 +40,7 @@ AM_CONDITIONAL(ENABLE_TESTING, test "x${ENABLE_TESTING}" = "xyes")
 # base deps
 PKG_CHECK_MODULES(OPENMOKO,  libmokoui2    >= 0.1.0)
 PKG_CHECK_MODULES(GTHREAD,   gthread-2.0           )
-PKG_CHECK_MODULES(WEBKITGTK, WebKitGtk)
+PKG_CHECK_MODULES(WEBKITGTK, webkit-1.0)
 
 # glib-genmarshal
 GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`

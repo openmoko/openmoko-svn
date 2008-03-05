@@ -28,8 +28,8 @@
 #include "current-page.h"
 
 #include <moko-finger-scroll.h>
-#include <webkitwebframe.h>
-#include <webkitwebview.h>
+#include <webkit/webkitwebframe.h>
+#include <webkit/webkitwebview.h>
 
 /*
  * From a list of BrowserPage's in BrowserData::currentPage show
@@ -42,7 +42,7 @@
 static void current_back_clicked_closure(GtkWidget* button, struct BrowserData* data)
 {
     g_return_if_fail (data->currentPage);
-    webkit_web_view_go_backward(data->currentPage->webKitPage);
+    webkit_web_view_go_back(data->currentPage->webKitPage);
 }
 
 static void current_forward_clicked_closure(GtkWidget* button, struct BrowserData* data)
@@ -66,7 +66,7 @@ static void current_progress_changed(WebKitWebView* page, int prog, struct Brows
     g_assert (page == data->currentPage->webKitPage);
 
     if (prog == 100) {
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_backward (page));
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_back (page));
         gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_web_view_can_go_forward (page));
         gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_web_frame_get_title (webkit_web_view_get_main_frame (page)) != NULL);
     }
@@ -176,7 +176,7 @@ void update_current_page_from_iter(struct BrowserData* data)
      * Update the GtkToolItems
      */
     /* XXX ### FIXME TODO check if we should show stop/reload */
-    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_backward (data->currentPage->webKitPage));
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_back (data->currentPage->webKitPage));
     gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_web_view_can_go_forward (data->currentPage->webKitPage));
     gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_web_frame_get_title (webkit_web_view_get_main_frame (data->currentPage->webKitPage)) != NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), TRUE);

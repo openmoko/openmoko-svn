@@ -28,8 +28,8 @@
 #include "open-pages-page.h"
 #include "current-page.h"
 
-#include <webkitwebframe.h>
-#include <webkitwebview.h>
+#include <webkit/webkitwebframe.h>
+#include <webkit/webkitwebview.h>
 #include <moko-finger-scroll.h>
 
 #include <glib/gi18n.h>

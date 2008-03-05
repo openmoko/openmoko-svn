@@ -27,7 +27,7 @@
 #ifndef OPENMOKO_BROWSER_DATA_H
 #define OPENMOKO_BROWSER_DATA_H
 
-#include "webkitwebview.h"
+#include <webkit/webkitwebview.h>
 
 #include <glib.h>
 #include <gtk/gtk.h>
