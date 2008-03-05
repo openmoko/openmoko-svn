@@ -20,7 +20,8 @@
  */
 
 #include <gtk/gtk.h>
-
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
 #include <libjana-gtk/jana-gtk.h>
 
 #include <string.h>
@@ -42,7 +43,10 @@ G_DEFINE_TYPE (MokoHistory, moko_history, GTK_TYPE_VBOX)
 #define HISTORY_CALL_INCOMING_ICON "moko-history-call-in"
 #define HISTORY_CALL_OUTGOING_ICON "moko-history-call-out"
 #define HISTORY_CALL_MISSED_ICON   "moko-history-call-missed"
- 
+
+#define SMS_NAMESPACE "org.openmoko.OpenmokoMessages2"
+#define SMS_OBJECT "/org/openmoko/OpenmokoMessages2"
+
 enum
 {
   CALL_INCOMING = 0,
@@ -136,7 +140,62 @@ on_dial_clicked (GtkWidget *button, MokoHistory *history)
 static void
 on_sms_clicked (GtkWidget *button, MokoHistory *history)
 {
+  DBusGConnection *conn;
+  DBusGProxy *proxy;
+  GError *err = NULL;
+  MokoHistoryPrivate *priv;
+  GtkTreeSelection *selection;
+  GtkTreeView *treeview;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *number;
+  
   g_debug ("sms clicked");
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  treeview = GTK_TREE_VIEW (priv->treeview);
+  selection = gtk_tree_view_get_selection (treeview);
+  model = gtk_tree_view_get_model (treeview);
+
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
+
+  gtk_tree_model_get (model, &iter, NUMBER_COLUMN, &number, -1);
+
+  g_debug ("send SMS to number: %s", number);
+
+  conn = dbus_g_bus_get (DBUS_BUS_SESSION, &err);
+  if (conn == NULL)
+  {
+    g_warning ("Failed to make DBus connection: %s", err->message);
+    g_error_free (err);
+    return;
+  }
+
+  proxy = dbus_g_proxy_new_for_name (conn,
+                                     SMS_NAMESPACE,
+                                     SMS_OBJECT,
+                                     SMS_NAMESPACE);
+  if (proxy == NULL)
+  {
+    g_warning ("Unable to get openmoko-messages2 object");
+    return;
+  }
+
+  err = NULL;
+  dbus_g_proxy_call (proxy, "SendMessage", &err,
+                     G_TYPE_STRING, NULL, G_TYPE_STRING, number,
+                     G_TYPE_STRING, NULL,
+                     G_TYPE_INVALID, G_TYPE_INVALID);
+
+  if (err)
+  {
+    g_warning (err->message);
+    g_error_free (err);
+  }
+  
 }
 
 static void
