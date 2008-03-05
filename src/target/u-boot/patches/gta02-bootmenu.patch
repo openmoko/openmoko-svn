@@ -2,7 +2,15 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta02/gta02.c
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -306,12 +306,12 @@ continue_boot:
+@@ -33,6 +33,7 @@
+ #include <common.h>
+ #include <s3c2440.h>
+ #include <i2c.h>
++#include <bootmenu.h>
+ 
+ #include "../common/neo1973.h"
+ #include "../common/jbt6k74.h"
+@@ -308,12 +309,16 @@ continue_boot:
  		if (!(gpio->GPFDAT & (1 << 5)))
  			gpio->GPBDAT &= ~(1 << 2);
  	}
@@ -10,6 +18,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  
  	if (menu_vote > 0) {
 -		bootmenu();
++		extern struct bootmenu_setup bootmenu_setup;
++
++		if (booted_from_nand)
++			bootmenu_setup.comment = "NAND";
 +		neo1973_bootmenu();
  		nobootdelay = 1;
  	}
@@ -17,7 +29,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  
  	return 0;
  }
-@@ -408,13 +408,11 @@ int neo1973_on_key_pressed(void)
+@@ -410,13 +415,11 @@ int neo1973_on_key_pressed(void)
  						& PCF50633_OOCSTAT_ONKEY);
  }
  
@@ -33,3 +45,18 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  }
  
  /* The sum of all part_size[]s must equal to or greater than the NAND size,
+Index: u-boot/board/neo1973/common/bootmenu.c
+===================================================================
+--- u-boot.orig/board/neo1973/common/bootmenu.c
++++ u-boot/board/neo1973/common/bootmenu.c
+@@ -95,7 +95,9 @@ static void poweroff_if_idle(void *user)
+ }
+ 
+ 
+-static struct bootmenu_setup bootmenu_setup = {
++/* "bootmenu_setup" is extern, so platform can tweak it */
++
++struct bootmenu_setup bootmenu_setup = {
+ 	.next_key = aux_key,
+ 	.enter_key = on_key,
+ 	.seconds = seconds,

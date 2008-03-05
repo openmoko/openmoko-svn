@@ -24,7 +24,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  	uint8_t int1, int2;
  	char buf[32];
  	int menu_vote = 0; /* <= 0: no, > 0: yes */
-@@ -246,7 +248,7 @@ int board_late_init(void)
+@@ -250,7 +252,7 @@ int board_late_init(void)
  	/* if there's no other reason, must be regular reset */
  	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
  
@@ -32,13 +32,19 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	if (!booted_from_nand && !booted_from_nor)
  		goto woken_by_reset;
  
- 	/* obtain wake-up reason, save INT1 in environment */
-@@ -308,7 +310,7 @@ continue_boot:
+ 	/* save wake-up reason in environment */
+@@ -310,11 +312,13 @@ continue_boot:
  	}
  #endif
  
 -	if (menu_vote > 0) {
 +	if (menu_vote > 0 || booted_from_nor) {
+ 		extern struct bootmenu_setup bootmenu_setup;
+ 
+ 		if (booted_from_nand)
+ 			bootmenu_setup.comment = "NAND";
++		if (booted_from_nor)
++			bootmenu_setup.comment = "NOR";
  		neo1973_bootmenu();
  		nobootdelay = 1;
  	}

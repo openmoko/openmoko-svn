@@ -142,7 +142,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/gta01.c
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -230,10 +230,15 @@
+@@ -230,10 +230,15 @@ int board_late_init(void)
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
  	char buf[32];
@@ -158,7 +158,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  	if (!booted_from_nand)
  		goto woken_by_reset;
  
-@@ -243,45 +248,41 @@
+@@ -243,45 +248,41 @@ int board_late_init(void)
  	setenv("pcf50606_int1", buf);
  
  	if (tmp & PCF50606_INT1_ALARM) {
@@ -226,7 +226,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  
  continue_boot:
  	jbt6k74_init();
-@@ -305,6 +306,11 @@
+@@ -305,6 +306,11 @@ continue_boot:
  	}
  #endif
  
@@ -238,7 +238,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  	return 0;
  }
  
-@@ -433,7 +439,17 @@
+@@ -433,7 +439,17 @@ void neo1973_gps(int on)
  	printf("not implemented yet!\n");
  }
  
@@ -261,7 +261,7 @@ Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/Makefile
 +++ u-boot/board/neo1973/gta01/Makefile
-@@ -26,7 +26,7 @@
+@@ -26,7 +26,7 @@ include $(TOPDIR)/config.mk
  LIB	= lib$(BOARD).a
  
  OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o \
@@ -274,7 +274,7 @@ Index: u-boot/board/neo1973/common/neo1973.h
 ===================================================================
 --- u-boot.orig/board/neo1973/common/neo1973.h
 +++ u-boot/board/neo1973/common/neo1973.h
-@@ -32,4 +32,10 @@
+@@ -32,4 +32,10 @@ int neo1973_911_key_pressed(void);
  const char *neo1973_get_charge_status(void);
  int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd);
  
@@ -289,7 +289,7 @@ Index: u-boot/common/console.c
 ===================================================================
 --- u-boot.orig/common/console.c
 +++ u-boot/common/console.c
-@@ -160,8 +160,12 @@
+@@ -160,8 +160,12 @@ void fprintf (int file, const char *fmt,
  
  /** U-Boot INITIAL CONSOLE-COMPATIBLE FUNCTION *****************************/
  
@@ -302,7 +302,7 @@ Index: u-boot/common/console.c
  	if (gd->flags & GD_FLG_DEVINIT) {
  		/* Get from the standard input */
  		return fgetc (stdin);
-@@ -171,7 +175,7 @@
+@@ -171,7 +175,7 @@ int getc (void)
  	return serial_getc ();
  }
  
@@ -311,7 +311,7 @@ Index: u-boot/common/console.c
  {
  	if (gd->flags & GD_FLG_DEVINIT) {
  		/* Test the standard input */
-@@ -182,6 +186,16 @@
+@@ -182,6 +186,16 @@ int tstc (void)
  	return serial_tstc ();
  }
  
@@ -345,7 +345,7 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -31,6 +31,7 @@
+@@ -31,6 +31,7 @@ COBJS-y += main.o
  COBJS-y += ACEX1K.o
  COBJS-y += altera.o
  COBJS-y += bedbug.o
@@ -357,7 +357,7 @@ Index: u-boot/common/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/common/bootmenu.c
-@@ -0,0 +1,312 @@
+@@ -0,0 +1,316 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -483,7 +483,11 @@ Index: u-boot/common/bootmenu.c
 +	const struct option *option;
 +
 +	bm_printf(ANSI_CLEAR ANSI_GOTOYX "%s", TOP_ROW, 1, version_string);
-+	bm_printf(ANSI_GOTOYX "*** BOOT MENU ***", TOP_ROW+3, 1);
++	if (setup->comment)
++		bm_printf(ANSI_GOTOYX "*** BOOT MENU (%s) ***",
++		    TOP_ROW+3, 1, setup->comment);
++	else
++		bm_printf(ANSI_GOTOYX "*** BOOT MENU ***", TOP_ROW+3, 1);
 +	bm_printf(ANSI_GOTOYX, MENU_0_ROW, 1);
 +
 +	for (option = options; option != options+num_options; option++)
@@ -674,11 +678,11 @@ Index: u-boot/include/bootmenu.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/bootmenu.h
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,82 @@
 +/*
 + * bootmenu.h - Boot menu
 + *
-+ * Copyright (C) 2006-2007 by OpenMoko, Inc.
++ * Copyright (C) 2006-2008 by OpenMoko, Inc.
 + * Written by Werner Almesberger <werner@openmoko.org>
 + * All Rights Reserved
 + *
@@ -707,6 +711,9 @@ Index: u-boot/include/bootmenu.h
 +
 +
 +struct bootmenu_setup {
++	/* title comment, NULL if none */
++	const char *comment;
++
 +	/* non-zero while the "next" key is being pressed */
 +	int (*next_key)(void *user);
 +
