@@ -145,7 +145,9 @@ missed_calls_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 {
 	if (data->dialer_item) launcher_start (data->window, data->dialer_item,
 		(gchar *[]){ "openmoko-dialer", "-m", NULL }, TRUE, TRUE);
-
+	g_debug ("reset missed_call counter to 0");
+	data->n_missed_calls = 0;
+	today_pim_journal_update_messages (data);
 	return FALSE;
 }
 
