@@ -142,6 +142,7 @@ enum gsmd_msg_phone {
 	GSMD_PHONE_GET_BATTERY  = 8,
 	GSMD_PHONE_VIB_ENABLE   = 9,
 	GSMD_PHONE_VIB_DISABLE  = 10,
+	GSMD_PHONE_POWER_STATUS = 11,
 };
 
 enum gsmd_msg_modem {

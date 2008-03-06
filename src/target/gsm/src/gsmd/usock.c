@@ -613,6 +613,15 @@ static int phone_powerdown_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
+static int phone_power_status_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	DEBUGP("resp: %s\n", resp);
+	if (!strncmp(resp, "+CFUN: ", 7))
+		resp += 7;
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_PHONE, GSMD_PHONE_POWER_STATUS,
+			cmd->id, strlen(resp) + 1, resp);
+}
+
 static int phone_get_manuf_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
@@ -721,6 +730,11 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 				&phone_powerdown_cb, gu, 0, NULL);
 		gu->gsmd->dev_state.on = 0;
 		break;
+	case GSMD_PHONE_POWER_STATUS:
+		cmd = atcmd_fill("AT+CFUN?", 8+1,
+				&phone_power_status_cb, gu, 0, NULL);
+		break;
+
 	case GSMD_PHONE_GET_IMSI:
 		return gsmd_ucmd_submit(gu, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI,
 			0, strlen(gu->gsmd->imsi) + 1, gu->gsmd->imsi);

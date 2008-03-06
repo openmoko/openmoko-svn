@@ -425,6 +425,9 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		else
 			printf("Modem down\n");
 		break;
+	case GSMD_PHONE_POWER_STATUS:
+		printf("Antenna Status: %s\n", payload);
+		break;
 	case GSMD_PHONE_GET_BATTERY:
 		printf("<BCS>: %d <BCL>: %d \n", bc->bcs, bc->bcl);
 		break;		
@@ -546,6 +549,7 @@ static void shell_help(void)
 		"\tH\tHangup call\n"
 		"\tO\tAntenna Power On\n"
 		"\to\tAntenna Power Off\n"
+		"\tgos\tGet Antenna Status\n"
 		"\tV\tVibrator Enable (CVIB=1)\n"
 		"\tv\tVibrator Disable (CVIB=0)\n"
 	       	"\tM\tModem Power On\n"
@@ -680,6 +684,9 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strcmp(buf, "o")) {
 				printf("Power-Off\n");
 				lgsm_phone_power(lgsmh, 0);
+			} else if (!strcmp(buf, "gos")) {
+				printf("Get Antenna status\n");
+				lgsm_get_power_status(lgsmh, 0);
 			} else if (!strcmp(buf, "V")) {
 				printf("Vibrator-Enable\n");
 				lgsm_phone_vibrator(lgsmh, 1);

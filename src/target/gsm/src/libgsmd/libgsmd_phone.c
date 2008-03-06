@@ -45,6 +45,11 @@ int lgsm_phone_power(struct lgsm_handle *lh, int power)
 	return lgsm_send_simple(lh, GSMD_MSG_PHONE, type);
 }
 
+int lgsm_get_power_status(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_POWER_STATUS);
+}
+
 int lgsm_get_imsi(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_PHONE, GSMD_PHONE_GET_IMSI);
