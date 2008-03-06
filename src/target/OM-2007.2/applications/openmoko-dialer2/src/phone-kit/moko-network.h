@@ -61,6 +61,7 @@ typedef enum {
 } PhoneKitNetworkError;
 
 typedef enum {
+  PK_NETWORK_POWERDOWN,
   PK_NETWORK_UNREGISTERED,
   PK_NETWORK_DENIED,
   PK_NETWORK_REGISTERED_HOME,

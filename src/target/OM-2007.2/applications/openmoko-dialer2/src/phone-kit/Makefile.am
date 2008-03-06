@@ -18,6 +18,7 @@ phone_kit_SOURCES = \
 	moko-talking.c moko-talking.h \
 	moko-alsa-volume-control.c moko-alsa-volume-control.h \
 	moko-alsa-volume-scale.c moko-alsa-volume-scale.h \
+	moko-pb.c moko-pb.h \
 	moko-pin.c moko-pin.h \
 	moko-mcc-dc.h \
 	$(BUILT_SOURCES)
@@ -29,32 +30,32 @@ phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ @NOTIFY_LIBS@ @ALSA_LIBS@ $(top_srcd
 	$(LIBTOOL) --mode=execute $(DBUS_GLIB_BIN)/dbus-binding-tool --prefix=$(subst -,_,$*) --mode=glib-server --output=$@ $<
 	
 BUILT_SOURCES = moko-dialer-glue.h moko-sms-glue.h moko-network-glue.h \
-	moko-sms-marshal.h moko-sms-marshal.c
+	moko-marshal.h moko-marshal.c
 
-STAMP_FILES = stamp-moko-sms-marshal.h
+STAMP_FILES = stamp-moko-marshal.h
 
-moko-sms-marshal.h: stamp-moko-sms-marshal.h
+moko-marshal.h: stamp-moko-marshal.h
 	@true
-stamp-moko-sms-marshal.h: Makefile moko-sms-marshal.list
+stamp-moko-marshal.h: Makefile moko-marshal.list
 	$(GLIB_GENMARSHAL) \
-		--prefix=_moko_sms_marshal \
+		--prefix=_moko_marshal \
 		--header \
-	$(srcdir)/moko-sms-marshal.list > xgen-tmh && \
-	(cmp -s xgen-tmh moko-sms-marshal.h || \
-		cp -f xgen-tmh moko-sms-marshal.h) && \
+	$(srcdir)/moko-marshal.list > xgen-tmh && \
+	(cmp -s xgen-tmh moko-marshal.h || \
+		cp -f xgen-tmh moko-marshal.h) && \
 	rm -f xgen-tmh && \
 	echo timestamp > $(@F)
 
-moko-sms-marshal.c: Makefile moko-sms-marshal.list
-	(echo "#include \"moko-sms-marshal.h\"" ; \
+moko-marshal.c: Makefile moko-marshal.list
+	(echo "#include \"moko-marshal.h\"" ; \
 	 $(GLIB_GENMARSHAL) \
-		--prefix=_moko_sms_marshal \
+		--prefix=_moko_marshal \
 		--body \
-	 $(srcdir)/moko-sms-marshal.list ) > xgen-tmc && \
-	cp -f xgen-tmc moko-sms-marshal.c && \
+	 $(srcdir)/moko-marshal.list ) > xgen-tmc && \
+	cp -f xgen-tmc moko-marshal.c && \
 	rm -f xgen-tmc
 
 CLEANFILES = $(STAMP_FILES) $(BUILT_SOURCES)
 
-EXTRA_DIST = moko-dialer-dbus.xml moko-sms-dbus.xml moko-network-dbus.xml moko-sms-marshal.list
+EXTRA_DIST = moko-dialer-dbus.xml moko-sms-dbus.xml moko-network-dbus.xml moko-marshal.list
 

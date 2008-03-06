@@ -180,6 +180,16 @@ moko_listener_on_send_sms (MokoListener *listener,
 }
 
 void
+moko_listener_on_read_phonebook (MokoListener *listener,
+                                 struct lgsm_handle *handle,
+                                 struct gsmd_phonebooks *gps)
+{
+  MokoListenerInterface *interface = MOKO_LISTENER_GET_INTERFACE (listener);
+  if (interface->on_read_phonebook)
+    interface->on_read_phonebook (listener, handle, gps);
+}
+
+void
 moko_listener_on_error (MokoListener *listener,
                         struct lgsm_handle *handle,
                         int cme, int cms)

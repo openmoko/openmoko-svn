@@ -25,16 +25,22 @@
 #include <dbus/dbus-glib-bindings.h>
 #include <glib-object.h>
 #include <libnotify/notify.h>
+#include <libebook/e-book.h>
 
 #include "moko-network.h"
 #include "moko-dialer.h"
 #include "moko-sms.h"
+#include "moko-pb.h"
+
+#include "moko-contacts.h"
 
 #define PHONEKIT_NAMESPACE "org.openmoko.PhoneKit"
 #define NETWORK_PATH "/org/openmoko/PhoneKit/Network"
 #define DIALER_PATH "/org/openmoko/PhoneKit/Dialer"
 #define SMS_PATH "/org/openmoko/PhoneKit/Sms"
 #define DIALER_INTERFACE "org.openmoko.PhoneKit.Dialer"
+
+#define PK_X_PBENTRY "X-PHONEKIT-PBENTRY"
 
 static gchar *number = NULL;
 
@@ -60,17 +66,291 @@ _dial_number (DBusGConnection *conn)
 
 }
 
+static EContact *
+ebook_find (EBook *book, EContactField field, const gchar *val)
+{
+  EBookQuery *query;
+  GList *list;
+  EContact *contact = NULL;
+
+  query = e_book_query_field_test(field, E_BOOK_QUERY_IS, val);
+
+  if (!e_book_get_contacts (book, query, &list, NULL)) {
+    e_book_query_unref(query);
+
+    return NULL;
+  }
+
+  if (list) {
+    contact = list->data;
+    g_list_free(list);
+  }
+
+  e_book_query_unref(query);
+
+  return contact;
+}
+
+/*
+ * XXX EBook signals contacts-changed for imported phonebook entries.
+ *
+ * Keep a record of imported phonebook entries and do not remove PK_X_PBENTRY
+ * from them.
+ */
+static void
+ebook_pb_session_begin (EBook *book)
+{
+}
+
+static void
+ebook_pb_session_end (EBook *book)
+{
+}
+
+static void
+ebook_pb_session_add (EBook *book, const gchar *id)
+{
+  GHashTable *table;
+
+  table = g_object_get_data (G_OBJECT (book), "pk-newly-added");
+  if (!table) {
+    table = g_hash_table_new_full (g_str_hash, g_str_equal,
+	g_free, NULL);
+
+    g_object_set_data_full (G_OBJECT (book),
+	"pk-newly-added", table, (GDestroyNotify) g_hash_table_destroy);
+  }
+
+  g_hash_table_insert (table, g_strdup (id), GINT_TO_POINTER(1));
+}
+
+static gboolean
+ebook_pb_session_remove (EBook *book, const gchar *id)
+{
+  GHashTable *table;
+
+  table = g_object_get_data (G_OBJECT (book), "pk-newly-added");
+  if (!table)
+    return FALSE;
+
+  return g_hash_table_remove (table, id);
+}
+
+static void
+ebook_commit_contact(EBook *book, EBookStatus status, const char *id, gpointer data)
+{
+  EContact *contact;
+
+  e_book_get_contact (book, id, &contact, NULL);
+
+  if (contact) {
+    ebook_pb_session_add (book, id);
+    e_book_async_commit_contact (book, contact, NULL, NULL);
+  }
+}
+
+static void
+on_ebook_changed (EBookView  *view,
+                  GList      *contacts,
+		  EBook      *book)
+{
+  EVCard *evc;
+  EVCardAttribute *attr;
+  const gchar *uid;
+
+  for (; contacts; contacts = contacts->next) {
+    evc = E_VCARD (contacts->data);
+    attr = e_vcard_get_attribute (evc, PK_X_PBENTRY);
+
+    uid = e_contact_get_const (E_CONTACT (evc), E_CONTACT_UID);
+    if (ebook_pb_session_remove (book, uid))
+      continue;
+
+    if (attr) {
+      e_vcard_remove_attribute (evc, attr);
+      e_book_async_commit_contact (book, E_CONTACT (evc),
+	  NULL, NULL);
+    }
+  }
+}
+
+static void
+ebook_clear_pb (EBook *book)
+{
+  EBookQuery *query;
+  GList *contacts, *tmp_list;
+
+  query = e_book_query_vcard_field_exists (PK_X_PBENTRY);
+
+  if (!e_book_get_contacts (book, query, &contacts, NULL)) {
+    e_book_query_unref (query);
+
+    return;
+  }
+
+  if (!contacts) {
+    e_book_query_unref (query);
+
+    return;
+  }
+
+  for (tmp_list = contacts; tmp_list; tmp_list = tmp_list->next) {
+    EContact *contact = E_CONTACT (tmp_list->data);
+
+    tmp_list->data = (gpointer) e_contact_get_const (contact, E_CONTACT_UID);
+  }
+
+  e_book_async_remove_contacts (book, contacts, NULL, NULL);
+
+  g_list_free (contacts);
+  e_book_query_unref (query);
+}
+
+static void
+on_pb_status_changed (MokoPb *pb, GParamSpec *pspec, EBook *book)
+{
+  MokoPbStatus status;
+
+  g_object_get (G_OBJECT (pb), pspec->name, &status, NULL);
+
+  if (status == MOKO_PB_STATUS_READY)
+    ebook_pb_session_end (book);
+  else if (status == MOKO_PB_STATUS_BUSY)
+    ebook_pb_session_begin (book);
+}
+
+static void
+ebook_monitor (EBook *book, MokoPb *pb)
+{
+  EBookView *view;
+  EBookQuery *query;
+
+  query = e_book_query_vcard_field_exists (PK_X_PBENTRY);
+
+  if (e_book_get_book_view (book, query, NULL, 0, &view, NULL)) {
+    g_signal_connect (G_OBJECT (view), "contacts-changed",
+                    G_CALLBACK (on_ebook_changed), book);
+
+    g_signal_connect (G_OBJECT (pb), "notify::status",
+                    G_CALLBACK (on_pb_status_changed), book);
+
+    e_book_view_start (view);
+  }
+  e_book_query_unref(query);
+}
+
+static EBook *
+ebook_get (void)
+{
+  MokoContacts *m_contacts;
+  gpointer backend;
+
+  m_contacts = moko_contacts_get_default ();
+  if (!m_contacts)
+    return NULL;
+
+  backend = moko_contacts_get_backend (m_contacts);
+
+  return (E_IS_BOOK (backend)) ? backend : NULL;
+}
+
+static void
+on_pb_entry (MokoPb *pb, gint index, const gchar *number, const gchar *text, EBook *book)
+{
+  EContact *contact;
+  EVCard *evc;
+  EVCardAttribute *attr;
+  gchar *vcard;
+  gchar buf[8];
+
+  contact = ebook_find (book, E_CONTACT_FULL_NAME, text);
+  g_debug ("%s new entry: %s", (contact) ? "ignore" : "import", text);
+
+  if (contact)
+    return;
+
+  evc = e_vcard_new ();
+
+  attr = e_vcard_attribute_new (NULL, EVC_FN);
+  e_vcard_attribute_add_value (attr, text);
+  e_vcard_add_attribute (evc, attr);
+
+  attr = e_vcard_attribute_new (NULL, EVC_TEL);
+  e_vcard_attribute_add_value (attr, number);
+  e_vcard_add_attribute (evc, attr);
+
+  attr = e_vcard_attribute_new (NULL, PK_X_PBENTRY);
+  g_snprintf (buf, sizeof (buf), "%d", index);
+  e_vcard_attribute_add_value (attr, buf);
+  e_vcard_add_attribute (evc, attr);
+
+  vcard = e_vcard_to_string (evc, EVC_FORMAT_VCARD_30);
+  contact = e_contact_new_from_vcard (vcard);
+  g_free (vcard);
+  g_object_unref (evc);
+
+  e_book_async_add_contact (book, contact,
+      (EBookIdCallback) ebook_commit_contact, NULL);
+}
+
+static gboolean
+pb_import (MokoPb *pb)
+{
+  EBook *book;
+
+  book = ebook_get();
+  if (!book)
+    return FALSE;
+
+  ebook_monitor (book, pb);
+
+  g_signal_connect (pb, "entry", G_CALLBACK (on_pb_entry), book);
+  moko_pb_get_entries (pb, NULL);
+
+  return FALSE;
+}
+
+static void
+on_network_status_changed (MokoNetwork *network, PhoneKitNetworkStatus status, MokoPb *pb)
+{
+  /* we can't read phonebook right after modem power-on;
+   * wait some more time */
+  g_timeout_add_seconds (15, (GSourceFunc) pb_import, pb);
+  g_signal_handlers_disconnect_by_func (network,
+      on_network_status_changed, pb);
+}
+
+static void
+pb_sync (MokoPb *pb, MokoNetwork *network)
+{
+  EBook *book;
+  PhoneKitNetworkStatus status;
+
+  book = ebook_get ();
+  if (!book)
+    return;
+
+  ebook_clear_pb (book);
+
+  /* wait for modem power-on */
+  g_signal_connect (network, "status-changed",
+                    G_CALLBACK (on_network_status_changed), pb);
+  status = moko_network_get_status (network);
+  if (status != PK_NETWORK_POWERDOWN)
+    on_network_status_changed (network, status, pb);
+}
+
 int
 main (int argc, char **argv)
 {
   MokoNetwork *network;
   MokoDialer *dialer;
   MokoSms *sms;
+  MokoPb *pb;
   DBusGConnection *connection;
   DBusGProxy *proxy;
   GError *error = NULL;
   guint32 ret;
-  char *prog;
 
   /* initialise type system */
   g_type_init ();
@@ -125,6 +405,7 @@ main (int argc, char **argv)
   network = moko_network_get_default ();
   dialer = moko_dialer_get_default (network);
   sms = moko_sms_get_default (network);
+  pb = moko_pb_get_default (network);
 
   /* Add the objects onto the bus */
   dbus_g_connection_register_g_object (connection, 
@@ -136,6 +417,10 @@ main (int argc, char **argv)
   dbus_g_connection_register_g_object (connection, 
                                        SMS_PATH,
                                        G_OBJECT (sms));
+
+  /* Sync phonebook */
+  /* XXX this is not the right place! */
+  pb_sync (pb, network);
 
   /* application object */
   g_set_application_name ("OpenMoko Dialer");

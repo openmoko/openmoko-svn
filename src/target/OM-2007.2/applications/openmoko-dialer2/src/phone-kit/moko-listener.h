@@ -81,6 +81,9 @@ struct _MokoListenerInterface {
   void  (*on_send_sms)           (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   int result);
+  void  (*on_read_phonebook)     (MokoListener *listener,
+                                  struct lgsm_handle *handle,
+				  struct gsmd_phonebooks *gps);
   void  (*on_error)              (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   int cme, int cms);
@@ -125,6 +128,9 @@ void  moko_listener_on_incoming_ds        (MokoListener *listener,
 void  moko_listener_on_send_sms           (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 int result);
+void  moko_listener_on_read_phonebook     (MokoListener *listener,
+                                struct lgsm_handle *handle,
+				struct gsmd_phonebooks *gps);
 void  moko_listener_on_error              (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 int cme, int cms);

@@ -88,6 +88,9 @@ GType moko_contacts_get_type (void) G_GNUC_CONST;
 MokoContacts*
 moko_contacts_get_default (void);
 
+gpointer
+moko_contacts_get_backend (MokoContacts *contacts);
+
 MokoContactEntry*
 moko_contacts_lookup (MokoContacts *contacts, const gchar *number);
 

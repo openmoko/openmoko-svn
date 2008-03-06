@@ -420,7 +420,6 @@ moko_contacts_init (MokoContacts *contacts)
   EBook *book;
   EBookView *view;
   EBookQuery *query;
-  GList *contact, *c;
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
@@ -444,17 +443,6 @@ moko_contacts_init (MokoContacts *contacts)
     g_warning ("Failed to open system book\n");
     return;
   }
-  if (!e_book_get_contacts (book, query, &contact, NULL))
-  {
-    g_warning ("Failed to get contacts from system book\n");
-    return;
-  }
-  
-  /* Go through the contacts, creating the contact structs, and entry structs*/
-  for (c = contact; c != NULL; c = c->next)
-  {
-    moko_contacts_add_contact (contacts, E_CONTACT (c->data));
-  }
 
   /* Connect to the ebookviews signals */
   if (e_book_get_book_view (book, query, NULL, 0, &view, NULL))
@@ -465,7 +453,10 @@ moko_contacts_init (MokoContacts *contacts)
                     G_CALLBACK (on_ebook_contacts_changed), (gpointer)contacts);
     g_signal_connect (G_OBJECT (view), "contacts-removed",
                     G_CALLBACK (on_ebook_contacts_removed), (gpointer)contacts);
+
+    e_book_view_start (view);
   }
+  e_book_query_unref(query);
 }
 
 MokoContacts*
@@ -478,4 +469,12 @@ moko_contacts_get_default (void)
                              NULL);
 
   return contacts;
+}
+
+gpointer
+moko_contacts_get_backend (MokoContacts *contacts)
+{
+  MokoContactsPrivate *priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
+
+  return (gpointer) priv->book;
 }

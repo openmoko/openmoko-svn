@@ -84,6 +84,7 @@ struct _MokoNetworkPrivate
   int                       lac;
   
   /* Registration variables */
+  gboolean                  powered;
   enum lgsm_netreg_state    registered;
   gboolean                  pin_requested;
   
@@ -735,6 +736,11 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       {
         /* phone has been powered on successfully */
         g_debug ("Phone powered on");
+
+        priv->powered = TRUE;
+        g_signal_emit (network, signals[STATUS_CHANGED], 0,
+                       moko_network_get_status (network));
+
         /* Register with network */
         priv->registered = GSMD_NETREG_UNREG;
         lgsm_netreg_register (priv->handle, "");
@@ -771,6 +777,30 @@ pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
     g_debug ("PIN accepted!");
     lgsm_phone_power (lh, 1);
   }
+
+  return 0;
+}
+
+static int
+pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+  GList *l;
+  MokoNetwork *network = moko_network_get_default ();
+  MokoNetworkPrivate *priv = network->priv;
+  struct gsmd_phonebooks *gps;
+
+  switch (gmh->msg_subtype) {
+    case GSMD_PHONEBOOK_READRG:
+      gps = (struct gsmd_phonebooks *) ((char *)gmh + sizeof(*gmh));
+      for (l = priv->listeners; l; l = l->next) {
+	moko_listener_on_read_phonebook (MOKO_LISTENER (l->data),
+	    priv->handle, gps);
+      }
+      break;
+    default:
+      g_warning ("Unhandled phonebook event type = %d\n", gmh->msg_subtype);
+      break;
+   };
 
   return 0;
 }
@@ -847,6 +877,7 @@ network_init_gsmd (MokoNetwork *network)
   lgsm_register_handler (priv->handle, GSMD_MSG_PHONE, phone_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_SMS, sms_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_PIN, pin_msghandler);
+  lgsm_register_handler (priv->handle, GSMD_MSG_PHONEBOOK, pb_msghandler);
 
   /* Power the gsm modem up - this should trigger a PIN requiest if needed */
   lgsm_phone_power (priv->handle, 1);
@@ -920,6 +951,9 @@ moko_network_get_status (MokoNetwork *network)
 {
   MokoNetworkPrivate *priv = network->priv;
   
+  if (!priv->powered)
+    return PK_NETWORK_POWERDOWN;
+
   switch (priv->registered) {
     default:
     case GSMD_NETREG_UNREG:

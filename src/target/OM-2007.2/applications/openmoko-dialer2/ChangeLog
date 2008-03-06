@@ -1,3 +1,35 @@
+2008-03-06  Chia-I Wu  <olv@openmoko.com>
+
+	Preliminary support for phonebook.  Sync phonebook from the SIM card
+	on start up.  This is not a "perfect" solution.  See bug #1238.
+
+	* src/phone-kit/moko-listener.c, src/phone-kit/moko-listener.h
+	(moko_listener_on_read_phonebook): New function to listen to phonebook
+	messages.
+
+	* src/phone-kit/moko-pb.c, src/phone-kit/moko-pb.h: Preliminary
+	phonebook support, MokoPb.
+
+	* src/phone-kit/moko-network.c, src/phone-kit/moko-network.h: Listen
+	to GSMD_MSG_PHONEBOOK messages.
+	Add a new status, PK_NETWORK_POWERDOWN.  MokoNetwork is initially in
+	this status.
+	(phone_msghandler): Emit status change on receiving
+	GSMD_PHONE_POWERUP.
+
+	* src/common/moko-contacts.c, src/common/moko-contacts.h
+	(moko_contacts_get_backend): New function to return the backend,
+	EBook.
+
+	* src/phone-kit/dialer-main.c: Sync phonebook from the SIM card on
+	start up.
+
+	* src/phone-kit/moko-sms-marshal.list: Renamed to ...
+
+ 	* src/phone-kit/moko-marshal.list: ... this.
+
+	* src/phone-kit/moko-sms.c, src/phone-kit/Makefile.am: Updated.
+
 2008-03-03  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-sms.c: (on_incoming_sms):

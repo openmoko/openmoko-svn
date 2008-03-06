@@ -35,7 +35,7 @@
 #include "moko-network.h"
 #include "moko-listener.h"
 #include "moko-notify.h"
-#include "moko-sms-marshal.h"
+#include "moko-marshal.h"
 
 static void
 listener_interface_init (gpointer g_iface, gpointer iface_data);
