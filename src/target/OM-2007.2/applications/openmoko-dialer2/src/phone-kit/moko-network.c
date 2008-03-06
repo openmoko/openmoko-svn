@@ -264,7 +264,8 @@ on_network_registered (MokoListener *listener,
                    moko_network_get_status (MOKO_NETWORK (listener)));
     
     if ((priv->registered != GSMD_NETREG_REG_HOME) &&
-        (priv->registered != GSMD_NETREG_REG_ROAMING)) {
+        (priv->registered != GSMD_NETREG_REG_ROAMING) &&
+        (priv->registered != GSMD_NETREG_UNREG) ) {
       /* Unset operator name on disconnect */
       moko_listener_on_network_name (listener, handle, NULL);
     }
