@@ -626,17 +626,19 @@ static void neo_reset(void *opaque)
     s->cpu->env->regs[15] = S3C_SRAM_BASE;
 #else
     load_image("u-boot.bin", phys_ram_base + 0x03f80000);
-    load_image(s->kernel, phys_ram_base + 0x00800000);
+    load_image(s->kernel, phys_ram_base + 0x00100000);
 
     s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 
     if (strstr(s->kernel, "u-boot")) {	/* FIXME */
         /* Exploit preboot-override to set up an initial environment */
-        stl_raw(phys_ram_base + 0x03f80040, S3C_RAM_BASE | 0x007fff00);
-        strcpy(phys_ram_base + 0x007fff00,
+        stl_raw(phys_ram_base + 0x03f80040, S3C_RAM_BASE | 0x000fff00);
+        strcpy(phys_ram_base + 0x000fff00,
                         "setenv stdin serial; "
                         "setenv stdout serial; "
                         "setenv stderr serial; ");
+        /* Disable ENV pre-load */
+        stl_raw(phys_ram_base + 0x03f80044, 0x00000000);
     }
 #endif
 

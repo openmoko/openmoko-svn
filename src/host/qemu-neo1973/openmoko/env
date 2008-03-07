@@ -18,7 +18,7 @@ dump_dir="$script_dir/vvfat"
 qemu_monitor="$HOME/.qemu_monitor"
 qemu_cmd () { $script_dir/qemu-cmd.pl "$qemu_monitor" "$*"; }
 
-kernel_addr=0x30800000
+kernel_addr=0x30100000
 splash_addr=0x36000000
 splash_size=0x5000
 
@@ -28,5 +28,5 @@ rootfs_wildcard="OpenMoko-openmoko-*image*01.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01bv4-1*.bin"
 
 download_dir="http://buildhost.openmoko.org/daily/neo1973/deploy/glibc/images/neo1973/"
-dev_download_dir="http://buildhost.openmoko.org/snapshots/2007.08/images/"
+dev_download_dir="$download_dir"
 backup_download_dir="http://buildhost.automated.it/OM2007.2/"
