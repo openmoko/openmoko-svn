@@ -438,7 +438,7 @@ moko_contacts_init (MokoContacts *contacts)
     g_warning ("Failed to create system book\n");
     return;
   }
-  if (!e_book_open (book, TRUE, NULL))
+  if (!e_book_open (book, FALSE, NULL))
   {
     g_warning ("Failed to open system book\n");
     return;
