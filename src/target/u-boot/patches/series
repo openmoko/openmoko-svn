@@ -95,4 +95,3 @@ loadenv.patch
 
 # fix and improve power management
 dont-smoke.patch
-lie-low.patch
