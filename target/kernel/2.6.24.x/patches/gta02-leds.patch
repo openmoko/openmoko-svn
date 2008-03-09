@@ -1,7 +1,7 @@
-Index: linux-2.6/drivers/leds/Kconfig
+Index: linux-2.6.24/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/leds/Kconfig
-+++ linux-2.6/drivers/leds/Kconfig
+--- linux-2.6.24.orig/drivers/leds/Kconfig
++++ linux-2.6.24/drivers/leds/Kconfig
 @@ -120,6 +120,12 @@
  	help
  	  This option enables support for the vibrator on the FIC Neo1973.
@@ -15,10 +15,10 @@ Index: linux-2.6/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6/drivers/leds/Makefile
+Index: linux-2.6.24/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/leds/Makefile
-+++ linux-2.6/drivers/leds/Makefile
+--- linux-2.6.24.orig/drivers/leds/Makefile
++++ linux-2.6.24/drivers/leds/Makefile
 @@ -20,6 +20,7 @@
  obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
  obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
@@ -27,11 +27,11 @@ Index: linux-2.6/drivers/leds/Makefile
  
  # LED Triggers
  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
-Index: linux-2.6/drivers/leds/leds-neo1973-gta02.c
+Index: linux-2.6.24/drivers/leds/leds-neo1973-gta02.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6/drivers/leds/leds-neo1973-gta02.c
-@@ -0,0 +1,216 @@
++++ linux-2.6.24/drivers/leds/leds-neo1973-gta02.c
+@@ -0,0 +1,226 @@
 +/*
 + * LED driver for the FIC Neo1973 GTA02 GSM phone
 + *
@@ -184,13 +184,23 @@ Index: linux-2.6/drivers/leds/leds-neo1973-gta02.c
 +			break;
 +		}
 +
-+		if (lp->has_pwm) {
-+			lp->pwm.prescaler = 0;
-+			lp->pwm.divider = S3C2410_TCFG1_MUX3_DIV8;
-+			lp->pwm.counter = COUNTER;
-+			lp->pwm.comparer = COUNTER;
-+			s3c2410_pwm_enable(&lp->pwm);
-+			s3c2410_pwm_start(&lp->pwm);
++		lp->pwm.prescaler = 0;
++		lp->pwm.divider = S3C2410_TCFG1_MUX3_DIV8;
++		lp->pwm.counter = COUNTER;
++		lp->pwm.comparer = COUNTER;
++		s3c2410_pwm_enable(&lp->pwm);
++		s3c2410_pwm_start(&lp->pwm);
++
++		switch (lp->gpio) {
++		case S3C2410_GPB0:
++		case S3C2410_GPB1:
++		case S3C2410_GPB2:
++			lp->has_pwm = 0;
++			s3c2410_gpio_cfgpin(lp->gpio, S3C2410_GPIO_OUTPUT);
++			s3c2410_gpio_setpin(lp->gpio, 0);
++			break;
++		default:
++			break;
 +		}
 +
 +		mutex_init(&lp->mutex);
