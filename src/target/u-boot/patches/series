@@ -92,3 +92,7 @@ uboot-neo1973_defaultconsole_usbtty.patch
 
 # let's see what upstream thinks about this
 loadenv.patch
+
+# fix and improve power management
+dont-smoke.patch
+lie-low.patch

@@ -1,0 +1,89 @@
+This patch prevents us from drawing more than 100mA from USB, unless we're
+sure we're allowed to. Thus, we don't make the upstream port produce smoke.
+
+Index: u-boot/board/neo1973/gta02/pcf50633.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta02/pcf50633.c
++++ u-boot/board/neo1973/gta02/pcf50633.c
+@@ -107,7 +107,7 @@
+ 	[PCF50633_REG_MBCC4]	= 0xff, /* 255/255 == 1A adapter fast */
+ 	[PCF50633_REG_MBCC5]	= 0x7f,	/* 127/255 == 500mA usb fast */
+ 	[PCF50633_REG_MBCC6]	= 0x00, /* cutoff current 1/32 * Ichg */
+-	[PCF50633_REG_MBCC7]	= 0x01,	/* 1.6A max bat curr, USB 500mA */
++	[PCF50633_REG_MBCC7]	= 0x00,	/* 1.6A max bat curr, USB 100mA */
+ 	[PCF50633_REG_MBCC8]	= 0x00,
+ 
+ 	[PCF50633_REG_BBCCTL]	= 0x19,	/* 3V, 200uA, on */
+Index: u-boot/drivers/misc/pcf50633.c
+===================================================================
+--- u-boot.orig/drivers/misc/pcf50633.c
++++ u-boot/drivers/misc/pcf50633.c
+@@ -141,7 +141,7 @@
+ 
+ 	/* ok all we know is there is no resistor, it can be USB pwr or none */
+ 	if ((pcf50633_reg_read(PCF50633_REG_MBCS1) & 0x3) == 0x3)
+-		return 500; /* USB power then */
++		return 100; /* USB power then */
+ 
+ 	return 0; /* nope, no power, just battery */
+ }
+@@ -152,7 +152,8 @@
+ void pcf50633_init(void)
+ {
+ 	unsigned long flags;
+-	u_int8_t i, limit;
++	u_int8_t i;
++	int limit;
+ 
+ 	local_irq_save(flags);
+ 	for (i = 0; i < PCF50633_LAST_REG; i++) {
+@@ -163,23 +164,15 @@
+ 	local_irq_restore(flags);
+ 
+ 	printf("Power: ");
+-	switch (pcf50633_read_charger_type()) {
+-	case 0: /* no charger, battery only */
+-		printf("Battery\n");
+-		limit = PCF50633_MBCC7_USB_SUSPEND;
+-		break;
+-	case 500:
+-		printf("USB / 500mA\n");
+-		limit = PCF50633_MBCC7_USB_500mA;
+-		break;
+-	default:
+-		printf("1A\n");
+-		limit = PCF50633_MBCC7_USB_1000mA;
+-		break;
++	limit = pcf50633_read_charger_type();
++	/*
++	 * If we're on real USB, don't change the setting to avoid racing with
++	 * USB signaling.
++	 */
++	if (limit != 100) {
++		printf("%dmA\n", limit);
++		pcf50633_usb_maxcurrent(limit);
+ 	}
+-	pcf50633_reg_write(PCF50633_REG_MBCC7,
+-			   (pcf50633_reg_read(PCF50633_REG_MBCC7) &
+-			   (~PCF56033_MBCC7_USB_MASK)) | limit);
+ }
+ 
+ void pcf50633_usb_maxcurrent(unsigned int ma)
+@@ -187,13 +180,13 @@
+ 	u_int8_t val;
+ 
+ 	if (ma < 100)
+-		val = 0x03;
++		val = PCF50633_MBCC7_USB_SUSPEND;
+ 	else if (ma < 500)
+-		val = 0x00;
++		val = PCF50633_MBCC7_USB_100mA;
+ 	else if (ma < 1000)
+-		val = 0x01;
++		val = PCF50633_MBCC7_USB_500mA;
+ 	else
+-		val = 0x02;
++		val = PCF50633_MBCC7_USB_1000mA;
+ 
+ 	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
+ }
