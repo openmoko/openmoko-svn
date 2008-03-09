@@ -754,7 +754,7 @@ gboolean notes_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
 			moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (
 				data->notes_search))); 
 		
-		if ((type <= ALL_NOTES) || (!data->author_uid)) return TRUE;
+		if ((type <= ALL_NOTES)/* || (!data->author_uid)*/) return TRUE;
 		
 		gtk_tree_model_get (model, iter,
 			JANA_GTK_NOTE_STORE_COL_CATEGORIES, &categories, -1);
