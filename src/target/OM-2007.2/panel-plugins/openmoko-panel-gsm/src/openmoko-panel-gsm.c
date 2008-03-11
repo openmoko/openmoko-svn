@@ -128,7 +128,7 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
 static void gsm_applet_update_cipher_status(MokoGsmdConnection* self, int status)
 {
     g_debug( "gsm_applet_update_cipher_status: status = %d", status );
-    gsm_applet_show_status( 0, theApplet );
+    /* bug#1248 gsm_applet_show_status( 0, theApplet ); */
 }
 
 static void gsm_applet_network_current_operator_cb(MokoGsmdConnection *self, const gchar* name)
