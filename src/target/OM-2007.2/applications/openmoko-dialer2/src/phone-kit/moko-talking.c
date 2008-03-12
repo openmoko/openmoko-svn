@@ -175,7 +175,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)incoming_timeout,
                                  (gpointer)talking);
-  priv->call_direction = CALL_DIRECTION_OUTGOING;
+  priv->call_direction = CALL_DIRECTION_INCOMING;
   gtk_window_present (GTK_WINDOW (priv->window));
 }
 
