@@ -77,7 +77,7 @@ bt_applet_power_on(GtkWidget* menu, BtApplet* applet)
 
     ret = set_bt_power(1);
     mb_panel_update(applet, 1);
-    nn = notify_notification_new ("Bluetooh turned on", NULL, NULL, NULL);
+    nn = notify_notification_new ("Bluetooth turned on", NULL, NULL, NULL);
     notify_notification_show (nn, NULL);
 }
 
@@ -89,7 +89,7 @@ bt_applet_power_off(GtkWidget* menu, BtApplet* applet)
 
     ret = set_bt_power(0);
     mb_panel_update(applet, 0);
-    nn = notify_notification_new ("Bluetooh turned off", NULL, NULL, NULL);
+    nn = notify_notification_new ("Bluetooth turned off", NULL, NULL, NULL);
     notify_notification_show (nn, NULL);
 }
 
