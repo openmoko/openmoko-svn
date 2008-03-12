@@ -647,9 +647,9 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +static struct glamofb_platform_data gta02_glamo_pdata = {
 +	.width		= 43,
 +	.height		= 58,
-+	.pixclock	= 50 * 1000, /* 50 ns */
++	.pixclock	= 40816, /* 24.5MHz nom, 40.816ns */
 +	.left_margin	= 8,
-+	.right_margin	= 104,
++	.right_margin	= 16,
 +	.upper_margin	= 2,
 +	.lower_margin	= 16,
 +	.hsync_len	= 8,
@@ -933,7 +933,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/Kconfig
 +++ linux-2.6.24/arch/arm/mach-s3c2440/Kconfig
-@@ -74,5 +74,20 @@ config MACH_HXD8
+@@ -74,5 +74,20 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
  
@@ -958,7 +958,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/Makefile
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/Makefile
 +++ linux-2.6.24/arch/arm/mach-s3c2440/Makefile
-@@ -22,3 +22,4 @@ obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715
+@@ -22,3 +22,4 @@
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
@@ -967,7 +967,7 @@ Index: linux-2.6.24/drivers/leds/leds-neo1973-vibrator.c
 ===================================================================
 --- linux-2.6.24.orig/drivers/leds/leds-neo1973-vibrator.c
 +++ linux-2.6.24/drivers/leds/leds-neo1973-vibrator.c
-@@ -113,7 +113,7 @@ static int __init neo1973_vib_probe(stru
+@@ -113,7 +113,7 @@
  	struct resource *r;
  	int rc;
  
@@ -980,7 +980,7 @@ Index: linux-2.6.24/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.24.orig/sound/soc/s3c24xx/neo1973_wm8753.c
 +++ linux-2.6.24/sound/soc/s3c24xx/neo1973_wm8753.c
-@@ -672,6 +672,12 @@ static int __init neo1973_init(void)
+@@ -672,6 +672,12 @@
  {
  	int ret;
  
@@ -993,7 +993,7 @@ Index: linux-2.6.24/sound/soc/s3c24xx/neo1973_wm8753.c
  	neo1973_snd_device = platform_device_alloc("soc-audio", -1);
  	if (!neo1973_snd_device)
  		return -ENOMEM;
-@@ -700,5 +706,5 @@ module_exit(neo1973_exit);
+@@ -700,5 +706,5 @@
  
  /* Module information */
  MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");
