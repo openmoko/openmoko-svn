@@ -26,8 +26,8 @@ state.neo1973gta02 {
 		comment.range '0 - 127'
 		iface MIXER
 		name 'Headphone Playback Volume'
-		value.0 0
-		value.1 0
+		value.0 96
+		value.1 96
 	}
 	control.4 {
 		comment.access 'read write'
@@ -36,8 +36,8 @@ state.neo1973gta02 {
 		comment.range '0 - 127'
 		iface MIXER
 		name 'Speaker Playback Volume'
-		value.0 97
-		value.1 97
+		value.0 0
+		value.1 0
 	}
 	control.5 {
 		comment.access 'read write'
@@ -608,7 +608,7 @@ state.neo1973gta02 {
 		comment.item.3 'Right PGA'
 		iface MIXER
 		name 'Mic Sidetone Mux'
-		value 'Mic 2'
+		value 'Mic 1'
 	}
 	control.64 {
 		comment.access 'read write'
@@ -824,7 +824,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'DAPM Stereo Out Switch'
-		value false
+		value true
 	}
 	control.88 {
 		comment.access 'read write'
@@ -864,7 +864,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'DAPM Handset Spk Switch'
-		value true
+		value false
 	}
 	control.93 {
 		comment.access 'read write'
@@ -872,7 +872,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'Amp State Switch'
-		value false
+		value true
 	}
 	control.94 {
 		comment.access 'read write'
