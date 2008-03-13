@@ -36,8 +36,8 @@ state.neo1973gta02 {
 		comment.range '0 - 127'
 		iface MIXER
 		name 'Speaker Playback Volume'
-		value.0 127
-		value.1 127
+		value.0 112
+		value.1 112
 	}
 	control.5 {
 		comment.access 'read write'
@@ -776,7 +776,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'Right Mixer Right Playback Swit'
-		value true
+		value false
 	}
 	control.82 {
 		comment.access 'read write'
@@ -808,7 +808,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'Left Mixer Left Playback Switch'
-		value true
+		value false
 	}
 	control.86 {
 		comment.access 'read write'
