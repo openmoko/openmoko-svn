@@ -171,10 +171,24 @@ static int gta01_init(struct gsmd *g, int fd)
 	return 0;
 }
 
+static int gta01_initsettings(struct gsmd *g)
+{
+	int rc = 0;
+	struct gsmd_atcmd *cmd;
+
+	/* use @AUL: to load audio table */
+	rc |= gsmd_simplecmd(g, "AT@AUL=\"0\"");
+	/* use @ST: configure the sidetone level */
+	rc |= gsmd_simplecmd(g, "AT@ST=\"-26\"");
+
+	return rc;
+}
+
 struct gsmd_machine_plugin gsmd_machine_plugin = {
 	.name = "TI Calypso / FIC firmware",
 	.power = &gta01_power,
 	.ex_submit = &atcmd_wakeup_modem,
 	.detect = &gta01_detect,
 	.init = &gta01_init,
+	.initsettings = &gta01_initsettings,
 };

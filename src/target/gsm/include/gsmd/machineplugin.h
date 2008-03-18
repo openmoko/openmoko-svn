@@ -15,6 +15,7 @@ struct gsmd_machine_plugin {
 	int (*ex_submit)(struct gsmd *g);
 	int (*detect)(struct gsmd *g);
 	int (*init)(struct gsmd *g, int fd);
+	int (*initsettings)(struct gsmd *g);
 };
 
 extern int gsmd_machine_plugin_init(struct gsmd *g,

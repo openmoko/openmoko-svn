@@ -196,8 +196,11 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 
 	sms_cb_init(gsmd);
 
-	if (gsmd->vendorpl && gsmd->vendorpl->initsettings)
-		return gsmd->vendorpl->initsettings(gsmd);
+	if (gsmd->vendorpl && gsmd->vendorpl->initsettings){
+		rc |= gsmd->vendorpl->initsettings(gsmd);
+		rc |= gsmd->machinepl->initsettings(gsmd);
+		return rc;
+	}	
 	else
 		return rc;
 }
