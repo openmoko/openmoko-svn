@@ -77,4 +77,7 @@ extern int lgsm_get_battery(struct lgsm_handle *lh);
 /* Enable vibrator */
 extern int lgsm_phone_vibrator(struct lgsm_handle *lh, int enable);
 
+/* Get Antenna Power status */
+extern int lgsm_get_power_status(struct lgsm_handle *lh);
+
 #endif

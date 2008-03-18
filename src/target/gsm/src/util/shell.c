@@ -686,7 +686,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				lgsm_phone_power(lgsmh, 0);
 			} else if (!strcmp(buf, "gos")) {
 				printf("Get Antenna status\n");
-				lgsm_get_power_status(lgsmh, 0);
+				lgsm_get_power_status(lgsmh);
 			} else if (!strcmp(buf, "V")) {
 				printf("Vibrator-Enable\n");
 				lgsm_phone_vibrator(lgsmh, 1);
