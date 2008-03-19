@@ -323,6 +323,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 g_debug( "read %d bytes from fd %d", size, input_fd[i].fd );
                 g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
             }
+#if 0
             if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
             {
                 if ( event.value == 1 ) /* pressed */
@@ -342,6 +343,7 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 }
             }
             else
+#endif
             if ( event.type == 1 && event.code == POWER_BUTTON_KEYCODE )
             {
                 if ( event.value == 1 ) /* pressed */
