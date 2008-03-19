@@ -30,7 +30,7 @@
 #endif
 
 #ifndef SD_KERNEL
-#define SD_KERNEL uImage
+#define SD_KERNEL uImage.bin
 #endif
 
 
