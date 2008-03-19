@@ -1,3 +1,7 @@
+2008-03-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/moko-history.c: Add a "Save" button to the call log window
+
 2008-03-07  Chia-I Wu  <olv@openmoko.com>
 
 	* src/common/moko-contacts.c (moko_contacts_init): Create addressbook

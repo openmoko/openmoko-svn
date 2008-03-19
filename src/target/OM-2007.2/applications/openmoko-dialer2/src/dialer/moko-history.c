@@ -60,10 +60,26 @@ static gchar *icon_names[N_CALL_TYPES]  = {"moko-history-call-in",
                                            "moko-history-call-out",
                                            "moko-history-call-missed"};
 static GdkPixbuf *icons[N_CALL_TYPES] = {NULL, NULL, NULL};
-  
+
+struct _SaveButtonInfo
+{
+  GtkWidget *dialog;
+  gint response_id;
+  gchar *number;
+};
+
+typedef struct _SaveButtonInfo SaveButtonInfo;
+
 struct _MokoHistoryPrivate
 {
   MokoJournal       *journal;
+  
+  GtkToolItem       *save_button;
+  GtkToolItem       *delete_button;
+  GtkToolItem       *sms_button;
+  GtkToolItem       *dial_button;
+  
+  GtkWidget         *save_menu;
 
   GtkWidget         *treeview;
   GtkWidget         *combo;
@@ -196,6 +212,86 @@ on_sms_clicked (GtkWidget *button, MokoHistory *history)
     g_error_free (err);
   }
   
+}
+
+static void
+on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
+{
+  gint action = info->response_id;
+  gchar *number = g_strdup (info->number);
+    
+  /* this also destroys info data */
+  gtk_widget_destroy (info->dialog);
+  
+  if (action == 1)
+  { /* create new contact */ }
+  else
+  {/* add to contact */ } 
+  
+  g_free (number);
+}
+
+static void
+btn_save_info_weak_notify (SaveButtonInfo *info, GObject *object)
+{
+  g_free (info->number);
+  g_free (info);
+}
+
+static void
+on_save_clicked (GtkWidget *button, MokoHistory *history)
+{
+  MokoHistoryPrivate *priv;
+  GtkTreeSelection *selection;
+  GtkTreeView *treeview;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *number;
+  GtkWidget *window, *btn;
+  SaveButtonInfo *btn_info;
+  
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  treeview = GTK_TREE_VIEW (priv->treeview);
+  selection = gtk_tree_view_get_selection (treeview);
+  model = gtk_tree_view_get_model (treeview);
+
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
+  
+
+  gtk_tree_model_get (model, &iter, NUMBER_COLUMN, &number, -1);
+ 
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
+  gtk_window_set_title (GTK_WINDOW (window), number);
+  
+  GtkWidget *vbox;
+  vbox = gtk_vbox_new (TRUE, 0);
+  gtk_container_add (GTK_CONTAINER (window), vbox);
+  
+  btn = gtk_button_new_with_label ("Create New Contact");
+  gtk_box_pack_start_defaults (GTK_BOX (vbox), btn);
+  btn_info = g_new0 (SaveButtonInfo, 1);
+  btn_info->dialog = window;
+  btn_info->response_id = 1;
+  btn_info->number = g_strdup (number);
+  g_signal_connect (btn, "clicked", G_CALLBACK (on_btn_save_clicked), btn_info);
+  g_object_weak_ref (G_OBJECT (btn), (GWeakNotify) btn_save_info_weak_notify, btn_info);
+  
+  btn = gtk_button_new_with_label ("Add to Contact");
+  gtk_box_pack_start_defaults (GTK_BOX (vbox), btn);
+  btn_info = g_new0 (SaveButtonInfo, 1);
+  btn_info->dialog = window;
+  btn_info->response_id = 2;
+  btn_info->number = g_strdup (number);
+  g_signal_connect (btn, "clicked", G_CALLBACK (on_btn_save_clicked), btn_info);
+  g_object_weak_ref (G_OBJECT (btn), (GWeakNotify) btn_save_info_weak_notify, btn_info);
+  
+  g_free (number);
+  
+  gtk_widget_show_all (window);
 }
 
 static void
@@ -437,6 +533,26 @@ on_filter_changed (GtkWidget *combo, MokoHistory *history)
 
 }
 
+void
+on_tree_selection_changed (GtkTreeSelection *selection, MokoHistory *history)
+{
+  MokoHistoryPrivate *priv;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  gboolean selected;
+  
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  
+  selected = gtk_tree_selection_get_selected (selection, &model, &iter);
+
+  gtk_widget_set_sensitive (GTK_WIDGET (priv->dial_button), selected);
+  gtk_widget_set_sensitive (GTK_WIDGET (priv->sms_button), selected);
+  gtk_widget_set_sensitive (GTK_WIDGET (priv->save_button), selected);
+  gtk_widget_set_sensitive (GTK_WIDGET (priv->delete_button), selected);
+}
+
 static gint
 sort_by_date (MokoJournalEntry *a, MokoJournalEntry *b)
 {
@@ -632,7 +748,7 @@ moko_history_init (MokoHistory *history)
   gint i;
   GtkListStore *store;
   GtkTreeIter iter;
-  GtkWidget *toolbar, *combo, *treeview, *image, *scroll;
+  GtkWidget *toolbar, *combo, *image, *scroll;
   GtkToolItem *item;
   GtkCellRenderer *renderer;
   GdkPixbuf *icon;
@@ -660,25 +776,31 @@ moko_history_init (MokoHistory *history)
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_dial_clicked), (gpointer)history);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
+  priv->dial_button = item;
 
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
-  
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/sms.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "SMS");
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_sms_clicked), (gpointer)history); 
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
+  priv->sms_button = item;
 
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
+  item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
+  gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (item, "clicked", 
+                    G_CALLBACK (on_save_clicked), history); 
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
+  priv->save_button = item;
   
   item = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_delete_clicked), (gpointer)history); 
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
+  priv->delete_button = item;
   
   /* Filter combo */
   store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_INT);
@@ -709,6 +831,23 @@ moko_history_init (MokoHistory *history)
                                      2, HISTORY_FILTER_ALL,
                                      -1);
   
+  
+  /* add to contact/save menu */
+  GtkWidget *menu_item;
+  
+  priv->save_menu = gtk_menu_new ();
+  gtk_menu_attach_to_widget (GTK_MENU (priv->save_menu), GTK_WIDGET (priv->save_button), NULL);
+
+  menu_item = gtk_menu_item_new_with_label ("New Contact");
+  gtk_menu_shell_append (GTK_MENU_SHELL (priv->save_menu), menu_item);
+  
+  menu_item = gtk_menu_item_new_with_label ("Add to Contact");
+  gtk_menu_shell_append (GTK_MENU_SHELL (priv->save_menu), menu_item);
+  
+  gtk_widget_show_all (priv->save_menu);
+  
+  
+  /* filter combo */
   combo = gtk_combo_box_new_with_model (GTK_TREE_MODEL (store));
   priv->combo  = combo;
   gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
@@ -734,10 +873,13 @@ moko_history_init (MokoHistory *history)
   scroll = moko_finger_scroll_new ();
   gtk_box_pack_start (GTK_BOX (history), scroll, TRUE, TRUE, 0);
 
-  treeview = priv->treeview = gtk_tree_view_new ();
-  gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (treeview), TRUE);
-  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
-  gtk_container_add (GTK_CONTAINER (scroll), treeview);
+  priv->treeview = gtk_tree_view_new ();
+  gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (priv->treeview), TRUE);
+  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (priv->treeview), FALSE);
+  gtk_container_add (GTK_CONTAINER (scroll), priv->treeview);
+  
+  g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (priv->treeview)),
+		    "changed", G_CALLBACK (on_tree_selection_changed), history);
 
   gtk_widget_show_all (GTK_WIDGET (history));
 }
