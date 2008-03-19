@@ -10,6 +10,10 @@ AC_CONFIG_FILES([
 Makefile
 openmoko-standard/Makefile
 openmoko-standard/22x22/Makefile
+openmoko-standard/22x22/actions/Makefile
+openmoko-standard/22x22/apps/Makefile
+openmoko-standard/22x22/categories/Makefile
+openmoko-standard/22x22/places/Makefile
 openmoko-standard/22x22/stock/Makefile
 openmoko-standard/32x32/Makefile
 openmoko-standard/32x32/apps/Makefile

@@ -2,16 +2,51 @@
 Name=OpenMoko
 Comment=OpenMoko Icon Theme
 
-Directories=22x22/stock,32x32/actions,32x32/apps,32x32/categories,32x32/places,32x32/stock,36x36/stock,48x48/actions,48x48/apps,48x48/categories,48x48/places,48x48/stock,128x128/actions,128x128/apps,128x128/categories,128x128/places
+Directories=128x128/apps,128x128/places,128x128/actions,128x128/categories,22x22/apps,22x22/stock,22x22/places,22x22/actions,22x22/categories,32x32/apps,32x32/stock,32x32/places,32x32/actions,32x32/categories,36x36/stock,48x48/apps,48x48/stock,48x48/places,48x48/actions,48x48/categories,
+
+[128x128/apps]
+Size=128
+Context=apps
+Type=Fixed
+
+[128x128/places]
+Size=128
+Context=places
+Type=Fixed
+
+[128x128/actions]
+Size=128
+Context=actions
+Type=Fixed
+
+[128x128/categories]
+Size=128
+Context=categories
+Type=Fixed
+
+[22x22/apps]
+Size=22
+Context=apps
+Type=Fixed
 
 [22x22/stock]
 Size=22
 Context=stock
 Type=Fixed
 
-[32x32/actions]
-Size=32
+[22x22/places]
+Size=22
+Context=places
+Type=Fixed
+
+[22x22/actions]
+Size=22
 Context=actions
+Type=Fixed
+
+[22x22/categories]
+Size=22
+Context=categories
 Type=Fixed
 
 [32x32/apps]
@@ -19,9 +54,9 @@ Size=32
 Context=apps
 Type=Fixed
 
-[32x32/categories]
+[32x32/stock]
 Size=32
-Context=categories
+Context=stock
 Type=Fixed
 
 [32x32/places]
@@ -29,19 +64,19 @@ Size=32
 Context=places
 Type=Fixed
 
-[32x32/stock]
+[32x32/actions]
 Size=32
-Context=stock
+Context=actions
+Type=Fixed
+
+[32x32/categories]
+Size=32
+Context=categories
 Type=Fixed
 
 [36x36/stock]
 Size=36
 Context=stock
-Type=Fixed
-
-[48x48/actions]
-Size=48
-Context=actions
 Type=Fixed
 
 [48x48/apps]
@@ -54,32 +89,17 @@ Size=48
 Context=stock
 Type=Fixed
 
-[48x48/categories]
-Size=48
-Context=categories
-Type=Fixed
-
 [48x48/places]
 Size=48
 Context=places
 Type=Fixed
 
-[128x128/actions]
-Size=128
+[48x48/actions]
+Size=48
 Context=actions
 Type=Fixed
 
-[128x128/apps]
-Size=128
-Context=apps
-Type=Fixed
-
-[128x128/categories]
-Size=128
+[48x48/categories]
+Size=48
 Context=categories
-Type=Fixed
-
-[128x128/places]
-Size=128
-Context=places
 Type=Fixed
