@@ -48,7 +48,7 @@ Index: u-boot/drivers/video/cfb_console.c
 +	switch (c) {
 +		case 'J':
 +			/* assume num1 == 2 */
-+			memsetl(CONSOLE_ROW_FIRST, CONSOLE_SIZE,
++			memsetl(CONSOLE_ROW_FIRST, CONSOLE_SIZE >> 2,
 +			    CONSOLE_BG_COL);
 +			break;
 +		case 'H':
