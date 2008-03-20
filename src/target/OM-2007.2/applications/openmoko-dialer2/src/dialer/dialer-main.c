@@ -141,6 +141,7 @@ int main (int argc, char **argv)
 
   /* Notebook */
   data->notebook = gtk_notebook_new ();
+  gtk_widget_set_name (data->notebook, "openmoko-dialer-notebook");
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data->notebook), GTK_POS_BOTTOM);
   gtk_container_add (GTK_CONTAINER (window), data->notebook);
 
