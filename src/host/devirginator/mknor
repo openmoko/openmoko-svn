@@ -74,7 +74,7 @@ pngtopnm tmp/System_boot.png |
 ./envedit.pl -D GTA02 -D NOR_ENV -f environment.in -o _env
 
 ./blink.pl \
-  "$1"@0 \
+  "$uboot"@0 \
   _splash@0x40000 \
   '"autoscr 0x18050100"'@0x50000 \
   _script@0x050100 \
