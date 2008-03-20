@@ -270,7 +270,6 @@ on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
     
     gtk_dialog_run (GTK_DIALOG (window));
     gtk_widget_destroy (window);
-    e_book_
   }
   
   g_free (number);
