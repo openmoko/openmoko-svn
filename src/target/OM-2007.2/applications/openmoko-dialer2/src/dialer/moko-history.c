@@ -30,6 +30,11 @@
 #include <moko-stock.h>
 #include <moko-finger-scroll.h>
 
+#include <libebook/e-book.h>
+
+#include "hito-contact-view.h"
+#include "hito-contact-store.h"
+
 #include "moko-contacts.h"
 #include "moko-history.h"
 
@@ -226,7 +231,47 @@ on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
   if (action == 1)
   { /* create new contact */ }
   else
-  {/* add to contact */ } 
+  {
+    EBook *book;
+    EBookQuery *query;
+    EBookView *view;
+    GtkWidget *window, *contacts_treeview, *scroll;
+    GtkTreeModel *store;
+    GError *err = NULL;
+    
+    window = gtk_dialog_new_with_buttons ("Add to Contact", NULL, 0,
+					  "Cancel", GTK_RESPONSE_CANCEL,
+					  "Add", GTK_RESPONSE_OK,
+					  NULL);
+    
+    book = e_book_new_system_addressbook (&err);
+    if (err)
+      return;
+    e_book_open (book, FALSE, &err);
+    if (err)
+     return;
+    query = e_book_query_any_field_contains (NULL);
+    e_book_get_book_view (book, query, NULL, 0, &view, &err);
+    if (err)
+      return;
+
+    e_book_query_unref (query);  
+    e_book_view_start (view);
+    
+    store = hito_contact_store_new (view);
+    contacts_treeview = hito_contact_view_new (HITO_CONTACT_STORE (store), NULL);
+    
+    scroll = moko_finger_scroll_new ();
+    gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (window)->vbox), scroll);
+    
+    gtk_container_add (GTK_CONTAINER (scroll), contacts_treeview);
+    
+    gtk_widget_show_all (scroll);
+    
+    gtk_dialog_run (GTK_DIALOG (window));
+    gtk_widget_destroy (window);
+    e_book_
+  }
   
   g_free (number);
 }

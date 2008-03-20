@@ -1,5 +1,14 @@
 2008-03-20  Thomas Wood  <thomas@openedhand.com>
 
+	* Makefile.am:
+	* configure.ac:
+	* src/dialer/Makefile.am:
+	* src/dialer/moko-history.c: (on_btn_save_clicked):
+
+	Display a list of contacts when "Add to contact" is clicked
+
+2008-03-20  Thomas Wood  <thomas@openedhand.com>
+
 	* src/dialer/dialer-main.c: (main): Set a widget name on the dial pad
 					    for theming
 

@@ -37,6 +37,21 @@ fi
 AC_SUBST(DIALER_CFLAGS)
 AC_SUBST(DIALER_LIBS)
 
+
+# deps for libhito
+PKG_CHECK_MODULES(CONTACTS, glib-2.0 glib-2.0 gtk+-2.0 libebook-1.2)
+
+old_cflags=$CFLAGS
+CFLAGS=$CONTACTS_CFLAGS
+AC_CHECK_TYPE(EContactPhotoType, [], [], [#include <libebook/e-book.h>])
+CFLAGS=$old_cflags
+
+if test $ac_cv_type_EContactPhotoType = yes; then
+	AC_DEFINE(HAVE_PHOTO_TYPE, 1, [Defined if EContactPhotoType exists])
+fi
+
+
+
 dnl ==============================================
 dnl DBUS
 dnl ==============================================
@@ -56,6 +71,7 @@ AC_SUBST(DBUS_GLIB_BIN)
 # output stuff
 AC_OUTPUT([
 Makefile
+libhito/Makefile
 src/Makefile
 src/common/Makefile
 src/dialer/Makefile
