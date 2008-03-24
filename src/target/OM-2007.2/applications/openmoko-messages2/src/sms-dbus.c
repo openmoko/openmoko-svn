@@ -82,8 +82,8 @@ static gboolean
 send_message_idle (SmsDbusData *data)
 {
 	if (data->data->book_seq_complete) {
-		if (sms_select_contact (data->data, data->uid))
-			sms_compose_refresh (data->data);
+		sms_select_contact (data->data, data->uid);
+		sms_compose_refresh (data->data,data->number);
 
 		free_data (data);
 		return FALSE;
@@ -118,22 +118,19 @@ sms_dbus_send_message (SmsDbus *sms_dbus, const gchar *uid, const gchar *number,
 {
 	EContact *contact;
 	
-	if (e_book_get_contact (sms_dbus->priv->ebook, uid, &contact, error)) {
-		SmsDbusData *data;
-		
-		g_object_unref (contact);
-		
-		data = g_slice_new0 (SmsDbusData);
-		data->data = sms_dbus->priv;
-		data->uid = g_strdup (uid);
-		data->number = g_strdup (number);
-		data->message = g_strdup (message);
-		
-		g_idle_add ((GSourceFunc)send_message_idle, data);
-		
-		return TRUE;
-	} else
-		return FALSE;
+	SmsDbusData *data;
+	
+	g_object_unref (contact);
+	
+	data = g_slice_new0 (SmsDbusData);
+	data->data = sms_dbus->priv;
+	data->uid = g_strdup (uid);
+	data->number = g_strdup (number);
+	data->message = g_strdup (message);
+	g_idle_add ((GSourceFunc)send_message_idle, data);
+
+	return TRUE;
+
 }
 
 gboolean

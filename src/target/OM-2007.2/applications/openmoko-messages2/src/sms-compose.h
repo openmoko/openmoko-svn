@@ -23,6 +23,6 @@
 #include "sms.h"
 
 GtkWidget *sms_compose_page_new (SmsData *data);
-void sms_compose_refresh (SmsData *data);
+void sms_compose_refresh (SmsData *data, const gchar *number);
 
 #endif /* SMS_COMPOSE_H */

@@ -54,47 +54,56 @@ page_shown (SmsData *data)
 			"stock_person", GTK_ICON_SIZE_DIALOG);
 		gtk_label_set_markup (GTK_LABEL (data->contact_label),
 			"<big>Unknown</big>");
-		return;
+		if(!data->recipient_number)			
+			return;
 	}
 	
-	/* Fill contact photo */
-	photo = sms_contact_load_photo (contact);
-	if (photo) {
-		gtk_image_set_from_pixbuf (GTK_IMAGE (
-			data->contact_image), photo);
-		g_object_unref (photo);
-	} else {
-		gtk_image_set_from_icon_name (GTK_IMAGE (data->contact_image),
-			"stock_person", GTK_ICON_SIZE_DIALOG);
-	}
-	
-	/* Fill contact label */
-	string = g_strconcat ("<big>", e_contact_get_const (
-		contact, E_CONTACT_FULL_NAME), "</big>", NULL);
-	gtk_label_set_markup (GTK_LABEL (data->contact_label), string);
-	g_free (string);
-	
-	/* Fill number combo */
-	numbers = hito_vcard_get_named_attributes (E_VCARD (contact), EVC_TEL);
-	for (n = numbers; n; n = n->next) {
-		gchar *number = hito_vcard_attribute_get_value_string (
-			(EVCardAttribute *)n->data);
-
-		if (!number) continue;
-		
+	if(data->recipient_number) {
+		/* Fill number combo */
 		gtk_combo_box_append_text (GTK_COMBO_BOX (data->number_combo),
-			number);
-		g_free (number);
-	}
-	g_list_free (numbers);
+			data->recipient_number);
+		
+		gtk_combo_box_set_active (GTK_COMBO_BOX (data->number_combo), 0);
+		gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
+			data->number_combo)->child),
+			gtk_combo_box_get_active_text (
+			GTK_COMBO_BOX (data->number_combo)));
+	} else {
+		/* Fill contact photo */
+		photo = sms_contact_load_photo (contact);
+		if (photo) {
+			gtk_image_set_from_pixbuf (GTK_IMAGE (
+				data->contact_image), photo);
+			g_object_unref (photo);
+		} else {
+			gtk_image_set_from_icon_name (GTK_IMAGE 
+				(data->contact_image),
+				"stock_person", GTK_ICON_SIZE_DIALOG);
+		}
+		/* Fill contact label */
+		string = g_strconcat ("<big>", e_contact_get_const (
+		contact, E_CONTACT_FULL_NAME), "</big>", NULL);
+		gtk_label_set_markup (GTK_LABEL (data->contact_label), string);
+		g_free (string);
 	
-	gtk_combo_box_set_active (GTK_COMBO_BOX (data->number_combo), 0);
-	gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
-		data->number_combo)->child),
+		/* Fill number combo */
+		numbers = hito_vcard_get_named_attributes (E_VCARD (contact), EVC_TEL);
+		for (n = numbers; n; n = n->next) {
+			gchar *number = hito_vcard_attribute_get_value_string (
+				(EVCardAttribute *)n->data);
+			if (!number) continue;
+			gtk_combo_box_append_text (GTK_COMBO_BOX (data->number_combo),
+				number);
+			g_free (number);
+		}
+		g_list_free (numbers);
+		gtk_combo_box_set_active (GTK_COMBO_BOX (data->number_combo), 0);
+		gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
+			data->number_combo)->child),
 		gtk_combo_box_get_active_text (
 			GTK_COMBO_BOX (data->number_combo)));
-	
-	g_object_unref (contact);
+		g_object_unref (contact);
+	}
 }
 
 static void
@@ -106,8 +115,9 @@ page_hidden (SmsData *data)
 }
 
 void
-sms_compose_refresh (SmsData *data)
+sms_compose_refresh (SmsData *data, const gchar *number)
 {
+	data->recipient_number = g_strdup (number);
 	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
 	    SMS_PAGE_COMPOSE) {
 		page_hidden (data);

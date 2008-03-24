@@ -1,3 +1,16 @@
+2008-03-24  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/sms-compose.c: (page_shown), (sms_compose_refresh):
+	Display the recipient_number from Call logs (bug#1245)
+
+	* src/sms-compose.h: (sms_compose_refresh):	
+	* src/sms-dbus.c: (send_message_idle), (sms_dbus_send_message):
+
+2008-03-09  Erin Yueh  <erin_yueh@openmoko.com>	
+
+	* src/sms-notes.c: (notes_visible_func)	
+	fix the category filter (bug#1246)	
+
 2008-01-22  Chris Lord  <chris@openedhand.com>
 
 	* src/sms.h:
