@@ -2,15 +2,14 @@ This directory contains files used for OpenMoko which are not qemu
 code but are in some way related or useful to have at hand.
 
 The kernel patch with GTA02fake support is based on:
- * kernel 2.6.22.5
+ * kernel 2.6.24
  * OpenMoko patchset revision 3610 from
-   http://svn.openmoko.org/trunk/src/target/kernel/patches/
- * Samuel's Atheros WLAN driver revision 3610 from
-   http://svn.openmoko.org/developers/sameo/patches/ar6k-atheros/
+   http://svn.openmoko.org/branches/src/target/kernel/2.6.24.x/patches/
 
 The following sequence can be used to obtain a working tree on which the
 patch can be applied:
 
+cg-clone git://source.mvista.com/git/linux-omap-2.6.git
 tar -xvjf linux-2.6.22.5.tar.bz2
 cd linux-2.6.22.5
 cg-init

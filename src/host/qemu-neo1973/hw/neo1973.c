@@ -355,6 +355,9 @@ struct piccolo_s {
     uint8_t regs[0x40];
     int reg;
 
+    int enable;
+    uint64_t interval;
+
     QEMUTimer *sample;
 };
 
@@ -367,24 +370,88 @@ void piccolo_reset(i2c_slave *i2c)
     s->regs[0x20] = 0x07;	/* Ctrl_Reg1 */
 }
 
+static void piccolo_data_update(struct piccolo_s *s, int mask)
+{
+    /* TODO: poll the Qemu SDL window position to find 2d acceleration */
+
+    /* 1G */
+    int x = 0x00, y = 0x00, z = 0x10;
+
+    if (mask & (1 << 0))
+        s->regs[0x29] = x;
+    if (mask & (1 << 1))
+        s->regs[0x2b] = y;
+    if (mask & (1 << 2))
+        s->regs[0x2d] = z;
+}
+
+static void piccolo_intr_update(struct piccolo_s *s)
+{
+    int inv = (s->regs[0x22] >> 7) & 1;
+    int level;
+    int i;
+
+    for (i = 0; i < 6; i += 3) {
+        switch ((s->regs[0x22] >> i) & 7) {
+        case 0:
+        default:
+            level = 0;
+            break;
+        case 1:
+            level = (s->regs[0x31] >> 6) & 1;
+            break;
+        case 2:
+            level = (s->regs[0x35] >> 6) & 1;
+            break;
+        case 3:
+            level = ((s->regs[0x31] | s->regs[0x35]) >> 6) & 1;
+            break;
+        case 4:
+            level = !!s->regs[0x27];
+            break;
+        }
+
+        qemu_set_irq(s->intr[!!i], level ^ inv);
+    }
+}
+
+static void piccolo_ff_wu_update(struct piccolo_s *s)
+{
+    /* TODO: update high and low interrupts */
+    /* TODO: also update the counter and check treshold */
+}
+
 static void piccolo_sample_sched(struct piccolo_s *s)
 {
-    int rate = (s->regs[0x20] & (1 << 7)) ? 400 : 100;	/* DR */
-
-    qemu_mod_timer(s->sample,
-                    qemu_get_clock(vm_clock) + ticks_per_sec / rate);
+    qemu_mod_timer(s->sample, qemu_get_clock(vm_clock) + s->interval);
 }
 
 static void piccolo_sample_tick(void *opaque)
 {
     struct piccolo_s *s = (struct piccolo_s *) opaque;
+    int nu_data = s->regs[0x20] & 7;
 
-    /* TODO */
+    if (nu_data == 7)
+        nu_data |= 8;
+    s->regs[0x27] |= nu_data | ((s->regs[0x27] & nu_data) << 4);
+
+    piccolo_data_update(s, nu_data & 7);
+    piccolo_ff_wu_update(s);
+    piccolo_intr_update(s);
     piccolo_sample_sched(s);
 }
 
 static void piccolo_sample_update(struct piccolo_s *s)
 {
+    int rate = (s->regs[0x20] & (1 << 7)) ? 400 : 100;	/* DR */
+
+    s->enable = (s->regs[0x20] >> 6) & 1;		/* PD */
+    if (!s->enable) {
+        qemu_del_timer(s->sample);
+        return;
+    }
+
+    s->interval = ticks_per_sec / rate;
     if (!(s->regs[0x20] & 7))				/* Xen | Yen | Zen */
         qemu_del_timer(s->sample);
     else if (!qemu_timer_pending(s->sample))
@@ -403,6 +470,7 @@ static int piccolo_rx(i2c_slave *i2c)
 {
     struct piccolo_s *s = (struct piccolo_s *) i2c;
     int reg = s->reg;
+    int ret;
 
     if (reg >= 0x80) {
         reg -= 0x80;
@@ -424,13 +492,22 @@ static int piccolo_rx(i2c_slave *i2c)
     case 0x2b:	/* OutY */
     case 0x2d:	/* OutZ */
     case 0x30:	/* FF_WU_CFG_1 */
-    case 0x31:	/* FF_WU_SRC_1 */
     case 0x32:	/* FF_WU_THS_1 */
     case 0x33:	/* FF_WU_DURATION_1 */
     case 0x34:	/* FF_WU_CFG_2 */
-    case 0x35:	/* FF_WU_SRC_2 */
     case 0x36:	/* FF_WU_THS_2 */
     case 0x37:	/* FF_WU_DURATION_2 */
+        break;
+
+    case 0x31:	/* FF_WU_SRC_1 */
+    case 0x35:	/* FF_WU_SRC_2 */
+        ret = s->regs[reg];
+        if ((s->regs[reg - 1] >> 6) & 1) {			/* LIR */
+            s->regs[reg] = 0;
+            piccolo_intr_update(s);
+        }
+        return ret;
+
     case 0x38:	/* CLICK_CFG */
     case 0x39:	/* CLICK_SRC */
     case 0x3b:	/* CLICK_THSY_X */
@@ -438,7 +515,6 @@ static int piccolo_rx(i2c_slave *i2c)
     case 0x3d:	/* CLICK_timelimit */
     case 0x3e:	/* CLICK_latency */
     case 0x3f:	/* CLICK_window */
-        break;
     default:
         fprintf(stderr, "%s: unknown register %02x\n", __FUNCTION__, reg);
         return 0x00;
@@ -470,8 +546,8 @@ static int piccolo_tx(i2c_slave *i2c, uint8_t data)
         fprintf(stderr, "%s: write to a \"do not modify\" register %02x\n",
                         __FUNCTION__, s->reg);
         fprintf(stderr, "%s: may cause permanent damage!\n", __FUNCTION__);
-        s->regs[reg] = data;
         break;
+
     case 0x20:	/* Ctrl_Reg1 */
         s->regs[reg] = data;
         if (data & (3 << 3))
@@ -480,13 +556,24 @@ static int piccolo_tx(i2c_slave *i2c, uint8_t data)
         break;
 
     case 0x21:	/* Ctrl_Reg2 */
+        if (data & (1 << 6)) {
+            /* Memory reboot */
+            data &= ~(1 << 6);
+        }
+        break;
+
     case 0x22:	/* Ctrl_Reg3 */
+        piccolo_intr_update(s);
+        break;
+
     case 0x30:	/* FF_WU_CFG_1 */
     case 0x32:	/* FF_WU_THS_1 */
     case 0x33:	/* FF_WU_DURATION_1 */
     case 0x34:	/* FF_WU_CFG_2 */
     case 0x36:	/* FF_WU_THS_2 */
     case 0x37:	/* FF_WU_DURATION_2 */
+        break;
+
     case 0x38:	/* CLICK_CFG */
     case 0x39:	/* CLICK_SRC */
     case 0x3b:	/* CLICK_THSY_X */
@@ -494,15 +581,12 @@ static int piccolo_tx(i2c_slave *i2c, uint8_t data)
     case 0x3d:	/* CLICK_timelimit */
     case 0x3e:	/* CLICK_latency */
     case 0x3f:	/* CLICK_window */
-        /* TODO */
-        s->regs[reg] = data;
-        break;
-
     default:
         fprintf(stderr, "%s: unknown register %02x\n", __FUNCTION__, reg);
         return 1;
     }
 
+    s->regs[reg] = data;
     return 0;
 }
 
@@ -520,6 +604,8 @@ static int piccolo_load(QEMUFile *f, void *opaque, int version_id)
 
     qemu_get_buffer(f, s->regs, sizeof(s->regs));
     i2c_slave_load(f, &s->i2c);
+
+    piccolo_sample_update(s);
     return 0;
 }
 
