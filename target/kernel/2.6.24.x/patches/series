@@ -116,3 +116,6 @@ kexec-atags.patch
 
 # Preliminary suspend/resume power saving improvements
 suspend-prelim1.patch
+
+# temporary work-around
+gta02-sound-bandaid.patch
