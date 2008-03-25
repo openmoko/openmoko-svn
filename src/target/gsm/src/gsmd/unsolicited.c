@@ -348,23 +348,31 @@ static int clip_parse(const char *buf, int len, const char *param,
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CLIP,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
-	const char *comma = strchr(param, ',');
+	struct gsm_extrsp *er;
 
-	if (!ucmd)
+       if (!ucmd)
 		return -ENOMEM;
 	
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 
-	if (!comma)
-		return -EINVAL;
+	er = extrsp_parse(gsmd_tallocs, param);
 
-	
-	if (comma - param > GSMD_ADDR_MAXLEN)
-		return -EINVAL;
+	if ( !er ) 
+		return -ENOMEM;
 
-	aux->u.clip.addr.number[0] = '\0';
-	strncat(aux->u.clip.addr.number, param, comma-param);
-	/* FIXME: parse of subaddr, etc. */
+	if ( er->num_tokens >= 2 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+		/*
+		 * <number>,<type>[,<subaddr>,<satype>[,[<alpha>][,<CLI validity>]]]
+		 */
+		
+		strcpy(aux->u.clip.addr.number, er->tokens[0].u.string);
+		aux->u.clip.addr.type = er->tokens[1].u.numeric;
+	} else {
+		DEBUGP("Invalid Input : Parse error\n");
+		return -EINVAL;
+	}
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CLIP);
 }
@@ -376,23 +384,32 @@ static int colp_parse(const char *buf, int len, const char *param,
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_OUT_COLP,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
-	const char *comma = strchr(param, ',');
+	struct gsm_extrsp *er;
 
 	if (!ucmd)
 		return -ENOMEM;
 	
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 
-	if (!comma)
+	er = extrsp_parse(gsmd_tallocs, param);
+
+	if ( !er ) 
+		return -ENOMEM;
+
+	if ( er->num_tokens >= 2 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC ) {
+		/*
+		 * <number>,<type>[,<subaddr>,<satype> [,<alpha>]]
+		 */
+		 
+		strcpy(aux->u.colp.addr.number, er->tokens[0].u.string);
+		aux->u.colp.addr.type = er->tokens[1].u.numeric;		
+	} else {
+		DEBUGP("Invalid Input : Parse error\n");
 		return -EINVAL;
+	}
 	
-	if (comma - param > GSMD_ADDR_MAXLEN)
-		return -EINVAL;
-
-	aux->u.colp.addr.number[0] = '\0';
-	strncat(aux->u.colp.addr.number, param, comma-param);
-	/* FIXME: parse of subaddr, etc. */
-
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_COLP);
 }
 
