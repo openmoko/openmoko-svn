@@ -1,3 +1,8 @@
+2008-03-25  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialog/moko-history.c: Implement "Create New Contact" from call
+	log
+
 2008-03-20  Thomas Wood  <thomas@openedhand.com>
 
 	* Makefile.am:

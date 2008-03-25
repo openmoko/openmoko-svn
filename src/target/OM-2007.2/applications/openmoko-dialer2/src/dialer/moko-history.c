@@ -220,6 +220,48 @@ on_sms_clicked (GtkWidget *button, MokoHistory *history)
 }
 
 static void
+create_new_contact_from_number (gchar *number)
+{
+  GtkWidget *dialog, *name, *label;
+
+  dialog = gtk_dialog_new_with_buttons ("Save as Contact",
+             NULL, GTK_DIALOG_MODAL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+	     GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
+
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+
+  label = gtk_label_new ("Enter a name for the contact");
+  name = gtk_entry_new ();
+
+  gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG(dialog)->vbox), label);
+  gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG(dialog)->vbox), name);
+
+  gtk_widget_show (label);
+  gtk_widget_show (name);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    EContact *contact;
+    EBook *book;
+
+    /* create contact */
+    contact = e_contact_new ();
+    e_contact_set (contact, E_CONTACT_FULL_NAME, gtk_entry_get_text (GTK_ENTRY (name)));
+    e_contact_set (contact, E_CONTACT_PHONE_OTHER, number);
+
+    /* open address book */
+    book = e_book_new_system_addressbook (NULL);
+    e_book_open (book, FALSE, NULL);
+
+    /* add contact to address book, and close */
+    e_book_add_contact (book, contact, NULL);
+    g_object_unref (book);
+    g_object_unref (contact);
+  }
+  gtk_widget_destroy (dialog);
+}
+
+static void
 on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
 {
   gint action = info->response_id;
@@ -229,7 +271,10 @@ on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
   gtk_widget_destroy (info->dialog);
   
   if (action == 1)
-  { /* create new contact */ }
+  {
+    /* create new contact */
+    create_new_contact_from_number (number);
+  }
   else
   {
     EBook *book;
