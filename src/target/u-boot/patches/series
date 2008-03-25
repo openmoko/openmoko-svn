@@ -95,3 +95,9 @@ loadenv.patch
 
 # fix and improve power management
 dont-smoke.patch
+
+# Experimental. Not intended for general use.
+###wait-for-power-DONTUSE.patch
+
+# Experimental. Please test.
+remap-vec.patch

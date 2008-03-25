@@ -1,0 +1,89 @@
+This patch changes how we avoid getting killed by an interrupt if the vectors
+at address zero and the u-boot we're running don't agree.
+
+Instead of copying the vectors to SteppingStone, which introduced the very
+ugly need to wait until AUX was released, and didn't work for NAND, we copy
+the vectors to the beginning of our DRAM and map the address range 0x0...
+to 0x3...
+
+This obsoletes nor-irqvec.patch
+
+We could probably also use the same logic to replace
+uboot-s3c2410-norelocate_irqvec_cpy.patch
+but then, never change a running system ;-)
+
+Note: this is still experimental. Please give it a solid beating.
+
+- Werner
+
+Index: u-boot/board/neo1973/gta02/gta02.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta02/gta02.c
++++ u-boot/board/neo1973/gta02/gta02.c
+@@ -220,17 +220,26 @@
+ 	dcache_enable();
+ 
+ 	/*
+-	 * Since the NOR is replaced by SteppingStone when the AUX button is
+-	 * released, we have to wait for this and copy our exception vectors
+-	 * before we can let u-boot enable interrupts.
++	 * Since the NOR at address 0 is replaced by SteppingStone when the AUX
++	 * button is released, we would crash when an interrupt arrives (e.g.,
++	 * on USB insertion).
++	 *
++	 * We solve this as follows: we copy the vector table to RAM at address
++	 * 0x30000000 and then use the PID feature in the 920T MMU to map all
++	 * addresses in the range 0x0....... to 0x3....... without actually
++	 * setting up page mappings in the MMU. Thus, vectors are then
++	 * retrieved from their location in RAM.
++	 *
++	 * Note that the mapping is done in lib_arm/interrupts.c, so that it
++	 * automatically tracks whether we allow interrupts or not. This is
++	 * particularly necessary when we boot, since the operating system may
++	 * not expect to find this sort of mapping to be active.
+ 	 */
+ 	if (booted_from_nor) {
+ 		extern char _start;
+ 
+-		while (neo1973_aux_key_pressed());
+-		memcpy((void *) 0, &_start, 0x40);
++		memcpy((void *) 0x30000000, &_start, 0x40);
+ 	}
+-
+ 	return 0;
+ }
+ 
+Index: u-boot/lib_arm/interrupts.c
+===================================================================
+--- u-boot.orig/lib_arm/interrupts.c
++++ u-boot/lib_arm/interrupts.c
+@@ -43,9 +43,14 @@
+ void enable_interrupts (void)
+ {
+ 	unsigned long temp;
+-	__asm__ __volatile__("mrs %0, cpsr\n"
++	__asm__ __volatile__(
++#ifdef CONFIG_GTA02_REVISION
++			     "mov %0, #0x30000000\n"
++			     "mcr p15, 0, %0, c13, c0\n"
++#endif
++			     "mrs %0, cpsr\n"
+ 			     "bic %0, %0, #0x80\n"
+-			     "msr cpsr_c, %0"
++			     "msr cpsr_c, %0\n"
+ 			     : "=r" (temp)
+ 			     :
+ 			     : "memory");
+@@ -61,7 +66,11 @@
+ 	unsigned long old,temp;
+ 	__asm__ __volatile__("mrs %0, cpsr\n"
+ 			     "orr %1, %0, #0xc0\n"
+-			     "msr cpsr_c, %1"
++			     "msr cpsr_c, %1\n"
++#ifdef CONFIG_GTA02_REVISION
++			     "mov %1, #0\n"
++			     "mcr p15, 0, %1, c13, c0\n"
++#endif
+ 			     : "=r" (old), "=r" (temp)
+ 			     :
+ 			     : "memory");
