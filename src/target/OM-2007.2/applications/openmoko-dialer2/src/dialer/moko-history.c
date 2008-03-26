@@ -34,6 +34,13 @@
 
 #include "hito-contact-view.h"
 #include "hito-contact-store.h"
+#include "hito-group-store.h"
+#include "hito-group-combo.h"
+#include "hito-all-group.h"
+#include "hito-separator-group.h"
+#include "hito-group.h"
+#include "hito-no-category-group.h"
+#include "hito-vcard-util.h"
 
 #include "moko-contacts.h"
 #include "moko-history.h"
@@ -71,6 +78,7 @@ struct _SaveButtonInfo
   GtkWidget *dialog;
   gint response_id;
   gchar *number;
+  MokoHistory *history;
 };
 
 typedef struct _SaveButtonInfo SaveButtonInfo;
@@ -243,18 +251,25 @@ create_new_contact_from_number (gchar *number)
   {
     EContact *contact;
     EBook *book;
+    EVCardAttribute *attr;
 
     /* create contact */
     contact = e_contact_new ();
+    /* add name */
     e_contact_set (contact, E_CONTACT_FULL_NAME, gtk_entry_get_text (GTK_ENTRY (name)));
-    e_contact_set (contact, E_CONTACT_PHONE_OTHER, number);
+    /* add number */
+    attr = e_vcard_attribute_new ("", EVC_TEL);
+    e_vcard_add_attribute_with_value (E_VCARD (contact), attr, number);
+    hito_vcard_attribute_set_type (attr, "Other");
 
     /* open address book */
+    /* TODO: check GErrors */
     book = e_book_new_system_addressbook (NULL);
     e_book_open (book, FALSE, NULL);
 
     /* add contact to address book, and close */
     e_book_add_contact (book, contact, NULL);
+
     g_object_unref (book);
     g_object_unref (contact);
   }
@@ -262,26 +277,13 @@ create_new_contact_from_number (gchar *number)
 }
 
 static void
-on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
+add_number_to_contact (gchar *number)
 {
-  gint action = info->response_id;
-  gchar *number = g_strdup (info->number);
-    
-  /* this also destroys info data */
-  gtk_widget_destroy (info->dialog);
-  
-  if (action == 1)
-  {
-    /* create new contact */
-    create_new_contact_from_number (number);
-  }
-  else
-  {
     EBook *book;
     EBookQuery *query;
     EBookView *view;
-    GtkWidget *window, *contacts_treeview, *scroll;
-    GtkTreeModel *store;
+    GtkWidget *window, *contacts_treeview, *scroll, *groups_combo;
+    GtkTreeModel *store, *group_store, *contact_filter;
     GError *err = NULL;
     
     window = gtk_dialog_new_with_buttons ("Add to Contact", NULL, 0,
@@ -302,21 +304,84 @@ on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
 
     e_book_query_unref (query);  
     e_book_view_start (view);
-    
+
+
     store = hito_contact_store_new (view);
-    contacts_treeview = hito_contact_view_new (HITO_CONTACT_STORE (store), NULL);
+
+    group_store = hito_group_store_new ();
+    hito_group_store_set_view (HITO_GROUP_STORE (group_store), view);
+    hito_group_store_add_group (HITO_GROUP_STORE (group_store), hito_all_group_new ());
+    hito_group_store_add_group (HITO_GROUP_STORE (group_store), hito_separator_group_new (-99));
+    hito_group_store_add_group (HITO_GROUP_STORE (group_store), hito_separator_group_new (99));
+    hito_group_store_add_group (HITO_GROUP_STORE (group_store), hito_no_category_group_new ());
+
+    contact_filter = hito_contact_model_filter_new (HITO_CONTACT_STORE (store));
+
+    groups_combo = hito_group_combo_new (HITO_GROUP_STORE (group_store));
+    hito_group_combo_connect_filter (HITO_GROUP_COMBO (groups_combo),
+                                   HITO_CONTACT_MODEL_FILTER (contact_filter));
+    gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (window)->vbox), groups_combo);
+
+
+    
+    contacts_treeview = hito_contact_view_new (HITO_CONTACT_STORE (store), HITO_CONTACT_MODEL_FILTER (contact_filter));
     
     scroll = moko_finger_scroll_new ();
+    gtk_widget_set_size_request (scroll, -1, 300);
     gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (window)->vbox), scroll);
     
     gtk_container_add (GTK_CONTAINER (scroll), contacts_treeview);
     
     gtk_widget_show_all (scroll);
+    gtk_widget_show_all (groups_combo);
     
-    gtk_dialog_run (GTK_DIALOG (window));
+    if (gtk_dialog_run (GTK_DIALOG (window)) == GTK_RESPONSE_OK)
+    {
+      GtkTreeIter iter;
+      EContact *contact;
+      EVCardAttribute *attr;
+      GtkTreeModel *model;
+      GtkTreeSelection *selection;
+
+      selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (contacts_treeview));
+
+      if (gtk_tree_selection_get_selected (selection, &model, &iter))
+      {
+        gtk_tree_model_get (model, &iter, COLUMN_CONTACT, &contact, -1);
+        if (contact)
+        {
+          attr = e_vcard_attribute_new ("", EVC_TEL);
+          e_vcard_add_attribute_with_value (E_VCARD (contact), attr, number);
+          hito_vcard_attribute_set_type (attr, "Other");
+          e_book_async_commit_contact (book, contact, NULL, NULL);
+          g_object_unref (contact);
+        }
+      }
+    }
+
     gtk_widget_destroy (window);
-  }
+    g_object_unref (book);
+}
+
+static void
+on_btn_save_clicked (GtkWidget *button, SaveButtonInfo *info)
+{
+  gint action = info->response_id;
+  gchar *number = g_strdup (info->number);
+  MokoHistory *history = info->history;
+    
+  /* this also destroys info data */
+  gtk_widget_destroy (info->dialog);
   
+  if (action == 1)
+  {
+    /* create new contact */
+    create_new_contact_from_number (number);
+  }
+  else
+  {
+    add_number_to_contact (number);
+  }
   g_free (number);
 }
 
@@ -365,6 +430,7 @@ on_save_clicked (GtkWidget *button, MokoHistory *history)
   btn_info = g_new0 (SaveButtonInfo, 1);
   btn_info->dialog = window;
   btn_info->response_id = 1;
+  btn_info->history = history;
   btn_info->number = g_strdup (number);
   g_signal_connect (btn, "clicked", G_CALLBACK (on_btn_save_clicked), btn_info);
   g_object_weak_ref (G_OBJECT (btn), (GWeakNotify) btn_save_info_weak_notify, btn_info);
@@ -374,6 +440,7 @@ on_save_clicked (GtkWidget *button, MokoHistory *history)
   btn_info = g_new0 (SaveButtonInfo, 1);
   btn_info->dialog = window;
   btn_info->response_id = 2;
+  btn_info->history = history;
   btn_info->number = g_strdup (number);
   g_signal_connect (btn, "clicked", G_CALLBACK (on_btn_save_clicked), btn_info);
   g_object_weak_ref (G_OBJECT (btn), (GWeakNotify) btn_save_info_weak_notify, btn_info);

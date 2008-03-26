@@ -1,3 +1,11 @@
+2008-03-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/moko-history.c: (create_new_contact_from_number),
+	(add_number_to_contact), (on_btn_save_clicked),
+	(btn_save_info_weak_notify), (on_save_clicked):
+
+	Implement "Add to Contact" from call log feature
+
 2008-03-25  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialog/moko-history.c: Implement "Create New Contact" from call
