@@ -92,6 +92,13 @@ style "moko-window-default" {
 
 class "GtkWidget" style "moko-window-default"
 
+style "multi-tap"
+{
+  bg[NORMAL] = "#000"
+  fg[NORMAL] = "#fff"
+}
+widget "multi-tap-window*" style "multi-tap"
+
 include "transparent"
 include "matchboxpanel"
 
