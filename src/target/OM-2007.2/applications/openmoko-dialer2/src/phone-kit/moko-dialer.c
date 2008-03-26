@@ -282,15 +282,20 @@ moko_dialer_hung_up (MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv; 
   
+  g_warning("moko_dialer_hung_up");
   if (!moko_network_get_lgsm_handle (priv->network, &handle, NULL))
     return;
-  
   if (priv->status != PK_DIALER_NORMAL) {
     priv->status = PK_DIALER_NORMAL;
     g_signal_emit (G_OBJECT (dialer), dialer_signals[STATUS_CHANGED], 0,
                    priv->status);
   }
+  /* Send ATH to hang up the call from gsmd */
   lgsm_voice_hangup (handle);
+  /* Stop the notification */
+  moko_notify_stop (priv->notify);
+  moko_talking_hide_window (MOKO_TALKING (priv->talking));
+  
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
   
 }
@@ -304,20 +309,21 @@ moko_dialer_rejected (MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  g_warning("moko_dialer_rejected");
   if (!moko_network_get_lgsm_handle (priv->network, &handle, NULL))
     return;
-
   if (priv->status != PK_DIALER_NORMAL) {
     priv->status = PK_DIALER_NORMAL;
     g_signal_emit (G_OBJECT (dialer), dialer_signals[STATUS_CHANGED], 0,
                    priv->status);
   }
 
+  /* Send ATH to hang up the call from gsmd */
+  lgsm_voice_hangup (handle);
   /* Stop the notification */
   moko_notify_stop (priv->notify);
-
-  lgsm_voice_hangup (handle);
-
+  moko_talking_hide_window (MOKO_TALKING (priv->talking));
+  
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
 
@@ -572,6 +578,9 @@ on_call_progress (MokoListener *listener, struct lgsm_handle *handle,
   switch (type) 
   {
     case GSMD_CALLPROG_DISCONNECT:
+      g_debug ("mokogsmd disconnect");
+      break;
+    
     case GSMD_CALLPROG_RELEASE:
       /* Finalise and add the journal entry */
       if (priv->journal && priv->entry)
@@ -597,14 +606,11 @@ on_call_progress (MokoListener *listener, struct lgsm_handle *handle,
         g_free (priv->incoming_clip);
       priv->incoming_clip = NULL;
 
-      moko_notify_stop (priv->notify);
-      moko_talking_hide_window (MOKO_TALKING (priv->talking));
-      g_debug ("mokogsmd disconnect");
+      g_debug ("mokogsmd release");
       break;
     
     case GSMD_CALLPROG_REJECT:
       moko_dialer_rejected (dialer);
-      moko_talking_hide_window (MOKO_TALKING (priv->talking));
       g_debug ("mokogsmd reject");
       break;
     

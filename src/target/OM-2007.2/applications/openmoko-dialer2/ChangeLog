@@ -1,3 +1,15 @@
+2008-03-26  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/phone-kit/moko-dialer.c: (moko_dialer_hung_up),
+	(moko_dialer_rejected), (on_call_progress):
+	
+	* src/phone-kit/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (on_reject_clicked),
+	(on_cancel_clicked), (window_delete_event_cb):
+
+	bug#1239: unable to terminate call
+	
+
 2008-03-26  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/moko-history.c: (create_new_contact_from_number),
@@ -28,6 +40,10 @@
 2008-03-19  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/moko-history.c: Add a "Save" button to the call log window
+
+2008-03-12  Erin Yueh <erin_yueh@openmoko.com>
+
+	* src/phone-kit/moko-talking.c: bug fixed for Call Direction
 
 2008-03-07  Chia-I Wu  <olv@openmoko.com>
 
@@ -65,6 +81,11 @@
  	* src/phone-kit/moko-marshal.list: ... this.
 
 	* src/phone-kit/moko-sms.c, src/phone-kit/Makefile.am: Updated.
+
+2008-03-05  Erin Yueh <erin_yueh@openmoko.com>
+
+	* src/dialer/moko-history.c: (on_sms_clicked):
+	add SMS clicked from call log history
 
 2008-03-03  Chris Lord  <chris@openedhand.com>
 

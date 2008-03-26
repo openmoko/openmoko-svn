@@ -121,6 +121,7 @@ moko_talking_reset_ui (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
   priv = MOKO_TALKING_GET_PRIVATE (talking);
+
   gtk_toggle_tool_button_set_active (
                       GTK_TOGGLE_TOOL_BUTTON (priv->speaker_toggle_btn), FALSE);
   moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->dtmf_display));
@@ -177,6 +178,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
                                  (gpointer)talking);
   priv->call_direction = CALL_DIRECTION_INCOMING;
   gtk_window_present (GTK_WINDOW (priv->window));
+  gtk_window_deiconify (GTK_WINDOW (priv->window));
 }
 
 static gboolean
@@ -206,11 +208,11 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   MokoTalkingPrivate *priv;
   gchar *markup = NULL;
 
+  moko_talking_reset_ui (talking);
+    
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
   
-  moko_talking_reset_ui (talking);
-
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show_all (priv->main_bar);
 
@@ -242,6 +244,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   priv->call_direction = CALL_DIRECTION_OUTGOING;
   
   gtk_window_present (GTK_WINDOW (priv->window));
+  gtk_window_deiconify (GTK_WINDOW (priv->window));
 }
 
 static gboolean
@@ -355,7 +358,7 @@ static void
 on_reject_clicked (GtkToolButton *button, MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
-
+  g_warning("on_reject_clicked");
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
@@ -380,6 +383,7 @@ on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
+  g_warning("on_cancel_clicked");
   /* stop call duration timer */
   if (priv->dtimer)
     g_timer_destroy(priv->dtimer);
@@ -482,6 +486,7 @@ static gboolean
 window_delete_event_cb (GtkWidget *widget, GdkEvent  *event, MokoTalking *talking)
 {
   MokoTalkingPrivate *priv = MOKO_TALKING_GET_PRIVATE (talking);
+  g_warning("window_delete_event_cb");
   if (priv->call_direction == CALL_DIRECTION_INCOMING)
 	on_reject_clicked (NULL, talking);
   else
