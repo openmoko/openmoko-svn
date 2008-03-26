@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2432,6 +2432,14 @@ omap730p2_cs3boot_config :	unconfig
+@@ -2432,6 +2432,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -1723,7 +1723,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  
  /* REFRESH parameter */
  #define REFEN		 	0x1	/* Refresh enable */
-@@ -165,6 +167,27 @@ lowlevel_init:
+@@ -165,6 +167,27 @@
  	str	r1, [r0]
  #endif
  
@@ -1751,7 +1751,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
-@@ -182,6 +205,10 @@ SMRDATA:
+@@ -182,6 +205,10 @@
      .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
      .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
      .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
@@ -1876,7 +1876,7 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +	[PCF50633_REG_MBCC2]	= 0x28,	/* Vbatconid=2.7V, Vmax=4.20V */
 +	[PCF50633_REG_MBCC3]	= 0x19,	/* 25/255 == 98mA pre-charge */
 +	[PCF50633_REG_MBCC4]	= 0xff, /* 255/255 == 1A adapter fast */
-+	[PCF50633_REG_MBCC5]	= 0x7f,	/* 127/255 == 500mA usb fast */
++	[PCF50633_REG_MBCC5]	= 0xff,	/* 255/255 == 1A usb fast */
 +	[PCF50633_REG_MBCC6]	= 0x00, /* cutoff current 1/32 * Ichg */
 +	[PCF50633_REG_MBCC7]	= 0x01,	/* 1.6A max bat curr, USB 500mA */
 +	[PCF50633_REG_MBCC8]	= 0x00,
@@ -2117,7 +2117,7 @@ Index: u-boot/drivers/video/Makefile
 ===================================================================
 --- u-boot.orig/drivers/video/Makefile
 +++ u-boot/drivers/video/Makefile
-@@ -33,6 +33,7 @@ COBJS-y += s3c2410_fb.o
+@@ -33,6 +33,7 @@
  COBJS-y += sed13806.o
  COBJS-y += sed156x.o
  COBJS-y += sm501.o
@@ -2129,7 +2129,7 @@ Index: u-boot/drivers/misc/Makefile
 ===================================================================
 --- u-boot.orig/drivers/misc/Makefile
 +++ u-boot/drivers/misc/Makefile
-@@ -28,6 +28,7 @@ LIB 	:= $(obj)libmisc.a
+@@ -28,6 +28,7 @@
  COBJS-y += ali512x.o
  COBJS-y += ns87308.o
  COBJS-y += pcf50606.o
@@ -2141,7 +2141,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -204,8 +204,10 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
+@@ -204,8 +204,10 @@
  		putc('\n');
  		for (i = 0; i < CFG_MAX_NAND_DEVICE; i++) {
  			if (nand_info[i].name)
@@ -2157,7 +2157,7 @@ Index: u-boot/drivers/mtd/nand/nand_ids.c
 ===================================================================
 --- u-boot.orig/drivers/mtd/nand/nand_ids.c
 +++ u-boot/drivers/mtd/nand/nand_ids.c
-@@ -67,7 +67,7 @@ struct nand_flash_dev nand_flash_ids[] =
+@@ -67,7 +67,7 @@
  
  	{"NAND 256MiB 3,3V 8-bit", 	0x71, 512, 256, 0x4000, 0},
  
@@ -2178,7 +2178,7 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -11,7 +12,8 @@ void udc_ctrl(enum usbd_event event, int
+@@ -11,7 +12,8 @@
  	switch (event) {
  	case UDC_CTRL_PULLUP_ENABLE:
  #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
@@ -2188,7 +2188,7 @@ Index: u-boot/board/neo1973/common/udc.c
  		if (param)
  			gpio->GPBDAT |= (1 << 9);
  		else
-@@ -23,6 +25,11 @@ void udc_ctrl(enum usbd_event event, int
+@@ -23,6 +25,11 @@
      defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
      defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
