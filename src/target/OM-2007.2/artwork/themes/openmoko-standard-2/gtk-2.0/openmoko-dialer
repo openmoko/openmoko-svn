@@ -20,3 +20,9 @@ style "mokotips" {
 }
 widget "*.MokoTips*" style "mokotips"
 
+style "black-bg" {
+  bg[NORMAL] = "#000"
+  fg[NORMAL] = "#ff0"
+}
+widget "openmoko-dialer-window" style "black-bg"
+
