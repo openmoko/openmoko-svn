@@ -20,7 +20,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta02/gta02.c
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -220,17 +220,26 @@
+@@ -215,17 +215,28 @@
  	dcache_enable();
  
  	/*
@@ -42,7 +42,9 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	 * particularly necessary when we boot, since the operating system may
 +	 * not expect to find this sort of mapping to be active.
  	 */
- 	if (booted_from_nor) {
+-	if (booted_from_nor) {
++#ifdef CONFIG_GTA02_REVISION
++	{
  		extern char _start;
  
 -		while (neo1973_aux_key_pressed());
@@ -50,6 +52,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +		memcpy((void *) 0x30000000, &_start, 0x40);
  	}
 -
++#endif
  	return 0;
  }
  
