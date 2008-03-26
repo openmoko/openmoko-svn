@@ -1,3 +1,8 @@
+2008-03-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/dialer-main.c: (main): Name the main window for use in
+	theming
+
 2008-03-26  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/phone-kit/moko-dialer.c: (moko_dialer_hung_up),
