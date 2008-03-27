@@ -58,7 +58,7 @@ page_shown (SmsData *data)
 			return;
 	}
 	
-	if(data->recipient_number) {
+	if(data->recipient_number  && !contact) {
 		/* Fill number combo */
 		gtk_combo_box_append_text (GTK_COMBO_BOX (data->number_combo),
 			data->recipient_number);

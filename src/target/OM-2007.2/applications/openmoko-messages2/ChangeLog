@@ -1,3 +1,8 @@
+2008-03-27  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/sms-compose.c: (page_shown):
+	Display the recipient_number from Call logs (bug#1245)
+
 2008-03-24  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/sms-compose.c: (page_shown), (sms_compose_refresh):
