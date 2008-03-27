@@ -6,10 +6,10 @@ be able to drive any other diplay based on the JBT6K74-AS controller ASIC.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.24-rc7/drivers/video/display/Kconfig
+Index: linux-2.6.24/drivers/video/display/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/video/display/Kconfig
-+++ linux-2.6.24-rc7/drivers/video/display/Kconfig
+--- linux-2.6.24.orig/drivers/video/display/Kconfig
++++ linux-2.6.24/drivers/video/display/Kconfig
 @@ -21,4 +21,15 @@
  comment "Display hardware drivers"
  	depends on DISPLAY_SUPPORT
@@ -26,21 +26,21 @@ Index: linux-2.6.24-rc7/drivers/video/display/Kconfig
 +	  controls power management, display timing and gamma calibration.
 +
  endmenu
-Index: linux-2.6.24-rc7/drivers/video/display/Makefile
+Index: linux-2.6.24/drivers/video/display/Makefile
 ===================================================================
---- linux-2.6.24-rc7.orig/drivers/video/display/Makefile
-+++ linux-2.6.24-rc7/drivers/video/display/Makefile
+--- linux-2.6.24.orig/drivers/video/display/Makefile
++++ linux-2.6.24/drivers/video/display/Makefile
 @@ -3,4 +3,5 @@
  display-objs				:= display-sysfs.o
  
  obj-$(CONFIG_DISPLAY_SUPPORT)		+= display.o
 +obj-$(CONFIG_DISPLAY_JBT6K74)		+= jbt6k74.o
  
-Index: linux-2.6.24-rc7/drivers/video/display/jbt6k74.c
+Index: linux-2.6.24/drivers/video/display/jbt6k74.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.24-rc7/drivers/video/display/jbt6k74.c
-@@ -0,0 +1,674 @@
++++ linux-2.6.24/drivers/video/display/jbt6k74.c
+@@ -0,0 +1,678 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -236,7 +236,11 @@ Index: linux-2.6.24-rc7/drivers/video/display/jbt6k74.c
 +	rc |= jbt_reg_write(jbt, JBT_REG_VCOM_VOLTAGE, 0x40);
 +	rc |= jbt_reg_write(jbt, JBT_REG_EXT_DISPL, 0x03);
 +	rc |= jbt_reg_write(jbt, JBT_REG_DCCLK_DCEV, 0x04);
-+	rc |= jbt_reg_write(jbt, JBT_REG_ASW_SLEW, 0x02);
++	/*
++	 * default of 0x02 in JBT_REG_ASW_SLEW responsible for 72Hz requirement
++	 * to avoid red / blue flicker
++	 */
++	rc |= jbt_reg_write(jbt, JBT_REG_ASW_SLEW, 0x04);
 +	rc |= jbt_reg_write(jbt, JBT_REG_DUMMY_DISPLAY, 0x00);
 +
 +	rc |= jbt_reg_write(jbt, JBT_REG_SLEEP_OUT_FR_A, 0x11);
@@ -715,10 +719,10 @@ Index: linux-2.6.24-rc7/drivers/video/display/jbt6k74.c
 +
 +module_init(jbt_init);
 +module_exit(jbt_exit);
-Index: linux-2.6.24-rc7/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.24/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.24-rc7.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.24-rc7/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.24.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.24/arch/arm/mach-s3c2410/Kconfig
 @@ -107,6 +107,7 @@
  config MACH_QT2410
  	bool "QT2410"

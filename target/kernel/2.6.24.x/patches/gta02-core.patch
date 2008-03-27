@@ -2,7 +2,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,823 @@
+@@ -0,0 +1,824 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -647,7 +647,8 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +static struct glamofb_platform_data gta02_glamo_pdata = {
 +	.width		= 43,
 +	.height		= 58,
-+	.pixclock	= 40816, /* 24.5MHz nom, 40.816ns */
++	 /* 24.5MHz --> 40.816ns */
++	.pixclock	= 40816,
 +	.left_margin	= 8,
 +	.right_margin	= 16,
 +	.upper_margin	= 2,
