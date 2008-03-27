@@ -5,4 +5,5 @@ EXTRA_DIST =
 #
 resourcedir = $(pkgdatadir)
 resource_DATA = \
-		GPS.png
+		GPS_On.png \
+		GPS_Off.png
