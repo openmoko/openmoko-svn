@@ -412,6 +412,8 @@ on_incoming_ds (MokoListener *listener, struct lgsm_handle *handle,
                       G_CALLBACK (status_report_added_cb), sr);
     g_signal_connect (view, "progress",
                       G_CALLBACK (status_report_progress_cb), sr);
+	jana_store_view_start (view);
+
   }
 }
 

@@ -1,3 +1,9 @@
+2008-03-27  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/phone-kit/moko-sms.c: (on_incoming_ds): display status report icon
+	
+	bug#1304: cannot display status report
+
 2008-03-26  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/dialer-main.c: (main): Name the main window for use in
