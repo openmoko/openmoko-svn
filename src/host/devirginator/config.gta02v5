@@ -12,8 +12,8 @@ stuff=http://buildhost.openmoko.org/daily/neo1973/deploy/glibc/images/neo1973/
 
 LOWLEVEL=$stuff/lowlevel-foo-$PLATFORM$BOARD-latest.bin
 UBOOT=$stuff/uboot-$PLATFORM$BOARD-latest.bin
-UIMAGE=$stuff/uImage-neo1973-latest.bin
-ROOTFS=$stuff/openmoko-devel-image-fic-$PLATFORM.jffs2
+UIMAGE=$stuff/uImage-fic-$PLATFORM-latest.bin
+ROOTFS=$stuff/openmoko-devel-image-om-$PLATFORM.jffs2
 
 DFU_UTIL=$stuff/dfu-util
 #OPENOCD=$stuff/openocd
