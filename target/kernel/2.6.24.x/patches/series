@@ -117,5 +117,6 @@ kexec-atags.patch
 # Preliminary suspend/resume power saving improvements
 suspend-prelim1.patch
 
-# temporary work-around
+# temporary work-arounds
 gta02-sound-bandaid.patch
+glamo-cmdqueue-bandaid.patch
