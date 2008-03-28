@@ -909,8 +909,8 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     power_timer = -1;
 
     // special case for power button being pressed while aux is held
-    if ( aux_timer != -1 || ( aux_menu && GTK_WIDGET_MAPPED( aux_menu ) ) )
-        return neod_buttonactions_power_while_aux();
+/*    if ( aux_timer != -1 || ( aux_menu && GTK_WIDGET_MAPPED( aux_menu ) ) )
+        return neod_buttonactions_power_while_aux(); */
 
     if ( timeout < 1 )
     {
