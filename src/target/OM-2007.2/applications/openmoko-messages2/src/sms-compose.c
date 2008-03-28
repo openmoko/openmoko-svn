@@ -31,14 +31,7 @@ page_shown (SmsData *data)
 	EContact *contact;
 	GdkPixbuf *photo;
 	gchar *string;
-	
-	/* Make delete(-all) buttons insensitive */
-	/* TODO: Replace these with more useful buttons? */
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), FALSE);
-	
-	if (!data->sms_proxy)
-		gtk_widget_set_sensitive (GTK_WIDGET (data->new_button), FALSE);
+
 	gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (data->new_button),
 		MOKO_STOCK_MAIL_SEND);
 	gtk_widget_grab_focus (data->sms_textview);
@@ -238,11 +231,21 @@ text_changed_cb (GtkTextBuffer *buffer, SmsData *data)
 GtkWidget *
 sms_compose_page_new (SmsData *data)
 {
-	GtkWidget *vbox, *frame, *contact_table, *align;
+	GtkWidget *vbox, *frame, *contact_table, *align, *toolbar;
 	
 	/* Connect to new/send button clicked */
 	g_signal_connect (data->new_button, "clicked",
 		G_CALLBACK (send_clicked_cb), data);
+	
+	/* Create toolbar */
+	toolbar = gtk_toolbar_new ();
+	
+	/* Send button */
+	data->new_button = gtk_tool_button_new_from_stock (MOKO_STOCK_MAIL_SEND);
+	gtk_tool_item_set_expand (data->new_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->new_button, -1);
+	g_signal_connect (data->new_button, "clicked",
+		G_CALLBACK (send_clicked_cb), &data);
 	
 	/* Create contact info display/number entry */
 	contact_table = gtk_table_new (2, 2, FALSE);
@@ -287,6 +290,7 @@ sms_compose_page_new (SmsData *data)
 	
 	/* Pack widgets */
 	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), contact_table, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), align,

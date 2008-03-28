@@ -46,19 +46,6 @@ notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 		"tab-expand", TRUE, NULL);
 }
 
-static void
-new_clicked_cb (GtkToolButton *button, SmsData *data)
-{
-	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
-	    SMS_PAGE_COMPOSE) return;
-
-	gtk_text_buffer_set_text (gtk_text_view_get_buffer (
-		GTK_TEXT_VIEW (data->sms_textview)), "", -1);
-
-	gtk_notebook_set_current_page (
-		GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -103,36 +90,7 @@ main (int argc, char **argv)
 	gtk_window_set_title (GTK_WINDOW (data.window), "Messages");
 	g_signal_connect (data.window, "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
-	
-	/* Create toolbar */
-	toolbar = gtk_toolbar_new ();
-	
-	/* New button */
-	data.new_button = gtk_tool_button_new_from_stock (MOKO_STOCK_SMS_NEW);
-	gtk_tool_item_set_expand (data.new_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.new_button, 0);
-	g_signal_connect (data.new_button, "clicked",
-		G_CALLBACK (new_clicked_cb), &data);
-	
-	/* Forward button */
-	data.forward_button = gtk_tool_button_new_from_stock (
-		MOKO_STOCK_MAIL_FORWARD);
-	gtk_tool_item_set_expand (data.forward_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.forward_button, 1);
-	
-	/* Delete all button */
-	data.delete_all_button = gtk_tool_button_new_from_stock (
-		MOKO_STOCK_FOLDER_DELETE);
-	gtk_tool_item_set_expand (data.delete_all_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_all_button, 2);
-	gtk_widget_set_sensitive (GTK_WIDGET (data.delete_all_button), FALSE);
-	
-	/* Delete button */
-	data.delete_button = gtk_tool_button_new_from_stock (
-		GTK_STOCK_DELETE);
-	gtk_tool_item_set_expand (data.delete_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_button, 3);
-	gtk_widget_set_sensitive (GTK_WIDGET (data.delete_button), FALSE);
+
 	
 	/* Create notebook */
 	data.notebook = gtk_notebook_new ();
@@ -152,7 +110,6 @@ main (int argc, char **argv)
 	
 	/* Pack and show */
 	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), data.notebook, TRUE, TRUE, 0);
 	gtk_container_add (GTK_CONTAINER (data.window), vbox);
 	
@@ -168,7 +125,6 @@ main (int argc, char **argv)
 	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 
 	gtk_widget_show_all (data.window);
-	gtk_widget_hide (GTK_WIDGET (data.forward_button));
 	
 	gtk_main ();
 	

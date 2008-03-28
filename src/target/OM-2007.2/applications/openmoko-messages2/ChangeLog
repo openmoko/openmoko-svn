@@ -1,3 +1,19 @@
+2008-03-28  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sms-compose.c: (page_shown), (sms_compose_page_new):
+	* src/sms-contacts.c: (contacts_changed_cb), (contacts_removed_cb),
+	(contacts_seq_complete_cb), (free_iter_slice),
+	(nophoto_filter_func), (contacts_iter_compare_func),
+	(contacts_visible_func), (malloc_list_free),
+	(selection_changed_cb), (sms_contacts_update_delete_all),
+	(sms_contacts_page_new):
+	* src/sms-main.c: (notebook_add_page_with_icon), (main):
+	* src/sms-notes.c: (page_shown), (page_hidden),
+	(sms_notes_page_new):
+	* src/sms.h:
+
+	Re-arrange toolbars to add dial button (bug 1306).
+
 2008-03-27  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/sms-compose.c: (page_shown):

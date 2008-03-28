@@ -27,59 +27,195 @@
 #include <libmokoui2/moko-search-bar.h>
 #include <string.h>
 
+
+#define PK_NAMESPACE "org.openmoko.PhoneKit"
+#define DIALER_NAMESPACE "org.openmoko.PhoneKit.Dialer"
+#define DIALER_OBJECT "/org/openmoko/PhoneKit/Dialer"
+
+GtkWidget *treeview;
+
+
 static const gchar *clear_numbers_uid;
 
-static gboolean hidden = FALSE;
-
 static void selection_changed_cb (GtkTreeSelection *selection, SmsData *data);
+static void dial_clicked_cb (GtkWidget *button, SmsData *data);
 
 static void
-page_shown (SmsData *data)
+new_clicked_cb (GtkToolButton *button, SmsData *data)
 {
-	GtkTreeSelection *selection;
+	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
+	    SMS_PAGE_COMPOSE) return;
+
+	gtk_text_buffer_set_text (gtk_text_view_get_buffer (
+		GTK_TEXT_VIEW (data->sms_textview)), "", -1);
+
+	gtk_notebook_set_current_page (
+		GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+}
+
+void 
+openmoko_contacts_util_dial_number (const gchar *number)
+{
+  DBusGConnection *conn;
+  DBusGProxy *proxy;
+  GError *err = NULL;
+
+  conn = dbus_g_bus_get (DBUS_BUS_SESSION, &err);
+  if (conn == NULL)
+  {
+    g_warning ("Failed to make DBus connection: %s", err->message);
+    g_error_free (err);
+    return;
+  }
+
+  proxy = dbus_g_proxy_new_for_name (conn,
+                                     PK_NAMESPACE,
+                                     DIALER_OBJECT,
+                                     DIALER_NAMESPACE);
+  if (proxy == NULL)
+  {
+    g_warning ("Unable to get dialer object");
+    return;
+  }
+
+  err = NULL;
+  dbus_g_proxy_call (proxy, "Dial", &err,
+                     G_TYPE_STRING, number,
+                     G_TYPE_INVALID, G_TYPE_INVALID);
+
+  if (err)
+  {
+    g_warning (err->message);
+    g_error_free (err);
+  }
+}
+
+
+/* hito_vcard_attribute_get_type() taken from hito-vcard-util.c
+ * Copyright 2007 OpenedHand Ltd, licensed under GPL */
+gchar*
+hito_vcard_attribute_get_type (EVCardAttribute *attr)
+{
+  GList *list, *l;
+  gchar *result = NULL;
+  list = e_vcard_attribute_get_param (attr, "TYPE");
+
+  for (l = list; l; l = g_list_next (l))
+  {
+    if (result)
+    {
+      gchar *old_result = result;
+      result = g_strconcat (l->data, ";", old_result, NULL);
+      g_free (old_result);
+    }
+    else
+    {
+      result = g_strdup (l->data);
+    }
+  }
+
+  return result;
+}
+
+
+static void
+on_dial_number_clicked (GtkWidget *eb, GdkEventButton *event, GtkDialog *dialog)
+{
+  EVCardAttribute *att;
+  const gchar *number;
+
+  att = g_object_get_data (G_OBJECT (eb), "contact");
+  number = hito_vcard_attribute_get_value_string (att);
+  openmoko_contacts_util_dial_number (number);
+
+  gtk_dialog_response (dialog, GTK_RESPONSE_CANCEL);
+}
+
+static void
+dial_clicked_cb (GtkWidget *button, SmsData *data)
+{
+	GList *numbers;
+	GList *n;
+	gint num_tels = 0;
+	GError *err = NULL;
+	EContact *contact;
 	
-	/* Update delete/delete-all buttons */
-	sms_contacts_update_delete_all (data);
-	selection = gtk_tree_view_get_selection (
-		GTK_TREE_VIEW (data->contacts_treeview));
-	selection_changed_cb (selection, data);
-}
-
-static void
-page_hidden (SmsData *data)
-{
-}
-
-static void
-notify_visible_cb (GObject *gobject, GParamSpec *arg1, SmsData *data)
-{
-	if ((!hidden) && (!GTK_WIDGET_VISIBLE (gobject))) {
-		hidden = TRUE;
-		page_hidden (data);
-	}
-}
-
-static gboolean
-visibility_notify_event_cb (GtkWidget *widget, GdkEventVisibility *event,
-			    SmsData *data)
-{
-	if (((event->state == GDK_VISIBILITY_PARTIAL) ||
-	     (event->state == GDK_VISIBILITY_UNOBSCURED)) && (hidden)) {
-		hidden = FALSE;
-		page_shown (data);
+	g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
+	
+	contact = sms_get_selected_contact (data);
+	
+	if (err)
+	{
+		g_warning ("Could not find contact");
+		return;
 	}
 	
-	return FALSE;
-}
+	numbers = hito_vcard_get_named_attributes (E_VCARD (contact), EVC_TEL);
+	num_tels = g_list_length (numbers);
+	
+	if (num_tels < 1)
+	{
+		g_print ("Dial: This contact does not have any numbers\n");
+		return;
+	}
+	else if (num_tels == 1)
+	{
+		/* dial */
+		openmoko_contacts_util_dial_number (
+		        hito_vcard_attribute_get_value_string (numbers->data));
+	}
+	else
+	{
+		/* Make a dialog with a list of numbers, which are one-click dialling */
+		/* dial on click, and then close the window */
+		GtkWidget *dialog, *vbox, *hbox, *image, *label;
 
-static void
-unmap_cb (GtkWidget *widget, SmsData *data)
-{
-	if (!hidden) {
-		hidden = TRUE;
-		page_hidden (data);
+		dialog = gtk_dialog_new_with_buttons ("Please choose a number to call",
+		                                      GTK_WINDOW (data->window),
+		                                      GTK_DIALOG_DESTROY_WITH_PARENT,
+		                                      GTK_STOCK_CANCEL,
+		                                      GTK_RESPONSE_CANCEL,
+		                                      NULL);
+		gtk_container_set_border_width (GTK_CONTAINER (dialog), 12);
+		vbox = gtk_vbox_new (FALSE, 8);
+		gtk_box_pack_start (GTK_BOX (GTK_DIALOG(dialog)->vbox), vbox, 
+		                    FALSE, FALSE, 12);
+
+		GtkSizeGroup *size_group;
+		size_group = gtk_size_group_new (GTK_SIZE_GROUP_BOTH);
+		for (n = numbers; n; n = n->next)
+		{
+			GtkWidget *button = gtk_event_box_new ();
+			gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 8);
+
+			hbox = gtk_hbox_new (FALSE, 6);
+			gtk_container_add (GTK_CONTAINER (button), hbox);
+		  
+			label = gtk_label_new (hito_vcard_attribute_get_type (n->data));
+			gtk_size_group_add_widget (size_group, label);
+			gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+			gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+
+			image = gtk_image_new_from_stock (MOKO_STOCK_CONTACT_PHONE, 
+		                                    GTK_ICON_SIZE_BUTTON);
+			gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+
+			label = gtk_label_new (hito_vcard_attribute_get_value_string (n->data));
+			gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+
+			g_signal_connect (button, "button-release-event",
+		                    G_CALLBACK (on_dial_number_clicked), (gpointer)dialog);
+			g_object_set_data (G_OBJECT (button), "contact", n->data);
+		}
+		g_object_unref (size_group);
+		gtk_widget_show_all (dialog);
+		gint res = gtk_dialog_run (GTK_DIALOG (dialog));
+		res++;
+		gtk_widget_destroy (dialog);
 	}
 }
+
+
 
 static void
 clear_numbers_cb (gchar *number, gchar *uid, GList **list)
@@ -375,63 +511,6 @@ contacts_iter_compare_func (GtkTreeModel *model, GtkTreeIter *a,
 	return result;
 }
 
-static void
-delete_clicked_cb (GtkToolButton *button, SmsData *data)
-{
-	if (hidden) return;
-	
-	if (sms_delete_selected_contact_messages (data)) {
-		gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button),
-			FALSE);
-	}
-}
-
-static void
-delete_all_added_cb (JanaStoreView *store_view, GList *components,
-		     SmsData *data)
-{
-	for (; components; components = components->next) {
-		JanaComponent *comp = JANA_COMPONENT (components->data);
-		jana_store_remove_component (
-			jana_store_view_get_store (store_view), comp);
-	}
-}
-
-static void
-delete_all_progress_cb (JanaStoreView *store_view, gint percent,
-			SmsData *data)
-{
-	if (percent == 100) g_object_unref (store_view);
-}
-
-static void
-delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
-{
-	JanaStoreView *notes_view;
-	GtkWidget *dialog;
-	gint response;
-
-	if (hidden) return;
-	
-	dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW (data->window),
-		GTK_DIALOG_MODAL,
-		GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
-		"Delete <b>all</b> messages?");
-	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL,
-		GTK_RESPONSE_CANCEL, GTK_STOCK_DELETE, GTK_RESPONSE_YES, NULL);
-	
-	response = gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (dialog);
-	if (response != GTK_RESPONSE_YES) return;
-	
-	/* Delete all messages */
-	notes_view = jana_store_get_view (data->notes);
-	g_signal_connect (notes_view, "added",
-		G_CALLBACK (delete_all_added_cb), data);
-	g_signal_connect (notes_view, "progress",
-		G_CALLBACK (delete_all_progress_cb), data);
-	jana_store_view_start (notes_view);
-}
 
 static void
 search_toggled_cb (MokoSearchBar *bar, gboolean search_visible, SmsData *data)
@@ -578,6 +657,7 @@ selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 void
 sms_contacts_update_delete_all (SmsData *data)
 {
+
 	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
 	    SMS_PAGE_CONTACTS) {
 		if (g_hash_table_size (data->note_count) > 0) {
@@ -594,7 +674,7 @@ GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
 	EBookQuery *qrys[(E_CONTACT_LAST_PHONE_ID-E_CONTACT_FIRST_PHONE_ID)+1];
-	GtkWidget *contacts_combo, *vbox;
+	GtkWidget *contacts_combo, *vbox, *toolbar;
 	GtkTreeSelection *selection;
 	GtkCellRenderer *renderer;
 	EBookQuery *tel_query;
@@ -703,7 +783,7 @@ sms_contacts_page_new (SmsData *data)
 	update_categories (data);
 	
 	/* Create tree view */
-	data->contacts_treeview = gtk_tree_view_new_with_model (
+	treeview = data->contacts_treeview = gtk_tree_view_new_with_model (
 		data->contacts_filter);
 	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (
 		data->contacts_treeview), TRUE);
@@ -734,8 +814,27 @@ sms_contacts_page_new (SmsData *data)
 	gtk_container_add (GTK_CONTAINER (data->contacts_scroll),
 		data->contacts_treeview);
 	
+	/* Create toolbar */
+	toolbar = gtk_toolbar_new ();
+	
+	/* New button */
+	data->new_button = gtk_tool_button_new_from_stock (MOKO_STOCK_SMS_NEW);
+	gtk_tool_item_set_expand (data->new_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->new_button, -1);
+	g_signal_connect (data->new_button, "clicked",
+		G_CALLBACK (new_clicked_cb), data);
+	
+	/* Dial button */
+	data->dial_button = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_DIAL);
+	gtk_tool_item_set_expand (data->dial_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->dial_button, -1);
+	g_signal_connect (data->dial_button, "clicked",
+		G_CALLBACK (dial_clicked_cb), data);
+	
 	/* Pack widgets into vbox and return */
 	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), toolbar,
+		FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_search,
 		FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), data->contacts_scroll,
@@ -753,22 +852,6 @@ sms_contacts_page_new (SmsData *data)
 		G_CALLBACK (contacts_seq_complete_cb), data);
 	e_book_view_start (view);
 	
-	/* Connect to toolbar delete buttons */
-	g_signal_connect (data->delete_button, "clicked",
-		G_CALLBACK (delete_clicked_cb), data);
-	g_signal_connect (data->delete_all_button, "clicked",
-		G_CALLBACK (delete_all_clicked_cb), data);
-
-	/* Add events for detecting whether the page has been hidden/shown */
-	gtk_widget_add_events (data->contacts_treeview,
-		GDK_VISIBILITY_NOTIFY_MASK);
-	g_signal_connect (data->contacts_treeview, "visibility-notify-event",
-		G_CALLBACK (visibility_notify_event_cb), data);
-	g_signal_connect (data->contacts_treeview, "notify::visible",
-		G_CALLBACK (notify_visible_cb), data);
-	g_signal_connect (vbox, "unmap",
-		G_CALLBACK (unmap_cb), data);
-
 	return vbox;
 }
 

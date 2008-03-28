@@ -26,6 +26,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libebook/e-book.h>
+#include <libmokoui2/moko-stock.h>
 
 typedef struct {
 	GList *unread;	/* List of JanaNote uids for unread messages */
@@ -57,6 +58,7 @@ typedef struct {
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkToolItem *new_button;
+	GtkToolItem *dial_button;
 	GtkToolItem *forward_button;
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;

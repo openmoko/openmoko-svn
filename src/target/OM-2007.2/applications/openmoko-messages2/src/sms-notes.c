@@ -178,13 +178,7 @@ page_shown (SmsData *data)
 
 	gboolean found_match = FALSE;
 	EContact *contact = NULL;
-	
-	/* Show forward button */
-	gtk_widget_show (GTK_WIDGET (data->forward_button));
 
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
-	gtk_widget_set_sensitive (GTK_WIDGET (data->forward_button), FALSE);
-	
 	if (!open) return;
 	
 	/* Attach to scrolling signals so we can mark messages as read */
@@ -282,9 +276,6 @@ static void
 page_hidden (SmsData *data)
 {
 	GtkAdjustment *hadjust, *vadjust;
-
-	/* Hide forward button */
-	gtk_widget_hide (GTK_WIDGET (data->forward_button));
 
 	if (data->notes_scroll_idle) g_source_remove (data->notes_scroll_idle);
 	g_object_get (G_OBJECT (data->notes_treeview),
@@ -811,7 +802,7 @@ selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
-	GtkWidget *scroll, *vbox, *notes_combo;
+	GtkWidget *scroll, *vbox, *notes_combo, *toolbar;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	GtkIconTheme *icon_theme;
@@ -878,6 +869,29 @@ sms_notes_page_new (SmsData *data)
 		data->notes_treeview)), "changed",
 		G_CALLBACK (selection_changed_cb), data);
 	
+	/* create toolbar */
+	toolbar = gtk_toolbar_new ();
+	
+	/* Forward button */
+	data->forward_button = gtk_tool_button_new_from_stock (
+		MOKO_STOCK_MAIL_FORWARD);
+	gtk_tool_item_set_expand (data->forward_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->forward_button, -1);
+	
+	/* Delete all button */
+	data->delete_all_button = gtk_tool_button_new_from_stock (
+		MOKO_STOCK_FOLDER_DELETE);
+	gtk_tool_item_set_expand (data->delete_all_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->delete_all_button, -1);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), FALSE);
+	
+	/* Delete button */
+	data->delete_button = gtk_tool_button_new_from_stock (
+		GTK_STOCK_DELETE);
+	gtk_tool_item_set_expand (data->delete_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->delete_button, -1);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
+	
 	/* Create search bar */
 	notes_combo = gtk_combo_box_new_text ();
 	gtk_combo_box_append_text (GTK_COMBO_BOX (notes_combo), "All");
@@ -899,6 +913,7 @@ sms_notes_page_new (SmsData *data)
 	gtk_container_add (GTK_CONTAINER (scroll), data->notes_treeview);
 	
 	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), data->notes_search, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
 	gtk_widget_show_all (vbox);
