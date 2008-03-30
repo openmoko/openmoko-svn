@@ -18,5 +18,7 @@ style "gtkmenuitem" {
     xthickness = 10
     ythickness = 10
     fg[PRELIGHT] = "#000000"
+    text[PRELIGHT] = "#000"
 }
 class "GtkMenuItem" style "gtkmenuitem"
+widget "GtkWindow.gtk-combobox-popup-menu.*" style "gtkmenuitem"
