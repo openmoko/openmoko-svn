@@ -245,7 +245,7 @@ sms_compose_page_new (SmsData *data)
 	gtk_tool_item_set_expand (data->new_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->new_button, -1);
 	g_signal_connect (data->new_button, "clicked",
-		G_CALLBACK (send_clicked_cb), &data);
+		G_CALLBACK (send_clicked_cb), data);
 	
 	/* Create contact info display/number entry */
 	contact_table = gtk_table_new (2, 2, FALSE);
