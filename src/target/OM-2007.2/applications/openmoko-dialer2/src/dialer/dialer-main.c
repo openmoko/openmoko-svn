@@ -22,8 +22,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
-#include <moko-stock.h>
-
 #include "moko-keypad.h"
 #include "moko-history.h"
 
@@ -132,9 +130,6 @@ int main (int argc, char **argv)
   /* application object */
   g_set_application_name ("OpenMoko Dialer");
 
-  program_log ("moko_stock_register");
-  moko_stock_register ();
-
   program_log ("open connection to dbus");
   connection = dbus_g_bus_get (DBUS_BUS_SESSION,
                                &error);
@@ -190,7 +185,7 @@ int main (int argc, char **argv)
   data->history = moko_history_new (journal);
   g_signal_connect (data->history, "dial_number", G_CALLBACK (dial_clicked_cb), data);
   gtk_notebook_append_page (GTK_NOTEBOOK (data->notebook), data->history,
-                            gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY,
+                            gtk_image_new_from_icon_name ("moko-call-history",
                                                       GTK_ICON_SIZE_BUTTON));
   gtk_container_child_set (GTK_CONTAINER (data->notebook), data->history,
                            "tab-expand", TRUE,

@@ -20,8 +20,6 @@
 #include <gtk/gtk.h>
 #include <gtk/gtk.h>
 
-#include <moko-stock.h>
-
 #include "moko-keypad.h"
 
 #include "moko-contacts.h"
@@ -355,7 +353,6 @@ moko_keypad_init (MokoKeypad *keypad)
 {
   MokoKeypadPrivate *priv;
   GtkWidget *hbox, *vbox;
-  GtkStockItem stock_item;
   GtkWidget *bvbox, *icon, *label, *align;
 
   priv = keypad->priv = MOKO_KEYPAD_GET_PRIVATE (keypad);
@@ -411,11 +408,10 @@ moko_keypad_init (MokoKeypad *keypad)
   bvbox = gtk_vbox_new (FALSE, 0);
   align = gtk_alignment_new (0.5, 0.5, 1, 0);
   
-  icon = gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON);
+  icon = gtk_image_new_from_icon_name ("moko-call-dial", GTK_ICON_SIZE_BUTTON);
   gtk_box_pack_start (GTK_BOX (bvbox), icon, FALSE, FALSE, 0);
   
-  gtk_stock_lookup (MOKO_STOCK_CALL_DIAL, &stock_item);
-  label = gtk_label_new (stock_item.label);
+  label = gtk_label_new ("Dial");
   priv->dial_label = label;
   gtk_box_pack_start (GTK_BOX (bvbox), label, FALSE, FALSE, 0);
   

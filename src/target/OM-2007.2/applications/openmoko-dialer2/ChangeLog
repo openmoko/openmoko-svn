@@ -1,5 +1,12 @@
 2008-03-31  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer/dialer-main.c: (main):
+	* src/dialer/moko-keypad.c: (moko_keypad_init):
+
+	Attempt to improve performance by removing use of moko_stock
+
+2008-03-31  Thomas Wood  <thomas@openedhand.com>
+
 	* src/dialer/dialer-main.c: (dial_clicked_cb), (program_log),
 	(main): Add profiling helper code
 
