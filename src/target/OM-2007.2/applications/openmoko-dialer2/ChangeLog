@@ -1,3 +1,8 @@
+2008-03-31  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/dialer-main.c: (dial_clicked_cb), (program_log),
+	(main): Add profiling helper code
+
 2008-03-27  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/phone-kit/moko-sms.c: (on_incoming_ds): display status report icon

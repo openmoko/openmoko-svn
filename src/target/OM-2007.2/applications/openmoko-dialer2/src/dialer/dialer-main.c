@@ -16,6 +16,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #include <gtk/gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
@@ -78,6 +80,26 @@ dial_clicked_cb (GtkWidget *widget, const gchar *number, DialerData *data)
   }
 }
 
+static void
+program_log (const char *format, ...)
+{
+  va_list args;
+  char *formatted, *str;
+
+  if (!getenv ("OM_PROFILING"))
+    return;
+
+  va_start (args, format);
+  formatted = g_strdup_vprintf (format, args);
+  va_end (args);
+
+  str = g_strdup_printf ("MARK: %s: %s", g_get_prgname(), formatted);
+  g_free (formatted);
+
+  access (str, F_OK);
+  g_free (str);
+}
+
 int main (int argc, char **argv)
 {
   GtkWidget *window, *keypad;
@@ -85,6 +107,8 @@ int main (int argc, char **argv)
   DBusGConnection *connection;
   GError *error = NULL;
   DialerData *data;
+
+  program_log ("start dialer");
 
   data = g_new0 (DialerData, 1);
 
@@ -102,9 +126,16 @@ int main (int argc, char **argv)
   }
 
   /* Initialize Threading & GTK+ */
+  program_log ("gtk_init");
   gtk_init (&argc, &argv);
+
+  /* application object */
+  g_set_application_name ("OpenMoko Dialer");
+
+  program_log ("moko_stock_register");
   moko_stock_register ();
 
+  program_log ("open connection to dbus");
   connection = dbus_g_bus_get (DBUS_BUS_SESSION,
                                &error);
   if (connection == NULL)
@@ -120,14 +151,13 @@ int main (int argc, char **argv)
     exit (1);
   }
 
+  program_log ("get PhoneKit dbus proxy object");
   data->dialer_proxy = dbus_g_proxy_new_for_name (connection,
       "org.openmoko.PhoneKit",
       "/org/openmoko/PhoneKit/Dialer", "org.openmoko.PhoneKit.Dialer");
 
-   /* application object */
-  g_set_application_name ("OpenMoko Dialer");
-
   /* Set up the journal */
+  program_log ("load journal");
   journal = moko_journal_open_default ();
   if (!journal || !moko_journal_load_from_storage (journal))
   {
@@ -135,6 +165,7 @@ int main (int argc, char **argv)
     journal = NULL;
   }
 
+  program_log ("create main window");
   data->main_window = window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name (window, "openmoko-dialer-window");
   g_signal_connect (window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
@@ -155,6 +186,7 @@ int main (int argc, char **argv)
   gtk_container_child_set (GTK_CONTAINER (data->notebook), keypad, "tab-expand", TRUE, NULL);
 
   /* History */
+  program_log ("create history widget");
   data->history = moko_history_new (journal);
   g_signal_connect (data->history, "dial_number", G_CALLBACK (dial_clicked_cb), data);
   gtk_notebook_append_page (GTK_NOTEBOOK (data->notebook), data->history,
@@ -164,6 +196,7 @@ int main (int argc, char **argv)
                            "tab-expand", TRUE,
                            NULL);
 
+  program_log ("show window");
   gtk_widget_show_all (window);
 
   if (show_missed)
@@ -171,6 +204,7 @@ int main (int argc, char **argv)
   else
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->notebook), 0);
 
+  program_log ("enter main loop");
   gtk_main ();
 
   g_free (data);
