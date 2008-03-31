@@ -8,7 +8,7 @@ b9    b8        b2    b1    b0
 GPD4  GPD3     GPD0  GPC15 GPC13
 
 GTA02 A5 and before:  0x000
-GTA02 A6           :  0x101
+GTA02 A6           :  0x001
 
 Also create pcb_rev in the environment, which contains, eg, 0x101 and
 can be passed into the operating system on the commandline.  For linux
