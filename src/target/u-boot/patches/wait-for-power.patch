@@ -39,7 +39,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  unsigned int neo1973_wakeup_cause;
  extern unsigned char booted_from_nand;
  extern unsigned char booted_from_nor;
-@@ -229,6 +234,39 @@
+@@ -229,6 +234,42 @@
  	return 0;
  }
  
@@ -55,9 +55,12 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +	while (1) {
 +		/* battery is present -> try to boot */
-+		if (!(pcf50633_reg_read(PCF50633_REG_BVMCTL) & 1) &&
-+		    pcf50633_read_battvolt() >= SAVE_POWER_MILLIVOLT)
++		if (!(pcf50633_reg_read(PCF50633_REG_BVMCTL) & 1))
 +			break;
++/*
++ * Consider adding this later to the above condition:
++		    pcf50633_read_battvolt() >= SAVE_POWER_MILLIVOLT)
++ */
 +
 +		poll_charger();
 +
@@ -79,7 +82,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  int board_late_init(void)
  {
  	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
-@@ -236,6 +274,7 @@
+@@ -236,6 +277,7 @@
  	char buf[32];
  	int menu_vote = 0; /* <= 0: no, > 0: yes */
  	int seconds = 0;
@@ -87,7 +90,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  
  	/* Initialize the Power Management Unit with a safe register set */
  	pcf50633_init();
-@@ -244,8 +283,7 @@
+@@ -244,12 +286,13 @@
  	int1 = pcf50633_reg_read(PCF50633_REG_INT1);
  	int2 = pcf50633_reg_read(PCF50633_REG_INT2);
  
@@ -96,8 +99,14 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	wait_for_power();
  
  	/* issue a short pulse with the vibrator */
++	neo1973_led(GTA02_LED_AUX_RED, 1);
  	neo1973_vibrator(1);
-@@ -311,9 +349,15 @@
+ 	udelay(20000);
++	neo1973_led(GTA02_LED_AUX_RED, 0);
+ 	neo1973_vibrator(0);
+ 
+ #if defined(CONFIG_ARCH_GTA02_v1)
+@@ -311,9 +354,15 @@
  	neo1973_poweroff();
  
  continue_boot:
@@ -113,7 +122,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
  
  #if 0
  	{
-@@ -324,7 +368,7 @@
+@@ -324,7 +373,7 @@
  	}
  #endif
  

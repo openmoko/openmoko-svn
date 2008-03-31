@@ -1,0 +1,43 @@
+GTA02v5 pulls the GPBn lines controlling the LEDs down too strongly.
+Thus bit operations on GPB always contain a 0 in these bits. With
+the addition of a shadow register, this problem is avoided.
+
+- Werner
+
+Index: u-boot/board/neo1973/gta02/gta02.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta02/gta02.c
++++ u-boot/board/neo1973/gta02/gta02.c
+@@ -67,6 +67,7 @@
+ extern unsigned char booted_from_nand;
+ extern unsigned char booted_from_nor;
+ extern int nobootdelay;
++static uint16_t gpb_shadow = 0; /* to work around GTA02v5 LED bug */
+ 
+ static inline void delay (unsigned long loops)
+ {
+@@ -388,6 +389,7 @@
+ #else
+ 		gpio->GPBDAT &= ~(1 << 3);	/* GPB3 */
+ #endif
++	gpio->GPBDAT |= gpb_shadow;
+ }
+ 
+ void neo1973_gsm(int on)
+@@ -507,8 +509,12 @@
+ 	if (led > 2)
+ 		return;
+ 
+-	if (on)
+-		gpio->GPBDAT |= (1 << led);
+-	else
+-		gpio->GPBDAT &= ~(1 << led);
++	if (on) {
++		gpb_shadow |= (1 << led);
++		gpio->GPBDAT |= gpb_shadow;
++	}
++	else {
++		gpb_shadow &= ~(1 << led);
++		gpio->GPBDAT = (gpio->GPBDAT | gpb_shadow) & ~(1 << led);
++	}
+ }

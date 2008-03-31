@@ -87,17 +87,15 @@ usbtty-irq-racecondition-fix.patch
 uboot-nand_write_yaffs.patch
 uboot-neo1973_defaultconsole_usbtty.patch
 
-# keep this here until we have time to bubble it into the stack
-##nor-default-env.patch
-
 # let's see what upstream thinks about this
 loadenv.patch
 
 # fix and improve power management
 dont-smoke.patch
 
-# Experimental. Not intended for general use.
-###wait-for-power-DONTUSE.patch
+# Experimental.
+gpb-shadow.patch
+wait-for-power.patch
 
 # Experimental. Please test.
 remap-vec.patch
