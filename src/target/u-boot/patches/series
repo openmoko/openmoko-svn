@@ -93,6 +93,9 @@ loadenv.patch
 # fix and improve power management
 dont-smoke.patch
 
+# use pull-downs to keep unused inputs from floating
+fix-cpu-input-pulldowns.patch
+
 # Experimental.
 gpb-shadow.patch
 wait-for-power.patch
