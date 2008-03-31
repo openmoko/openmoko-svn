@@ -201,7 +201,10 @@ page_shown (SmsData *data)
 	
 	if (!(contact = sms_get_selected_contact (data))) {
 		GList *u, *components = NULL;
-		
+
+		/* show the "add contact" button, as this contact is unknown */
+		gtk_widget_show (GTK_WIDGET (data->save_contact_button));
+
 		/* Assume the 'unknown' contact was selected */
 		if (data->no_photo) {
 			data->author_icon = g_object_ref (data->no_photo);
@@ -234,7 +237,10 @@ page_shown (SmsData *data)
 		
 		return;
 	}
-	
+
+	/* hide the "add contact" button, as this contact is already known */
+	gtk_widget_hide (GTK_WIDGET (data->save_contact_button));
+
 	data->author_icon = sms_contact_load_photo (contact);
 	if ((!data->author_icon) && (data->no_photo))
 		data->author_icon = g_object_ref (data->no_photo);
@@ -891,6 +897,13 @@ sms_notes_page_new (SmsData *data)
 	gtk_tool_item_set_expand (data->delete_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->delete_button, -1);
 	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
+
+	/* Save contact button */
+	data->save_contact_button = gtk_tool_button_new_from_stock (
+		MOKO_STOCK_CONTACT_NEW);
+	gtk_tool_item_set_expand (data->save_contact_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->save_contact_button, -1);
+	gtk_widget_hide (GTK_WIDGET (data->save_contact_button));
 	
 	/* Create search bar */
 	notes_combo = gtk_combo_box_new_text ();

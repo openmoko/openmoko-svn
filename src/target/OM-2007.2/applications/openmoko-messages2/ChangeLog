@@ -1,3 +1,10 @@
+2008-03-31  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sms-notes.c: (page_shown), (sms_notes_page_new):
+	* src/sms.h:
+
+	Add a "new contact" button and display only when sender is unknown
+
 2008-03-31  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/sms-compose.c: (sms_compose_page_new):

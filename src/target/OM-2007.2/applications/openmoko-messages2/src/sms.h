@@ -62,6 +62,7 @@ typedef struct {
 	GtkToolItem *forward_button;
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;
+	GtkToolItem *save_contact_button;
 
 	GtkWidget *notes_search;
 	GdkPixbuf *author_icon;
