@@ -96,6 +96,9 @@ dont-smoke.patch
 # use pull-downs to keep unused inputs from floating
 fix-cpu-input-pulldowns.patch
 
+# make u-boot revision-agnostic (for GTA02v5 and above)
+uboot-add-rev-detection.patch
+
 # Experimental.
 gpb-shadow.patch
 wait-for-power.patch
