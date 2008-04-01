@@ -1,0 +1,29 @@
+dynenv - Read and write the Dynamic Environment Pointer
+=======================================================
+
+*
+* Copyright (C) 2008 by OpenMoko, Inc.
+* Written by Werner Almesberger <werner@openmoko.org>
+* All Rights Reserved
+*
+* mtd-abi.h is a verbatim copy from mtd-utils.
+*
+
+
+usage: dynenv device [pointer]
+
+"dynenv" reads or writes the pointer that indicates to u-boot from which
+NAND location to load the environment. This pointer is stored in the OOB
+area of the first page of the NAND Flash.
+
+"device" is the device containing the first page of the NAND. "pointer"
+is the new value to write. "pointer" follows the usual C notation.
+
+Examples:
+
+# dynenv /dev/mtd1
+# dynenv /dev/mtd1 0x40000
+# dynenv /dev/mtd1 0x`awk '/mtd1/{print $2}' </proc/mtd`
+
+(Note that the NAND Flash starts with /dev/mtd1 on GTA02 but with
+/dev/mtd0 on GTA01.)
