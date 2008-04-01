@@ -1,3 +1,10 @@
+2008-04-01  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+
+	Bring in libhito for future use
+
 2008-04-01  Erin Yueh  <erin_yueh@openmoko.com>
 
 	* src/sms-dbus.c: (sms_dbus_send_message):

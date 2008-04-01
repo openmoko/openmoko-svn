@@ -1,6 +1,7 @@
+INCLUDES = -I$(top_srcdir)/libhito
 
 AM_CPPFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" $(GTK_CFLAGS) $(JANA_CFLAGS) $(MOKOUI_CFLAGS) $(EBOOK_CFLAGS) $(DBUS_CFLAGS) -Wall
-AM_LDFLAGS = $(GTK_LIBS) $(JANA_LIBS) $(MOKOUI_LIBS) $(EBOOK_LIBS) $(DBUS_LIBS)
+AM_LDFLAGS = $(GTK_LIBS) $(JANA_LIBS) $(MOKOUI_LIBS) $(EBOOK_LIBS) $(DBUS_LIBS) $(top_builddir)/libhito/libhito.a
 
 bin_PROGRAMS=openmoko-messages
 

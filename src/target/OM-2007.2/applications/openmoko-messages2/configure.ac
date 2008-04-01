@@ -17,6 +17,13 @@ PKG_CHECK_MODULES(MOKOUI, libmokoui2 >= 0.3)
 PKG_CHECK_MODULES(JANA, libjana libjana-ecal libjana-gtk)
 PKG_CHECK_MODULES(DBUS, dbus-glib-1)
 
+
+# CFLAGS and LIBS definitions for libhito
+CONTACTS_CFLAGS="$EBOOK_CFLAGS $GTK_CFLAGS"
+CONTACTS_LIBS="$EBOOK_LIBS $GTK_LIBS"
+AC_SUBST(CONTACTS_CFLAGS)
+AC_SUBST(CONTACTS_LIBS)
+
 old_cflags=$CFLAGS
 CFLAGS=$EBOOK_CFLAGS
 AC_CHECK_TYPE(EContactPhotoType, [], [], [#include <libebook/e-book.h>])
@@ -43,6 +50,7 @@ AC_SUBST(DBUS_GLIB_BIN)
 
 AC_OUTPUT([
 Makefile
+libhito/Makefile
 src/Makefile
 data/Makefile
 ])
