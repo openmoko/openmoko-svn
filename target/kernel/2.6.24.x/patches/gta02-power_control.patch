@@ -12,7 +12,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  
  #define DRVMSG "FIC Neo1973 Bluetooth Power Management"
  
-@@ -27,14 +29,30 @@ static ssize_t bt_read(struct device *de
+@@ -27,14 +29,30 @@
  		       char *buf)
  {
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -50,7 +50,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	}
  
  	return strlcpy(buf, "0\n", 3);
-@@ -48,20 +66,37 @@ static ssize_t bt_write(struct device *d
+@@ -48,20 +66,37 @@
  	unsigned long on = simple_strtoul(buf, NULL, 10);
  
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -99,7 +99,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_bt.c
  	}
  
  	return count;
-@@ -107,9 +142,16 @@ static int __init gta01_bt_probe(struct 
+@@ -107,9 +142,16 @@
  {
  	dev_info(&pdev->dev, DRVMSG ": starting\n");
  
@@ -139,7 +139,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  struct gta01pm_priv {
  	int gpio_ngsm_en;
  	struct console *con;
-@@ -54,8 +61,16 @@ static ssize_t gsm_read(struct device *d
+@@ -54,8 +61,16 @@
  		if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_RST))
  			goto out_1;
  	} else if (!strcmp(attr->attr.name, "download")) {
@@ -158,7 +158,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return strlcpy(buf, "0\n", 3);
-@@ -70,32 +85,65 @@ static ssize_t gsm_write(struct device *
+@@ -70,32 +85,67 @@
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -181,6 +181,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			case GTA02v3_SYSTEM_REV:
 +			case GTA02v4_SYSTEM_REV:
 +			case GTA02v5_SYSTEM_REV:
++			case GTA02v6_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 1);
 +				break;
@@ -197,6 +198,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +			case GTA02v3_SYSTEM_REV:
 +			case GTA02v4_SYSTEM_REV:
 +			case GTA02v5_SYSTEM_REV:
++			case GTA02v6_SYSTEM_REV:
 +				pcf50633_gpio_set(pcf50633_global,
 +						  PCF50633_GPIO2, 0);
 +				break;
@@ -231,7 +233,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	}
  
  	return count;
-@@ -111,6 +159,9 @@ static int gta01_gsm_suspend(struct plat
+@@ -111,6 +161,9 @@
  	/* GPIO state is saved/restored by S3C2410 core GPIO driver, so we
  	 * don't need to do anything here */
  
@@ -241,7 +243,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	return 0;
  }
  
-@@ -124,6 +175,8 @@ static int gta01_gsm_resume(struct platf
+@@ -124,6 +177,8 @@
  	if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_ON) && gta01_gsm.con)
  		console_stop(gta01_gsm.con);
  
@@ -250,7 +252,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	return 0;
  }
  #else
-@@ -134,7 +187,7 @@ static int gta01_gsm_resume(struct platf
+@@ -134,7 +189,7 @@
  static struct attribute *gta01_gsm_sysfs_entries[] = {
  	&dev_attr_power_on.attr,
  	&dev_attr_reset.attr,
@@ -259,7 +261,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  	NULL
  };
  
-@@ -158,8 +211,17 @@ static int __init gta01_gsm_probe(struct
+@@ -158,8 +213,18 @@
  		gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  		s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  		break;
@@ -269,6 +271,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
 +	case GTA02v5_SYSTEM_REV:
++	case GTA02v6_SYSTEM_REV:
 +		gta01_gsm.gpio_ngsm_en = 0;
 +		break;
 +#endif
@@ -278,7 +281,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gsm.c
  			 "some PM features not available!!!\n",
  			 system_rev);
  		break;
-@@ -175,9 +237,13 @@ static int __init gta01_gsm_probe(struct
+@@ -175,9 +240,13 @@
  		break;
  	}
  
@@ -320,7 +323,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
  
  /* This is the 2.8V supply for the RTC crystal, the mail clock crystal and
   * the input to VDD_RF */
-@@ -248,15 +256,42 @@ static int gps_power_1v5_get(void)
+@@ -248,15 +256,42 @@
  /* This is the POWERON pin */
  static void gps_pwron_set(int on)
  {
@@ -368,7 +371,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
  }
  
  /* This is the nRESET pin */
-@@ -441,17 +476,40 @@ static DEVICE_ATTR(power_sequence, 0644,
+@@ -441,17 +476,40 @@
  static int gta01_pm_gps_suspend(struct platform_device *pdev,
  				pm_message_t state)
  {
@@ -413,7 +416,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
  	return 0;
  }
  #else
-@@ -476,59 +534,109 @@ static struct attribute_group gta01_gps_
+@@ -476,59 +534,110 @@
  	.attrs	= gta01_gps_sysfs_entries,
  };
  
@@ -524,6 +527,7 @@ Index: linux-2.6.24/arch/arm/plat-s3c24xx/neo1973_pm_gps.c
 +		case GTA02v3_SYSTEM_REV:
 +		case GTA02v4_SYSTEM_REV:
 +		case GTA02v5_SYSTEM_REV:
++		case GTA02v6_SYSTEM_REV:
 +			pcf50633_voltage_set(pcf50633_global,
 +				PCF50633_REGULATOR_LDO5, 3000);
 +			pcf50633_onoff_set(pcf50633_global,

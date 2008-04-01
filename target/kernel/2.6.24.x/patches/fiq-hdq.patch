@@ -103,7 +103,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		hdq_state = HDQB_WAIT_RX;
 +		s3c2410_gpio_cfgpin(fiq_ipc.hdq_gpio_pin, S3C2410_GPIO_INPUT);
 +		break;
-+
+ 
 +	case HDQB_WAIT_TX: /* issue low for > 40us */
 +		if (--hdq_ctr)
 +			break;
@@ -120,7 +120,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		/* idle in input mode, it's pulled up by 10K */
 +		s3c2410_gpio_cfgpin(fiq_ipc.hdq_gpio_pin, S3C2410_GPIO_INPUT);
 +		break;
-+
+ 
 +	case HDQB_WAIT_RX: /* wait for battery to talk to us */
 +		if (s3c2410_gpio_getpin(fiq_ipc.hdq_gpio_pin) == 0) {
 +			/* it talks to us! */
@@ -168,7 +168,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		fiq_ipc.hdq_transaction_ctr++;
 +		hdq_state = HDQB_IDLE; /* abort */
 +		break;
- 
++
 +	case HDQB_DATA_RX_HIGH:
 +		if (!s3c2410_gpio_getpin(fiq_ipc.hdq_gpio_pin)) {
 +			/* it talks to us! */
@@ -187,7 +187,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		hdq_state = HDQB_IDLE; /* abort */
 +		break;
 +	}
- 
++
 +	if (hdq_state != HDQB_IDLE) /* ie, not idle */
 +		if (divisor > FIQ_DIVISOR_HDQ)
 +			divisor = FIQ_DIVISOR_HDQ; /* keep us going */
@@ -195,7 +195,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* disable further timer interrupts if nobody has any work
  	 * or adjust rate according to who still has work
-@@ -386,6 +561,23 @@
+@@ -388,6 +563,23 @@
  	.resource	= sc32440_fiq_resources,
  };
  
@@ -219,13 +219,14 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  /* NOR Flash */
  
  #define GTA02_FLASH_BASE	0x18000000 /* GCS3 */
-@@ -1049,6 +1241,15 @@
+@@ -1053,6 +1245,16 @@
  
  	platform_add_devices(gta02_devices, ARRAY_SIZE(gta02_devices));
  
 +#ifdef CONFIG_GTA02_HDQ
 +	switch (system_rev) {
 +	case GTA02v5_SYSTEM_REV:
++	case GTA02v6_SYSTEM_REV:
 +		platform_device_register(&gta02_hdq_device);
 +		break;
 +	default:
@@ -560,7 +561,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- linux-2.6.24.orig/include/asm-arm/arch-s3c2410/gta02.h
 +++ linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
-@@ -36,6 +36,7 @@
+@@ -37,6 +37,7 @@
  
  #define GTA02v3_GPIO_nG1_CS	S3C2410_GPD12	/* v3 + v4 only */
  #define GTA02v3_GPIO_nG2_CS	S3C2410_GPD13	/* v3 + v4 only */

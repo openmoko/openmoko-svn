@@ -11,7 +11,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  /* define FIQ IPC struct */
  /*
-@@ -578,6 +580,24 @@
+@@ -580,6 +582,24 @@
  };
  #endif
  
@@ -36,9 +36,9 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  /* NOR Flash */
  
  #define GTA02_FLASH_BASE	0x18000000 /* GCS3 */
-@@ -1245,6 +1265,7 @@
- 	switch (system_rev) {
+@@ -1250,6 +1270,7 @@
  	case GTA02v5_SYSTEM_REV:
+ 	case GTA02v6_SYSTEM_REV:
  		platform_device_register(&gta02_hdq_device);
 +		platform_device_register(&bq27000_battery_device);
  		break;

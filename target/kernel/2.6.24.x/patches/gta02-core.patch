@@ -2,7 +2,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,824 @@
+@@ -0,0 +1,826 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -261,6 +261,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
 +	case GTA02v5_SYSTEM_REV:
++	case GTA02v6_SYSTEM_REV:
 +		/* we need to keep the 1.8V going since this is the SDRAM
 +		 * self-refresh voltage */
 +		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].flags =
@@ -612,6 +613,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +	case GTA02v3_SYSTEM_REV:
 +	case GTA02v4_SYSTEM_REV:
 +	case GTA02v5_SYSTEM_REV:
++	case GTA02v6_SYSTEM_REV:
 +		/* depend on pcf50633 driver init */
 +		if (!pcf50633_global)
 +			while (!pcf50633_global)
@@ -831,7 +833,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,98 @@
+@@ -0,0 +1,99 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -844,6 +846,7 @@ Index: linux-2.6.24/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02v3_SYSTEM_REV	0x00000330
 +#define GTA02v4_SYSTEM_REV	0x00000340
 +#define GTA02v5_SYSTEM_REV	0x00000350
++#define GTA02v6_SYSTEM_REV	0x00000360
 +
 +#define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
 +
