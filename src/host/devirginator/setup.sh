@@ -351,6 +351,9 @@ fi
 cat <<EOF >devirginate
 #!/bin/sh -e
 # MACHINE-GENERATED. DO NOT EDIT !
+#
+# From "`echo $config`", `date`
+#
 echo ===== STARTING ===========================================================
 
 stage0=false
@@ -443,6 +446,7 @@ To set up a device,
 
 - connect it to power and JTAG
 - switch it on
+- start openocd from directory .
 - run ./devirginate
 - follow the progress, as described in README
 
@@ -458,6 +462,7 @@ To set up a device,
 
 - connect it to power and JTAG
 - switch it on
+- start openocd from directory `pwd`
 - run ./devirginate
 - follow the process, as described in README
 
