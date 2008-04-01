@@ -130,7 +130,7 @@ menu_5=
   setenv stderr serial
 
 menu_6=
-  Reset:
+  Reboot:
   reset
 
 #ifdef UNUSED
