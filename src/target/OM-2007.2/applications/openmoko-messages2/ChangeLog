@@ -1,5 +1,13 @@
 2008-04-01  Thomas Wood  <thomas@openedhand.com>
 
+	* src/Makefile.am:
+	* src/moko-save-number.c:
+	* src/moko-save-number.h:
+
+	Add moko-save-number.{c,h} for use in saving unknown numbers to contacts
+
+2008-04-01  Thomas Wood  <thomas@openedhand.com>
+
 	* src/sms-contacts.c: (openmoko_contacts_util_dial_number):
 	* src/sms-utils.c:
 

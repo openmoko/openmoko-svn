@@ -17,7 +17,9 @@ openmoko_messages_SOURCES = \
 	sms-utils.c \
 	sms-utils.h \
 	sms-dbus.c \
-	sms-dbus.h
+	sms-dbus.h \
+	moko-save-number.c \
+	moko-save-number.h
 
 %-glue.h: %.xml
 	$(LIBTOOL) --mode=execute $(DBUS_GLIB_BIN)/dbus-binding-tool --prefix=$(subst -,_,$*) --mode=glib-server --output=$@ $<
