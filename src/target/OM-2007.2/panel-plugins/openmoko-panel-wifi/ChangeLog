@@ -1,3 +1,12 @@
+2008-04-01  Rob Bradford  <rob@openedhand.com>
+
+	* src/openmoko-panel-wifi.c: (wifi_applet_is_wireless_available),
+	(wifi_applet_update_visibility), (wifi_applet_weak_notify_cb),
+	(wifi_applet_timeout_cb), (mb_panel_applet_create):
+	Poll every 5 seconds for the state of the wifi radio. It would be
+	nicer to be notified rather than needing to poll. This uses the 
+	SIOCGIWTXPOW ioctl().
+
 2008-03-28  Rob Bradford  <rob@openedhand.com>
 
 	* Initial commit
