@@ -1,5 +1,13 @@
 2008-04-01  Thomas Wood  <thomas@openedhand.com>
 
+	* src/sms-contacts.c: (openmoko_contacts_util_dial_number):
+	* src/sms-utils.c:
+
+	Remove functions copied from libhito which now conflict with built in
+	version of libhito.
+
+2008-04-01  Thomas Wood  <thomas@openedhand.com>
+
 	* configure.ac:
 	* src/Makefile.am:
 

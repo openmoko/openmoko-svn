@@ -26,59 +26,6 @@
 #  include <config.h>
 #endif
 
-/* Following two functions taken from contacts hito branch, written by
- * Ross Burton, copyright OpenedHand 2007
- */
-GList *
-hito_vcard_get_named_attributes (EVCard *contact, const char *name)
-{
-  GList *attrs = NULL, *l;
-
-  g_return_val_if_fail (E_IS_VCARD (contact), NULL);
-  g_return_val_if_fail (name != NULL, NULL);
-
-  for (l = e_vcard_get_attributes (E_VCARD (contact)); l; l = l->next)
-  {
-    EVCardAttribute *attr;
-    const char *n;
-
-    attr = (EVCardAttribute *) l->data;
-    n = e_vcard_attribute_get_name (attr);
-
-    if (strcmp (n, name) == 0)
-      attrs = g_list_prepend (attrs, attr);
-  }
-
-  return g_list_reverse (attrs);
-}
-
-/*
- * load the attribute value, returning a newly allocated semicolon seperated
- * string for multivalue attributes
- */
-gchar*
-hito_vcard_attribute_get_value_string (EVCardAttribute *attr)
-{
-  gchar *attr_value = NULL;
-  GList *l;
-  l = e_vcard_attribute_get_values (attr);
-  if (l)
-  {
-    attr_value = g_strdup (l->data);
-
-    while ((l = g_list_next (l)))
-    {
-      gchar *old = attr_value;
-      if (old)
-        attr_value = g_strdup_printf ("%s; %s", old, (gchar*) l->data);
-      else
-        attr_value = g_strdup (l->data);
-      g_free (old);
-    }
-  }
-  return attr_value;
-}
-
 void
 sms_clear_combo_box_text (GtkComboBox *combo)
 {

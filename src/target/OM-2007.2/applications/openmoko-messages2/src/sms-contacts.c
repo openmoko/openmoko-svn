@@ -90,34 +90,6 @@ openmoko_contacts_util_dial_number (const gchar *number)
   }
 }
 
-
-/* hito_vcard_attribute_get_type() taken from hito-vcard-util.c
- * Copyright 2007 OpenedHand Ltd, licensed under GPL */
-gchar*
-hito_vcard_attribute_get_type (EVCardAttribute *attr)
-{
-  GList *list, *l;
-  gchar *result = NULL;
-  list = e_vcard_attribute_get_param (attr, "TYPE");
-
-  for (l = list; l; l = g_list_next (l))
-  {
-    if (result)
-    {
-      gchar *old_result = result;
-      result = g_strconcat (l->data, ";", old_result, NULL);
-      g_free (old_result);
-    }
-    else
-    {
-      result = g_strdup (l->data);
-    }
-  }
-
-  return result;
-}
-
-
 static void
 on_dial_number_clicked (GtkWidget *eb, GdkEventButton *event, GtkDialog *dialog)
 {
