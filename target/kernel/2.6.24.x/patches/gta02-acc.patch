@@ -2,7 +2,17 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/mach-gta02.c
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -375,8 +375,6 @@
+@@ -78,6 +78,9 @@
+ 
+ #include <linux/glamofb.h>
+ 
++/* arbitrates which sensor IRQ owns the shared SPI bus */
++static spinlock_t motion_irq_lock;
++
+ static struct map_desc gta02_iodesc[] __initdata = {
+ 	{
+ 		.virtual	= 0xe0000000,
+@@ -377,8 +380,6 @@
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
  	&s3c_device_ts,
@@ -11,7 +21,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	&gta02_nor_flash,
  };
  
-@@ -476,10 +474,12 @@
+@@ -478,10 +479,12 @@
  	},
  };
  
@@ -24,7 +34,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  static struct glamo_spigpio_info glamo_spigpio_cfg = {
  	.pin_clk	= GLAMO_GPIO10_OUTPUT,
-@@ -505,16 +505,93 @@
+@@ -507,16 +510,97 @@
  
  /* SPI: Accelerometers attached to SPI of s3c244x */
  
@@ -39,8 +49,9 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 + * Foreground / interrupt arbitration is okay because the interrupts are
 + * disabled around all the foreground SPI code.
 + *
-+ * Interrupt / Interrupt arbitration is okay because the interrupts are
-+ * at the same priority (I think)
++ * Interrupt / Interrupt arbitration is evidently needed, otherwise we
++ * lose edge-triggered service after a while due to the two sensors sharing
++ * the SPI bus having irqs at the same time eventually.
 + *
 + * Servicing is typ 75 - 100us at 400MHz.
 + */
@@ -54,10 +65,12 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +	struct lis302dl_platform_data *pdata = lis->pdata;
 +	u8 shifter = 0xc0 | LIS302DL_REG_OUT_X; /* read, autoincrement */
 +	int n, n1;
++	unsigned long flags;
 +#ifdef DEBUG_SPEW_MS
 +	s8 x, y, z;
 +#endif
 +
++	spin_lock_irqsave(&motion_irq_lock, flags);
 +	s3c2410_gpio_setpin(pdata->pin_chip_select, 0);
 +	for (n = 0; n < 8; n++) { /* write the r/w, inc and address */
 +		s3c2410_gpio_setpin(pdata->pin_clk, 0);
@@ -95,6 +108,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 +		}
 +	}
 +	s3c2410_gpio_setpin(pdata->pin_chip_select, 1);
++	spin_unlock_irqrestore(&motion_irq_lock, flags);
 +	input_sync(lis->input_dev);
 +#ifdef DEBUG_SPEW_MS
 +	printk("%s: %d %d %d\n", pdata->name, x, y, z);
@@ -123,7 +137,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	},
  };
  
-@@ -523,26 +600,75 @@
+@@ -525,26 +609,75 @@
  		.modalias	= "lis302dl",
  		.platform_data	= &lis302_pdata[0],
  		.irq		= GTA02_IRQ_GSENSOR_1,
@@ -205,7 +219,12 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  };
  
  static struct resource gta02_led_resources[] = {
-@@ -785,7 +911,6 @@
+@@ -786,10 +919,11 @@
+ {
+ 	int rc;
+ 
++	spin_lock_init(&motion_irq_lock);
++
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
@@ -213,7 +232,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  
  	/* Only GTA02v1 has a SD_DETECT GPIO.  Since the slot is not
  	 * hot-pluggable, this is not required anyway */
-@@ -797,6 +922,12 @@
+@@ -801,6 +935,12 @@
  		break;
  	}
  
@@ -226,7 +245,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
  	INIT_WORK(&gta02_udc_vbus_drawer.work, __gta02_udc_vbus_draw);
  	s3c24xx_udc_set_platdata(&gta02_udc_cfg);
  	set_s3c2410ts_info(&gta02_ts_cfg);
-@@ -825,6 +956,7 @@
+@@ -829,6 +969,7 @@
  		break;
  	}
  
@@ -944,7 +963,7 @@ Index: linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2410/mach-gta01.c
 +++ linux-2.6.24/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -521,7 +521,7 @@
+@@ -510,7 +510,7 @@
  	},
  };
  

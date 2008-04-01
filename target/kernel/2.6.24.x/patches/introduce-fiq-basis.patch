@@ -368,13 +368,16 @@ Index: linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- linux-2.6.24.orig/arch/arm/mach-s3c2440/mach-gta02.c
 +++ linux-2.6.24/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -78,6 +78,28 @@
+@@ -78,9 +78,31 @@
  
  #include <linux/glamofb.h>
  
 +#include <asm/arch/fiq_ipc_gta02.h>
 +#include "fiq_c_isr.h"
 +
+ /* arbitrates which sensor IRQ owns the shared SPI bus */
+ static spinlock_t motion_irq_lock;
+ 
 +/* define FIQ IPC struct */
 +/*
 + * contains stuff FIQ ISR modifies and normal kernel code can see and use
