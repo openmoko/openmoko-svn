@@ -98,6 +98,7 @@ fix-cpu-input-pulldowns.patch
 
 # make u-boot revision-agnostic (for GTA02v5 and above)
 uboot-add-rev-detection.patch
+config-gta02v5-beyond.patch
 
 # Experimental.
 gpb-shadow.patch
