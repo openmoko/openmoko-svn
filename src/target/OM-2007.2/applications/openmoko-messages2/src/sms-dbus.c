@@ -116,11 +116,7 @@ gboolean
 sms_dbus_send_message (SmsDbus *sms_dbus, const gchar *uid, const gchar *number,
 		       const gchar *message, GError **error)
 {
-	EContact *contact;
-	
 	SmsDbusData *data;
-	
-	g_object_unref (contact);
 	
 	data = g_slice_new0 (SmsDbusData);
 	data->data = sms_dbus->priv;

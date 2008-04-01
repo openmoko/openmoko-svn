@@ -1,3 +1,8 @@
+2008-04-01  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/sms-dbus.c: (sms_dbus_send_message):
+	fix unitialised variable error	
+
 2008-03-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/sms-notes.c: (page_shown), (sms_notes_page_new):
