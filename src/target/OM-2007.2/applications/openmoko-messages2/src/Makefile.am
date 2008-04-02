@@ -5,6 +5,11 @@ AM_LDFLAGS = $(GTK_LIBS) $(JANA_LIBS) $(MOKOUI_LIBS) $(EBOOK_LIBS) $(DBUS_LIBS) 
 
 bin_PROGRAMS=openmoko-messages
 
+noinst_PROGRAMS=test-notes
+
+test_notes_SOURCES = \
+	test-notes.c
+
 openmoko_messages_SOURCES = \
 	sms.h \
 	sms-main.c \

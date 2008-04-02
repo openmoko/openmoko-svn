@@ -1,5 +1,12 @@
 2008-04-02  Thomas Wood  <thomas@openedhand.com>
 
+	* src/Makefile.am:
+	* src/test-notes.c:
+
+	Add a small test program to add notes to the system
+
+2008-04-02  Thomas Wood  <thomas@openedhand.com>
+
 	* src/sms-notes.c: Connect "Save Contact" button to moko-save-number.
 
 2008-04-01  Thomas Wood  <thomas@openedhand.com>
