@@ -139,7 +139,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +DECLARE_GLOBAL_DATA_PTR;
 +
 +/* That many seconds the power key needs to be pressed to power up */
-+#define POWER_KEY_SECONDS	2
++#define POWER_KEY_SECONDS	1
 +
 +#if defined(CONFIG_ARCH_GTA02_v1)
 +//#define M_MDIV	0x7f		/* Fout = 405.00MHz */
