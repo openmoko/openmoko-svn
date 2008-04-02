@@ -608,6 +608,29 @@ free_count_data (SmsNoteCountData *data)
 	g_slice_free (SmsNoteCountData, data);
 }
 
+
+static void
+save_contact_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	gchar *author;
+  
+	selection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->notes_treeview));
+	if ((!selection) ||
+	    (!gtk_tree_selection_get_selected (selection, &model, &iter)))
+		return;
+	
+	gtk_tree_model_get (model, &iter,
+		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author, -1);
+  
+	moko_save_number (author);
+  
+	g_free (author);
+}
+
 static void
 forward_clicked_cb (GtkToolButton *button, SmsData *data)
 {
@@ -949,6 +972,8 @@ sms_notes_page_new (SmsData *data)
 		G_CALLBACK (delete_clicked_cb), data);
 	g_signal_connect (data->delete_all_button, "clicked",
 		G_CALLBACK (delete_all_clicked_cb), data);
-	
+	g_signal_connect (data->save_contact_button, "clicked",
+		G_CALLBACK (save_contact_clicked_cb), data);
+
 	return vbox;
 }
