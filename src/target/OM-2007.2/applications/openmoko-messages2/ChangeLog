@@ -1,5 +1,16 @@
 2008-04-02  Thomas Wood  <thomas@openedhand.com>
 
+	* src/sms-contacts.c:
+	* src/sms-notes.c:
+	* src/sms-utils.c:
+
+	Re-add the New button to the notes pages.
+
+	Add a delete all button to the contacts page, to delete all selected
+	contact's messages
+
+2008-04-02  Thomas Wood  <thomas@openedhand.com>
+
 	* src/Makefile.am:
 	* src/test-notes.c:
 

@@ -632,6 +632,36 @@ save_contact_clicked_cb (GtkToolButton *button, SmsData *data)
 }
 
 static void
+new_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	gchar *author;
+  
+	selection = gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (data->notes_treeview));
+	if ((!selection) ||
+	    (!gtk_tree_selection_get_selected (selection, &model, &iter)))
+        {
+		/* TODO: find the current selected contact preferred number? */
+		author = g_strdup ("");
+	}
+	else
+	{
+		gtk_tree_model_get (model, &iter,
+			JANA_GTK_NOTE_STORE_COL_AUTHOR, &author, -1);
+	}
+
+	gtk_text_buffer_set_text (gtk_text_view_get_buffer (
+		GTK_TEXT_VIEW (data->sms_textview)), author, -1);
+
+	gtk_notebook_set_current_page (
+			GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+	g_free (author);
+}
+
+static void
 forward_clicked_cb (GtkToolButton *button, SmsData *data)
 {
 	gchar *body;
@@ -706,14 +736,6 @@ delete_clicked_cb (GtkToolButton *button, SmsData *data)
 	jana_store_remove_component (data->notes, comp);
 	g_object_unref (comp);
 	g_free (uid);
-}
-
-static void
-delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
-{
-	if (hidden) return;
-	
-	sms_delete_selected_contact_messages (data);
 }
 
 static void
@@ -793,23 +815,6 @@ gboolean notes_visible_func (GtkTreeModel *model, GtkTreeIter *iter,
 }
 
 static void
-row_inserted_cb (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
-		 SmsData *data)
-{
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), TRUE);
-}
-
-static void
-row_deleted_cb (GtkTreeModel *model, GtkTreePath *path, SmsData *data)
-{
-	GtkTreeIter iter;
-	
-	if (!gtk_tree_model_get_iter_first (model, &iter))
-		gtk_widget_set_sensitive (GTK_WIDGET (
-			data->delete_all_button), FALSE);
-}
-
-static void
 selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 {
 	GtkTreeModel *model;
@@ -836,6 +841,7 @@ sms_notes_page_new (SmsData *data)
 	GHashTable *colours_hash;
 	GtkIconTheme *icon_theme;
 	gint size;
+	GtkToolItem *new_button;
 	
 	data->author_uid = NULL;
 	data->author_icon = NULL;
@@ -874,10 +880,6 @@ sms_notes_page_new (SmsData *data)
 	gtk_tree_model_filter_set_visible_func ((GtkTreeModelFilter *)
 		data->note_filter, (GtkTreeModelFilterVisibleFunc)
 		notes_visible_func, data, NULL);
-	g_signal_connect (data->note_filter, "row-inserted",
-		G_CALLBACK (row_inserted_cb), data);
-	g_signal_connect (data->note_filter, "row-deleted",
-		G_CALLBACK (row_deleted_cb), data);
 	
 	/* Create a category-colour hash for the cell renderer */
 	colours_hash = g_hash_table_new (g_str_hash, g_str_equal);
@@ -900,19 +902,19 @@ sms_notes_page_new (SmsData *data)
 	
 	/* create toolbar */
 	toolbar = gtk_toolbar_new ();
-	
+
+  	/* New button */
+	new_button = gtk_tool_button_new_from_stock (MOKO_STOCK_SMS_NEW);
+	gtk_tool_item_set_expand (new_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), new_button, -1);
+	g_signal_connect (new_button, "clicked",
+		G_CALLBACK (new_clicked_cb), data);
+  
 	/* Forward button */
 	data->forward_button = gtk_tool_button_new_from_stock (
 		MOKO_STOCK_MAIL_FORWARD);
 	gtk_tool_item_set_expand (data->forward_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->forward_button, -1);
-	
-	/* Delete all button */
-	data->delete_all_button = gtk_tool_button_new_from_stock (
-		MOKO_STOCK_FOLDER_DELETE);
-	gtk_tool_item_set_expand (data->delete_all_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->delete_all_button, -1);
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), FALSE);
 	
 	/* Delete button */
 	data->delete_button = gtk_tool_button_new_from_stock (
@@ -970,8 +972,6 @@ sms_notes_page_new (SmsData *data)
 		G_CALLBACK (forward_clicked_cb), data);
 	g_signal_connect (data->delete_button, "clicked",
 		G_CALLBACK (delete_clicked_cb), data);
-	g_signal_connect (data->delete_all_button, "clicked",
-		G_CALLBACK (delete_all_clicked_cb), data);
 	g_signal_connect (data->save_contact_button, "clicked",
 		G_CALLBACK (save_contact_clicked_cb), data);
 

@@ -104,6 +104,12 @@ on_dial_number_clicked (GtkWidget *eb, GdkEventButton *event, GtkDialog *dialog)
 }
 
 static void
+delete_all_clicked_cb (GtkWidget *button, SmsData *data)
+{
+	sms_delete_selected_contact_messages (data);
+} 
+
+static void
 dial_clicked_cb (GtkWidget *button, SmsData *data)
 {
 	GList *numbers;
@@ -597,49 +603,36 @@ static void
 selection_changed_cb (GtkTreeSelection *selection, SmsData *data)
 {
 	GtkTreeModel *model;
-	gboolean sensitive;
+	gboolean selected, has_messages;
 	GtkTreeIter iter;
 	gchar *detail;
 	
-	if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		gtk_widget_set_sensitive (GTK_WIDGET (
-			data->delete_button), FALSE);
-		return;
+	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+	{
+		selected = FALSE;
+		has_messages = FALSE;
 	}
-	
-	/* Not the nicest way to know if there are messages, but better than 
-	 * doing multiple look-ups on the hash-tables
-	 */
-	gtk_tree_model_get (model, &iter, COL_DETAIL, &detail, -1);
-	if (!detail) {
-		sensitive = FALSE;
-	} else {
-		sensitive = TRUE;
-		if (detail[0] == '0') {
-			const gchar *next_line = strchr (detail, '\n') + 1;
-			if ((!next_line) || (next_line[0] == '0'))
-				sensitive = FALSE;
-		}
-		g_free (detail);
-	}
-
-	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), sensitive);
-}
-
-void
-sms_contacts_update_delete_all (SmsData *data)
-{
-
-	if (gtk_notebook_get_current_page (GTK_NOTEBOOK (data->notebook)) ==
-	    SMS_PAGE_CONTACTS) {
-		if (g_hash_table_size (data->note_count) > 0) {
-			gtk_widget_set_sensitive (GTK_WIDGET (
-				data->delete_all_button), TRUE);
+	else
+	{
+		selected = TRUE;
+		/* Not the nicest way to know if there are messages, but better than 
+		 * doing multiple look-ups on the hash-tables
+		 */
+		gtk_tree_model_get (model, &iter, COL_DETAIL, &detail, -1);
+		if (!detail) {
+			has_messages = FALSE;
 		} else {
-			gtk_widget_set_sensitive (GTK_WIDGET (
-				data->delete_all_button), FALSE);
+			has_messages = TRUE;
+			if (detail[0] == '0') {
+				const gchar *next_line = strchr (detail, '\n') + 1;
+				if ((!next_line) || (next_line[0] == '0'))
+					has_messages = FALSE;
+			}
+			g_free (detail);
 		}
 	}
+	gtk_widget_set_sensitive (GTK_WIDGET (data->dial_button), selected);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), has_messages);
 }
 
 GtkWidget *
@@ -800,9 +793,20 @@ sms_contacts_page_new (SmsData *data)
 	data->dial_button = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_DIAL);
 	gtk_tool_item_set_expand (data->dial_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->dial_button, -1);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->dial_button), FALSE);
 	g_signal_connect (data->dial_button, "clicked",
 		G_CALLBACK (dial_clicked_cb), data);
-	
+
+	/* Delete all button */
+	data->delete_all_button = gtk_tool_button_new_from_stock (
+		MOKO_STOCK_FOLDER_DELETE);
+	gtk_tool_item_set_expand (data->delete_all_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->delete_all_button, -1);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), FALSE);
+	g_signal_connect (data->delete_all_button, "clicked",
+		G_CALLBACK (delete_all_clicked_cb), data);
+
+  
 	/* Pack widgets into vbox and return */
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), toolbar,

@@ -279,9 +279,6 @@ sms_contacts_note_count_update (SmsData *data)
 	
 	data->note_count_idle = 0;
 
-	/* Update the delete-all button if we're on the contacts page */
-	sms_contacts_update_delete_all (data);
-
 	/* Change sort column so changing priorities doesn't break iterating 
 	 * through the model.
 	 */
