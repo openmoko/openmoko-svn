@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<theme name="OpenMoko-Standard-2" author="Chris Lord - chris@openedhand.com"
+       desc="The default OpenMoko theme" version="1.0" engine_version="1" >
+
+<color id="white" def="#ffffff" />
+<color id="black" def="#000000ff" />
+<color id="orange" def="#ff7f00ff" />
+<color id="transparent" def="#00000000" />
+
+<color id="dark" def="#000000" />
+<color id="darkmid" def="#161616" />
+<color id="light" def="#858585" />
+<color id="lightmid" def="#2c2c2c" />
+
+<font id="titlefont" def="Sans bold 30px" />
+<font id="menufont" def="Sans bold 32px" />
+
+<pixmap id="closebutton" filename="closebutton.xpm" />  
+<pixmap id="menubutton"  filename="menubutton.xpm" />  
+
+<frame id="main" height="50">
+
+  <layer x="0" y="0" w="100%"  h="47" 
+   type="plain" color="black" />
+
+  <layer x="10" y="10" w="33%" h="37" 
+   type="label" color="white" justify="left" font="titlefont" />
+
+  <button x="5" y="0" w="33%" h="47" action="menu" options="inputonly" />
+
+  <button x="33%+5" y="0" w="32" h="50" action="custom">
+   <active pixmap="menubutton" blend="-150"/>
+   <inactive pixmap="menubutton" />
+  </button>
+
+   <panel x="33%+37" y="0" w="67%-37" h="40" />
+
+</frame>
+
+<frame id="dialog" height="50">
+
+  <layer x="0" y="0" w="100%"  h="25" 
+   type="gradient-vert" startcol="light" endcol="lightmid" />
+
+  <layer x="0" y="20" w="100%"  h="25" 
+   type="gradient-vert" startcol="darkmid" endcol="dark" />
+
+  <layer x="36" y="9" w="100%" h="37" 
+   type="label" color="white" justify="left" font="titlefont" />
+
+  <button x="0" y="0" w="32" h="50" action="close" >
+   <active pixmap="closebutton" blend="-150"/>
+   <inactive pixmap="closebutton" />
+  </button>
+
+</frame>
+
+<frame id="dialog-north" height="0"/>
+
+<frame id="dialog-south" height="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-east" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-west" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="menu"
+    border_north="0"
+    border_south="4"
+    border_west="4"
+    border_east="4"
+    fixed_width="320"
+    font="menufont" highlight="lightmid" color="white" options="shaped">
+
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="orange" />
+
+  <layer x="3" y="0" w="100%-6"  h="100%-3" 
+   type="plain" color="black" />
+
+</frame>
+
+<lowlight color="black" /> 
+<shadow style="gaussian" />
+
+</theme>
+

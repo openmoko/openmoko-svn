@@ -1,5 +1,14 @@
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 
+	* data/matchbox/closebutton.xpm:
+	* data/matchbox/menubutton.xpm:
+	* data/matchbox/theme.desktop:
+	* data/matchbox/theme.xml:
+
+	Import OpenMoko matchbox theme and remove use of gradients
+
+2008-04-03  Thomas Wood  <thomas@openedhand.com>
+
 	* autogen.sh: Allow autotools 1.10
 
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
