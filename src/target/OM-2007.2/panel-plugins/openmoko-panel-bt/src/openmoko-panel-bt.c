@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define BT_POWERON_FILENAME "/sys/class/i2c-dev/i2c-0/device/0-0008/gta01-pm-bt.0/power_on"
-#define BT_POWERON_FILENAME2 "/sys/class/i2c-dev/i2c-0/device/0-0008/neo1973-pm-bt.0/power_on"
+#define BT_POWERON_FILENAME "/sys/devices/platform/s3c2440-i2c/i2c-adapter/i2c-0/0-0073/neo1973-pm-bt.0/power_on"
+#define BT_RESET_FILENAME "/sys/devices/platform/s3c2440-i2c/i2c-adapter/i2c-0/0-0073/neo1973-pm-bt.0/reset"
 
 typedef struct {
   MokoPanelApplet *mokoapplet;
@@ -36,7 +36,6 @@ read_bt_power(void)
   FILE * f = fopen(BT_POWERON_FILENAME, "r+");
   int val;
 
-  if (f == NULL) f = fopen(BT_POWERON_FILENAME2, "r+");
   if (f == NULL) return -1;
 
   fscanf(f, "%i", &val);
@@ -49,7 +48,20 @@ set_bt_power(int val)
 {
   FILE * f = fopen(BT_POWERON_FILENAME, "w");
 
-  if (f == NULL) f = fopen(BT_POWERON_FILENAME2, "w");
+  if (f == NULL) return -1;
+
+  fprintf(f, "%i\n", val);
+
+  fclose(f);
+
+  return val;
+}
+
+static int
+reset_bt_power(int val)
+{
+  FILE * f = fopen(BT_RESET_FILENAME, "w");
+
   if (f == NULL) return -1;
 
   fprintf(f, "%i\n", val);
@@ -76,6 +88,7 @@ bt_applet_power_on(GtkWidget* menu, BtApplet* applet)
     NotifyNotification * nn;
 
     ret = set_bt_power(1);
+    ret = reset_bt_power(0);
     mb_panel_update(applet, 1);
     nn = notify_notification_new ("Bluetooth turned on", NULL, NULL, NULL);
     notify_notification_show (nn, NULL);
