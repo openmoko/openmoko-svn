@@ -1,3 +1,8 @@
+2008-04-03  Thomas Wood  <thomas@openedhand.com>
+
+	* src/test-notes.c: (main): Add optional message and author command line
+	parameters
+
 2008-04-02  Thomas Wood  <thomas@openedhand.com>
 
 	* src/sms-contacts.c:
