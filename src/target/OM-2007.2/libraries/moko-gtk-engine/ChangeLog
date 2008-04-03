@@ -1,3 +1,12 @@
+2008-04-03  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-draw.c:
+	* data/gtk-2.0/gtkrc:
+	* data/gtk-2.0/openmoko-dialer:
+
+	Completely redesign the visual style, with emphasis on simplicity and
+	speed.
+
 2007-12-07  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-draw.c: (moko_draw_vline), (moko_draw_hline),

@@ -12,5 +12,3 @@ style "mokodialertextview" {
 widget "*.MokoDialerTextview" style "mokodialertextview"
 widget "*.MokoTips*" style "mokodialertextview"
 
-widget_class "*MokoDigitButton*" style "reversed" # defined in the main gtkrc
-
