@@ -18,4 +18,4 @@
  */
 
 
-void moko_save_number (gchar *number);
+void moko_save_number (const gchar *number);

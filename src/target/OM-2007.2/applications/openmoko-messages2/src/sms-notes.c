@@ -32,6 +32,8 @@
 #include <libebook/e-book.h>
 #include <string.h>
 
+#include "moko-save-number.h"
+
 static GdkColor alt_color;
 static gboolean hidden = TRUE;
 static gboolean open = FALSE;

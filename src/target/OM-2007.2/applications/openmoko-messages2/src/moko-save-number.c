@@ -70,11 +70,13 @@ create_new_contact_from_number (gchar *number)
     EContact *contact;
     EBook *book;
     EVCardAttribute *attr;
+    const gchar *s;
 
     /* create contact */
     contact = e_contact_new ();
     /* add name */
-    e_contact_set (contact, E_CONTACT_FULL_NAME, gtk_entry_get_text (GTK_ENTRY (name)));
+    s = gtk_entry_get_text (GTK_ENTRY (name));
+    e_contact_set (contact, E_CONTACT_FULL_NAME, (const gpointer) s);
     /* add number */
     attr = e_vcard_attribute_new ("", EVC_TEL);
     e_vcard_add_attribute_with_value (E_VCARD (contact), attr, number);
@@ -210,7 +212,7 @@ btn_save_info_weak_notify (SaveButtonInfo *info, GObject *object)
 }
 
 void
-moko_save_number (gchar *number)
+moko_save_number (const gchar *number)
 {
   GtkWidget *window, *btn, *vbox;
   SaveButtonInfo *btn_info;
@@ -239,8 +241,6 @@ moko_save_number (gchar *number)
   btn_info->number = g_strdup (number);
   g_signal_connect (btn, "clicked", G_CALLBACK (on_btn_save_clicked), btn_info);
   g_object_weak_ref (G_OBJECT (btn), (GWeakNotify) btn_save_info_weak_notify, btn_info);
-  
-  g_free (number);
   
   gtk_widget_show_all (window);
 }

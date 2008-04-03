@@ -1,5 +1,14 @@
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-save-number.c: (create_new_contact_from_number),
+	(btn_save_info_weak_notify), (moko_save_number):
+	* src/moko-save-number.h:
+	* src/sms-notes.c:
+
+	Fix some compiler warnings and possible double free
+
+2008-04-03  Thomas Wood  <thomas@openedhand.com>
+
 	* src/test-notes.c: (main): Add optional message and author command line
 	parameters
 
