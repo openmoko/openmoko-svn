@@ -1,5 +1,9 @@
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 
+	* autogen.sh: Allow autotools 1.10
+
+2008-04-03  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-draw.c:
 	* data/gtk-2.0/gtkrc:
 	* data/gtk-2.0/openmoko-dialer:
