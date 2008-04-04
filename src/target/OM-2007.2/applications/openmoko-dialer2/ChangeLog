@@ -1,3 +1,9 @@
+2008-04-05  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/common/moko-contacts.c: (moko_contacts_add_contact), (moko_contacts_init)
+
+	bug#1305: cannot display Contact name in Call history
+
 2008-03-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/dialer-main.c: (main):

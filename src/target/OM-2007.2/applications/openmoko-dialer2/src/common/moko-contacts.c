@@ -48,7 +48,7 @@ struct _MokoContactsPrivate
   GList      *contacts;
   GList      *entries;
   GHashTable *prefixes;
-
+  GHashTable *uids;
   Digit *start;
 };
 
@@ -251,25 +251,32 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
 {
   MokoContactsPrivate *priv;
   MokoContact *m_contact = NULL;
-  const gchar *name;
+  const gchar *name, *uid;
   GList *attributes, *params, *numbers;
 
   g_return_if_fail (MOKO_IS_CONTACTS (contacts));
   g_return_if_fail (E_IS_CONTACT (e_contact));
   priv = contacts->priv;
 
+  uid = e_contact_get_const (e_contact, E_CONTACT_UID);
+  if (g_hash_table_lookup (priv->uids, uid))
+	  return;
+  
   name = e_contact_get_const (e_contact, E_CONTACT_FULL_NAME);
   if (!name || (g_utf8_strlen (name, -1) <= 0))
     name = "Unknown";
-    
+  
   /* Create the contact & append to the list */
   m_contact = g_new0 (MokoContact, 1);
   m_contact->name = g_strdup (name);
-  m_contact->uid = e_contact_get (e_contact, E_CONTACT_UID);
+  m_contact->uid = g_strdup (uid);
   m_contact->photo = NULL;
 
   priv->contacts = g_list_append (priv->contacts, m_contact);
-   
+  g_hash_table_insert (priv->uids,
+                       g_strdup (uid), 
+                       m_contact);
+
   /* Now go through the numbers,creating MokoNumber for them */
   for (attributes = e_vcard_get_attributes (E_VCARD(e_contact)); attributes; attributes = attributes->next)
   {
@@ -367,6 +374,7 @@ moko_contacts_finalize (GObject *contacts)
   priv = MOKO_CONTACTS (contacts)->priv;
 
   g_hash_table_destroy (priv->prefixes);
+  g_hash_table_destroy (priv->uids);
 
   for (l = priv->contacts; l != NULL; l = l->next)
   {
@@ -420,6 +428,7 @@ moko_contacts_init (MokoContacts *contacts)
   EBook *book;
   EBookView *view;
   EBookQuery *query;
+  GList *contact, *c;
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
@@ -428,7 +437,8 @@ moko_contacts_init (MokoContacts *contacts)
   priv->start = NULL;
   priv->prefixes = g_hash_table_new ((GHashFunc)g_str_hash,
                                      (GEqualFunc)g_str_equal);
-  
+  priv->uids = g_hash_table_new ((GHashFunc)g_str_hash,
+                                     (GEqualFunc)g_str_equal);
   query = e_book_query_any_field_contains ("");
 
   /* Open the system book and check that it is valid */
@@ -438,10 +448,23 @@ moko_contacts_init (MokoContacts *contacts)
     g_warning ("Failed to create system book\n");
     return;
   }
+  
   if (!e_book_open (book, FALSE, NULL))
   {
     g_warning ("Failed to open system book\n");
     return;
+  }  
+  
+  if (!e_book_get_contacts (book, query, &contact, NULL)) 	 
+  { 	 
+     g_warning ("Failed to get contacts from system book\n"); 	 
+     return; 	 
+  } 	 
+  	 
+  /* Go through the contacts, creating the contact structs, and entry structs*/ 	 
+  for (c = contact; c != NULL; c = c->next) 	 
+  { 	 
+     moko_contacts_add_contact (contacts, E_CONTACT (c->data)); 	 
   }
 
   /* Connect to the ebookviews signals */
