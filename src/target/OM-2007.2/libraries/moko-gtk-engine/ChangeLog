@@ -1,3 +1,8 @@
+2008-04-04  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtk-2.0/openmoko-dialer: Add borders to keypad buttons
+	* src/moko-draw.c: (moko_draw_box): Implement border option
+
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 
 	* data/matchbox/closebutton.xpm:

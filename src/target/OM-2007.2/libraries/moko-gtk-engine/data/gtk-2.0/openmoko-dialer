@@ -12,3 +12,9 @@ style "mokodialertextview" {
 widget "*.MokoDialerTextview" style "mokodialertextview"
 widget "*.MokoTips*" style "mokodialertextview"
 
+style "dialpad" {
+  engine "moko-engine" {
+    border = TRUE
+  }
+}
+widget_class "*MokoKeypad*" style "dialpad"

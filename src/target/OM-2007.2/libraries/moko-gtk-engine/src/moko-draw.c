@@ -68,6 +68,15 @@ moko_draw_box (DRAW_ARGS)
   else
     gc = style->bg_gc[state_type];
 
+  if (MOKO_RC_STYLE (style->rc_style)->has_border)
+  {
+    gdk_draw_rectangle (window, style->dark_gc[state_type], TRUE,
+        x, y, width, height);
+    x += 2;
+    y += 2;
+    width -= 4;
+    height -= 4;
+  }
   gdk_draw_rectangle (window, gc, TRUE, x, y, width, height);
 
 }
