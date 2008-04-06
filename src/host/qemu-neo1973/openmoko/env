@@ -24,7 +24,7 @@ splash_size=0x5000
 
 # We don't want the "-latest" symlinks to match
 kernel_wildcard="uImage-2.6.*-om-gta01.bin"
-rootfs_wildcard="OpenMoko-openmoko-*image*-om-gta01.rootfs.jffs2"
+rootfs_wildcard="Open?oko-openmoko-*image*-om-gta01.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01bv4-1*.bin"
 
 download_dir="http://buildhost.openmoko.org/daily/neo1973/deploy/glibc/images/neo1973/"

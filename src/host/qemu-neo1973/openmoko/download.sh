@@ -56,6 +56,7 @@ most_recent "$rootfs_wildcard" rootfs_image "" || exit -1
 ${echo} -n "    "U-boot is...\ 
 most_recent "$uboot_wildcard" uboot_image dev_ || exit -1
 
+# Give user the chance to kill us
 sleep 2
 
 download () {
