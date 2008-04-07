@@ -177,7 +177,8 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
   /* check for network connection */
   if (priv->registered != GSMD_NETREG_REG_HOME
       && priv->registered != GSMD_NETREG_REG_ROAMING
-      && priv->registered != GSMD_NETREG_DENIED)
+      && priv->registered != GSMD_NETREG_DENIED 
+      && g_strcasecmp(number,"112")!=0)
   {
 
     gchar *strings[] = {
