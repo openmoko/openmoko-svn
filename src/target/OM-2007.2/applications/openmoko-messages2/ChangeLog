@@ -1,3 +1,7 @@
+2008-04-07  Thomas Wood  <thomas@openedhand.com>
+
+	* src/test-notes.c: (main): Add support for recipient and "Sent" flag
+
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-save-number.c: (create_new_contact_from_number),
