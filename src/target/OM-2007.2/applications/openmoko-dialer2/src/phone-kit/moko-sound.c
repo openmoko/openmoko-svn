@@ -22,10 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char *sound_profile_filenames[] = { "/etc/gsmhandset.state",
-  "/etc/gsmheadset.state",
-  "/etc/gsmspeakerout.state",
-  "/etc/stereoout.state"};
+char *sound_profile_filenames[] = {
+  "/usr/share/openmoko/scenarios/gsmhandset.state",
+  "/usr/share/openmoko/scenarios/gsmheadset.state",
+  "/usr/share/openmoko/scenarios/gsmspeakerout.state",
+  "/usr/share/openmoko/scenarios/stereoout.state"
+};
 
 void moko_sound_profile_set(int profile) {
   char command[100];
