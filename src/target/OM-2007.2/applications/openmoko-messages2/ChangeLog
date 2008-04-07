@@ -1,6 +1,14 @@
 2008-04-07  Thomas Wood  <thomas@openedhand.com>
 
-	* src/test-notes.c: (main): Add support for recipient and "Sent" flag
+	* src/moko-save-number.c: (moko_save_number): Check number is not blank,
+	and warn user if it is.
+
+	* src/sms-notes.c: (save_contact_clicked_cb): Add recipient number if
+	SMS was "Sent".
+
+2008-04-07  Thomas Wood  <thomas@openedhand.com>
+
+	* src/test-notes.c: (main): Add 
 
 2008-04-03  Thomas Wood  <thomas@openedhand.com>
 

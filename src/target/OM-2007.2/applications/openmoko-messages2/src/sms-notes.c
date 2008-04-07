@@ -617,7 +617,9 @@ save_contact_clicked_cb (GtkToolButton *button, SmsData *data)
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	gchar *author;
+	gchar *author, *recipient, **categories;
+	gboolean sent;
+	gint i;
   
 	selection = gtk_tree_view_get_selection (
 		GTK_TREE_VIEW (data->notes_treeview));
@@ -626,11 +628,30 @@ save_contact_clicked_cb (GtkToolButton *button, SmsData *data)
 		return;
 	
 	gtk_tree_model_get (model, &iter,
-		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author, -1);
-  
-	moko_save_number (author);
+		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author,
+		JANA_GTK_NOTE_STORE_COL_RECIPIENT, &recipient,
+		JANA_GTK_NOTE_STORE_COL_CATEGORIES, &categories, -1);
+
+	/* find out if the SMS was sent or received, so we can save the
+	 * appropriate number */
+	sent = FALSE;
+	for (i = 0; categories[i]; i++)
+	{
+		if (!strcmp (categories[i], "Sent"))
+		{
+			sent = TRUE;
+			break;
+		}
+	}
+
+	if (sent)
+		moko_save_number (recipient);
+	else
+		moko_save_number (author);
   
 	g_free (author);
+	g_free (recipient);
+	g_strfreev (categories);
 }
 
 static void

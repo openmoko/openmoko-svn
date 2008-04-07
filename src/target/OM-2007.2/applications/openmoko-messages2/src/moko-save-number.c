@@ -217,6 +217,18 @@ moko_save_number (const gchar *number)
   GtkWidget *window, *btn, *vbox;
   SaveButtonInfo *btn_info;
 
+g_debug ("Sae number %s", number);
+
+  if (!number || !strcmp (number, ""))
+  {
+    GtkWidget *dlg;
+    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                                  "No number available");
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_destroy (dlg);
+    return;
+  }
+
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);
   gtk_window_set_title (GTK_WINDOW (window), number);
