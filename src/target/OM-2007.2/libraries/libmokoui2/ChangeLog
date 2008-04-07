@@ -1,3 +1,12 @@
+2008-04-07  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c
+	(moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_button_release_cb):
+	Don't bother checking the last event type when detecting infinite
+	loops, it just causes problems with double-clicking
+
 2008-01-29  Chris Lord  <chris@openedhand.com>
 
 	* bindings/python/Makefile.am:

@@ -52,8 +52,7 @@ struct _MokoFingerScrollPrivate {
 	gdouble ey;	/* motion event in acceleration mode */
 	gboolean enabled;
 	gboolean clicked;
-	GdkEventType last_type;	/* Last event type and time, to stop */
-	guint32 last_time;	/* infinite loops */
+	guint32 last_time;	/* Last event time, to stop infinite loops */
 	gboolean moved;
 	GTimeVal click_start;
 	GTimeVal last_click;
@@ -232,8 +231,9 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
 	if ((!priv->enabled) || (event->button != 1) ||
-	    ((event->time == priv->last_time) &&
-	     (event->type == priv->last_type))) return TRUE;
+	    ((event->time == priv->last_time))) return TRUE;
+	
+	priv->last_time = event->time;
 
 	priv->click_x = event->x;
 	priv->click_y = event->y;
@@ -245,8 +245,6 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	}
 	
 	g_get_current_time (&priv->click_start);
-	priv->last_type = event->type;
-	priv->last_time = event->time;
 	priv->x = event->x;
 	priv->y = event->y;
 	priv->ix = priv->x;
@@ -470,8 +468,7 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	gdouble x, y;
 
 	if ((!priv->enabled) || (!priv->clicked) ||
-	    ((event->time == priv->last_time) &&
-	     (event->type == priv->last_type))) {
+	    ((event->time == priv->last_time))) {
 		gdk_window_get_pointer (
 			GTK_WIDGET (scroll)->window, NULL, NULL, 0);
 		return TRUE;
@@ -535,7 +532,6 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	
 	if (priv->child) {
 		/* Send motion notify to child */
-		priv->last_type = event->type;
 		priv->last_time = event->time;
 		event = (GdkEventMotion *)gdk_event_copy ((GdkEvent *)event);
 		event->x = priv->cx + (event->x - priv->ix);
@@ -562,13 +558,11 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	gdouble delta, speed_x, speed_y;
 	
 	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
-	    ((event->time == priv->last_time) &&
-	     (event->type == priv->last_type)))
+	    ((event->time == priv->last_time)))
 		return TRUE;
 
-	priv->last_type = event->type;
-	
 	priv->last_time = event->time;
+	
 	g_get_current_time (&current);
 
 	priv->clicked = FALSE;
