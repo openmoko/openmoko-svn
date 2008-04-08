@@ -127,6 +127,9 @@ gboolean
 moko_network_get_home_country_code (MokoNetwork *self, gchar **dial_code,
                                     GError **error);
 
+gboolean
+moko_network_get_imsi (MokoNetwork *self, gchar **imsi, GError **error);
+
 G_END_DECLS
 
 #endif /* _HAVE_MOKO_NETWORK_H */

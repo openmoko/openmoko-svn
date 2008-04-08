@@ -1094,3 +1094,25 @@ moko_network_get_home_country_code (MokoNetwork *self, gchar **dial_code,
   return TRUE;
 }
 
+gboolean
+moko_network_get_imsi (MokoNetwork *self, gchar **imsi, GError **error)
+{
+  MokoNetworkPrivate *priv;
+  
+  if (!moko_network_get_lgsm_handle (self, NULL, error)) return FALSE;
+  if (!moko_network_check_registration (self, error)) return FALSE;
+  priv = self->priv;
+  
+  if (!priv->imsi) {
+    if (error) *error = g_error_new (PHONE_KIT_NETWORK_ERROR,
+                                     PK_NETWORK_ERROR_NO_IMSI,
+                                     "Unable to retrieve IMSI");
+    return FALSE;
+  }
+
+  if (imsi)
+    *imsi = g_strdup (priv->imsi);
+
+  return TRUE;
+
+}

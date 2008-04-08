@@ -1,5 +1,14 @@
 2008-04-08  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-network-dbus.xml:
+	* src/phone-kit/moko-network.c:
+	(moko_network_get_home_country_code):
+	* src/phone-kit/moko-network.h:
+
+	Add get_imsi method to MokoNetwork object
+
+2008-04-08  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-talking.c: (moko_talking_init): Remove toolbar
 	separators to make UI consistent with other applications
 

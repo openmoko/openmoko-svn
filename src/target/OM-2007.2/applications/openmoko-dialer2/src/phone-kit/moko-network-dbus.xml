@@ -21,6 +21,10 @@
     <arg type="s" name="dial_code" direction="out" />
   </method>
 
+  <method name="GetImsi">
+    <arg type="s" name="imsi" direction="out" />
+  </method>
+
   <signal name="SubscriberNumberChanged">
     <arg type="s" name="number" />
   </signal>
