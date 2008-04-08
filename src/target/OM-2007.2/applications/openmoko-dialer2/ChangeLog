@@ -1,3 +1,10 @@
+2008-04-08  Thomas Wood  <thomas@openedhand.com>
+
+	* src/common/Makefile.am: Add missing header file
+	* src/dialer/dialer-main.c: (program_log), (main): Create the history
+	widget after everything else has loaded, unless it is explicitly
+	requested at runtime
+
 2008-04-07  Erin Yueh  <erin_yueh@openmoko.com>
 
 	*  src/phone-kit/moko-dialer.c: (moko_dialer_dial)
