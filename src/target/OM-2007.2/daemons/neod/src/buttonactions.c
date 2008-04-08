@@ -800,11 +800,11 @@ void neod_buttonactions_show_power_menu()
         g_signal_connect(G_OBJECT(lock_display), "clicked", 
 			G_CALLBACK(neod_buttonactions_popup_selected_lock_display), NULL);
 		gtk_box_pack_start_defaults(GTK_BOX(box), lock_display);
-
+#if 0
         GtkWidget* lock = gtk_button_new_with_label("Lock Phone");
         g_signal_connect( G_OBJECT(lock), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
         gtk_box_pack_start_defaults( GTK_BOX(box), lock );
-
+#endif
         GtkWidget* poweroff = gtk_button_new_with_label( "Shutdown Now" );
         g_signal_connect( G_OBJECT(poweroff), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
         gtk_box_pack_start_defaults( GTK_BOX(box), poweroff );
