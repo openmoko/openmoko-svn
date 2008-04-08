@@ -29,13 +29,10 @@ typedef struct
 {
   GtkWidget *notebook;
   GtkWidget *history;
-
-  GtkWidget *history_placeholder;
   
   GtkWidget *main_window;
 
   DBusGProxy *dialer_proxy;
-  MokoJournal *journal;
 } DialerData;
 
 static gboolean show_missed;
@@ -101,18 +98,6 @@ program_log (const char *format, ...)
   g_free (str);
 }
 
-gboolean
-create_history_window (DialerData *data)
-{
-  /* create the history window in an idle callback, if we don't need it straight
-   * away */
-  data->history = moko_history_new (data->journal);
-  g_signal_connect (data->history, "dial_number", G_CALLBACK (dial_clicked_cb), data);
-  gtk_container_add (GTK_CONTAINER (data->history_placeholder), data->history);
-  return FALSE;
-
-}
-
 int main (int argc, char **argv)
 {
   GtkWidget *window, *keypad;
@@ -168,7 +153,7 @@ int main (int argc, char **argv)
 
   /* Set up the journal */
   program_log ("load journal");
-  data->journal = journal = moko_journal_open_default ();
+  journal = moko_journal_open_default ();
   if (!journal || !moko_journal_load_from_storage (journal))
   {
     g_warning ("Could not load journal");
@@ -195,32 +180,20 @@ int main (int argc, char **argv)
   gtk_notebook_append_page (GTK_NOTEBOOK (data->notebook), keypad, gtk_image_new_from_file (PKGDATADIR"/dtmf.png"));
   gtk_container_child_set (GTK_CONTAINER (data->notebook), keypad, "tab-expand", TRUE, NULL);
 
-
+  /* History */
   program_log ("create history widget");
-  if (!show_missed)
-  {
-    /* set a temporary widget while we create the real history widget */
-    data->history_placeholder = gtk_alignment_new (0, 0, 1, 1);
-    gtk_notebook_append_page (GTK_NOTEBOOK (data->notebook), data->history_placeholder,
-                              gtk_image_new_from_icon_name ("moko-call-history",
-                                                        GTK_ICON_SIZE_BUTTON));
-    gtk_container_child_set (GTK_CONTAINER (data->notebook), data->history_placeholder,
-                             "tab-expand", TRUE,
-                             NULL);
-    /* wait until everything else finishes before creating the history widget */
-    g_idle_add ((GSourceFunc) create_history_window, data);
-  }
-  else
-  {
-    /* we need to show the history window right now, so don't delay creation */
-    create_history_window (data);
-  }
+  data->history = moko_history_new (journal);
+  g_signal_connect (data->history, "dial_number", G_CALLBACK (dial_clicked_cb), data);
+  gtk_notebook_append_page (GTK_NOTEBOOK (data->notebook), data->history,
+                            gtk_image_new_from_icon_name ("moko-call-history",
+                                                      GTK_ICON_SIZE_BUTTON));
+  gtk_container_child_set (GTK_CONTAINER (data->notebook), data->history,
+                           "tab-expand", TRUE,
+                           NULL);
 
   program_log ("show window");
   gtk_widget_show_all (window);
 
-
-  /* History */
   if (show_missed)
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->notebook), 1);
   else

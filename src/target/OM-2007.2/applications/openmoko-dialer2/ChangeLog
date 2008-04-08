@@ -1,5 +1,10 @@
 2008-04-08  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer/dialer-main.c: (main): Revert previous history widget
+	creation changes until at least after MP image.
+
+2008-04-08  Thomas Wood  <thomas@openedhand.com>
+
 	* src/common/Makefile.am: Add missing header file
 	* src/dialer/dialer-main.c: (program_log), (main): Create the history
 	widget after everything else has loaded, unless it is explicitly
