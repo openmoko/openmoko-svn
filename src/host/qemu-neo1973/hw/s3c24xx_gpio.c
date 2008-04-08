@@ -83,7 +83,7 @@ static void s3c_gpio_set(void *opaque, int line, int level)
         }
         if (level) {
             if (!((s->bank[bank].dat >> line) & 1))
-                switch ((s->extint[e] >> (line * 3)) & 7) {
+                switch ((s->extint[e] >> (line * 4)) & 7) {
                 case 1:
                 case 4 ... 7:
                     s3c_gpio_extint(s, eint);
@@ -92,7 +92,7 @@ static void s3c_gpio_set(void *opaque, int line, int level)
             s->bank[bank].dat |= 1 << line;
         } else {
             if ((s->bank[bank].dat >> line) & 1)
-                switch ((s->extint[e] >> (line * 3)) & 7) {
+                switch ((s->extint[e] >> (line * 4)) & 7) {
                 case 1:
                 case 4 ... 5:
                     break;
