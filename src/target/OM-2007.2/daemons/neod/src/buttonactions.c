@@ -644,17 +644,17 @@ static gboolean is_turned_on( int unit )
     {
         case GSM:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            return read_boolean_from_path( "/sys/devices/platform/gta01-pm-gsm.0/power_on" );
+            return read_boolean_from_path( "/sys/bus/platform/devices/neo1973-pm-gsm.0/power_on" );
 #endif
             return FALSE;
         case BLUETOOTH:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-bt.0/power_on" );
+            return read_boolean_from_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on" );
 #endif
             return FALSE;
         case GPS:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/pwron" );
+            return read_boolean_from_path( "/sys/bus/platform/devices/neo1973-pm-gps.0/pwron" );
 #endif
             return FALSE;
         case WIFI:
@@ -676,12 +676,13 @@ static void peripheral_set_power( int unit, gboolean on )
             break;
         case BLUETOOTH:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            write_boolean_to_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-bt.0/power_on", on );
+            write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on", on );
+	     write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/reset", 0 );
 #endif
             break;
         case GPS:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            write_boolean_to_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/power_on", on );
+            write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-gps.0/pwron", on );
 #endif
             break;
         case WIFI:
