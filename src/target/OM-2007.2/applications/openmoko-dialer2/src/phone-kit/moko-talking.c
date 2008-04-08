@@ -545,21 +545,17 @@ moko_talking_init (MokoTalking *talking)
   item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-answer.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_answer_clicked), talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
-
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
 
   item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-ignore.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_silence_clicked), talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
-
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
 
   item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-hangup.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_reject_clicked), talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
   
   /* Volume controls */
   priv->headphone = moko_alsa_volume_control_new ();
@@ -580,15 +576,13 @@ moko_talking_init (MokoTalking *talking)
 
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "toggled", G_CALLBACK (on_speaker_toggled), talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
   priv->speaker_toggle_btn = item;
-
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
 
   item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-hangup.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_cancel_clicked), talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);  
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
 
   /* The title label and image */
   vbox = gtk_vbox_new (FALSE, 0);
