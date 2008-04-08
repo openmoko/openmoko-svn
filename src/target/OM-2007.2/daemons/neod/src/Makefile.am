@@ -10,7 +10,9 @@ bin_PROGRAMS = neod
 
 neod_SOURCES = \
   buttonactions.c \
-  neod-main.c
+  neod-main.c \
+  wifi.c \
+  wifi.h
 
 neod_LDADD = @NEOD_LIBS@ -lapm
 

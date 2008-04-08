@@ -15,6 +15,8 @@
  */
 #include "buttonactions.h"
 
+#include "wifi.h"
+
 #include <gconf/gconf-client.h>
 
 #include <gtk/gtk.h>
@@ -75,6 +77,8 @@ static int backlight_max_brightness = 1;
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
 #define CHARGER_INSERTION_BUTTON 0x164
 
+#define WIFI_IFACE "eth0"
+
 #define BIT_MASK( name, numbits )                                        \
     unsigned short  name[ ((numbits) - 1) / (sizeof( short ) * 8) + 1 ];    \
     memset( name, 0, sizeof( name ) )
@@ -106,6 +110,7 @@ enum PeripheralUnit
     GSM = 0,
     BLUETOOTH = 1,
     GPS = 2,
+    WIFI = 3,
 };
 
 enum PowerManagementMode
@@ -652,6 +657,8 @@ static gboolean is_turned_on( int unit )
             return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/pwron" );
 #endif
             return FALSE;
+        case WIFI:
+            return wifi_radio_is_on ( WIFI_IFACE );
         default:
             g_assert( FALSE ); // should never reach this
     }
@@ -677,6 +684,9 @@ static void peripheral_set_power( int unit, gboolean on )
             write_boolean_to_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/power_on", on );
 #endif
             break;
+        case WIFI:
+            wifi_radio_control ( WIFI_IFACE, on );
+            break;
         default:
             g_assert( FALSE ); // should never reach this
     }
@@ -685,9 +695,9 @@ static void peripheral_set_power( int unit, gboolean on )
 void neod_buttonactions_popup_selected_switch_power( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( power_menu );
-    gboolean new_power_state = !is_turned_on( (int)user_data );
-    g_debug( "switch power of unit %d to %d", (int)user_data, (int)new_power_state );
-    //FIXME implement this and notify user
+    gboolean new_power_state = !is_turned_on( GPOINTER_TO_INT( user_data ) );
+    g_debug( "switch power of unit %d to %d", GPOINTER_TO_INT( user_data ), new_power_state );
+    peripheral_set_power ( GPOINTER_TO_INT( user_data ), new_power_state);
 }
 
 void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer data )
@@ -751,6 +761,7 @@ void neod_buttonactions_show_power_menu()
     static GtkWidget* gsmpower = 0;
     static GtkWidget* btpower = 0;
     static GtkWidget* gpspower = 0;
+    static GtkWidget* wifipower = 0;
     static GtkWidget* pmprofile = 0;
 
     // remember last active window before showing popup menu
@@ -773,16 +784,20 @@ void neod_buttonactions_show_power_menu()
 //        gtk_box_pack_start_defaults( GTK_BOX(box), title );
 
         gsmpower = gtk_button_new();
-        g_signal_connect( G_OBJECT(gsmpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)GSM );
+        g_signal_connect( G_OBJECT(gsmpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( GSM ) );
         gtk_box_pack_start_defaults( GTK_BOX(box), gsmpower );
 
         btpower = gtk_button_new();
-        g_signal_connect( G_OBJECT(btpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)BLUETOOTH );
+        g_signal_connect( G_OBJECT(btpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( BLUETOOTH ) );
         gtk_box_pack_start_defaults( GTK_BOX(box), btpower );
 
         gpspower = gtk_button_new();
-        g_signal_connect( G_OBJECT(gpspower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)GPS );
+        g_signal_connect( G_OBJECT(gpspower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( GPS ) );
         gtk_box_pack_start_defaults( GTK_BOX(box), gpspower );
+
+        wifipower = gtk_button_new();
+        g_signal_connect( G_OBJECT(wifipower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( WIFI ) );
+        gtk_box_pack_start_defaults( GTK_BOX(box), wifipower );
 
         gtk_box_pack_start_defaults( GTK_BOX(box), gtk_hseparator_new() );
 
@@ -821,6 +836,8 @@ void neod_buttonactions_show_power_menu()
     gtk_button_set_label( GTK_BUTTON(gsmpower), g_strdup_printf( "Turn %s GSM", is_turned_on( GSM ) ? "off" : "on" ) );
     gtk_button_set_label( GTK_BUTTON(btpower), g_strdup_printf( "Turn %s Bluetooth", is_turned_on( BLUETOOTH ) ? "off" : "on" ) );
     gtk_button_set_label( GTK_BUTTON(gpspower), g_strdup_printf( "Turn %s GPS", is_turned_on( GPS ) ? "off" : "on" ) );
+    gtk_button_set_label( GTK_BUTTON(wifipower), g_strdup_printf( "Turn %s Wifi", is_turned_on( WIFI ) ? "off" : "on" ) );
+
     int response = gtk_dialog_run( GTK_DIALOG(power_menu) );
     g_debug( "gtk_dialog_run completed, response = %d", response );
 }
