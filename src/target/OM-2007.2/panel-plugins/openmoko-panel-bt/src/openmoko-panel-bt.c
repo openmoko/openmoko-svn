@@ -22,12 +22,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define BT_POWERON_FILENAME "/sys/devices/platform/s3c2440-i2c/i2c-adapter/i2c-0/0-0073/neo1973-pm-bt.0/power_on"
-#define BT_RESET_FILENAME "/sys/devices/platform/s3c2440-i2c/i2c-adapter/i2c-0/0-0073/neo1973-pm-bt.0/reset"
+#define BT_POWERON_FILENAME "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on"
+#define BT_RESET_FILENAME "/sys/bus/platform/devices/neo1973-pm-bt.0/reset"
+#define QUERY_FREQ 5 
 
 typedef struct {
   MokoPanelApplet *mokoapplet;
   int state;
+  guint timeout_id;
 } BtApplet;
 
 static int
@@ -127,6 +129,21 @@ bt_applet_free (BtApplet *applet)
     g_slice_free (BtApplet, applet);
 }
 
+static void
+bt_applet_update_visibility (BtApplet *applet)
+{
+    mb_panel_update( applet, read_bt_power() );
+    gtk_widget_show_all( GTK_WIDGET(applet->mokoapplet) );
+}
+
+static gboolean
+bt_applet_timeout_cb (gpointer data)
+{
+  bt_applet_update_visibility ((BtApplet *)data);
+
+  return TRUE;
+}
+
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
@@ -134,9 +151,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     MokoPanelApplet* mokoapplet = applet->mokoapplet = moko_panel_applet_new();
 
     applet->state = 42;
-    mb_panel_update( applet, read_bt_power() );
-    gtk_widget_show_all( GTK_WIDGET(applet->mokoapplet) );
-
+    bt_applet_update_visibility (applet);
+    
     GtkMenu* menu = GTK_MENU(gtk_menu_new());
     GtkWidget* item1 = gtk_menu_item_new_with_label("Power-Up Bluetooth radio");
     g_signal_connect(G_OBJECT(item1), "activate", G_CALLBACK(bt_applet_power_on), applet);
@@ -151,5 +167,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     gtk_widget_show_all(GTK_WIDGET(menu));
     moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET(menu), MOKO_PANEL_APPLET_CLICK_POPUP);
 
+    applet->timeout_id = g_timeout_add_seconds (QUERY_FREQ, bt_applet_timeout_cb, 
+      applet);
+      
     return GTK_WIDGET(mokoapplet);
 }
