@@ -131,6 +131,25 @@ static void gsm_applet_update_cipher_status(MokoGsmdConnection* self, int status
     /* bug#1248 gsm_applet_show_status( 0, theApplet ); */
 }
 
+static void
+gsm_applet_gsm_antenna_status(MokoGsmdConnection* self, gboolean status)
+{
+    g_debug( "gsm_applet_gsm_antenna_status: status = %s", status ? "ON" : "OFF" );
+    if(status) {
+	    theApplet->type = 6;
+	    gsm_applet_update_signal_strength( self, 0, theApplet );
+	    gsm_applet_show_status( 0, theApplet );
+    }
+    else {
+	    /* notify user antenna is OFF */
+	    theApplet->type = 7;
+	    gsm_applet_update_signal_strength( self, 99, theApplet );
+	    gsm_applet_show_status( 0, theApplet );
+    }
+
+   
+}
+
 static void gsm_applet_network_current_operator_cb(MokoGsmdConnection *self, const gchar* name)
 {
     if ( strcmp( name, theApplet->operator_name ) != 0 )
@@ -202,8 +221,14 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
             summary = g_strdup_printf( "Connected to '%s'", applet->operator_name );
             details = g_strdup_printf( "Type: Roaming\nCell ID: %04x : %04x\nSignal: %i dbM", applet->lac, applet->cell, -113 + applet->strength*2 );
         break;
-
-        default:
+	
+        case 6: summary = g_strdup( "GSM Antenna Power-Up" );
+        break;
+        
+	case 7: summary = g_strdup( "GSM Antenna Power-Down" );
+        break;
+	
+	default:
             summary = g_strdup( "Unknown" );
     }
 
@@ -213,7 +238,6 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
 static void
 gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
 {
-    //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE, NULL );
 }
 
@@ -226,7 +250,6 @@ gsm_applet_autoregister_network(GtkWidget* menu, GsmApplet* applet)
 static void
 gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
 {
-    //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE, NULL );
 }
 
@@ -235,6 +258,7 @@ gsm_applet_test_operation(GtkWidget* menu, GsmApplet* applet)
 {
     moko_gsmd_connection_trigger_current_operator_event( applet->gsm );
 }
+
 
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
@@ -261,7 +285,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     g_signal_connect( G_OBJECT(applet->gsm), "pin-requested", G_CALLBACK(gsm_applet_sim_pin_requested), applet );
 #endif
     g_signal_connect( G_OBJECT(applet->gsm), "cipher-status-changed", G_CALLBACK(gsm_applet_update_cipher_status), applet );
-
+    g_signal_connect( G_OBJECT(applet->gsm), "gsmd-antenna-status", G_CALLBACK(gsm_applet_gsm_antenna_status), applet );
+    
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());
 
@@ -291,5 +316,6 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 #endif
     gtk_widget_show_all( GTK_WIDGET(menu) );
     moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET (menu), MOKO_PANEL_APPLET_CLICK_POPUP );
+
     return GTK_WIDGET(mokoapplet);
 }
