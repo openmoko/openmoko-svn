@@ -98,7 +98,7 @@ enum {
     SIGNAL_GSMD_EVT_IN_ERROR       = 16, /* CME/CMS error */
 
     SIGNAL_GSMD_NET_CURRENT_OPERATOR = 100, /* Current Operator */
-
+    SIGNAL_GSMD_ANTENNA_STATUS	 = 101,
     SIGNAL_GSMD_CONNECTION_STATUS = 200, /* Status of connection to gsmd */
 
     LAST_SIGNAL,
@@ -171,7 +171,18 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         1,
         G_TYPE_BOOLEAN,
         NULL );
-
+    moko_gsmd_connection_signals[SIGNAL_GSMD_ANTENNA_STATUS] = g_signal_new
+        ("gsmd-antenna-status",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, gsmd_antenna_status),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__BOOLEAN,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_BOOLEAN,
+        NULL );
     moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CALL] = g_signal_new
         ("incoming-call",
         G_TYPE_FROM_CLASS (klass),
@@ -640,32 +651,24 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GE
         g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_CONNECT, "Error connecting to gsmd");
         return;
     }
-
+    
     result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
-
+    
     if (result == -1)
+	    g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_POWER, "Error setting antenna power");
+    else
     {
-         g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_POWER, "Error setting antenna power");
+	    if(on == 1) 
+		g_signal_emit( G_OBJECT(self),
+                 	moko_gsmd_connection_signals[SIGNAL_GSMD_ANTENNA_STATUS],
+			0,
+			TRUE );
+	    else 
+		g_signal_emit( G_OBJECT(self),
+                   	moko_gsmd_connection_signals[SIGNAL_GSMD_ANTENNA_STATUS],
+			0,
+			FALSE);
     }
-}
-
-void
-moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
-{
-    MokoGsmdConnectionPrivate* priv;
-
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
-    g_return_if_fail( pin );
-    g_return_if_fail( strlen( pin ) >= 4 );
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-
-    g_return_if_fail( priv->handle );
-    /*
-     * FIXME lgsm_pin_auth is not yet implemented, so we call lgsm_pin 
-     * directly...
-     */
-    /*lgsm_pin_auth( priv->handle, pin );*/
-    lgsm_pin( priv->handle, 1, pin, NULL);
 }
 
 void
@@ -677,7 +680,7 @@ moko_gsmd_connection_network_register(MokoGsmdConnection* self)
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
 
     g_return_if_fail( priv->handle );
-
+    
     lgsm_netreg_register( priv->handle, "" );
 }
 
@@ -695,66 +698,6 @@ moko_gsmd_connection_get_network_status(MokoGsmdConnection* self)
     lgsm_get_netreg_state (priv->handle, &state);
 
     return state;
-}
-
-void
-moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
-{
-    MokoGsmdConnectionPrivate* priv;
-
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-
-    g_return_if_fail( priv->handle );
-
-    lgsm_voice_in_accept( priv->handle );
-}
-
-void
-moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self)
-{
-    MokoGsmdConnectionPrivate* priv;
-
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-
-    g_return_if_fail( priv->handle );
-
-    lgsm_voice_hangup( priv->handle );
-}
-
-void
-moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
-{
-    MokoGsmdConnectionPrivate* priv;
-    struct lgsm_addr addr;   
-
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
-    g_return_if_fail( number );
-    g_return_if_fail( strlen( number ) > 2 );
-
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-
-    g_return_if_fail( priv->handle );
-
-
-    addr.type = 129; /* ??? */
-    g_stpcpy( &addr.addr[0], number );
-    lgsm_voice_out_init( priv->handle, &addr );
-}
-
-void
-moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
-{
-    MokoGsmdConnectionPrivate* priv;
-
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
-
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-
-    g_return_if_fail( priv->handle );
-
-    lgsm_voice_dtmf( priv->handle, number );
 }
 
 void

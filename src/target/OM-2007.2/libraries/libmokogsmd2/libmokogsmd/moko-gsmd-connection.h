@@ -56,6 +56,7 @@ struct _MokoGsmdConnectionClass {
 
     /* Misc */
     void (*gsmd_connection_status) (MokoGsmdConnection* self, gboolean status);
+    void (*gsmd_antenna_status) (MokoGsmdConnection* self,gboolean status);
     void (*cme_cms_error) (MokoGsmdConnection *self, int code);
 
     /* Future padding */
@@ -106,23 +107,12 @@ MokoGsmdConnection* moko_gsmd_connection_new ();
 /* power */
 void moko_gsmd_connection_set_antenna_power (MokoGsmdConnection *self, 
                                              gboolean on, GError **error);
-/* pin */
-void moko_gsmd_connection_send_pin (MokoGsmdConnection *self, const gchar *pin);
-
 /* network */
 void moko_gsmd_connection_network_register (MokoGsmdConnection *self);
 int moko_gsmd_connection_get_network_status (MokoGsmdConnection *self);
 void moko_gsmd_connection_trigger_current_operator_event(MokoGsmdConnection* self);
 void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self);
 
-/* TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO */
-/* voice calls */
-void moko_gsmd_connection_voice_accept (MokoGsmdConnection *self);
-void moko_gsmd_connection_voice_hangup (MokoGsmdConnection *self);
-void moko_gsmd_connection_voice_dial (MokoGsmdConnection *self, 
-                                      const gchar *number);
-void moko_gsmd_connection_voice_dtmf (MokoGsmdConnection *self, 
-                                      const gchar number);
 G_END_DECLS
 
 #endif /* _MOKO_GSMD_CONNECTION_H_ */
