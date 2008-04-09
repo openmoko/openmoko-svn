@@ -23,9 +23,12 @@
 #include <stdio.h>
 
 #define GPS_PWOERON_FILENAME "/sys/bus/platform/drivers/neo1973-pm-gps/neo1973-pm-gps.0/pwron"
+#define QUERY_FREQ 5 
+
 typedef struct {
     MokoPanelApplet* mokoapplet;
     int state;
+    guint timeout_id;
 } GpsApplet;
 
 static void
@@ -89,6 +92,21 @@ gps_applet_power_off (GtkWidget* menu, GpsApplet* applet) {
     mb_panel_update(applet,gps_applet_power_set(0));
 }
 
+static void
+gps_applet_update_visibility (GpsApplet *applet)
+{
+    moko_panel_applet_set_icon(applet->mokoapplet,PKGDATADIR "/GPS_Off.png");
+    mb_panel_update(applet, gps_applet_power_get());
+    gtk_widget_show_all( GTK_WIDGET(applet->mokoapplet) );
+}
+
+static gboolean
+gps_applet_timeout_cb (gpointer data)
+{
+  gps_applet_update_visibility ((GpsApplet *)data);
+
+  return TRUE;
+}
 
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
@@ -103,9 +121,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     applet->mokoapplet = mokoapplet;
     applet->state=-100;
 
-    moko_panel_applet_set_icon(applet->mokoapplet,PKGDATADIR "/GPS_Off.png");
-    mb_panel_update(applet, gps_applet_power_get());
-    gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
+    gps_applet_update_visibility (applet);
     
     GtkMenu* menu = GTK_MENU(gtk_menu_new());
     GtkWidget* item1 = gtk_menu_item_new_with_label("Power-Up GPS");
@@ -117,5 +133,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     gtk_widget_show_all(GTK_WIDGET(menu));
     moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET(menu), MOKO_PANEL_APPLET_CLICK_POPUP);
 
+    applet->timeout_id = g_timeout_add_seconds (QUERY_FREQ, gps_applet_timeout_cb, 
+      applet);
+    
     return GTK_WIDGET(mokoapplet);
 };
