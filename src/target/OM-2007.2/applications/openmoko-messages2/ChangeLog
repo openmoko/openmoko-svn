@@ -1,3 +1,12 @@
+2008-04-10  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-save-number.c:
+	(create_new_contact_from_number):  Correct dialog button order to be
+	consistent with other applications
+	(add_number_to_contact):  Set the initial selected group and remove
+	dialog separator.
+	(moko_save_number): Remove debug statement
+
 2008-04-07  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-save-number.c: (moko_save_number): Check number is not blank,

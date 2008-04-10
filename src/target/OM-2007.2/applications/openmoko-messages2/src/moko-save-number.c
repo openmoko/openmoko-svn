@@ -51,8 +51,10 @@ create_new_contact_from_number (gchar *number)
   GtkWidget *dialog, *name, *label;
 
   dialog = gtk_dialog_new_with_buttons ("Save as Contact",
-             NULL, GTK_DIALOG_MODAL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-	     GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
+             NULL, GTK_DIALOG_MODAL,
+             GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+             GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+             NULL);
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
 
@@ -110,7 +112,9 @@ add_number_to_contact (gchar *number)
 					  "Cancel", GTK_RESPONSE_CANCEL,
 					  "Add", GTK_RESPONSE_OK,
 					  NULL);
-    
+
+    gtk_dialog_set_has_separator (GTK_DIALOG (window), FALSE);
+
     book = e_book_new_system_addressbook (&err);
     if (err)
       return;
@@ -141,6 +145,7 @@ add_number_to_contact (gchar *number)
     hito_group_combo_connect_filter (HITO_GROUP_COMBO (groups_combo),
                                    HITO_CONTACT_MODEL_FILTER (contact_filter));
     gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (window)->vbox), groups_combo);
+    gtk_combo_box_set_active (GTK_COMBO_BOX (groups_combo), 0);
 
 
     
@@ -216,8 +221,6 @@ moko_save_number (const gchar *number)
 {
   GtkWidget *window, *btn, *vbox;
   SaveButtonInfo *btn_info;
-
-g_debug ("Sae number %s", number);
 
   if (!number || !strcmp (number, ""))
   {
