@@ -26,6 +26,9 @@
 #include <string.h>
 #include <time.h>
 
+#define GSM_PWOERON_FILENAME "/sys/bus/platform/devices/neo1973-pm-gsm.0/power_on"
+#define QUERY_FREQ 5
+
 /* Just change this is gsmd changes */
 #define _MAX_SIGNAL 30.0
 
@@ -40,6 +43,8 @@ typedef struct {
     char operator_name[255];
     GtkMenuItem* information;
     gboolean cipher;
+    guint timeout_id;
+    int state;
 } GsmApplet;
 
 static GsmApplet* theApplet = NULL;
@@ -137,7 +142,7 @@ gsm_applet_gsm_antenna_status(MokoGsmdConnection* self, gboolean status)
     g_debug( "gsm_applet_gsm_antenna_status: status = %s", status ? "ON" : "OFF" );
     if(status) {
 	    theApplet->type = 6;
-	    gsm_applet_update_signal_strength( self, 0, theApplet );
+	    gsm_applet_update_signal_strength( self, theApplet->strength, theApplet );
 	    gsm_applet_show_status( 0, theApplet );
     }
     else {
@@ -155,7 +160,7 @@ static void gsm_applet_network_current_operator_cb(MokoGsmdConnection *self, con
     if ( strcmp( name, theApplet->operator_name ) != 0 )
     {
         strcpy( theApplet->operator_name, name );
-        gsm_applet_update_signal_strength( self, 0, theApplet );
+        gsm_applet_update_signal_strength( self, theApplet->strength, theApplet );
         gsm_applet_show_status( 0, theApplet );
     }
 }
@@ -228,6 +233,12 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
 	case 7: summary = g_strdup( "GSM Antenna Power-Down" );
         break;
 	
+	case 8: summary = g_strdup( "GSM Modem Power-Down" );
+        break;
+
+	case 9: summary = g_strdup( "GSM Modem Power-Up" );
+        break;
+
 	default:
             summary = g_strdup( "Unknown" );
     }
@@ -259,6 +270,51 @@ gsm_applet_test_operation(GtkWidget* menu, GsmApplet* applet)
     moko_gsmd_connection_trigger_current_operator_event( applet->gsm );
 }
 
+static int 
+gsm_applet_power_get() 
+{
+    char buf[64];
+    FILE * f = fopen(GSM_PWOERON_FILENAME, "r");
+    int ret;
+    if (!f) {
+	    printf("Open file %s failed!!\n",GSM_PWOERON_FILENAME);
+	    return 0;
+    }
+    ret = fread(buf,sizeof(char),sizeof(buf)/sizeof(char),f);
+    fclose(f);
+    if (ret > 0 && buf[0]=='1') {
+	    return 1;
+    }
+    return 0;
+}
+
+static void
+gsm_applet_update_visibility (GsmApplet *applet)
+{
+    if(applet->state == gsm_applet_power_get())
+	    return;
+
+    if (!gsm_applet_power_get()) {
+	    theApplet->type = 8;
+	    gsm_applet_update_signal_strength( applet->gsm, 99, applet );
+	    gsm_applet_show_status( 0, applet );
+	    applet->state = 0;
+    } else {
+	    theApplet->type = 9;
+	    gsm_applet_update_signal_strength( applet->gsm, 0, applet );
+	    gsm_applet_show_status( 0, applet );
+	    applet->state = 1;
+    }
+}
+
+
+static gboolean
+gsm_applet_timeout_cb (gpointer data)
+{
+  gsm_applet_update_visibility ((GsmApplet *)data);
+
+  return TRUE;
+}
 
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
@@ -276,6 +332,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     applet->gprs_mode = FALSE;
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
+    applet->state = 1;
     applet->gsm = moko_gsmd_connection_new();
     g_signal_connect( G_OBJECT(applet->gsm), "gmsd-connection-status", G_CALLBACK(gsm_applet_gsmd_connection_status), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
@@ -317,5 +374,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     gtk_widget_show_all( GTK_WIDGET(menu) );
     moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET (menu), MOKO_PANEL_APPLET_CLICK_POPUP );
 
+    applet->timeout_id = g_timeout_add_seconds (QUERY_FREQ, gsm_applet_timeout_cb, 
+      applet);
+      
     return GTK_WIDGET(mokoapplet);
 }
