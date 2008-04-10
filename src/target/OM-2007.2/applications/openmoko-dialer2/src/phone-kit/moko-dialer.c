@@ -40,6 +40,8 @@
 #include "moko-sound.h"
 #include "moko-pin.h"
 
+#include "moko-headset.h" 
+
 static void
 listener_interface_init (gpointer g_iface, gpointer iface_data);
 
@@ -435,7 +437,12 @@ on_talking_speaker_toggle (MokoTalking *talking,
   static int on_speaker = FALSE;
 
   if (on_speaker)
-    moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+  {
+    if ( HEADSET_STATUS_IN == moko_headset_status_get() ) 
+      moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+    else
+      moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+  }  
   else
     moko_sound_profile_set(SOUND_PROFILE_GSM_SPEAKER_OUT);
 

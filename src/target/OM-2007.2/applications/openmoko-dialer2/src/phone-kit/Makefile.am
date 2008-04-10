@@ -21,6 +21,7 @@ phone_kit_SOURCES = \
 	moko-pb.c moko-pb.h \
 	moko-pin.c moko-pin.h \
 	moko-mcc-dc.h \
+	moko-headset.c moko-headset.h \
 	$(BUILT_SOURCES)
 
 phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ @NOTIFY_LIBS@ @ALSA_LIBS@ $(top_srcdir)/src/common/libdialer-common.a

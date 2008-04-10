@@ -31,6 +31,8 @@
 #include "moko-dialer.h"
 #include "moko-sms.h"
 #include "moko-pb.h"
+#include "moko-headset.h"
+#include "moko-sound.h"
 
 #include "moko-contacts.h"
 
@@ -340,6 +342,54 @@ pb_sync (MokoPb *pb, MokoNetwork *network)
     on_network_status_changed (network, status, pb);
 }
 
+static void
+headset_in_cb (DBusGProxy *proxy, const gchar *name, void *data)
+{
+    PhoneKitDialerStatus status;
+    MokoNetwork *network;
+    MokoDialer *dialer;
+
+    network = moko_network_get_default ();
+    dialer = moko_dialer_get_default (network);
+    
+    status = moko_dialer_get_status(dialer);  
+
+    moko_headset_status_set(HEADSET_STATUS_IN);
+
+    if ( PK_DIALER_NORMAL == status )
+	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+    if ( PK_DIALER_INCOMING == status )
+	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+    if ( PK_DIALER_DIALING == status )
+	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+    if ( PK_DIALER_TALKING == status )
+	moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+}
+
+static void
+headset_out_cb (DBusGProxy *proxy, const gchar *name, void *data) 
+{
+    PhoneKitDialerStatus status;
+    MokoNetwork *network;
+    MokoDialer *dialer;
+
+    network = moko_network_get_default ();
+    dialer = moko_dialer_get_default (network);
+    
+    status = moko_dialer_get_status(dialer);  
+    
+    moko_headset_status_set(HEADSET_STATUS_OUT);
+
+    if ( PK_DIALER_NORMAL == status )
+	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+    if ( PK_DIALER_INCOMING == status )
+	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+    if ( PK_DIALER_DIALING == status )
+	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+    if ( PK_DIALER_TALKING == status )
+	moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -349,6 +399,7 @@ main (int argc, char **argv)
   MokoPb *pb;
   DBusGConnection *connection;
   DBusGProxy *proxy;
+  DBusGProxy *headset_proxy;
   GError *error = NULL;
   guint32 ret;
 
@@ -417,6 +468,21 @@ main (int argc, char **argv)
   dbus_g_connection_register_g_object (connection, 
                                        SMS_PATH,
                                        G_OBJECT (sms));
+
+  headset_proxy = dbus_g_proxy_new_for_name (connection,                                                  
+		  NULL,
+		  "/org/openmoko/PhoneKit/Headset",
+		  "org.openmoko.PhoneKit.Headset");
+  dbus_g_proxy_add_signal (headset_proxy,
+		  "HeadsetIn", G_TYPE_INVALID);
+  dbus_g_proxy_connect_signal (headset_proxy,
+		  "HeadsetIn", G_CALLBACK (headset_in_cb),
+		  NULL, NULL);
+  dbus_g_proxy_add_signal (headset_proxy,
+		  "HeadsetOut", G_TYPE_INVALID);
+  dbus_g_proxy_connect_signal (headset_proxy,
+		  "HeadsetOut", G_CALLBACK (headset_out_cb),
+		  NULL, NULL);
 
   /* Sync phonebook */
   /* XXX this is not the right place! */

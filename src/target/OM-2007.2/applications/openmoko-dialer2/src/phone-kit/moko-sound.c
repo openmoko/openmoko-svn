@@ -27,6 +27,7 @@ char *sound_profile_filenames[] = {
   "/usr/share/openmoko/scenarios/gsmheadset.state",
   "/usr/share/openmoko/scenarios/gsmspeakerout.state",
   "/usr/share/openmoko/scenarios/stereoout.state"
+  "/usr/share/openmoko/scenarios/headset.state"
 };
 
 void moko_sound_profile_set(int profile) {

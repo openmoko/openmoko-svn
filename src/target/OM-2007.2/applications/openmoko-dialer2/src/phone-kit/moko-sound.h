@@ -23,7 +23,8 @@
 enum { SOUND_PROFILE_GSM_HANDSET,
 SOUND_PROFILE_GSM_HEADSET,
 SOUND_PROFILE_GSM_SPEAKER_OUT,
-SOUND_PROFILE_STEREO_OUT };
+SOUND_PROFILE_STEREO_OUT,
+SOUND_PROFILE_HEADSET};
 
 void moko_sound_profile_set(int profile);
 void moko_sound_profile_save(int profile);

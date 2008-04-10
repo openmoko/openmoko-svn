@@ -26,6 +26,8 @@
 #include "moko-alsa-volume-control.h"
 #include "moko-alsa-volume-scale.h"
 
+#include "moko-headset.h"
+
 G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_WIDGET)
 
 #define MOKO_TALKING_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
@@ -216,7 +218,10 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show_all (priv->main_bar);
 
-  moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+  if ( HEADSET_STATUS_IN == moko_headset_status_get() ) 
+    moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+  else
+    moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
 
   if (entry)
     markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
@@ -296,7 +301,10 @@ moko_talking_accepted_call (MokoTalking      *talking,
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show_all (priv->main_bar);
 
-  moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+  if ( HEADSET_STATUS_IN == moko_headset_status_get() ) 
+    moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+  else
+    moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
 
   if (entry)
     markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
@@ -334,7 +342,10 @@ moko_talking_hide_window (MokoTalking *talking)
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
-  moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+  if ( HEADSET_STATUS_IN == moko_headset_status_get() ) 
+    moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+  else 
+    moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
 
   if (priv->dtimer)
     g_timer_destroy(priv->dtimer);
@@ -392,7 +403,10 @@ on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
   if (priv->timeout)
     g_source_remove (priv->timeout);
 
-  moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+  if ( HEADSET_STATUS_IN == moko_headset_status_get() ) 
+    moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+  else
+    moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
   gtk_widget_hide (priv->window);
   g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 0);
 }
