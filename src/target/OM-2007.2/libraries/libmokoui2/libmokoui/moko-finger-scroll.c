@@ -53,6 +53,7 @@ struct _MokoFingerScrollPrivate {
 	gboolean enabled;
 	gboolean clicked;
 	guint32 last_time;	/* Last event time, to stop infinite loops */
+	gint last_type;
 	gboolean moved;
 	GTimeVal click_start;
 	GTimeVal last_click;
@@ -231,9 +232,11 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
 	if ((!priv->enabled) || (event->button != 1) ||
-	    ((event->time == priv->last_time))) return TRUE;
+	    ((event->time == priv->last_time) &&
+	     (priv->last_type == 1))) return TRUE;
 	
 	priv->last_time = event->time;
+	priv->last_type = 1;
 
 	priv->click_x = event->x;
 	priv->click_y = event->y;
@@ -468,7 +471,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	gdouble x, y;
 
 	if ((!priv->enabled) || (!priv->clicked) ||
-	    ((event->time == priv->last_time))) {
+	    ((event->time == priv->last_time) &&
+	     (priv->last_type == 2))) {
 		gdk_window_get_pointer (
 			GTK_WIDGET (scroll)->window, NULL, NULL, 0);
 		return TRUE;
@@ -533,6 +537,7 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	if (priv->child) {
 		/* Send motion notify to child */
 		priv->last_time = event->time;
+		priv->last_type = 2;
 		event = (GdkEventMotion *)gdk_event_copy ((GdkEvent *)event);
 		event->x = priv->cx + (event->x - priv->ix);
 		event->y = priv->cy + (event->y - priv->iy);
@@ -558,10 +563,12 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	gdouble delta, speed_x, speed_y;
 	
 	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
-	    ((event->time == priv->last_time)))
+	    ((event->time == priv->last_time) &&
+	     (priv->last_type == 3)))
 		return TRUE;
 
 	priv->last_time = event->time;
+	priv->last_type = 3;
 	
 	g_get_current_time (&current);
 
@@ -994,6 +1001,7 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	priv->moved = FALSE;
 	priv->clicked = FALSE;
 	priv->last_time = 0;
+	priv->last_type = 0;
 	priv->vscroll = TRUE;
 	priv->hscroll = TRUE;
 	priv->scroll_width = 6;

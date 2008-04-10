@@ -1,3 +1,12 @@
+2008-04-10  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c
+	(moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_button_release_cb), (moko_finger_scroll_init):
+	Do check event type, but don't distinguish between single click and
+	double-click
+
 2008-04-07  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c
