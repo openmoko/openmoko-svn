@@ -28,7 +28,7 @@ style "mokocontactsadddetail" {
 }
 
 
-widget "*moko-contacts-add-detail-button" style "mokocontactsadddetail"
+widget "*contacts-add-detail-button" style "mokocontactsadddetail"
 
 # History view
 style "mokohistorylabel" {
