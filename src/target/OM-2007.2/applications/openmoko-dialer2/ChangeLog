@@ -1,3 +1,12 @@
+2008-04-10  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/moko-history.c:
+	(create_new_contact_from_number): Correct dialog button order to be
+	consistent with other applications
+	(add_number_to_contact): Set the initial selected group and remove
+	dialog separator.
+	(moko_history_init): Use "contact-new" icon as in openmoko-messages
+
 2008-04-08  Thomas Wood  <thomas@openedhand.com>
 
 	* src/phone-kit/moko-network-dbus.xml:
