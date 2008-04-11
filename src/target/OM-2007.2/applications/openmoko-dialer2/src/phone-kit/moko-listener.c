@@ -111,6 +111,16 @@ moko_listener_on_imsi (MokoListener *listener,
 }
 
 void
+moko_listener_on_imei (MokoListener *listener,
+                       struct lgsm_handle *handle,
+                       const gchar *imei)
+{
+  MokoListenerInterface *interface = MOKO_LISTENER_GET_INTERFACE (listener);
+  if (interface->on_imei)
+    interface->on_imei (listener, handle, imei);
+}
+
+void
 moko_listener_on_subscriber_number (MokoListener *listener,
                                     struct lgsm_handle *handle,
                                     const gchar *number)

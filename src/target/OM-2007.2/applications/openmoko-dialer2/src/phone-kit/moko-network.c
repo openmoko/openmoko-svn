@@ -65,7 +65,7 @@ struct _MokoNetworkPrivate
   gchar                     *network_name;
   gchar                     *network_number;
   gchar                     *imsi;
-  
+  gchar                     *imei;
   guint                     retry_register;
   gint                      retry_register_n;
   guint                     retry_oper;
@@ -419,6 +419,29 @@ on_imsi (MokoListener *listener, struct lgsm_handle *handle,
   lgsm_get_subscriber_num (handle);
 }
 
+/* XXX we don't want GTK+ here */
+#include <gtk/gtk.h>
+static void
+on_imei (MokoListener *listener, struct lgsm_handle *handle,
+         const gchar *imei)
+{
+  MokoNetwork *network = MOKO_NETWORK (listener);
+  MokoNetworkPrivate *priv = network->priv;
+  GtkWidget *dlg;
+  
+  g_free (priv->imei);
+  priv->imei = g_strdup (imei);
+
+  dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+                                imei);
+  gtk_window_set_title (GTK_WINDOW (dlg), "IMEI");
+  gtk_widget_show_all (dlg);
+  
+  g_signal_connect (GTK_DIALOG (dlg), "response",
+  			G_CALLBACK (gtk_widget_destroy), NULL);
+}
+
+
 /* GObject functions */
 static void
 moko_network_dispose (GObject *object)
@@ -531,6 +554,7 @@ listener_interface_init (gpointer g_iface, gpointer iface_data)
   iface->on_network_name = on_network_name;
   iface->on_network_number = on_network_number;
   iface->on_imsi = on_imsi;
+  iface->on_imei = on_imei;
   iface->on_subscriber_number = on_subscriber_number;
 }
 
@@ -750,6 +774,11 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
       }
       break;
     
+    case GSMD_PHONE_GET_SERIAL:
+      for (l = priv->listeners; l; l = l->next)
+        moko_listener_on_imei (MOKO_LISTENER (l->data), priv->handle,
+                               (const gchar *)gmh + sizeof (*gmh));
+      break;
     default :
       return -EINVAL;
   }

@@ -62,6 +62,9 @@ struct _MokoListenerInterface {
   void  (*on_imsi)               (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   const gchar *imsi);
+  void  (*on_imei)               (MokoListener *listener,
+                                  struct lgsm_handle *handle,
+                                  const gchar *imei);
   void  (*on_subscriber_number)  (MokoListener *listener,
                                   struct lgsm_handle *handle,
                                   const gchar *number);
@@ -109,6 +112,9 @@ void  moko_listener_on_network_list       (MokoListener *listener,
 void  moko_listener_on_imsi               (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 const gchar *imsi);
+void  moko_listener_on_imei               (MokoListener *listener,
+                                struct lgsm_handle *handle,
+                                const gchar *imei);
 void  moko_listener_on_subscriber_number  (MokoListener *listener,
                                 struct lgsm_handle *handle,
                                 const gchar *number);

@@ -1,3 +1,14 @@
+2008-04-12  Erin Yueh  <erin_yueh@openmoko.com>
+
+	* src/phone-kit/moko-network.c:
+	(on_imei): 
+	* src/phone-kit/moko-dialer.c:
+	(moko_dialer_dial):
+	* src/phone-kit/moko-listener.c:
+	(moko_listener_on_imei):
+	* src/phone-kit/moko-listener.h:
+	(moko_listener_on_imei),(on_imei):
+
 2008-04-10  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/moko-history.c:

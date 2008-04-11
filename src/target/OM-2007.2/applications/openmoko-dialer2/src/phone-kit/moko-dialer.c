@@ -174,6 +174,15 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
 
     return FALSE;
   }
+
+  /* dial *#06# to get IMEI code */
+  if(g_strcasecmp(number,"*#06#") == 0) {
+	  g_debug("dial *#06# !!");
+	  lgsm_get_serial (handle);
+	  
+	  return TRUE;
+  }
+
   priv->status = PK_DIALER_DIALING;
 
   /* check for network connection */
