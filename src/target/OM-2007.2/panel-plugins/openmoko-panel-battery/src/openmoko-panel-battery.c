@@ -33,6 +33,7 @@
 
 typedef struct {
     MokoPanelApplet* mokoapplet;
+    const char *last_icon;
     guint timeout_id;
 } BatteryApplet;
 
@@ -110,22 +111,13 @@ static gboolean timeout( BatteryApplet *applet )
 {
     g_debug( "battery_applet: timeout" );
     char* icon;
-    static int last_status = -123; /* the status last time we checked */
 
     apm_info info;
     // How about g_new0 here?
     memset (&info, 0, sizeof (apm_info));
     apm_read (&info);
 
-    /* don't do any update if status is the same as the last time */
-    if (last_status == info.battery_status)
-    {
-        return TRUE;
-    }
-
     //FIXME Can we actually find out, when the battery is full?
-
-    last_status = info.battery_status;
 
     if ( info.battery_status == BATTERY_STATUS_ABSENT ||
          info.battery_status == BATTERY_STATUS_CHARGING )
@@ -148,6 +140,11 @@ static gboolean timeout( BatteryApplet *applet )
             icon = PKGDATADIR "/Battery_05.png";
     }
 
+    if (icon == applet->last_icon)
+	return TRUE;
+
+    applet->last_icon = icon;
+
     moko_panel_applet_set_icon( applet->mokoapplet, icon );
 
     return TRUE;
@@ -162,6 +159,8 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     struct tm *local_time;
     t = time( NULL );
     local_time = localtime(&t);
+
+    applet->last_icon = NULL; 
 
     timeout( applet );
     battery_applet_init_dbus( applet );
