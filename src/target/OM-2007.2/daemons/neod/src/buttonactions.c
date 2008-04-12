@@ -46,31 +46,25 @@
 static gchar* backlight_node = NULL;
 static int backlight_max_brightness = 1;
 
-#define AUX_BUTTON_KEYCODE 0x22
-#define POWER_BUTTON_KEYCODE 0x23
-#define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
-
 #ifdef NEOD_PLATFORM_FIC_NEO1973
     #define AUX_BUTTON_KEYCODE 169    /* aux */
     #define POWER_BUTTON_KEYCODE 116  /* power */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
-#endif
-
-#ifdef NEOD_PLATFORM_MOTOROLA_EZX
+#elif NEOD_PLATFORM_MOTOROLA_EZX
     #define AUX_BUTTON_KEYCODE 0xa7   /* voice */
     #define POWER_BUTTON_KEYCODE 0xd4 /* camera */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
-#endif
-
-#ifdef NEOD_PLATFORM_HTC
+#elif NEOD_PLATFORM_HTC
     #define AUX_BUTTON_KEYCODE 0xd4   /* camera */
     #define POWER_BUTTON_KEYCODE 0x74 /* power */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
-#endif
-
-#ifdef NEOD_PLATFORM_IPAQ
+#elif NEOD_PLATFORM_IPAQ
     #define AUX_BUTTON_KEYCODE 89     /* record */
     #define POWER_BUTTON_KEYCODE 0x74 /* power */
+    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+#else
+    #define AUX_BUTTON_KEYCODE 0x22
+    #define POWER_BUTTON_KEYCODE 0x23
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
@@ -153,6 +147,7 @@ typedef enum _PowerState
 } PowerState;
 PowerState power_state = NORMAL;
 
+static pa_threaded_mainloop* pam;
 static pa_context* pac;
 
 static Window last_active_window = 0;
@@ -314,7 +309,7 @@ gboolean neod_buttonactions_install_watcher()
 
     neod_buttonactions_powersave_reset();
 
-    moko_debug = getenv( "MOKO_DEBUG" );
+    moko_debug = ( getenv( "MOKO_DEBUG" ) != NULL );
     g_debug( "setting debug output to %s", moko_debug ? "true" : "false" );
 
     return TRUE;
@@ -1150,27 +1145,50 @@ gboolean neod_buttonactions_powersave_timeout3( guint timeout )
     return FALSE;
 }
 
-void neod_buttonactions_sound_state_cb( pa_context* pac, void* userdata )
+static void _sound_play( const gchar* samplename )
+{
+    pa_context_play_sample( pac,
+                            samplename,      // Name of my sample
+                            NULL,            // Use default sink
+                            PA_VOLUME_NORM,  // Full volume
+                            NULL,            // Don't need a callback
+                            NULL
+                           );
+}
+
+void neod_buttonactions_sound_play( const gchar* samplename )
+{
+    g_return_if_fail( pac );
+
+    pa_threaded_mainloop_lock( pam );
+    _sound_play( samplename );
+    pa_threaded_mainloop_unlock( pam );
+}
+
+/* this function is called within the pulseaudio event thread */
+static void neod_buttonactions_sound_state_cb( pa_context* pac, void* userdata )
 {
     g_debug( "mainmenu sound state callback. state = %d", pa_context_get_state( pac ) );
     if ( pa_context_get_state( pac ) == PA_CONTEXT_READY )
     {
-        neod_buttonactions_sound_play( "startup" );
+        _sound_play ( "startup" );
     }
 }
 
 void neod_buttonactions_sound_init()
 {
     g_debug( "panel mainmenu sound init" );
-    pa_threaded_mainloop* mainloop = pa_threaded_mainloop_new();
+    
+    g_thread_init( NULL );
 
-    if ( !mainloop )
+    pam = pa_threaded_mainloop_new();
+    if ( !pam )
     {
         printf( "couldn't create mainloop: %s", strerror( errno ) );
         return;
     }
 
-    pa_mainloop_api* mapi = pa_threaded_mainloop_get_api( mainloop );
+    pa_mainloop_api* mapi = pa_threaded_mainloop_get_api( pam );
 
     pac = pa_context_new( mapi, "test client" );
     if ( !pac )
@@ -1181,22 +1199,9 @@ void neod_buttonactions_sound_init()
 
     pa_context_set_state_callback( pac, neod_buttonactions_sound_state_cb, NULL );
     pa_context_connect( pac, NULL, 0, NULL );
-    pa_threaded_mainloop_start( mainloop );
+    pa_threaded_mainloop_start( pam );
 
     g_debug( "sound init ok. threaded mainloop started" );
-}
-
-void neod_buttonactions_sound_play( const gchar* samplename )
-{
-    g_return_if_fail( pac );
-    pa_context_play_sample( pac,
-                            samplename,      // Name of my sample
-                            NULL,            // Use default sink
-                            PA_VOLUME_NORM,  // Full volume
-                            NULL,            // Don't need a callback
-                            NULL
-                           );
-
 }
 
 gboolean neod_buttonactions_initial_update()

@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 
-PKG_CHECK_MODULES(NEOD, gtk+-2.0 gconf-2.0 libpulse)
+PKG_CHECK_MODULES(NEOD, gtk+-2.0 gthread-2.0 gconf-2.0 libpulse)
 
 AC_ARG_WITH([platform],
             AC_HELP_STRING([--with-platform], [Which platform to use [[default=vanilla]]]),
