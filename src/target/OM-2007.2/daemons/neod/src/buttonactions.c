@@ -79,26 +79,6 @@ static int backlight_max_brightness = 1;
 #define BIT_TEST( bitmask, bit )    \
     ( bitmask[ (bit) / sizeof(short) / 8 ] & (1u << ( (bit) % (sizeof(short) * 8))) )
 
-#ifdef NEOD_PLATFORM_FIC_NEO1973
-/*
- * For neo, headset in   headset out
- *          05 02 01     05 02 00
- *          05 02 00     05 02 01
- *          05 02 01     05 02 00
- */
-enum {
-	HEADSET_STATE_IDLE = 0,
-	HEADSET_STATE_START_IN,
-	HEADSET_STATE_START_OUT,
-	HEADSET_STATE_IN,
-	HEADSET_STATE_OUT,
-	HEADSET_STATE_END_IN,
-	HEADSET_STATE_END_OUT,
-};
-
-static int headset_state = HEADSET_STATE_IDLE;  
-#endif
-
 static gboolean moko_debug = TRUE;
 
 GPollFD input_fd[10];
@@ -424,65 +404,24 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
 	    else
 	    if ( event.type == 5 && event.code == HEADPHONE_INSERTION_SWITCHCODE )
 	    {
-#ifdef NEOD_PLATFORM_FIC_NEO1973
-		if ( event.value == 1 ) /* inserted */
-		{
-		    switch (headset_state) {
-			case HEADSET_STATE_IDLE:
-			    headset_state = HEADSET_STATE_START_IN;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_START_IN" );
-			    break;
-			case HEADSET_STATE_IN:
-			    headset_state = HEADSET_STATE_END_IN;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_END_IN" );
-			    if ( moko_debug ) g_debug( "headphones IN" );		    
-				g_spawn_command_line_async( "dbus-send --session --type=signal /org/openmoko/PhoneKit/Headset org.openmoko.PhoneKit.Headset.HeadsetIn", NULL );
-			    break;
-			case HEADSET_STATE_START_OUT:
-			    headset_state = HEADSET_STATE_OUT;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_OUT" );
-			    break;
-			default:
-			    headset_state = HEADSET_STATE_IDLE;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_IDLE 1" );
-			    break;
-		    }
-		}
-		else if ( event.value == 0 ) /* released */
-		{
-		    switch (headset_state) {
-			case HEADSET_STATE_IDLE:
-			    headset_state = HEADSET_STATE_START_OUT;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_START_OUT" );
-			    break;
-			case HEADSET_STATE_OUT:
-			    headset_state = HEADSET_STATE_END_OUT;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_END_OUT" );
-			    if ( moko_debug ) g_debug( "headphones OUT" );
-				g_spawn_command_line_async( "dbus-send --session --type=signal /org/openmoko/PhoneKit/Headset org.openmoko.PhoneKit.Headset.HeadsetOut", NULL );
-			    break;
-			case HEADSET_STATE_START_IN:
-			    headset_state = HEADSET_STATE_IN;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_IN" );
-			    break;
-			default:
-			    headset_state = HEADSET_STATE_IDLE;
-			    if ( moko_debug ) g_debug( "HEADSET_STATE_IDLE 0" );
-			    break;
-		    }
-		}
-#else 
 		if ( event.value == 1 ) /* inserted */
 		{
 		    if ( moko_debug ) g_debug( "headphones IN" );		    
-			g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\"", NULL );
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+	            g_spawn_command_line_async( "dbus-send --session --type=signal /org/openmoko/PhoneKit/Headset org.openmoko.PhoneKit.Headset.HeadsetIn", NULL );
+#else 
+		    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\"", NULL );
+#endif
 		}
 		else if ( event.value == 0 ) /* released */
 		{
 		    if ( moko_debug ) g_debug( "headphones OUT" );
-			g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\"", NULL );
-		}
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+		    g_spawn_command_line_async( "dbus-send --session --type=signal /org/openmoko/PhoneKit/Headset org.openmoko.PhoneKit.Headset.HeadsetOut", NULL );
+#else 
+		    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\"", NULL );
 #endif
+		}
 		neod_buttonactions_powersave_reset();
 #if 0
 		if ( power_state != NORMAL )
