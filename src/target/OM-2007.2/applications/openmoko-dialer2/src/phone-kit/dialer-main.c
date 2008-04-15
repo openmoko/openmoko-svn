@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
+#include <dbus/dbus-glib-lowlevel.h>
 #include <glib-object.h>
 #include <libnotify/notify.h>
 #include <libebook/e-book.h>
@@ -342,53 +343,52 @@ pb_sync (MokoPb *pb, MokoNetwork *network)
     on_network_status_changed (network, status, pb);
 }
 
-static void
-headset_in_cb (DBusGProxy *proxy, const gchar *name, void *data)
+DBusHandlerResult headset_signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data) 
 {
-    PhoneKitDialerStatus status;
-    MokoNetwork *network;
-    MokoDialer *dialer;
+	PhoneKitDialerStatus status;
+	MokoNetwork *network;
+	MokoDialer *dialer;
 
-    network = moko_network_get_default ();
-    dialer = moko_dialer_get_default (network);
-    
-    status = moko_dialer_get_status(dialer);  
+	g_debug( "headset signal filter" );
 
-    moko_headset_status_set(HEADSET_STATUS_IN);
+	network = moko_network_get_default ();
+	dialer = moko_dialer_get_default (network);
+	status = moko_dialer_get_status(dialer);  
 
-    if ( PK_DIALER_NORMAL == status )
-	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
-    if ( PK_DIALER_INCOMING == status )
-	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
-    if ( PK_DIALER_DIALING == status )
-	moko_sound_profile_set(SOUND_PROFILE_HEADSET);
-    if ( PK_DIALER_TALKING == status )
-	moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
-}
+	if ( dbus_message_is_signal( msg, "org.openmoko.PhoneKit.Headset", "HeadsetIn" ) )
+	{
+		moko_headset_status_set(HEADSET_STATUS_IN);
+		g_debug( "Headset In" );
 
-static void
-headset_out_cb (DBusGProxy *proxy, const gchar *name, void *data) 
-{
-    PhoneKitDialerStatus status;
-    MokoNetwork *network;
-    MokoDialer *dialer;
+		if ( PK_DIALER_TALKING == status ) {
+			moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+			g_debug("SOUND_PROFILE_GSM_HEADSET\n");
+		}	
+		else {
+			moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+			g_debug("SOUND_PROFILE_HEADSET\n");
+		}	
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
+	else if ( dbus_message_is_signal( msg,"org.openmoko.PhoneKit.Headset", "HeadsetOut" ) )
+	{
+	        moko_headset_status_set(HEADSET_STATUS_OUT);
+		g_debug( "Headset Out" );
 
-    network = moko_network_get_default ();
-    dialer = moko_dialer_get_default (network);
-    
-    status = moko_dialer_get_status(dialer);  
-    
-    moko_headset_status_set(HEADSET_STATUS_OUT);
+		if ( PK_DIALER_TALKING == status ) {
+			moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+			g_debug("SOUND_PROFILE_GSM_HANDSET\n");
+		}	
+		else {	
+			moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+			g_debug("SOUND_PROFILE_STEREO_OUT\n");
+		}	
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 
-    if ( PK_DIALER_NORMAL == status )
-	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
-    if ( PK_DIALER_INCOMING == status )
-	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
-    if ( PK_DIALER_DIALING == status )
-	moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
-    if ( PK_DIALER_TALKING == status )
-	moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
-}
+	g_debug( "(unknown dbus message, ignoring)" );
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}    
 
 int
 main (int argc, char **argv)
@@ -399,9 +399,25 @@ main (int argc, char **argv)
   MokoPb *pb;
   DBusGConnection *connection;
   DBusGProxy *proxy;
-  DBusGProxy *headset_proxy;
   GError *error = NULL;
   guint32 ret;
+
+  DBusError err = {0};
+  DBusConnection* bus = dbus_bus_get (DBUS_BUS_SESSION, &err);
+
+  if (!bus)
+  {   
+     gchar buffer[100];
+     sprintf (buffer, "Failed to connect to the D-BUS daemon: %s", err.message);
+     g_critical (buffer);
+     dbus_error_free (&err);
+     return 1;
+  }   
+
+  dbus_connection_setup_with_g_main (bus, NULL);
+
+  dbus_bus_add_match (bus, "type='signal'", &err);
+  dbus_connection_add_filter (bus, headset_signal_filter, NULL, NULL);  
 
   /* initialise type system */
   g_type_init ();
@@ -419,6 +435,7 @@ main (int argc, char **argv)
                                      DBUS_SERVICE_DBUS,
                                      DBUS_PATH_DBUS, 
                                      DBUS_INTERFACE_DBUS);
+
   if (!org_freedesktop_DBus_request_name (proxy,
                                           PHONEKIT_NAMESPACE,
                                           0, &ret, &error))
@@ -468,21 +485,6 @@ main (int argc, char **argv)
   dbus_g_connection_register_g_object (connection, 
                                        SMS_PATH,
                                        G_OBJECT (sms));
-
-  headset_proxy = dbus_g_proxy_new_for_name (connection,                                                  
-		  NULL,
-		  "/org/openmoko/PhoneKit/Headset",
-		  "org.openmoko.PhoneKit.Headset");
-  dbus_g_proxy_add_signal (headset_proxy,
-		  "HeadsetIn", G_TYPE_INVALID);
-  dbus_g_proxy_connect_signal (headset_proxy,
-		  "HeadsetIn", G_CALLBACK (headset_in_cb),
-		  NULL, NULL);
-  dbus_g_proxy_add_signal (headset_proxy,
-		  "HeadsetOut", G_TYPE_INVALID);
-  dbus_g_proxy_connect_signal (headset_proxy,
-		  "HeadsetOut", G_CALLBACK (headset_out_cb),
-		  NULL, NULL);
 
   /* Sync phonebook */
   /* XXX this is not the right place! */
