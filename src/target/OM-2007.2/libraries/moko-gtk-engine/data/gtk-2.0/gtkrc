@@ -60,7 +60,7 @@ style "default"
   fg [NORMAL] = @fg_color
   fg [PRELIGHT] = @fg_color
   fg [ACTIVE] = @selected_fg_color
-  fg [INSENSITIVE] = @fg_color
+  fg [INSENSITIVE] = darker (@fg_color)
   fg [SELECTED] = @selected_fg_color
 
   bg [NORMAL] = @bg_color
@@ -73,10 +73,12 @@ style "default"
   text [PRELIGHT] = @text_color
   text [SELECTED] = @text_color
   text [ACTIVE] = @text_color
+  text [INSENSITIVE] = lighter (@text_color)
 
   base [NORMAL] = @base_color
   base [SELECTED] = @selected_bg_color
   base [ACTIVE] = @base_color
+  base [INSENSITIVE] = darker (@base_color)
 
   engine "moko-engine" {
   }

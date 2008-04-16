@@ -1,3 +1,9 @@
+2008-04-16  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtk-2.0/gtkrc: Add and adjust some insensitive colours
+	* src/moko-draw.c: (moko_draw_layout),(moko_draw_style_class_init):
+	Implement draw_layout to improve insensitive text
+
 2008-04-04  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtk-2.0/gtkrc: Darken "base" widgets.

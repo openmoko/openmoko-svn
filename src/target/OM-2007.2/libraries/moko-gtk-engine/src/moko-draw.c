@@ -206,6 +206,28 @@ moko_draw_hline (GtkStyle *style, GdkWindow *window, GtkStateType state_type,
 }
 
 
+static void
+moko_draw_layout (GtkStyle *style,  GdkWindow *window,
+                  GtkStateType state_type, gboolean use_text,
+                  GdkRectangle *area, GtkWidget *widget,
+                  const char *detail, int x, int y, PangoLayout *layout)
+{
+  GdkGC *gc;
+
+  gc = use_text ? style->text_gc[state_type] : style->fg_gc[state_type];
+
+  if (area)
+  {
+    gdk_gc_set_clip_rectangle (gc, area);
+  }
+
+  gdk_draw_layout (window, gc, x, y, layout);
+
+  if (area)
+  {
+    gdk_gc_set_clip_rectangle (gc, NULL);
+  }
+}
 
 void
 moko_draw_style_class_init (GtkStyleClass * style_class)
@@ -223,5 +245,6 @@ moko_draw_style_class_init (GtkStyleClass * style_class)
   style_class->draw_focus = moko_draw_focus;
   style_class->draw_vline = moko_draw_vline;
   style_class->draw_hline = moko_draw_hline;
+  style_class->draw_layout = moko_draw_layout;
 
 }
