@@ -1,5 +1,10 @@
 2008-04-16  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/gtkrc: Increase the size of scrollbars slightly and
+	remove double stepper buttons
+
+2008-04-16  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Add and adjust some insensitive colours
 	* src/moko-draw.c: (moko_draw_layout),(moko_draw_style_class_init):
 	Implement draw_layout to improve insensitive text
