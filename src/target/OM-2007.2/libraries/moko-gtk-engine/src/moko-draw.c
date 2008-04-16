@@ -54,12 +54,29 @@ moko_draw_box (DRAW_ARGS)
     x -= 10;
   }
 
-  /* "fix" for prelight active toggle buttons */
-  if (DETAIL ("button") && state_type == GTK_STATE_PRELIGHT && shadow_type == GTK_SHADOW_IN)
+  /* hack to remove prelight */
+  if (state_type == GTK_STATE_PRELIGHT
+      && !DETAIL ("menuitem") && !DETAIL ("bar"))
   {
-    state_type = GTK_STATE_ACTIVE;
+    if (widget && GTK_IS_TOGGLE_BUTTON (widget)
+        && shadow_type == GTK_SHADOW_IN)
+    {
+      state_type = GTK_STATE_ACTIVE;
+    }
+    else
+    {
+      if (widget && GTK_IS_BUTTON (widget)
+          && (gtk_button_get_relief (GTK_BUTTON (widget)) == GTK_RELIEF_NONE))
+      {
+        /* none relief buttons shouldn't draw anything for "normal" state */
+        return;
+      }
+      else
+      {
+        state_type = GTK_STATE_NORMAL;
+      }
+    }
   }
-
 
   if (DETAIL ("trough"))
     gc = style->base_gc[state_type];

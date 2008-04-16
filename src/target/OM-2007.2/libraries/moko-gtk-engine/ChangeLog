@@ -1,5 +1,9 @@
 2008-04-16  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-draw.c: (moko_draw_box): Update remove prelight hack
+
+2008-04-16  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Fix labels font colour on inactive tabs
 
 2008-04-16  Thomas Wood  <thomas@openedhand.com>
