@@ -368,7 +368,7 @@ DBusHandlerResult headset_signal_filter (DBusConnection *bus, DBusMessage *msg, 
 			moko_sound_profile_set(SOUND_PROFILE_HEADSET);
 			g_debug("SOUND_PROFILE_HEADSET\n");
 		}	
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 	else if ( dbus_message_is_signal( msg,"org.openmoko.PhoneKit.Headset", "HeadsetOut" ) )
 	{
@@ -383,7 +383,7 @@ DBusHandlerResult headset_signal_filter (DBusConnection *bus, DBusMessage *msg, 
 			moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
 			g_debug("SOUND_PROFILE_STEREO_OUT\n");
 		}	
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 	g_debug( "(unknown dbus message, ignoring)" );
@@ -414,10 +414,6 @@ main (int argc, char **argv)
      return 1;
   }   
 
-  dbus_connection_setup_with_g_main (bus, NULL);
-
-  dbus_bus_add_match (bus, "type='signal'", &err);
-  dbus_connection_add_filter (bus, headset_signal_filter, NULL, NULL);  
 
   /* initialise type system */
   g_type_init ();
@@ -485,6 +481,11 @@ main (int argc, char **argv)
   dbus_g_connection_register_g_object (connection, 
                                        SMS_PATH,
                                        G_OBJECT (sms));
+
+  dbus_connection_setup_with_g_main (bus, NULL);
+
+  dbus_bus_add_match (bus, "type='signal',interface='org.openmoko.PhoneKit.Headset'", &err);
+  dbus_connection_add_filter (bus, headset_signal_filter, NULL, NULL);  
 
   /* Sync phonebook */
   /* XXX this is not the right place! */
