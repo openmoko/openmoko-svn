@@ -1,5 +1,9 @@
 2008-04-16  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/gtkrc: Fix labels font colour on inactive tabs
+
+2008-04-16  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Increase the size of scrollbars slightly and
 	remove double stepper buttons
 

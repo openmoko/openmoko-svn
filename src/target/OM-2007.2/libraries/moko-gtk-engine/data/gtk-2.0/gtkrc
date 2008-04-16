@@ -133,7 +133,7 @@ style "notebook"
   fg[ACTIVE] = @fg_color
   bg[ACTIVE] = shade (0.3, @bg_color)
 }
-widget_class "*GtkNotebook" style "notebook"
+widget_class "*GtkNotebook*" style "notebook"
 
 style "menuitem"
 {
