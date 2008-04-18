@@ -129,8 +129,8 @@ style "notebook"
   ythickness = 0
 
   # For notebookes, NORMAL is used for the active tab and ACTIVE is used for
-  # ther other tabs
-  fg[ACTIVE] = @fg_color
+  # the other tabs
+  fg[ACTIVE] = shade (0.7, @fg_color)
   bg[ACTIVE] = shade (0.3, @bg_color)
 }
 widget_class "*GtkNotebook*" style "notebook"
