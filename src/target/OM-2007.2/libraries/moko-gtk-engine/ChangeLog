@@ -1,5 +1,10 @@
 2008-04-18  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-draw.c: (moko_draw_option): Use cairo for draw_option because
+	X arcs are ugly
+
+2008-04-18  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Fix notebooks so only GtkNotebook and
 	GtkNotebook.Gtklabel get styled
 

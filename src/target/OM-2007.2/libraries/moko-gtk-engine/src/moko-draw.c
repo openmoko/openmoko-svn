@@ -159,25 +159,32 @@ moko_draw_option (GtkStyle * style, GdkWindow * window,
 		  gint height)
 {
   cairo_t *cr;
+  gdouble cx, cy, radius;
 
   /* X arc drawing code is really ugly, so we use cairo here */
-  gdk_draw_arc (window, style->black_gc, TRUE,
-   x, y, width, height, 0, 360 * 64);
 
-  x += 2; y += 2;
-  width -= 4; height -=4;
+  cx = x + width / 2;
+  cy = y + width / 2;
+  radius = width / 2;
 
-  gdk_draw_arc (window, style->base_gc[state_type], TRUE,
-   x, y, width, height, 0, 360 * 64);
+  cr = gdk_cairo_create (window);
+
+  gdk_cairo_set_source_color (cr, &style->black);
+  cairo_arc (cr, cx, cy, radius, 0, 2 * M_PI);
+  cairo_fill (cr);
+
+
+  gdk_cairo_set_source_color (cr, &style->base[GTK_STATE_NORMAL]);
+  cairo_arc (cr, cx, cy, radius - 2, 0, 2 * M_PI);
+  cairo_fill (cr);
 
   if (shadow_type == GTK_SHADOW_IN)
   {
-    x += 2; y += 2;
-    width -= 4; height -=4;
-
-    gdk_draw_arc (window, style->base_gc[GTK_STATE_SELECTED], TRUE,
-     x, y, width, height, 0, 360 * 64);
+    gdk_cairo_set_source_color (cr, &style->base[GTK_STATE_SELECTED]);
+    cairo_arc (cr, cx, cy, radius - 4, 0, 2 * M_PI);
+    cairo_fill (cr);
   }
+  cairo_destroy (cr);
 }
 
 static void
