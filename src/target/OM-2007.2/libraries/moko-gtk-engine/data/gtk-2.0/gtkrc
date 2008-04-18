@@ -28,6 +28,7 @@ style "default"
   GtkCheckButton::indicator-size = 35
   GtkCheckButton::indicator-spacing = 5
   GtkCheckMenuItem::indicator_size = 18
+  GtkComboBox::appears-as-list = 1
   GtkEntry::inner_border = {10, 10, 10, 10}
   GtkFrame::shadow_type = GTK_SHADOW_NONE
   GtkMenu::horizontal-padding = 1
@@ -116,6 +117,12 @@ style "combo" {
   text[PRELIGHT] = @selected_fg_color
 }
 widget_class "*Combo*" style "combo"
+
+style "combobox" {
+  base[NORMAL] = @selected_bg_color
+}
+widget_class "*.GtkComboBox" style "combobox"
+widget_class "*.GtkComboBox.*" style "combobox"
 
 style "toolbar"
 {
