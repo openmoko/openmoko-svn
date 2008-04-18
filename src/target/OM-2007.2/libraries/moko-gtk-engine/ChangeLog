@@ -1,5 +1,9 @@
 2008-04-18  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/gtkrc: Fix padding and add a border to menus
+
+2008-04-18  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Make labels on inactive tabs slightly darker
 
 2008-04-16  Thomas Wood  <thomas@openedhand.com>

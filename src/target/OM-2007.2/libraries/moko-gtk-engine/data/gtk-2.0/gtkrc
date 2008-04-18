@@ -30,6 +30,7 @@ style "default"
   GtkCheckMenuItem::indicator_size = 18
   GtkEntry::inner_border = {10, 10, 10, 10}
   GtkFrame::shadow_type = GTK_SHADOW_NONE
+  GtkMenu::horizontal-padding = 1
   GtkPaned::handle-size = 16
   GtkRange::slider-width = 28
   GtkRange::trough_border = 2
@@ -135,6 +136,14 @@ style "notebook"
 }
 widget_class "*GtkNotebook*" style "notebook"
 
+style "menu"
+{
+  engine "moko-engine" {
+    border = TRUE
+  }
+}
+class "GtkMenu" style "menu"
+
 style "menuitem"
 {
   xthickness = 8
@@ -145,6 +154,7 @@ style "menuitem"
 
   bg[PRELIGHT] = @selected_bg_color
   fg[PRELIGHT] = @selected_fg_color
+
 }
 widget_class "*MenuItem*" style "menuitem"
 widget "GtkWindow.gtk-combobox-popup-menu" style "menuitem"

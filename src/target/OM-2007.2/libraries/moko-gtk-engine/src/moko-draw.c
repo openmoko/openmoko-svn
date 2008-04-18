@@ -30,7 +30,6 @@
 #include <math.h>
 #include <string.h>
 
-#define DEBUG(func) // g_printf ("%s: detail = '%s'; state = %d; x:%d; y:%d; w:%d; h:%d;\n", func, detail, state_type, x, y, width, height);
 #define DETAIL(foo) (detail && strcmp (foo, detail) == 0)
 
 GtkStyleClass *parent_style_class;
@@ -40,7 +39,6 @@ moko_draw_box (DRAW_ARGS)
 {
   GdkGC *gc;
 
-  DEBUG ("draw_box");
   SANITIZE_SIZE;
 
   /*** spin buttons ***/
@@ -102,7 +100,6 @@ static void
 moko_draw_shadow (DRAW_ARGS)
 {
   GdkGC* gc;
-  DEBUG ("draw_shadow");
 
   if (shadow_type == GTK_SHADOW_NONE)
     return;
@@ -129,8 +126,6 @@ moko_draw_focus (GtkStyle *style, GdkWindow *window, GtkStateType state_type,
                  GdkRectangle *area, GtkWidget *widget, const gchar *detail,
                  gint x, gint y, gint width, gint height)
 {
-  DEBUG ("draw_focus");
-
   /* no focus indicator for the moment ... */
 }
 
@@ -141,21 +136,18 @@ moko_draw_check (GtkStyle * style, GdkWindow * window,
 		 const gchar * detail, gint x, gint y, gint width,
 		 gint height)
 {
-  GdkGC *gc, *border;
-
-  if (state_type == GTK_STATE_PRELIGHT)
-    state_type = GTK_STATE_NORMAL;
-
-  if (shadow_type == GTK_SHADOW_IN)
-    gc = style->base_gc[GTK_STATE_SELECTED];
-  else
-    gc = style->base_gc[state_type];
 
   gdk_draw_rectangle (window, style->black_gc, TRUE,
                       x, y, width, height);
 
-  gdk_draw_rectangle (window, gc, TRUE,
+  gdk_draw_rectangle (window, style->base_gc[GTK_STATE_NORMAL], TRUE,
                       x + 2, y + 2, width - 4, height - 4);
+
+  if (shadow_type == GTK_SHADOW_IN)
+  {
+    gdk_draw_rectangle (window, style->base_gc[GTK_STATE_SELECTED], TRUE,
+                        x + 4, y + 4, width - 8, height - 8);
+  }
 
 }
 
@@ -166,23 +158,26 @@ moko_draw_option (GtkStyle * style, GdkWindow * window,
 		  const gchar * detail, gint x, gint y, gint width,
 		  gint height)
 {
-  DEBUG ("draw_option");
+  cairo_t *cr;
 
-  GdkGC *gc;
-  if (state_type == GTK_STATE_PRELIGHT)
-    state_type = GTK_STATE_NORMAL;
-  if (shadow_type == GTK_SHADOW_IN)
-    gc = style->base_gc[GTK_STATE_SELECTED];
-  else
-    gc = style->base_gc[state_type];
-
-
+  /* X arc drawing code is really ugly, so we use cairo here */
   gdk_draw_arc (window, style->black_gc, TRUE,
    x, y, width, height, 0, 360 * 64);
 
-  gdk_draw_arc (window, gc, TRUE,
-   x + 2, y + 2, width - 4, height - 4, 0, 360 * 64);
+  x += 2; y += 2;
+  width -= 4; height -=4;
 
+  gdk_draw_arc (window, style->base_gc[state_type], TRUE,
+   x, y, width, height, 0, 360 * 64);
+
+  if (shadow_type == GTK_SHADOW_IN)
+  {
+    x += 2; y += 2;
+    width -= 4; height -=4;
+
+    gdk_draw_arc (window, style->base_gc[GTK_STATE_SELECTED], TRUE,
+     x, y, width, height, 0, 360 * 64);
+  }
 }
 
 static void
