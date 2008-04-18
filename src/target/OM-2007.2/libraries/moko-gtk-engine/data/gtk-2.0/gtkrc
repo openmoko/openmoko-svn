@@ -124,6 +124,7 @@ style "toolbar"
   ythickness = 0
 }
 class "GtkToolbar" style "toolbar"
+
 style "notebook"
 {
   xthickness = 0
@@ -134,7 +135,8 @@ style "notebook"
   fg[ACTIVE] = shade (0.7, @fg_color)
   bg[ACTIVE] = shade (0.3, @bg_color)
 }
-widget_class "*GtkNotebook*" style "notebook"
+widget_class "*GtkNotebook" style "notebook"
+widget_class "*GtkNotebook.GtkLabel" style "notebook"
 
 style "menu"
 {
