@@ -36,8 +36,8 @@ state.neo1973gta02 {
 		comment.range '0 - 127'
 		iface MIXER
 		name 'Speaker Playback Volume'
-		value.0 118
-		value.1 118
+		value.0 127
+		value.1 127
 	}
 	control.5 {
 		comment.access 'read write'
@@ -112,7 +112,7 @@ state.neo1973gta02 {
 		comment.range '0 - 7'
 		iface MIXER
 		name 'Mono Sidetone Playback Volume'
-		value 5
+		value 0
 	}
 	control.13 {
 		comment.access 'read write'
