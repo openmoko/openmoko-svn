@@ -181,5 +181,6 @@ while (<FILE>) {
 	$line = $_;
     }
 }
-close FILE || die $!;
+close FILE;
 print "$line\n" || die $! if defined $line;
+close STDOUT || die $!;
