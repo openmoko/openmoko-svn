@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# envcpp.pl - U-Boot environment editor
+# envcpp.pl - Preprocessor for the U-Boot environment editor
 #
 # Copyright (C) 2006-2008 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
@@ -82,10 +82,6 @@ sub expand
     return $tmp;
 }
 
-
-if ($0 =~ m#/[^/]*$#) {
-    push(@INC, $`);
-}
 
 while (@ARGV) {
     if ($ARGV[0] =~ /^-D/) {
