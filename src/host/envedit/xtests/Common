@@ -1,0 +1,78 @@
+#!/bin/sh
+
+
+fail()
+{
+    echo FAILED "($SCRIPT)" 1>&2
+    cat _out_$1 _err_$1  1>&2
+    exit 1
+}
+
+
+setup()
+{
+    echo -n "$1: " 1>&2
+}
+
+
+edit_out()
+{
+    ../../devirginator/envedit.pl "$@" -o _out_1 >_err_1 2>&1 || fail 1
+    ../envedit -P ../envcpp.pl    "$@" -o _out_2 >_err_2 2>&1 || fail 2
+}
+
+
+edit()
+{
+    ../../devirginator/envedit.pl "$@" >_out_1 2>_err_1 || fail 1
+    ../envedit -P ../envcpp.pl    "$@" >_out_2 2>_err_2 || fail 2
+}
+
+
+process()
+{
+    in_file=$1
+    shift
+    pp_opts="$*"
+    ../envcpp.pl "$@" "$in_file" >_out_1 2>_err_1 || fail 1
+    mv _out_1 _in
+}
+
+
+edit_processed()
+{
+    ../../devirginator/envedit.pl $pp_opts \
+      "$@" -f "$in_file" >_out_1 2>_err_1 || fail 1
+    ../envedit -n \
+      "$@" -f _in        >_out_2 2>_err_2 || fail 2
+}
+
+
+expect()
+{
+    if ! diff -u _out_1 _out_2 >_tmp; then
+	echo FAILED "($SCRIPT)" 1>&2
+	cat _tmp
+	exit
+    fi
+    cat _err_1 _err_2 >_err
+    if ! diff -u - _err >_tmp; then
+	echo FAILED "($SCRIPT)" 1>&2
+	cat _tmp
+	exit
+    fi
+    rm -f _in _out_1 _out_2 _err_1 _err_2 _err _tmp
+    echo PASSED 1>&2
+    passed=`expr ${passed:-0} + 1`
+}
+
+
+differ()
+{
+    if diff -u _out_1 _out_2 >/dev/null; then
+	echo FAILED "($SCRIPT)" 1>&2
+	exit
+    fi
+    cp _out_1 _out_2
+    expect
+}

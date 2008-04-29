@@ -1,0 +1,79 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment"
+
+edit_out -s 0x40000 -i Env.sample
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (local copy, no define)"
+
+edit_out -s 0x40000 -i Env.sample -f Environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (devirginator copy, no define)"
+
+edit_out -s 0x40000 -i Env.sample -f ../../devirginator/environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (local copy, GTA01)"
+
+edit_out -D GTA01 -s 0x40000 -i Env.sample -f Environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (devirginator copy, GTA01)"
+
+edit_out -D GTA01 -s 0x40000 -i Env.sample -f ../../devirginator/environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (local copy, GTA02)"
+
+edit_out -D GTA02 -s 0x40000 -i Env.sample -f Environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Output example environment, with edits (devirginator copy, GTA02)"
+
+edit_out -D GTA02 -s 0x40000 -i Env.sample -f ../../devirginator/environment.in
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF

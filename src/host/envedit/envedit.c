@@ -21,6 +21,9 @@
 #include "env.h"
 
 
+static const char *cpp_command_orig;
+
+
 static void usage(const char *name)
 {
 	fprintf(stderr,
@@ -29,21 +32,23 @@ static void usage(const char *name)
 "  -c             ignore CRC errors in input environment\n"
 "  -f env_file    read changed from file (default: no changes from file)\n"
 "  -i file        read environment from file (default: use empty environment)\n"
-"  -n             don't run env_file through CPP\n"
+"  -n             don't run env_file through preprocessor\n"
 "  -o file        write environment to file (default: write to stdout)\n"
 "  -p             print environment in human-readable form\n"
 "  -s bytes       environment size in bytes (default: 16384)\n"
 "  -D var[=value] define a variable for env_file processing only\n"
+"  -P pp_cmd      preprocessor command. This must precede any -D options.\n"
+"                 (default: %s)\n"
 "  var=           remove the specified variable\n"
 "  var=value      set the specified variable\n",
-	  name, "");
+	  name, "", cpp_command_orig);
 	exit(1);
 }
 
 
 int main(int argc, char **argv)
 {
-	int warn_crc = 0;
+	int warn_crc = 0, cpp_locked = 0;
 	const char *env_file = NULL;
 	const char *in_file = NULL, *out_file = NULL;
 	int cpp = 1;
@@ -51,7 +56,8 @@ int main(int argc, char **argv)
 	char *tmp, *end;
 	int c, i;
 
-	while ((c = getopt(argc, argv, "cf:i:no:ps:D:")) != EOF)
+	cpp_command_orig = cpp_command;
+	while ((c = getopt(argc, argv, "cf:i:no:ps:D:P:")) != EOF)
 		switch (c) {
 		case 'c':
 			warn_crc = 1;
@@ -77,6 +83,7 @@ int main(int argc, char **argv)
 				usage(*argv);
 			break;
 		case 'D':
+			cpp_locked = 1;
 			tmp = malloc(strlen(optarg)+3);
 			if (!tmp) {
 				perror("strdup");
@@ -87,6 +94,13 @@ int main(int argc, char **argv)
 			strcpy(tmp+2, optarg);
 			add_cpp_arg(tmp);
 			free(tmp);
+			break;
+		case 'P':
+			if (cpp_locked) {
+				fprintf(stderr, "-P must precede -D\n");
+				exit(1);
+			}
+			cpp_command = optarg;
 			break;
 		default:
 			usage(*argv);

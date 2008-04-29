@@ -7,7 +7,7 @@ LDFLAGS=-lz
 
 OBJS=envedit.o env.o parse.o var.o cpp.o
 
-.PHONY:		all install uninstall dep depend clean spotless
+.PHONY:		all install uninstall dep depend clean spotless test tests
 
 all:		envedit
 
@@ -29,3 +29,7 @@ clean:
 
 spotless:	clean
 		rm -f envedit
+
+test tests:	envedit
+		$(MAKE) -C tests
+		$(MAKE) -C xtests

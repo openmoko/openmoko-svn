@@ -65,17 +65,23 @@ static void file_close(const char *name, FILE *file, FILE *default_file)
 }
 
 
+static void alloc_env(void)
+{
+	env = malloc(env_size+1);
+	if (!env) {
+		perror("malloc");
+		exit(1);
+	}
+}
+
+
 void read_env(const char *name, int warn_crc)
 {
 	FILE *file;
 	size_t got;
 	uint32_t orig, crc;
 
-	env = malloc(env_size+1);
-	if (!env) {
-		perror("malloc");
-		exit(1);
-	}
+	alloc_env();
 	env[env_size] = 0; /* make sure parse_env stops */
 
 	file = file_open(name, "r", stdin);
@@ -181,6 +187,8 @@ void write_env(const char *name)
 	uint32_t crc;
 	size_t wrote;
 
+	if (!env)
+		alloc_env();
 	memset(env, 0, env_size);
 	reset_var();
 	for (p = env+4; 1; p += n+1) {
@@ -232,9 +240,10 @@ void set_env(const char *var)
 	}
 	*eq = 0;
 	if (eq[1])
-		set_var(var, eq+1);
+		set_var(tmp, eq+1);
 	else
-		del_var(var);
+		del_var(tmp);
+	free(tmp);
 }
 
 

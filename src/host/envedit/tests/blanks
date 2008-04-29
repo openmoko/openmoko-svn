@@ -1,0 +1,81 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "one=eins" <<EOF
+EOF
+
+edit_raw -p <<EOF
+one=eins
+EOF
+
+expect <<EOF
+one=eins
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "two=deux  # comment" <<EOF
+EOF
+
+edit_raw -p <<EOF
+two=deux  # comment
+EOF
+
+expect <<EOF
+two=deux
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "three=  tres" <<EOF
+EOF
+
+edit_raw -p <<EOF
+three=  tres
+EOF
+
+expect <<EOF
+three=tres
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "four  =vier" <<EOF
+EOF
+
+edit_raw -p <<EOF
+four  =vier
+EOF
+
+expect <<EOF
+four=vier
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup " five=cinq (error)" <<EOF
+EOF
+
+edit_raw_fail -p <<EOF
+  five=cinq
+EOF
+
+expect <<EOF
+syntax error in line 1
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "abc = a b  c" <<EOF
+EOF
+
+edit_raw -p <<EOF
+abc = a b  c
+EOF
+
+expect <<EOF
+abc=a b  c
+EOF
+

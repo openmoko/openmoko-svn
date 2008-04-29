@@ -1,0 +1,117 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "one=eins  # comment" <<EOF
+EOF
+
+edit_raw -p <<EOF
+one=eins  # comment
+EOF
+
+expect <<EOF
+one=eins
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "two=# comment\n dos" <<EOF
+EOF
+
+edit_raw -p <<EOF
+two=# comment
+ dos
+EOF
+
+expect <<EOF
+two=dos
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "three=  # comment\n trois" <<EOF
+EOF
+
+edit_raw -p <<EOF
+three=  # comment
+ trois
+EOF
+
+expect <<EOF
+three=trois
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "four#comment\n = cuatro" <<EOF
+EOF
+
+edit_raw -p <<EOF
+four#comment
+ = quatro
+EOF
+
+expect <<EOF
+four=quatro
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "five  #comment\n = fuenf" <<EOF
+EOF
+
+edit_raw -p <<EOF
+five  #comment
+ = fuenf
+EOF
+
+expect <<EOF
+five=fuenf
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "abc=# alpha\n a # beta\n b c # gamma" <<EOF
+EOF
+
+edit_raw -p <<EOF
+abc=#alpha
+ a # beta
+ b c #gamma
+EOF
+
+expect <<EOF
+abc=a b c
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "xy=x # foo\n# bar\n y" <<EOF
+EOF
+
+edit_raw -p <<EOF
+xy=x # foo
+# bar
+ y
+EOF
+
+expect <<EOF
+xy=x y
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "uv=u\n# foo\n# bar\n v" <<EOF
+EOF
+
+edit_raw -p <<EOF
+uv=u
+# foo
+# bar
+ v
+EOF
+
+expect <<EOF
+uv=u v
+EOF

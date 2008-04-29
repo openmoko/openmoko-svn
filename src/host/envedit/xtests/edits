@@ -1,0 +1,71 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (local copy, no defines)"
+
+edit -f Environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (live devirginator version, no defines)"
+
+edit -f ../../devirginator/environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (local copy, GTA01)"
+
+edit -D GTA01 -f Environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (live devirginator version, GTA01)"
+
+edit -D GTA01 -f ../../devirginator/environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (local copy, GTA02)"
+
+edit -D GTA02 -f Environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump edits (live devirginator version, GTA02)"
+
+edit -D GTA02 -f ../../devirginator/environment.in -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+#
+# The following test tests if we're actually testing something :-)
+#
+# It uses the fact that envedit.pl is very sensitive to the argument order.
+#
+
+setup "Force incompatibility (local copy, GTA02, wrong argument order)"
+
+edit -f Environment.in -p -D GTA02
+
+differ <<EOF
+EOF

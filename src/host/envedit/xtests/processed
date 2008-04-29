@@ -1,0 +1,35 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "Processed edits, dump (local copy, no defines)"
+
+process Environment.in
+
+edit_processed -p
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Processed edits, environment output (local copy, GTA01)"
+
+process Environment.in -D GTA01
+
+edit_processed
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Processed edits, environment output (devirginator copy, GTA02)"
+
+process ../../devirginator/environment.in -D GTA02
+
+edit_processed
+
+expect <<EOF
+EOF

@@ -26,9 +26,9 @@ static enum state {
 	st_0,		/* waiting for variable */
 	st_var,		/* in variable name */
 	st_spc_var,	/* skipping whitespace after variable name */
-	st_spc_eq,	/* skipping whitespace after equal sign */
 	st_val,		/* in value */
 	st_spc_val,	/* skipping whitespace in value */
+	st_spc_val_add,	/* add whitespace to value, then skip */
 } state = st_0;
 
 
@@ -43,13 +43,24 @@ static void syntax(void)
 }
 
 
+static void trim(char *s)
+{
+	char *p;
+
+	for (p = strchr(s, 0)-1; p >= s && isspace(*p); p--)
+		*p = 0;
+}
+
+
 static void flush(void)
 {
 	assert(var);
-	if (value)
-		set_var(var, value);
-	else
+	if (!value)
 		del_var(var);
+	else {
+		trim(value);
+		set_var(var, value);
+	}
 	free(var);
 	if (value)
 		free(value);
@@ -105,7 +116,7 @@ static void in_line(int c)
 			break;
 		}
 		if (c == '=') {
-			state = st_spc_eq;
+			state = st_spc_val;
 			break;
 		}
 		if (!alnum(c))
@@ -116,12 +127,17 @@ static void in_line(int c)
 		if (isspace(c))
 			break;
 		if (c == '=') {
-			state = st_spc_eq;
+			state = st_spc_val;
 			break;
 		}
 		syntax();
 		break;
-	case st_spc_eq:
+	case st_spc_val_add:
+		if (isspace(c)) {
+			add_to_value(' ');
+			state = st_spc_val;
+		}
+		/* fall through */
 	case st_spc_val:
 		if (isspace(c))
 			break;
@@ -129,7 +145,10 @@ static void in_line(int c)
 		state = st_val;
 		break;
 	case st_val:
-		add_to_value(c);
+		if (!isspace(c))
+			add_to_value(c);
+		else
+			add_to_value(' ');
 		break;
 	default:
 		abort();
@@ -153,25 +172,24 @@ static void newline(int c)
 		state = st_var;
 		break;
 	case st_var:
+		if (!isspace(c))
+			syntax();
 		state = st_spc_var;
 		/* fall through */
 	case st_spc_var:
 		in_line(c);
 		break;
-	case st_spc_eq:
-		if (isspace(c))
-			break;
-		goto flush;
+	case st_spc_val_add:
+		/* fall through */
 	case st_val:
-		if (isspace(c)) {
-			state = st_spc_val;
-			break;
-		}
-		goto flush;
+		trim(value);
+		add_to_value(' ');
+		state = st_spc_val;
+		/* fall through */
 	case st_spc_val:
-		if (isspace(c))
-			break;
-		goto flush;
+		if (!isspace(c))
+			goto flush;
+		break;
 	default:
 		abort();
 	}
@@ -187,7 +205,6 @@ static void double_newline(void)
 	case st_spc_var:
 		syntax();
 		break;
-	case st_spc_eq:
 	case st_val:
 	case st_spc_val:
 		flush();
@@ -207,21 +224,23 @@ void parse_edit(FILE *file)
 		int c;
 
 		c = fgetc(file);
+//fprintf(stderr, "[%d -> '%c']\n",state,c);
 		if (c == EOF)
 			break;
 		if (c == '#')
 			comment = 1;
 		if (c == '\n')
 			line++;
-		if (comment && c != '\n')
-			continue;
-		comment = 0;
+		if (comment) {
+			if (c != '\n')
+				continue;
+			comment = 0;
+			nl = 0;
+		}
 		if (c == '\n') {
 			if (nl)
 				double_newline();
 			nl = 1;
-			if (state == st_val)
-				state = st_spc_val;
 			continue;
 		}
 		if (nl)
@@ -238,7 +257,6 @@ void parse_edit(FILE *file)
 	case st_spc_var:
 		syntax();
 		break;
-	case st_spc_eq:
 	case st_val:
 	case st_spc_val:
 		flush();

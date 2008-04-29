@@ -1,7 +1,9 @@
 /*
  * cpp.h - CPP subprocess
  *
- * Written 2002,2003 by Werner Almesberger, Caltech Netlab FAST project
+ * Written 2002,2003,2008 by Werner Almesberger
+ * Copyright 2002,2003 Caltech Netlab FAST project
+ * Copyright 2008 by OpenMoko, Inc.
  *
  * Distributed under GPLv2, or any later version.
  *
@@ -9,6 +11,9 @@
 
 #ifndef CPP_H
 #define CPP_H
+
+
+extern const char *cpp_command;
 
 void add_cpp_arg(const char *arg);
 void add_cpp_Wp(const char *arg);

@@ -1,0 +1,21 @@
+2008-04-28: add regression tests, fix various parser bugs, most of them hidden
+  by the preprocessor
+
+- added README and CHANGES
+- cpp.h, cpp.c: added global variable cpp_command to allow run-time override
+  of preprocessor default
+- envedit.c: new option -P to set the preprocessor command
+- envedit.c: don't call the preprocessor "CPP"
+- env.c (write_env): allocate the environment if not already present
+- parse.c (flush): strip trailing blanks
+- parse.c (newline): var\n must be followed by whitespace
+- parse.c (newline): insert a blank in values when wrapping
+- parse.c: new state st_spc_val_add that adds a blank for the first whitespace
+  encountered and skips the rest
+- parse.c: removed state st_spc_eq, because it's identical to st_spc_val
+- parse.c: convert all whitespace to blanks
+- parse.c (parse_edit): removed special-case state change on newline
+- tests/: regression tests only for the C version of envedit
+- xtests/: compatibility tests between the C and the Perl version
+- env.c (set_env): passed the wrong string as variable name
+- env.c (set_env): close memory leak

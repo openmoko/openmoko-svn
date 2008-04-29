@@ -1,0 +1,25 @@
+Quick example for updating the environment on a GTA02, with envedit
+running on the machine:
+
+
+- build the envedit binary for the Neo:
+
+  cd svn.openmoko.org/trunk/src/host/envedit
+  make clean
+  make CC=arm-angstrom-linux-gnueabi-gcc
+
+- preprocess the environment changes:
+
+  ./envcpp.pl -DGTA02 ../devirginator/environment.in >environment.prep
+
+- copy everything to the GTA02:
+
+  scp envedit environment.prep 192.168.0.202:
+
+- on the GTA02, run this:
+
+  DEV=/dev/mtd2
+  nanddump -b -o -f env.old $DEV
+  envedit -s 0x40000 -i env.old -o env.new -n -f environment.prep
+  flash_eraseall $DEV
+  nandwrite -p $DEV env.new

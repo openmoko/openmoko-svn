@@ -1,0 +1,119 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "one=\n eins" <<EOF
+EOF
+
+edit_raw -p <<EOF
+one=
+ eins
+EOF
+
+expect <<EOF
+one=eins
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "two=  \n  dos" <<EOF
+EOF
+
+# the test case below has whitespace at the end of the line !
+edit_raw -p <<EOF
+two=  
+  dos
+EOF
+
+expect <<EOF
+two=dos
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "three\n =trois" <<EOF
+EOF
+
+edit_raw -p <<EOF
+three
+ = trois
+EOF
+
+expect <<EOF
+three=trois
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "four  \n = cuatro" <<EOF
+EOF
+
+# the test case below has whitespace at the end of the line !
+edit_raw -p <<EOF
+four  
+ = quatro
+EOF
+
+expect <<EOF
+four=quatro
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "five=\nsix=sechs (two settings)" <<EOF
+EOF
+
+edit_raw -p <<EOF
+five=
+six=sechs
+EOF
+
+expect <<EOF
+six=sechs
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "seven\n=siete (invalid)" <<EOF
+EOF
+
+edit_raw_fail -p <<EOF
+seven
+=siete
+EOF
+
+expect <<EOF
+syntax error in line 2
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "abc=a\n b\n  c" <<EOF
+EOF
+
+edit_raw -p <<EOF
+abc=a
+ b
+  c
+EOF
+
+expect <<EOF
+abc=a b c
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "def=d \n e  \n  f   \n" <<EOF
+EOF
+
+# the test case below has whitespace at the end of all lines !
+edit_raw -p <<EOF
+def=d 
+ e  
+  f   
+EOF
+
+expect <<EOF
+def=d e f
+EOF

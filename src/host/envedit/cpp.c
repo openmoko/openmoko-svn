@@ -1,9 +1,10 @@
 /*
  * cpp.c - CPP subprocess
  *
- * Written 2002-2004, 2006 by Werner Almesberger
+ * Written 2002-2004, 2006, 2008 by Werner Almesberger
  * Copyright 2002,2003 California Institute of Technology
  * Copyright 2004, 2006 Werner Almesberger
+ * Copyright 2008 by OpenMoko, Inc.
  *
  * Distributed under GPLv2, or any later version.
  */
@@ -21,6 +22,8 @@
 #include "cpp.h"
 
 
+const char *cpp_command = CPP;
+
 static pid_t cpp_pid;
 static int cpp_argc = 0;
 static const char **cpp_argv = NULL;
@@ -37,7 +40,7 @@ void add_cpp_arg(const char *arg)
 	exit(1);
     }
     if (cpp_argc == 1)
-	cpp_argv[0] = CPP;
+	cpp_argv[0] = cpp_command;
     if (arg) {
 	arg = strdup(arg);
 	if (!arg) {
@@ -112,8 +115,9 @@ static void run_cpp(const char *name,int fd,int close_fd)
 	    perror("dup2");
 	    exit(1);
 	}
-	if (execvp(CPP,(char **) cpp_argv) < 0) { /* prototype is weird */
-	    perror("execvp " CPP);
+	if (execvp(cpp_command,(char **) cpp_argv) < 0) {
+	  /* prototype is weird */
+	    perror(cpp_command);
 	    exit(1);
 	}
 	/* not reached */

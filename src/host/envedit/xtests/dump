@@ -1,0 +1,28 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "Dump example environment (correct size)"
+
+edit -s 0x40000 -i Env.sample -p
+
+expect <<EOF
+warning: skipping empty entry for "bootargs="
+warning: skipping empty entry for "bootargs="
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "Dump example environment (wrong size, thus CRC error)"
+
+edit -c -i Env.sample -p
+
+expect <<EOF
+warning: environment is 262144 bytes, expected 16384
+CRC error: expected 0xe0e5154e, got 0xda960321
+warning: skipping empty entry for "bootargs="
+warning: environment is 262144 bytes, expected 16384
+CRC error: file says 0xda960321, calculated 0xe0e5154e
+warning: skipping empty entry for "bootargs="
+EOF

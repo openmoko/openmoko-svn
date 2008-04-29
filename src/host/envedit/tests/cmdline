@@ -1,0 +1,77 @@
+#!/bin/sh
+. Common
+
+# -----------------------------------------------------------------------------
+
+setup "command line: empty + one=eins" <<EOF
+EOF
+
+edit_raw -p one=eins <<EOF
+EOF
+
+expect <<EOF
+one=eins
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "command line: two=deux + two=dos" <<EOF
+two=deux
+EOF
+
+edit_raw -p two=dos <<EOF
+EOF
+
+expect <<EOF
+two=dos
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "command line: three=3 + four=vier" <<EOF
+three=3
+EOF
+
+edit_raw -p four=vier <<EOF
+EOF
+
+expect <<EOF
+four=vier
+three=3
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "command line: empty + five=" <<EOF
+EOF
+
+edit_raw -p five= <<EOF
+EOF
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "command line: six=seis + six=" <<EOF
+six=seis
+EOF
+
+edit_raw -p six= <<EOF
+EOF
+
+expect <<EOF
+EOF
+
+# -----------------------------------------------------------------------------
+
+setup "command line: seven=sept + eight=" <<EOF
+seven=sept
+EOF
+
+edit_raw -p eight= <<EOF
+EOF
+
+expect <<EOF
+seven=sept
+EOF
