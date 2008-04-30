@@ -123,6 +123,7 @@ style "combobox" {
 }
 widget_class "*.GtkComboBox" style "combobox"
 widget_class "*.GtkComboBox.*" style "combobox"
+widget_class "*.HitoGroupCombo*" style "combobox"
 
 style "toolbar"
 {
