@@ -37,4 +37,4 @@ style "gtkbutton-label" {
 }
 widget_class "*.GtkButton.*" style "gtkbutton-label"
 widget_class "*.MokoDigitButton.*" style "gtkbutton-label"
-
+widget_class "*.GtkToggleButton.*" style "gtkbutton-label"
