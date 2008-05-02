@@ -23,6 +23,12 @@
 
 #endif
 
+#ifndef QUIET
+#define QUIET_OPT
+#else
+#define QUIET_OPT quiet
+#endif
+
 #ifdef INIT
 #define INIT_OPT init=INIT
 #else
@@ -44,6 +50,7 @@ bootargs_base=
   console=tty0
   loglevel=8
   INIT_OPT
+  QUIET_OPT
   regular_boot
 
 bootcmd=
