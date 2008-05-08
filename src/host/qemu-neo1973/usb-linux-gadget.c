@@ -26,9 +26,12 @@
 # if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 21)
 #  include <linux/usb_ch9.h>
 #  include <linux/usb_gadgetfs.h>
-# else
+# elif LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
 #  include <linux/usb/ch9.h>
 #  include <linux/usb_gadgetfs.h>
+# else
+#  include <linux/usb/ch9.h>
+#  include <linux/usb/gadgetfs.h>
 # endif
 # include <poll.h>
 # include <signal.h>
