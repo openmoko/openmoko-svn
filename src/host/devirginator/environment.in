@@ -24,9 +24,9 @@
 #endif
 
 #ifndef QUIET
-#define QUIET_OPT
+#define LOGLEVEL 8
 #else
-#define QUIET_OPT quiet
+#define LOGLEVEL 4
 #endif
 
 #ifdef INIT
@@ -48,9 +48,8 @@ bootargs_base=
   root=ROOTDEV
   console=CONSOLE,115200
   console=tty0
-  loglevel=8
+  loglevel=LOGLEVEL
   INIT_OPT
-  QUIET_OPT
   regular_boot
 
 bootcmd=
