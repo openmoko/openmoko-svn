@@ -44,17 +44,38 @@
 
 usage()
 {
-    echo "usage: $0 [-o outfile ] u-boot" 1>&2
+cat <<EOF 1<&2
+usage: $0 [-o outfile] [-s splash_image] [-D define ...] u-boot
+
+  -o outfile       write NOR image to specified file. Default: nor.bin
+  -s splash_image  use the specified splash image. Default: tmp/System_boot.png
+  -D define        pass definition to envedit
+EOF
     exit 1
 }
 
 
 out=nor.bin
-if [ "$1" = -o ]; then
-    [ ! -z "$2" ] || usage
-    out="$2"
-    shift 2
-fi
+splash=tmp/System_boot.png
+defines=
+
+while [ ! -z "$*" ]; do
+    case "$1" in
+        -o)	shift
+		[ ! -z "$1" ] || usage
+		out="$1";;
+        -s)	shift
+		[ ! -z "$1" ] || usage
+		splash="$1";;
+        -D)	shift
+		[ ! -z "$1" ] || usage
+		defines="$defines -D $1";;
+        -*)	usage;;
+	*)	break;;
+    esac
+    shift
+done
+
 [ ! -z "$1" -a -z "$2" ] || usage
 uboot="$1"
 
@@ -66,12 +87,12 @@ dynpart
 echo READY.
 EOF
 
-pngtopnm tmp/System_boot.png |
+pngtopnm "$splash" |
   pamcut 0 145 480 240 |
   ../splash/splashimg.pl -pnm - |
   gzip -9 >_splash
 
-./envedit.pl -D GTA02 -D NOR_ENV -f environment.in -o _env
+./envedit.pl -D GTA02 -D NOR_ENV $defines -f environment.in -o _env
 
 ./blink.pl \
   "$uboot"@0 \
