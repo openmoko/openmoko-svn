@@ -18,43 +18,31 @@
  */
 
 #include "package-store.h"
-#include "ipkgapi.h"
+#include <libopkg/opkg.h>
 #include <glib.h>
 
+void
+opkg_package_callback (opkg_t *opkg, opkg_package_t *pkg, void *user_data)
+{
+  GtkListStore *store = GTK_LIST_STORE (user_data);
+
+  gtk_list_store_insert_with_values (store, NULL, -1,
+                                     COL_STATUS, pkg->installed,
+                                     COL_NAME, pkg->name,
+                                     COL_POINTER, pkg,
+                                     -1);
+}
+
 GtkTreeModel *
-package_store_new ()
+package_store_new (opkg_t *opkg)
 {
   GtkListStore *store;
-  IPK_PACKAGE *pkg;
-  PKG_LIST_HEAD list;
-  int ret;
-  GRegex *regex;
-  
-  ipkg_initialize (0);
   
   /* status, name, size, pkg */
   store = gtk_list_store_new (NUM_COL, G_TYPE_INT,
                               G_TYPE_STRING, G_TYPE_POINTER);
 
-  ret = ipkg_list_available_cmd (&list);
-  g_return_val_if_fail (ret >= 0, NULL);
-  
-  pkg = list.pkg_list;
-  
-  regex = g_regex_new ("(-doc$|-dev$|-dbg$|-locale)", G_REGEX_OPTIMIZE, 0, NULL);
-  
-  while (pkg)
-  {
-    if (!g_regex_match (regex, pkg->name, 0, NULL))
-      gtk_list_store_insert_with_values (store, NULL, -1,
-                                       COL_STATUS, pkg->state_status,
-                                       COL_NAME, pkg->name,
-                                       COL_POINTER, pkg,
-                                       -1);
-    pkg = pkg->next;
-  }
-  
-  g_regex_unref (regex);
+  opkg_list_packages (opkg, opkg_package_callback, store);
 
   return GTK_TREE_MODEL (store);
 }

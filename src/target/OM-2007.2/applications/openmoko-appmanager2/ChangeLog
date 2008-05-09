@@ -1,3 +1,24 @@
+2008-05-09  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/appmanager-data.c: (application_manager_data_init):
+	* src/appmanager-data.h:
+	* src/appmanager-window.c: (main):
+	* src/detail-area.c: (detail_area_new), (format_depends_list),
+	(detail_area_update_info):
+	* src/detail-area.h:
+	* src/navigation-area.c: (on_selection_changed),
+	(model_filter_func):
+	* src/package-store.c:
+	* src/package-store.h:
+	* src/search-bar.c: (combo_changed_cb), (searchbar_toggled_cb),
+	(search_bar_new):
+	* src/tool-box.c: (on_upgrade_clicked), (on_install_clicked),
+	(on_remove_clicked):
+
+	Convert to libopkg API
+
 2007-11-19  Thomas Wood  <thomas@openedhand.com>
 
 	* src/ipkg-utils.c: (check_for_upgrade), (get_upgrade_list):

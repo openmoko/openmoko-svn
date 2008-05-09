@@ -70,7 +70,7 @@ main (int argc, char* argv[])
   init_pixbuf_list (appdata);
 
   /* create the package list store */
-  pkg_list = package_store_new ();
+  pkg_list = package_store_new (appdata->opkg);
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (window, 400, 600);

@@ -21,7 +21,7 @@
 #include "navigation-area.h"
 #include "package-store.h"
 
-#include "ipkgapi.h"
+#include <libopkg/opkg.h>
 
 static gboolean
 combo_seperator_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
@@ -91,9 +91,9 @@ combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManag
   {
     data->searchbar_search_type = SEARCH_ON_STATUS;
     if (active == FILTER_INSTALLED)
-      data->searchbar_needle = GINT_TO_POINTER (SS_INSTALLED);
+      data->searchbar_needle = GINT_TO_POINTER (1);
     else
-      data->searchbar_needle = GINT_TO_POINTER (SS_NOT_INSTALLED);
+      data->searchbar_needle = GINT_TO_POINTER (0);
   }
   else
   {
@@ -124,11 +124,11 @@ searchbar_toggled_cb (MokoSearchBar *searchbar, gboolean search, ApplicationMana
   else
     combo_changed_cb (searchbar, NULL, data);
 }
-
+/*
 gboolean
 section_search_hash (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GHashTable *hash)
 {
-  IPK_PACKAGE *pkg;
+  opkg_package_t *pkg;
 
   gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
 
@@ -150,7 +150,7 @@ section_hash_insert (gchar *key, gchar *value, GtkListStore *list)
 gboolean
 section_search_slist (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GSList **head)
 {
-  IPK_PACKAGE *pkg;
+  opkg_package_t *pkg;
 
   gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
 
@@ -162,7 +162,7 @@ section_search_slist (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
 
   return FALSE;
 }
-
+*/
 void
 slist_insert (gchar *value, GtkListStore *list)
 {
@@ -177,7 +177,7 @@ search_bar_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   GtkListStore *filter;
   GtkCellRenderer *renderer;
   /* GHashTable *hash; */
-  GSList *slist = NULL;
+  /* GSList *slist = NULL; */
 
   filter = gtk_list_store_new (1, G_TYPE_STRING);
   appdata->filter_store = GTK_TREE_MODEL (filter);
@@ -193,12 +193,12 @@ search_bar_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   g_hash_table_foreach (hash, (GHFunc) section_hash_insert, filter);
   g_hash_table_unref (hash);
 #endif
-  
+ /* 
   gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_slist, &slist);
   slist = g_slist_sort (slist, (GCompareFunc) strcmp);
   g_slist_foreach (slist, (GFunc) slist_insert, filter);
   g_slist_free (slist);
-
+*/
   
   renderer = gtk_cell_renderer_text_new ();
   

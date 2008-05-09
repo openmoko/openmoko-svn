@@ -21,6 +21,7 @@
 #define _FIC_APPMANAGER_DATA_H
 
 #include <gtk/gtk.h>
+#include <libopkg/opkg.h>
 
 #include "pixbuf-list.h"
 
@@ -52,6 +53,8 @@ G_BEGIN_DECLS
  */
 typedef struct _ApplicationManagerData {
   GObject          parent;             /* The parent of the struct */
+
+  opkg_t *opkg;
 
   GtkWidget        *mwindow;           /* The main window */
   GtkWidget        *menubox;           /* The menubox */

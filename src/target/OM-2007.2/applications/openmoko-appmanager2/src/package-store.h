@@ -21,6 +21,7 @@
 #define PACKAGE_STORE_H
 
 #include <gtk/gtk.h>
+#include <libopkg/opkg.h>
 
 enum {
   COL_STATUS = 0,
@@ -30,6 +31,6 @@ enum {
 };
 
 
-GtkTreeModel * package_store_new ();
+GtkTreeModel * package_store_new (opkg_t *opkg);
 
 #endif /* PACKAGE_STORE_H */

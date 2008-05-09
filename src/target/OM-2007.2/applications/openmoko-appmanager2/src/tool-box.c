@@ -32,9 +32,9 @@
 void 
 on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
 {
+ /* 
   GList *list;
   int upgrades;
-  
   update_package_list (data);
   
   list = get_upgrade_list ();
@@ -59,22 +59,6 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   
   g_list_free (list);
   
-  /*
-  GtkWidget *dialog;
-
-  g_debug ("Clicked the button upgrade");
-  package_list_mark_all_upgradeable (MOKO_APPLICATION_MANAGER_DATA (data));
-  navigation_area_rebuild_from_latest (MOKO_APPLICATION_MANAGER_DATA (data));
-
-  g_debug ("Create a dialog");
-  dialog = gtk_message_dialog_new (NULL,
-                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_INFO,
-                                   GTK_BUTTONS_OK,
-                                   _("Marked all upgradeable packages"));
-  gtk_dialog_run (GTK_DIALOG (dialog));
-  gtk_widget_destroy (dialog);
-  g_debug ("destroy a dialog");
   */
 }
 
@@ -86,6 +70,7 @@ on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
   GtkTreeModel *model;
   GtkTreeIter iter;
   gchar *name;
+  GtkWidget *dialog;
   
   sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (data->tvpkglist));
   
@@ -94,7 +79,12 @@ on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
   
   gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
   
-  install_package (data, name);
+  if (opkg_install_package (data->opkg, name, NULL, NULL) == 0)
+    dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s was installed", name);
+  else
+    dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s could not be installed", name);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
 
 void
@@ -104,6 +94,7 @@ on_remove_clicked (GtkWidget *button, ApplicationManagerData *data)
   GtkTreeModel *model;
   GtkTreeIter iter;
   gchar *name;
+  GtkWidget *dialog;
   
   sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (data->tvpkglist));
   
@@ -112,7 +103,13 @@ on_remove_clicked (GtkWidget *button, ApplicationManagerData *data)
   
   gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
   
-  remove_package (data, name);
+  if (opkg_remove_package (data->opkg, name, NULL, NULL) == 0)
+    dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s was removed", name);
+  else
+    dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s could not be removed", name);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
+
 }
 
 

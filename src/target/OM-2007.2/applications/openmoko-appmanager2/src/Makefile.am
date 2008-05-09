@@ -3,7 +3,6 @@ INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -peda
 bin_PROGRAMS = openmoko-appmanager
 
 openmoko_appmanager_SOURCES = appmanager-window.c\
-                              ipkgapi.c\
                               navigation-area.c\
                               tool-box.c\
                               detail-area.c\
@@ -11,7 +10,6 @@ openmoko_appmanager_SOURCES = appmanager-window.c\
                               pixbuf-list.c\
                               install-dialog.c \
                               search-bar.c \
-                              ipkg-utils.c \
                               am-progress-dialog.c \
                               package-store.c 
 

@@ -27,8 +27,8 @@
 #include "detail-area.h"
 #include "package-store.h"
 #include "select-menu.h"
+#include <libopkg/opkg.h>
 
-#include "ipkgapi.h"
 
 /*
  * @brief The callback function of the signal "cursor-changed"
@@ -39,7 +39,7 @@ on_selection_changed (GtkTreeSelection *selection,
 {
   GtkTreeModel     *model;
   GtkTreeIter      iter;
-  IPK_PACKAGE      *pkg;
+  opkg_package_t   *pkg;
 
   g_debug ("Call the on_treeview_cursor_changed");
 
@@ -48,7 +48,7 @@ on_selection_changed (GtkTreeSelection *selection,
     gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
     detail_area_update_info (data, pkg);
     
-    if (pkg->state_status == SS_INSTALLED)
+    if (pkg->installed)
     {
       gtk_widget_set_sensitive (GTK_WIDGET (data->install_btn), FALSE);
       gtk_widget_set_sensitive (GTK_WIDGET (data->remove_btn), TRUE);
@@ -73,7 +73,7 @@ on_selection_changed (GtkTreeSelection *selection,
 gboolean
 model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerData *data)
 {
-  IPK_PACKAGE *pkg;
+  opkg_package_t *pkg;
   
   if (!data->searchbar_needle)
     return TRUE;
@@ -86,7 +86,8 @@ model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerDat
  
   if (data->searchbar_search_type == SEARCH_ON_SECTION)
   {
-    return (g_str_equal (pkg->section, data->searchbar_needle));
+    /* return (g_str_equal (pkg->section, data->searchbar_needle)); */
+    /* FIXME: search on group tag? */
   }
   else if (data->searchbar_search_type == SEARCH_ON_NAME)
   {
@@ -98,7 +99,7 @@ model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerDat
   }
   else if (data->searchbar_search_type == SEARCH_ON_STATUS)
   {
-    return (pkg->state_status == GPOINTER_TO_INT (data->searchbar_needle));
+    return (pkg->installed == GPOINTER_TO_INT (data->searchbar_needle));
   }
 
   return FALSE;

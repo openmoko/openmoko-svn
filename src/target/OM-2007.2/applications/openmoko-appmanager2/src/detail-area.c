@@ -20,11 +20,10 @@
 #include <string.h>
 
 #include <moko-finger-scroll.h>
+#include <libopkg/opkg.h>
 
 #include "detail-area.h"
 #include "navigation-area.h"
-
-#include "ipkgapi.h"
 
 /*
  * @brief Create a detail area to the application manager data
@@ -55,6 +54,7 @@ detail_area_new (ApplicationManagerData *appdata)
   return GTK_WIDGET (detail);
 }
 
+#if 0
 /*
  * @brief Format the depends list of package.
  * @param depends The depends list
@@ -83,7 +83,7 @@ format_depends_list (char *dest, char *depends, int size)
     }
   dest[i] = 0;
 }
-
+#endif
 /*
  * @brief Update the detail area infomation base on the package that selected
  * @param appdata The application manager data
@@ -91,7 +91,7 @@ format_depends_list (char *dest, char *depends, int size)
  */
 void 
 detail_area_update_info (ApplicationManagerData *appdata, 
-                         IPK_PACKAGE *pkg)
+                         opkg_package_t *pkg)
 {
   GtkWidget      *textview;
   GtkTextBuffer  *buffer;
@@ -99,7 +99,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   GdkPixbuf      *pix;
   GtkTextTagTable   *tagtable;
   gint           pstart, pend;
-  char           *depends;
+  /* char           *depends; */
 
   g_debug ("Update the info in the detail area");
 
@@ -181,6 +181,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
   /* Set the depends */
+  /* XXX: doeso the user really care about depends?
   depends = pkg->depends;
   if (depends != NULL)
     {
@@ -206,6 +207,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
       g_free (dep);
     }
+    */
   if (pix)
     g_object_unref (pix);
 }

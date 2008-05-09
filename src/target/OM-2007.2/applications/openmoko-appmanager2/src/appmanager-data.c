@@ -59,6 +59,11 @@ application_manager_data_init (ApplicationManagerData *data)
     }
   data->searchhistory = NULL;
 
+  data->opkg = opkg_new ();
+#if 0
+  opkg_set_option (data->opkg, "offline_root", "/tmp");
+  opkg_re_read_config_files (data->opkg);
+#endif
 }
 
 /*

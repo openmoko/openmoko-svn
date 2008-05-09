@@ -21,14 +21,14 @@
 #define _FIC_DETAIL_AREA_H
 
 #include <gtk/gtk.h>
+#include <libopkg/opkg.h>
 
 #include "appmanager-data.h"
-#include "ipkgapi.h"
 
 GtkWidget *detail_area_new (ApplicationManagerData *appdata);
 
 void detail_area_update_info (ApplicationManagerData *appdata, 
-                              IPK_PACKAGE *pkg);
+                              opkg_package_t *pkg);
 
 #endif
 
