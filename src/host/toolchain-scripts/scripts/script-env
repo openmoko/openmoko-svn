@@ -1,7 +1,7 @@
 EXTRA_OECONF=
 EXTRA_AUTORECONF=
 EXTRA_OEMAKE=
-STAGING_DATADIR=${OMTOOL_DIR}/arm/arm-angstrom-linux-gnueabi/share/aclocal
+STAGING_DATADIR=${OMTOOL_DIR}/arm/arm-angstrom-linux-gnueabi/usr/share
 BUILD_SYS=$(uname -m)-$(uname -s | tr "A-Z" "a-z")
 HOST_SYS="arm-angstrom-linux-gnueabi"
 TARGET_SYS="arm-angstrom-linux-gnueabi"

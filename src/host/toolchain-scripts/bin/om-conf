@@ -25,9 +25,6 @@ set -e
 # This script will call native autoconf tools.  if it's not installed
 # we're in trouble.
 
-# FIXME: sometimes requires glib native installed, which is not in the toolchain yet.
-# FIXME: sometimes requires intltool native installed, which is not in the toolchain yet.
-
 error_exit () {
 	echo usage: $(basename $0) [app_dir_name]
 	exit 1
@@ -93,6 +90,7 @@ oe_runconf () {
 		    --oldincludedir=${oldincludedir} \
 		    --infodir=${infodir} \
 		    --mandir=${mandir} \
+                    --enable-mainainer-mode \
 			${EXTRA_OECONF} \
 		    $@"
 		oenote "Running $cfgcmd..."
