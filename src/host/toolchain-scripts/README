@@ -1,0 +1,59 @@
+Introduction
+============
+
+This kit is meant to be used with the prebuilt openmoko toolchain to
+ease the effort to develop on openmoko platform.
+
+
+Prerequisites
+=============
+
+Must install openmoko toolchain in absolute path /usr/local/openmoko
+For instructions about how to get/install it, please refer to
+
+http://wiki.openmoko.org/wiki/Toolchain
+
+
+Quick start
+===========
+
+In your home directory:
+
+$ cp -r /usr/local/openmoko/source/openmoko-sample2 ~/
+$ . /usr/local/openmoko/arm/setup-env
+$ om-conf openmoko-sample2
+$ om-make-ipkg openmoko-sample2
+
+Now you got openmoko-sample2_0.1_armv4t.ipk , you can `scp' it to your
+neo and install it:
+
+$ scp openmoko-sample2_0.1_armv4t.ipk root@192.168.0.202:
+$ ssh root@192.168.0.202 ipkg install openmoko-sample2_0.1_armv4t.ipk
+
+
+User configuraion
+=================
+
+  * May edit variables in scripts/script-env
+
+  * If the application need extra configure or autoreconf arguments,
+    they could be specified when executing `conf.sh':
+
+    $ om-conf <myapp> --without-foo --enable-bar
+
+  * Can specify your own ipkg control file, if you know what you're doing:
+
+    $ om-make-ipkg myapp myapp_control
+
+
+Document
+========
+
+Please refer to http://wiki.openmoko.org/wiki/Toolchain
+
+
+Feedback
+========
+
+Direct your question to openmoko-devel@lists.openmoko.org (preferred)
+or john_lee@openmoko.com

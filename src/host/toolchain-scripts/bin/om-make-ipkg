@@ -1,0 +1,42 @@
+#!/bin/sh
+
+set -e
+
+error_exit () {
+	echo usage: $(basename ${0}) [app_dir_name] [ipkg_control_file]
+	exit 1
+}
+
+test x${OMTOOL_DIR} = x && . /usr/local/openmoko/arm/setup-env
+. ${OMTOOL_DIR}/arm/scripts/functions
+
+S=${1}
+(test x${S} = x || test ! -d ${S}) && error_exit
+
+appname=$(basename ${S})
+tmpdir=/tmp/${appname}-ipkg-tmp
+test -e "${tmpdir}" && echo Cannot use ${tmpdir} because it already exists. && exit 1
+
+make -C ${S} install DESTDIR="${tmpdir}"
+mkdir ${tmpdir}/CONTROL
+control_file=${2}
+if test x${control_file} = x
+then
+	cat >${tmpdir}/CONTROL/control <<EOF
+Package: $appname
+Version: 0.1
+Description: package built by openmoko toolchain
+Section: openmoko/applications
+Priority: optional
+Maintainer: $USER
+Architecture: armv4t
+Homepage: http://www.openmoko.org/
+Depends: 
+Source: ${S}
+EOF
+else
+	cp ${control_file} ${tmpdir}/CONTROL/control
+fi
+
+ipkg-build -o 0 -g 0 ${tmpdir}
+rm -rf ${tmpdir}

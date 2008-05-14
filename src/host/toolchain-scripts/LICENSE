@@ -1,0 +1,3 @@
+ipkg-build and ipkg-unbuild come from ipkg-utils under GPL.
+om-conf: read the comments in file.
+om-make-ipkg: under GPL.

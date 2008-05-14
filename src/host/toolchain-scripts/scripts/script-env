@@ -1,0 +1,23 @@
+EXTRA_OECONF=
+EXTRA_AUTORECONF=
+EXTRA_OEMAKE=
+STAGING_DATADIR=${OMTOOL_DIR}/arm/arm-angstrom-linux-gnueabi/share/aclocal
+BUILD_SYS=$(uname -m)-$(uname -s | tr "A-Z" "a-z")
+HOST_SYS="arm-angstrom-linux-gnueabi"
+TARGET_SYS="arm-angstrom-linux-gnueabi"
+export localstatedir="/var"
+export prefix="/usr"
+export libexecdir="/usr/libexec"
+export datadir="/usr/share"
+export bindir="/usr/bin"
+export includedir="/usr/include"
+export oldincludedir="/usr/include"
+export mandir="/usr/share/man"
+export sharedstatedir="/usr/com"
+export sysconfdir="/etc"
+export sbindir="/usr/sbin"
+export libdir="/usr/lib"
+export infodir="/usr/share/info"
+export exec_prefix="/usr"
+unset MACHINE
+unset DISTRO
