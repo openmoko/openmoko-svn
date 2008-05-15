@@ -25,6 +25,7 @@
 #include "navigation-area.h"
 #include "appmanager-window.h"
 #include "ipkg-utils.h"
+#include "am-progress-dialog.h"
 
 /*
  * @brief The callback function of the button "upgrade"
@@ -62,15 +63,51 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   */
 }
 
-
 void
-on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
+progress_update_cb (opkg_t *opkg, const opkg_progress_data_t *pdata, void *am_progress_dialog)
+{
+  AmProgressDialog *dlg = AM_PROGRESS_DIALOG (am_progress_dialog);
+  gchar *text, *name;
+
+  if (!dlg)
+    return;
+
+  if (pdata->package)
+     name = pdata->package->name;
+  else
+    name = "";
+
+  gdk_threads_enter();
+  am_progress_dialog_set_progress (dlg, pdata->percentage / 100.0);
+
+  switch (pdata->action)
+  {
+    case OPKG_INSTALL:
+      text = g_strdup_printf ("Installing %s...", name);
+      break;
+    case OPKG_REMOVE:
+      text = g_strdup_printf ("Removing %s...", name);
+      break;
+    case OPKG_DOWNLOAD:
+      text = g_strdup_printf ("Downloading %s...", name);
+      break;
+    default:
+      text = g_strdup ("Please wait...");
+  }
+
+  am_progress_dialog_set_label_text (dlg, text);
+  g_free (text);
+  gdk_threads_leave();
+
+}
+void start_install (ApplicationManagerData *data)
 {
   GtkTreeSelection *sel;
   GtkTreeModel *model;
   GtkTreeIter iter;
   gchar *name;
   GtkWidget *dialog;
+  gint ret;
   
   sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (data->tvpkglist));
   
@@ -78,13 +115,30 @@ on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
     return;
   
   gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
+
   
-  if (opkg_install_package (data->opkg, name, NULL, NULL) == 0)
+  ret = opkg_install_package (data->opkg, name, progress_update_cb, data->installdialog);
+
+  gdk_threads_enter();
+  if (ret == 0)
     dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s was installed", name);
   else
     dialog = gtk_message_dialog_new (NULL,0, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s could not be installed", name);
+
+  gtk_widget_destroy (data->installdialog);
+
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
+  gdk_threads_leave();
+}
+
+void
+on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
+{
+  data->installdialog = am_progress_dialog_new ();
+  gtk_widget_show_all (data->installdialog);
+
+  g_thread_create ((GThreadFunc) start_install, data, FALSE, NULL);
 }
 
 void
