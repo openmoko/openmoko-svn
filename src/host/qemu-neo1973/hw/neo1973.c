@@ -766,8 +766,6 @@ static struct neo_board_s *neo1973_init_common(int ram_size, DisplayState *ds,
     }
     s->cpu = s3c2410_init(s->ram, ds, s->mmc);
 
-    s3c_nand_register(s->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
-
     /* Setup peripherals */
     neo_gpio_setup(s);
 
@@ -830,14 +828,17 @@ static void gta01_init(int ram_size, int vga_ram_size,
                 const char *kernel_filename, const char *kernel_cmdline,
                 const char *initrd_filename, const char *cpu_model)
 {
+    struct neo_board_s *neo;
     int sd_idx = drive_get_index(IF_SD, 0, 0);
     struct sd_card_s *sd = 0;
 
     if (sd_idx >= 0)
         sd = sd_init(drives_table[sd_idx].bdrv, 0);
 
-    neo1973_init_common(ram_size, ds,
+    neo = neo1973_init_common(ram_size, ds,
                     kernel_filename, cpu_model, sd, NEO1973_GTA01);
+
+    s3c_nand_register(neo->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
 }
 
 static void gta02f_init(int ram_size, int vga_ram_size,
@@ -850,6 +851,8 @@ static void gta02f_init(int ram_size, int vga_ram_size,
 
     neo = neo1973_init_common(ram_size, ds,
                     kernel_filename, cpu_model, sd, NEO1973_GTA02F);
+
+    s3c_nand_register(neo->cpu, nand_init(NAND_MFR_SAMSUNG, 0xa1));
 
     neo_gps_setup(neo);
     neo_machid_init(neo);
