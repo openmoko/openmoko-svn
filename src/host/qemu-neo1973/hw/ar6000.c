@@ -1193,7 +1193,7 @@ enum {
     bmi_execute,		/* Causes AR6K to execute code */
     bmi_set_app_start,		/* Set Target application starting address */
     bmi_read_soc_register,	/* Read a 32-bit Target SOC register */
-    bmi_Write_soc_register,	/* Write a 32-bit Target SOC register */
+    bmi_write_soc_register,	/* Write a 32-bit Target SOC register */
     bmi_get_target_id,		/* Fetch the 4-byte Target information */
     bmi_rompatch_install,	/* Install a ROM Patch */
     bmi_rompatch_uninstall,	/* Uninstall a previously-installed ROM Patch */

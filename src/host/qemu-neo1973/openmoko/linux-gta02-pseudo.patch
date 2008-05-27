@@ -1,8 +1,32 @@
+GTA02-psuedo support.
+
+---
+commit 9b2c7de6c48b66346a719c476b218a1b9cbe47a0
+tree b51c086e9869298a4073895d635da80c2df7ea6c
+parent fbfbc5130075e233f2fd2613e2897c3c4ed4bc7f
+author Andrzej Zaborowski <balrog@zabor.org> Tue, 27 May 2008 14:37:06 +0200
+committer Andrzej Zaborowski <balrog@zabor.org> Tue, 27 May 2008 14:37:06 +0200
+
+ arch/arm/boot/compressed/Makefile      |    4 
+ arch/arm/boot/compressed/head-qemu.S   |   32 +
+ arch/arm/mach-s3c2410/Kconfig          |    8 
+ arch/arm/mach-s3c2410/Makefile         |    1 
+ arch/arm/mach-s3c2410/mach-gta01.c     |   14 -
+ arch/arm/mach-s3c2410/mach-gta02f.c    |  811 ++++++++++++++++++++++++++++++++
+ arch/arm/mach-s3c2440/mach-gta02.c     |   24 -
+ arch/arm/tools/mach-types              |    1 
+ defconfig-2.6.22.5                     |    1 
+ defconfig-2.6.24                       |    1 
+ defconfig-gta02                        |    1 
+ drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c |   44 +-
+ include/asm-arm/plat-s3c24xx/pm.h      |    2 
+ 13 files changed, 903 insertions(+), 41 deletions(-)
+
 diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index adddc71..0da1e56 100644
+index 5fde99f..ac32d45 100644
 --- a/arch/arm/boot/compressed/Makefile
 +++ b/arch/arm/boot/compressed/Makefile
-@@ -50,6 +50,10 @@ ifeq ($(CONFIG_ARCH_AT91RM9200),y)
+@@ -48,6 +48,10 @@ ifeq ($(CONFIG_ARCH_AT91RM9200),y)
  OBJS		+= head-at91rm9200.o
  endif
  
@@ -52,10 +76,10 @@ index 0000000..abc1901
 +	cmp	r2, #'Q'		@ Compare against magic value 2
 +	streq	r1, [r0]		@ If ok, get the machine ID
 diff --git a/arch/arm/mach-s3c2410/Kconfig b/arch/arm/mach-s3c2410/Kconfig
-index dc833c0..2347376 100644
+index e42195f..843ecbd 100644
 --- a/arch/arm/mach-s3c2410/Kconfig
 +++ b/arch/arm/mach-s3c2410/Kconfig
-@@ -123,5 +123,13 @@ config MACH_NEO1973_GTA01
+@@ -125,5 +125,13 @@ config MACH_NEO1973_GTA01
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
  
@@ -79,10 +103,10 @@ index bb577f4..5208bb0 100644
  obj-$(CONFIG_MACH_NEO1973_GTA01)+= mach-gta01.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02F)+= mach-gta02f.o
 diff --git a/arch/arm/mach-s3c2410/mach-gta01.c b/arch/arm/mach-s3c2410/mach-gta01.c
-index 94e35a7..b929229 100644
+index b0cb544..99c36e6 100644
 --- a/arch/arm/mach-s3c2410/mach-gta01.c
 +++ b/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -263,7 +263,7 @@ static struct resource gta01_pmu_resources[] = {
+@@ -272,7 +272,7 @@ static struct resource gta01_pmu_resources[] = {
  	},
  };
  
@@ -91,46 +115,32 @@ index 94e35a7..b929229 100644
  	.name 		= "pcf50606",
  	.num_resources	= ARRAY_SIZE(gta01_pmu_resources),
  	.resource	= gta01_pmu_resources,
-@@ -356,6 +356,7 @@ static struct s3c2410_platform_nand gta01_nand_info = {
- 	.sets		= gta01_nand_sets,
- };
+@@ -505,13 +505,13 @@ static struct s3c2410_ts_mach_info gta01_ts_cfg = {
  
-+#if 0
- static unsigned int mmc_millivolts[] = {
- 	[MMC_VDD_145_150]	= 1500,
- 	[MMC_VDD_150_155]	= 1500,
-@@ -379,6 +380,7 @@ static unsigned int mmc_millivolts[] = {
- 	[MMC_VDD_31_32]		= 3200,
- 	[MMC_VDD_32_33]		= 3300,
- };
-+#endif
+ /* SPI */
  
- static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
+-void gta01_jbt6k74_reset(int devidx, int level)
++static void gta01_jbt6k74_reset(int devidx, int level)
  {
-@@ -472,12 +474,10 @@ static void __gta01_udc_vbus_draw(struct work_struct *work)
- 	}
+ 	/* empty place holder; gta01 does not yet use this */
+ 	printk(KERN_DEBUG "gta01_jbt6k74_reset\n");
  }
  
--static int gta01_udc_vbus_draw(unsigned int ma)
-+static void gta01_udc_vbus_draw(unsigned int ma)
- {
- 	gta01_udc_vbus_drawer.ma = ma;
- 	schedule_work(&gta01_udc_vbus_drawer.work);
--
--	return 0;
- }
+-const struct jbt6k74_platform_data gta01_jbt6k74_pdata = {
++static const struct jbt6k74_platform_data gta01_jbt6k74_pdata = {
+ 	.reset		= gta01_jbt6k74_reset,
+ };
  
- static struct s3c2410_udc_mach_info gta01_udc_cfg = {
-@@ -552,7 +552,7 @@ static struct resource s3c_spi_lcm_resource[] = {
+@@ -568,7 +568,7 @@ static struct resource s3c_spi_lcm_resource[] = {
  	},
  };
  
 -struct platform_device s3c_device_spi_lcm = {
 +static struct platform_device s3c_device_spi_lcm = {
- 	.name		  = "s3c24xx-spi-gpio",
+ 	.name		  = "spi_s3c24xx_gpio",
  	.id		  = 1,
  	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
-@@ -576,7 +576,7 @@ static struct resource gta01_bl_resources[] = {
+@@ -591,7 +591,7 @@ static struct resource gta01_bl_resources[] = {
  	},
  };
  
@@ -139,40 +149,30 @@ index 94e35a7..b929229 100644
  	.name 		= "gta01-bl",
  	.num_resources	= ARRAY_SIZE(gta01_bl_resources),
  	.resource	= gta01_bl_resources,
-@@ -592,7 +592,7 @@ static struct resource gta01_led_resources[] = {
+@@ -607,7 +607,7 @@ static struct resource gta01_led_resources[] = {
  	},
  };
  
 -struct platform_device gta01_led_dev = {
 +static struct platform_device gta01_led_dev = {
- 	.name		= "gta01-led",
+ 	.name		= "neo1973-vibrator",
  	.num_resources	= ARRAY_SIZE(gta01_led_resources),
  	.resource	= gta01_led_resources,
-@@ -613,7 +613,7 @@ static struct resource gta01_button_resources[] = {
+@@ -628,7 +628,7 @@ static struct resource gta01_button_resources[] = {
  	},
  };
  
 -struct platform_device gta01_button_dev = {
 +static struct platform_device gta01_button_dev = {
- 	.name		="gta01-button",
+ 	.name		= "neo1973-button",
  	.num_resources	= ARRAY_SIZE(gta01_button_resources),
  	.resource	= gta01_button_resources,
-@@ -707,8 +707,7 @@ static void __init gta01_machine_init(void)
- 	s3c2410_pm_init();
- 
- 	set_irq_type(GTA01_IRQ_MODEM, IRQT_RISING);
--	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq,
--		    SA_INTERRUPT, "modem", NULL);
-+	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq, 0, "modem", NULL);
- 	enable_irq_wake(GTA01_IRQ_MODEM);
- }
- 
 diff --git a/arch/arm/mach-s3c2410/mach-gta02f.c b/arch/arm/mach-s3c2410/mach-gta02f.c
 new file mode 100644
-index 0000000..e9c7bfe
+index 0000000..a51f8e4
 --- /dev/null
 +++ b/arch/arm/mach-s3c2410/mach-gta02f.c
-@@ -0,0 +1,785 @@
+@@ -0,0 +1,811 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta02f.c
 + *
@@ -182,6 +182,9 @@ index 0000000..e9c7bfe
 + *  o the WLAN chip on SDIO
 + *  o the accelerometers
 + *  o no SD slot
++ *  o third UART
++ *  o TODO: Flash size
++ *  o TODO: "-version" and "-resume" devices
 + *
 + * Copyright (C) 2007 OpenMoko, Inc.
 + *
@@ -211,6 +214,7 @@ index 0000000..e9c7bfe
 +#include <linux/workqueue.h>
 +#include <linux/platform_device.h>
 +#include <linux/serial_core.h>
++#include <asm/arch/ts.h>
 +#include <linux/spi/spi.h>
 +#include <linux/spi/spi_bitbang.h>
 +#include <linux/mmc/mmc.h>
@@ -220,6 +224,8 @@ index 0000000..e9c7bfe
 +#include <linux/mtd/nand.h>
 +#include <linux/mtd/nand_ecc.h>
 +#include <linux/mtd/partitions.h>
++
++#include <linux/mmc/host.h>
 +
 +#include <linux/pcf50606.h>
 +
@@ -232,13 +238,9 @@ index 0000000..e9c7bfe
 +#include <asm/irq.h>
 +#include <asm/mach-types.h>
 +
-+#include <asm/arch/regs-serial.h>
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/fb.h>
-+#include <asm/arch/udc.h>
-+#include <asm/arch/nand.h>
 +#include <asm/arch/mci.h>
-+#include <asm/arch/ts.h>
 +#include <asm/arch/spi.h>
 +#include <asm/arch/spi-gpio.h>
 +#include <asm/arch/usb-control.h>
@@ -246,9 +248,17 @@ index 0000000..e9c7bfe
 +#include <asm/arch/gta01.h>
 +#include <asm/arch/gta02.h>
 +
++#include <asm/plat-s3c/regs-serial.h>
++#include <asm/plat-s3c/nand.h>
 +#include <asm/plat-s3c24xx/devs.h>
 +#include <asm/plat-s3c24xx/cpu.h>
 +#include <asm/plat-s3c24xx/pm.h>
++#include <asm/plat-s3c24xx/udc.h>
++#include <asm/plat-s3c24xx/neo1973.h>
++#include <linux/jbt6k74.h>
++
++#include <linux/neospy.h>
++extern struct neospy_logdata neospy;
 +
 +static struct map_desc gta01_iodesc[] __initdata = {
 +	{
@@ -262,6 +272,8 @@ index 0000000..e9c7bfe
 +#define UCON S3C2410_UCON_DEFAULT
 +#define ULCON S3C2410_LCON_CS8 | S3C2410_LCON_PNONE | S3C2410_LCON_STOPB
 +#define UFCON S3C2410_UFCON_RXTRIG8 | S3C2410_UFCON_FIFOMODE
++/* UFCON for the gta01 sets the FIFO trigger level at 4, not 8 */
++#define UFCON_GTA01_PORT0 S3C2410_UFCON_FIFOMODE
 +
 +static struct s3c2410_uartcfg gta01_uartcfgs[] = {
 +	[0] = {
@@ -269,7 +281,7 @@ index 0000000..e9c7bfe
 +		.flags	     = 0,
 +		.ucon	     = UCON,
 +		.ulcon	     = ULCON,
-+		.ufcon	     = UFCON,
++		.ufcon	     = UFCON_GTA01_PORT0,
 +	},
 +	[1] = {
 +		.hwport	     = 1,
@@ -460,25 +472,24 @@ index 0000000..e9c7bfe
 +
 +/* LCD driver info */
 +
-+/* Configuration for 480x640 toppoly TD028TTEC1 */
-+static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
-+	.regs	= {
-+		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
-+				  S3C2410_LCDCON1_TFT |
-+				  S3C2410_LCDCON1_CLKVAL(0x01),	/* HCLK/4 */
++/* Configuration for 480x640 toppoly TD028TTEC1.
++ * Do not mark this as __initdata or it will break! */
++static struct s3c2410fb_display gta01_displays[] =  {
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 43,
++		.height		= 58,
++		.xres		= 480,
++		.yres		= 640,
++		.bpp		= 16,
 +
-+		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |	/* 2 */
-+				  S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
-+				  S3C2410_LCDCON2_VFPD(15) |	/* 16 */
-+				  S3C2410_LCDCON2_VSPW(1),	/* 2 */
-+
-+		.lcdcon3	= S3C2410_LCDCON3_HBPD(7) |	/* 8 */
-+				  S3C2410_LCDCON3_HOZVAL(479) |	/* 480 */
-+				  S3C2410_LCDCON3_HFPD(103),	/* 104 */
-+
-+		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
-+				  S3C2410_LCDCON4_HSPW(7),	/* 8 */
-+
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 2,
++		.lower_margin	= 16,
++		.vsync_len	= 2,
 +		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
 +				  S3C2410_LCDCON5_INVVCLK |
 +				  S3C2410_LCDCON5_INVVLINE |
@@ -486,31 +497,60 @@ index 0000000..e9c7bfe
 +				  S3C2410_LCDCON5_PWREN |
 +				  S3C2410_LCDCON5_HWSWP,
 +	},
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 43,
++		.height		= 58,
++		.xres		= 480,
++		.yres		= 640,
++		.bpp		= 32,
 +
-+	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
-+	.type		= S3C2410_LCDCON1_TFT,
-+
-+	.width		= 480,
-+	.height		= 640,
-+
-+	.xres		= {
-+		.min	= 240,
-+		.max	= 480,
-+		.defval	= 480,
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 2,
++		.lower_margin	= 16,
++		.vsync_len	= 2,
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVCLK |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
 +	},
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 43,
++		.height		= 58,
++		.xres		= 240,
++		.yres		= 320,
++		.bpp		= 16,
 +
-+	.yres		= {
-+		.min	= 320,
-+		.max	= 640,
-+		.defval = 640,
-+	},
-+
-+	.bpp		= {
-+		.min	= 1,
-+		.max	= 32,
-+		.defval = 16,
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 2,
++		.lower_margin	= 16,
++		.vsync_len	= 2,
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVCLK |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
 +	},
 +};
++
++static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
++	.displays	= gta01_displays,
++	.num_displays	= ARRAY_SIZE(gta01_displays),
++	.default_display = 0,
++
++	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
++};
++
 +static struct platform_device *gta01_devices[] __initdata = {
 +	&s3c_device_usb,
 +	&s3c_device_lcd,
@@ -527,12 +567,9 @@ index 0000000..e9c7bfe
 +	[0] = {
 +		.name		= "neo1973-nand",
 +		.nr_chips	= 1,
++		.flags		= S3C2410_NAND_BBT,
 +	},
 +};
-+
-+/* choose a set of timings which should suit most 512Mbit
-+ * chips and beyond.
-+ */
 +
 +static struct s3c2410_platform_nand gta01_nand_info = {
 +	.tacls		= 20,
@@ -542,56 +579,43 @@ index 0000000..e9c7bfe
 +	.sets		= gta01_nand_sets,
 +};
 +
-+#if 0
-+static unsigned int mmc_millivolts[] = {
-+	[MMC_VDD_145_150]	= 1500,
-+	[MMC_VDD_150_155]	= 1500,
-+	[MMC_VDD_155_160]	= 1600,
-+	[MMC_VDD_160_165]	= 1600,
-+	[MMC_VDD_165_170]	= 1700,
-+	[MMC_VDD_17_18]		= 1800,
-+	[MMC_VDD_18_19]		= 1900,
-+	[MMC_VDD_19_20]		= 2000,
-+	[MMC_VDD_20_21]		= 2100,
-+	[MMC_VDD_21_22]		= 2200,
-+	[MMC_VDD_22_23]		= 2300,
-+	[MMC_VDD_23_24]		= 2400,
-+	[MMC_VDD_24_25]		= 2500,
-+	[MMC_VDD_25_26]		= 2600,
-+	[MMC_VDD_26_27]		= 2700,
-+	[MMC_VDD_27_28]		= 2800,
-+	[MMC_VDD_28_29]		= 2900,
-+	[MMC_VDD_29_30]		= 3000,
-+	[MMC_VDD_30_31]		= 3100,
-+	[MMC_VDD_31_32]		= 3200,
-+	[MMC_VDD_32_33]		= 3300,
-+};
-+#endif
-+
 +static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
 +{
-+	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
++	int bit;
++	int mv = 1700; /* 1.7V for MMC_VDD_165_195 */
++
++	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u)\n",
 +	       power_mode, vdd);
 +
 +	switch (system_rev) {
 +	case GTA01v3_SYSTEM_REV:
-+		/* FIXME */
++		switch (power_mode) {
++		case MMC_POWER_OFF:
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 0);
++			break;
++		case MMC_POWER_ON:
++			/* translate MMC_VDD_* VDD bit to mv */
++			for (bit = 8; bit != 24; bit++)
++				if (vdd == (1 << bit))
++					mv += 100 * (bit - 4);
++			pcf50606_voltage_set(pcf50606_global,
++					     PCF50606_REGULATOR_D2REG, mv);
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D2REG, 1);
++			break;
++		}
 +		break;
 +	case GTA01v4_SYSTEM_REV:
-+		/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
-+		//pcf50606_voltage_set(mmc_millivolts[vdd]);
-+		break;
 +	case GTA01Bv2_SYSTEM_REV:
 +	case GTA01Bv3_SYSTEM_REV:
-+		/* FIXME */
-+		break;
 +	case GTA01Bv4_SYSTEM_REV:
 +		switch (power_mode) {
 +		case MMC_POWER_OFF:
-+			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 1);
++			neo1973_gpb_setpin(GTA01_GPIO_SDMMC_ON, 1);
 +			break;
 +		case MMC_POWER_ON:
-+			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 0);
++			neo1973_gpb_setpin(GTA01_GPIO_SDMMC_ON, 0);
 +			break;
 +		}
 +		break;
@@ -601,16 +625,11 @@ index 0000000..e9c7bfe
 +static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
 +	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
 +	.set_power	= &gta01_mmc_set_power,
-+	.ocr_avail	= MMC_VDD_32_33,		/* GTA01Bv2/3/4 */
-+#if 0
-+	.ocr_avail	= MMC_VDD_145_150|MMC_VDD_150_155|MMC_VDD_155_160|
-+			  MMC_VDD_160_165| MMC_VDD_165_170|MMC_VDD_17_18|
-+			  MMC_VDD_18_19|MMC_VDD_19_20|MMC_VDD_20_21|
++	.ocr_avail	= MMC_VDD_165_195|MMC_VDD_20_21|
 +			  MMC_VDD_21_22|MMC_VDD_22_23|MMC_VDD_23_24|
 +			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
 +			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
 +			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
-+#endif
 +};
 +
 +static struct resource gta02_sdio_resources[] = {
@@ -647,13 +666,10 @@ index 0000000..e9c7bfe
 +
 +	switch (cmd) {
 +	case S3C2410_UDC_P_ENABLE:
-+		s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
++		neo1973_gpb_setpin(GTA01_GPIO_USB_PULLUP, 1);
 +		break;
 +	case S3C2410_UDC_P_DISABLE:
-+		s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
-+		break;
-+	case S3C2410_UDC_P_RESET:
-+		/* FIXME! */
++		neo1973_gpb_setpin(GTA01_GPIO_USB_PULLUP, 0);
 +		break;
 +	default:
 +		break;
@@ -671,9 +687,9 @@ index 0000000..e9c7bfe
 +
 +static void __gta01_udc_vbus_draw(struct work_struct *work)
 +{
-+	/* FIXME: this is a quick fix to work around boot-time
-+	 * ordering problems if the s3c2410_udc is initialized
-+	 * before the pcf50606 driver has defined pcf50606_global */
++	/* this is a fix to work around boot-time ordering problems if the
++	 * s3c2410_udc is initialized before the pcf50606 driver has defined
++	 * pcf50606_global */
 +	if (!pcf50606_global)
 +		return;
 +
@@ -706,10 +722,20 @@ index 0000000..e9c7bfe
 +
 +/* SPI */
 +
-+static struct spi_board_info gta01_spi_board_info[] __initdata = {
++static void gta01_jbt6k74_reset(int devidx, int level)
++{
++	/* empty place holder; gta01 does not yet use this */
++	printk(KERN_DEBUG "gta01_jbt6k74_reset\n");
++}
++
++static const struct jbt6k74_platform_data gta01_jbt6k74_pdata = {
++	.reset		= gta01_jbt6k74_reset,
++};
++
++static struct spi_board_info gta01_spi_board_info[] = {
 +	{
 +		.modalias	= "jbt6k74",
-+		/* platform_data */
++		.platform_data	= &gta01_jbt6k74_pdata,
 +		/* controller_data */
 +		/* irq */
 +		.max_speed_hz	= 10 * 1000 * 1000,
@@ -718,15 +744,7 @@ index 0000000..e9c7bfe
 +	},
 +};
 +
-+
-+#ifdef SPI_HARD
-+static struct s3c2410_spi_info spi_cfg = {
-+	.pin_cs		= S3C2410_GPG3,
-+	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
-+	.board_info	= gta01_spi_board_info,
-+};
-+#else
-+static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int csidx, int cs)
 +{
 +	switch (cs) {
 +	case BITBANG_CS_ACTIVE:
@@ -745,6 +763,7 @@ index 0000000..e9c7bfe
 +	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
 +	.board_info	= gta01_spi_board_info,
 +	.chip_select	= &spi_gpio_cs,
++	.num_chipselect = 2,   /*** Should be 1 or 2 for gta01? ***/
 +};
 +
 +static struct resource s3c_spi_lcm_resource[] = {
@@ -767,7 +786,7 @@ index 0000000..e9c7bfe
 +};
 +
 +static struct platform_device s3c_device_spi_lcm = {
-+	.name		  = "s3c24xx-spi-gpio",
++	.name		  = "spi_s3c24xx_gpio",
 +	.id		  = 1,
 +	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
 +	.resource	  = s3c_spi_lcm_resource,
@@ -775,7 +794,6 @@ index 0000000..e9c7bfe
 +		.platform_data = &spi_gpio_cfg,
 +	},
 +};
-+#endif
 +
 +static struct gta01bl_machinfo backlight_machinfo = {
 +	.default_intensity	= 1,
@@ -790,7 +808,7 @@ index 0000000..e9c7bfe
 +	},
 +};
 +
-+struct platform_device gta01_bl_dev = {
++static struct platform_device gta01_bl_dev = {
 +	.name 		= "gta01-bl",
 +	.num_resources	= ARRAY_SIZE(gta01_bl_resources),
 +	.resource	= gta01_bl_resources,
@@ -806,8 +824,8 @@ index 0000000..e9c7bfe
 +	},
 +};
 +
-+struct platform_device gta01_led_dev = {
-+	.name		= "gta01-led",
++static struct platform_device gta01_led_dev = {
++	.name		= "neo1973-vibrator",
 +	.num_resources	= ARRAY_SIZE(gta01_led_resources),
 +	.resource	= gta01_led_resources,
 +};
@@ -828,13 +846,13 @@ index 0000000..e9c7bfe
 +};
 +
 +static struct platform_device gta01_button_dev = {
-+	.name		="gta01-button",
++	.name		= "neo1973-button",
 +	.num_resources	= ARRAY_SIZE(gta01_button_resources),
 +	.resource	= gta01_button_resources,
 +};
 +
 +static struct platform_device gta01_pm_gsm_dev = {
-+	.name		="gta01-pm-gsm",
++	.name		= "neo1973-pm-gsm",
 +};
 +
 +/* USB */
@@ -854,19 +872,27 @@ index 0000000..e9c7bfe
 +	s3c24xx_init_uarts(gta01_uartcfgs, ARRAY_SIZE(gta01_uartcfgs));
 +}
 +
++extern int gta_gsm_interrupts;
++
 +static irqreturn_t gta01_modem_irq(int irq, void *param)
 +{
-+	printk(KERN_DEBUG "modem wakeup interrupt\n");
++	printk(KERN_DEBUG "GSM wakeup interrupt (IRQ %d)\n", irq);
++	gta_gsm_interrupts++;
++	nspy_add(NSPY_TYPE_SPECIAL, '*', jiffies);
 +	return IRQ_HANDLED;
 +}
 +
 +static void __init gta02f_machine_init(void)
 +{
++	int rc;
++
 +	if (system_rev == GTA01v4_SYSTEM_REV ||
 +	    system_rev == GTA01Bv2_SYSTEM_REV ||
 +	    system_rev == GTA01Bv3_SYSTEM_REV ||
-+	    system_rev == GTA01Bv4_SYSTEM_REV)
++	    system_rev == GTA01Bv4_SYSTEM_REV) {
 +		gta01_udc_cfg.udc_command = gta01_udc_command;
++		gta01_mmc_cfg.ocr_avail = MMC_VDD_32_33;
++	}
 +
 +	s3c_device_usb.dev.platform_data = &gta01_usb_info;
 +	s3c_device_nand.dev.platform_data = &gta01_nand_info;
@@ -904,14 +930,11 @@ index 0000000..e9c7bfe
 +	s3c2410_gpio_cfgpin(S3C2410_GPC6, S3C2410_GPIO_OUTPUT);
 +	s3c2410_gpio_setpin(S3C2410_GPC6, 1);
 +
-+#ifdef SPI_HARD
-+#else
 +	/* SPI chip select is gpio output */
 +	s3c2410_gpio_cfgpin(S3C2410_GPG3, S3C2410_GPIO_OUTPUT);
 +	s3c2410_gpio_setpin(S3C2410_GPG3, 1);
-+
 +	platform_device_register(&s3c_device_spi_lcm);
-+#endif
++
 +	platform_device_register(&gta01_bl_dev);
 +	platform_device_register(&gta01_button_dev);
 +	platform_device_register(&gta01_pm_gsm_dev);
@@ -945,8 +968,11 @@ index 0000000..e9c7bfe
 +	s3c2410_pm_init();
 +
 +	set_irq_type(GTA01_IRQ_MODEM, IRQT_RISING);
-+	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq, 0, "modem", NULL);
++	rc = request_irq(GTA01_IRQ_MODEM, gta01_modem_irq, IRQF_DISABLED,
++			 "modem", NULL);
 +	enable_irq_wake(GTA01_IRQ_MODEM);
++	printk(KERN_DEBUG  "Enabled GSM wakeup IRQ %d (rc=%d)\n",
++	       GTA01_IRQ_MODEM, rc);
 +}
 +
 +MACHINE_START(NEO1973_GTA02F, "GTA02")
@@ -959,10 +985,25 @@ index 0000000..e9c7bfe
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
 diff --git a/arch/arm/mach-s3c2440/mach-gta02.c b/arch/arm/mach-s3c2440/mach-gta02.c
-index 1c2fb61..9add88e 100644
+index 9744ac2..0a12297 100644
 --- a/arch/arm/mach-s3c2440/mach-gta02.c
 +++ b/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -296,7 +296,7 @@ static struct resource gta02_pmu_resources[] = {
+@@ -376,12 +376,12 @@ int gta02_get_pcb_revision(void)
+ 	return u;
+ }
+ 
+-struct platform_device gta02_version_device = {
++static struct platform_device gta02_version_device = {
+ 	.name 		= "neo1973-version",
+ 	.num_resources	= 0,
+ };
+ 
+-struct platform_device gta02_resume_reason_device = {
++static struct platform_device gta02_resume_reason_device = {
+ 	.name 		= "neo1973-resume",
+ 	.num_resources	= 0,
+ };
+@@ -631,7 +631,7 @@ static struct resource gta02_pmu_resources[] = {
  	},
  };
  
@@ -971,7 +1012,75 @@ index 1c2fb61..9add88e 100644
  	.name 		= "pcf50633",
  	.num_resources	= ARRAY_SIZE(gta02_pmu_resources),
  	.resource	= gta02_pmu_resources,
-@@ -542,7 +542,7 @@ static struct resource gta02_led_resources[] = {
+@@ -650,7 +650,7 @@ static struct resource sc32440_fiq_resources[] = {
+ 	},
+ };
+ 
+-struct platform_device sc32440_fiq_device = {
++static struct platform_device sc32440_fiq_device = {
+ 	.name 		= "sc32440_fiq",
+ 	.num_resources	= 1,
+ 	.resource	= sc32440_fiq_resources,
+@@ -666,7 +666,7 @@ static struct resource gta02_hdq_resources[] = {
+ 	},
+ };
+ 
+-struct platform_device gta02_hdq_device = {
++static struct platform_device gta02_hdq_device = {
+ 	.name 		= "gta02-hdq",
+ 	.num_resources	= 1,
+ 	.resource	= gta02_hdq_resources,
+@@ -675,7 +675,7 @@ struct platform_device gta02_hdq_device = {
+ 
+ /* BQ27000 Battery */
+ 
+-struct bq27000_platform_data bq27000_pdata = {
++static struct bq27000_platform_data bq27000_pdata = {
+ 	.name = "bat",
+ 	.rsense_mohms = 20,
+ 	.hdq_read = gta02hdq_read,
+@@ -683,7 +683,7 @@ struct bq27000_platform_data bq27000_pdata = {
+ 	.hdq_initialized = gta02hdq_initialized,
+ };
+ 
+-struct platform_device bq27000_battery_device = {
++static struct platform_device bq27000_battery_device = {
+ 	.name 		= "bq27000-battery",
+ 	.dev = {
+ 		.platform_data = &bq27000_pdata,
+@@ -747,7 +747,7 @@ static struct platform_device gta02_sdio_dev = {
+         .num_resources  = ARRAY_SIZE(gta02_sdio_resources),
+ };
+ 
+-struct platform_device s3c24xx_pwm_device = {
++static struct platform_device s3c24xx_pwm_device = {
+ 	.name 		= "s3c24xx_pwm",
+ 	.num_resources	= 0,
+ };
+@@ -852,19 +852,19 @@ static struct s3c2410_ts_mach_info gta02_ts_cfg = {
+ 
+ /* SPI: LCM control interface attached to Glamo3362 */
+ 
+-void gta02_jbt6k74_reset(int devidx, int level)
++static void gta02_jbt6k74_reset(int devidx, int level)
+ {
+ 	glamo_lcm_reset(level);
+ }
+ 
+ /* finally bring up deferred backlight resume now LCM is resumed itself */
+ 
+-void gta02_jbt6k74_resuming(int devidx)
++static void gta02_jbt6k74_resuming(int devidx)
+ {
+ 	pcf50633_backlight_resume(pcf50633_global);
+ }
+ 
+-const struct jbt6k74_platform_data jbt6k74_pdata = {
++static const struct jbt6k74_platform_data jbt6k74_pdata = {
+ 	.reset		= gta02_jbt6k74_reset,
+ 	.resuming	= gta02_jbt6k74_resuming,
+ };
+@@ -1156,7 +1156,7 @@ static struct resource gta02_led_resources[] = {
  	},
  };
  
@@ -989,93 +1098,44 @@ index 0a9a5e7..f2d90b0 100644
  tik27			MACH_TIK27		TIK27			1360
  mx_uc7420		MACH_MX_UC7420		MX_UC7420		1361
 +neo1973_gta02f		MACH_NEO1973_GTA02F	NEO1973_GTA02F		1555
-diff --git a/drivers/sdio/function/bluetooth/sdio_bt_os.c b/drivers/sdio/function/bluetooth/sdio_bt_os.c
-index 869f718..da9da98 100644
---- a/drivers/sdio/function/bluetooth/sdio_bt_os.c
-+++ b/drivers/sdio/function/bluetooth/sdio_bt_os.c
-@@ -55,6 +55,7 @@
- #define AUTHOR "Atheros Communications, Inc."
+diff --git a/defconfig-2.6.22.5 b/defconfig-2.6.22.5
+index e9e40fe..71196a1 100644
+--- a/defconfig-2.6.22.5
++++ b/defconfig-2.6.22.5
+@@ -180,6 +180,7 @@ CONFIG_S3C2410_PWM=y
+ # CONFIG_MACH_VR1000 is not set
+ CONFIG_MACH_QT2410=y
+ CONFIG_MACH_NEO1973_GTA01=y
++CONFIG_MACH_NEO1973_GTA02F=y
  
- /* debug print parameter */
-+int debuglevel;
- module_param(debuglevel, int, 0644);
- MODULE_PARM_DESC(debuglevel, "debuglevel 0-7, controls debug prints");
+ #
+ # S3C2412 Machines
+diff --git a/defconfig-2.6.24 b/defconfig-2.6.24
+index 0bcf50a..cf13b66 100644
+--- a/defconfig-2.6.24
++++ b/defconfig-2.6.24
+@@ -187,6 +187,7 @@ CONFIG_S3C2410_PWM=y
+ # CONFIG_MACH_VR1000 is not set
+ CONFIG_MACH_QT2410=y
+ CONFIG_MACH_NEO1973_GTA01=y
++CONFIG_MACH_NEO1973_GTA02F=y
  
-@@ -455,7 +456,7 @@ static BOOL Probe(PSDFUNCTION pFunction, PSDDEVICE pDevice) {
-             break;
-         }
+ #
+ # S3C2412 Machines
+diff --git a/defconfig-gta02 b/defconfig-gta02
+index 68cf1f4..17cb17b 100644
+--- a/defconfig-gta02
++++ b/defconfig-gta02
+@@ -184,6 +184,7 @@ CONFIG_S3C2410_PWM=y
+ # CONFIG_MACH_VR1000 is not set
+ CONFIG_MACH_QT2410=y
+ CONFIG_MACH_NEO1973_GTA01=y
++CONFIG_MACH_NEO1973_GTA02F=y
  
--        pHciDev->type = HCI_VHCI; /* we don't really have a type assigned ????*/
-+        pHciDev->type = HCI_SDIO;
-         pHciDev->driver_data = pNewHci;
-         pHciDev->open     = bt_open;
-         pHciDev->close    = bt_close;
-diff --git a/drivers/sdio/function/gps/gps_os.c b/drivers/sdio/function/gps/gps_os.c
-index 1de0e54..cdec997 100644
---- a/drivers/sdio/function/gps/gps_os.c
-+++ b/drivers/sdio/function/gps/gps_os.c
-@@ -58,6 +58,7 @@
- 
- 
- /* debug print parameter */
-+int debuglevel;
- module_param(debuglevel, int, 0644);
- MODULE_PARM_DESC(debuglevel, "debuglevel 0-7, controls debug prints");
- int fixedbaud = 1;
-@@ -84,8 +85,8 @@ static void gps_enable_ms(struct uart_port *port);
- static void gps_break_ctl(struct uart_port *port, int break_state);
- static int gps_startup(struct uart_port *port);
- static void gps_shutdown(struct uart_port *port);
--static void gps_set_termios(struct uart_port *port, struct termios *termios,
--                            struct termios *old);
-+static void gps_set_termios(struct uart_port *port, struct ktermios *termios,
-+                            struct ktermios *old);
- static void gps_pm(struct uart_port *port, unsigned int state, unsigned int oldstate);
- static const char *gps_type(struct uart_port *port);
- static void gps_release_port(struct uart_port *port);
-@@ -391,8 +392,8 @@ static void gps_shutdown(struct uart_port *port)
- /*
-  * gps_set_termios - set data parameters
- */
--static void gps_set_termios(struct uart_port *port, struct termios *termios,
--                            struct termios *old)
-+static void gps_set_termios(struct uart_port *port, struct ktermios *termios,
-+                            struct ktermios *old)
- {
-     PSDGPS_DEVICE pDevice = CONTAINING_STRUCT(port, SDGPS_DEVICE, Port);
-     unsigned char cval = 0;
-diff --git a/drivers/sdio/function/memory/sdio_memory_os.c b/drivers/sdio/function/memory/sdio_memory_os.c
-index 4e3eb53..e086095 100644
---- a/drivers/sdio/function/memory/sdio_memory_os.c
-+++ b/drivers/sdio/function/memory/sdio_memory_os.c
-@@ -63,6 +63,7 @@
- #define AUTHOR "Atheros Communications, Inc."
- 
- /* debug print parameter */
-+int debuglevel;
- module_param(debuglevel, int, 0644);
- MODULE_PARM_DESC(debuglevel, "debuglevel 0-7, controls debug prints");
- 
-@@ -567,7 +568,7 @@ static void DiskRequest(request_queue_t *pQueue)
-          if (!blk_fs_request(pRequest)) {
-             /* not a command we care about */
-             DBG_PRINT(SDDBG_TRACE, ("SDIO Memory Function: DiskRequest - unsupported command: flags 0x%X\n",
--                                    (UINT)pRequest->flags));
-+                                    (UINT) 0));
-             end_request(pRequest, 0);
-             continue;
-         }
-@@ -744,7 +745,7 @@ static void DiskRequestDma(request_queue_t *pQueue)
-         if (!blk_fs_request(pRequest)) {
-             /* not a command we care about */
-             DBG_PRINT(SDDBG_TRACE, ("SDIO Memory Function: DiskRequestDma - unsupported command: flags 0x%X\n",
--                                    (UINT)pRequest->flags));
-+                                    (UINT) 0));
-             end_request(pRequest, 0);
-                 /* reset */
-             outstandingReq = 1;
+ #
+ # S3C2412 Machines
 diff --git a/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c b/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
-index a1b8953..8dc88d2 100644
+index 1292020..33577ac 100644
 --- a/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 +++ b/drivers/sdio/hcd/s3c24xx/s3c24xx_hcd.c
 @@ -100,7 +100,7 @@ static void s3c24xx_dump_regs(struct s3c24xx_hcd_context * context)
@@ -1087,8 +1147,8 @@ index a1b8953..8dc88d2 100644
  
  	printk("SDICON:    0x%08x\n", con);
  	printk("SDIPRE:    0x%08x\n", pre);
-@@ -127,15 +127,15 @@ static inline void s3c24xx_hcd_clear_imask(struct s3c24xx_hcd_context * context)
- 
+@@ -124,15 +124,15 @@ static inline void s3c24xx_hcd_clear_imask(struct s3c24xx_hcd_context * context)
+ {
  	if (context->int_sdio) {
  		writel(S3C2410_SDIIMSK_SDIOIRQ | S3C2410_SDIIMSK_READWAIT,
 -		       context->base + S3C2440_SDIIMSK);
@@ -1106,7 +1166,7 @@ index a1b8953..8dc88d2 100644
  }
  
  
-@@ -456,11 +456,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
+@@ -453,11 +453,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
  			req->DataRemaining -= fifo_count;
  			while (fifo_count > 0) {
  				if (context->data_size == 4)
@@ -1121,7 +1181,7 @@ index a1b8953..8dc88d2 100644
  
  				ptr += context->data_size;
  				fifo_count -= context->data_size;
-@@ -524,11 +524,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
+@@ -521,11 +521,11 @@ static void s3c24xx_hcd_pio_complete(struct s3c24xx_hcd_context * context)
  
  				while (fifo_count > 0) {
  					if (context->data_size == 4)
@@ -1136,7 +1196,7 @@ index a1b8953..8dc88d2 100644
  
  					ptr += context->data_size;
  					fifo_count -= context->data_size;
-@@ -691,7 +691,7 @@ static int s3c24xx_hcd_prepare_dma(struct s3c24xx_hcd_context * context)
+@@ -709,7 +709,7 @@ static int s3c24xx_hcd_prepare_dma(struct s3c24xx_hcd_context * context)
  	}
  
  	s3c2410_dma_devconfig(context->dma_channel, source, hwcfg,
@@ -1145,7 +1205,7 @@ index a1b8953..8dc88d2 100644
  
  	s3c2410_dma_config(context->dma_channel, context->data_size,
  			   S3C2410_DCON_CH0_SDI);
-@@ -741,9 +741,9 @@ static irqreturn_t s3c24xx_hcd_irq(int irq, void *dev_id)
+@@ -759,9 +759,9 @@ static irqreturn_t s3c24xx_hcd_irq(int irq, void *dev_id)
  
  			context->int_sdio = 0;
  
@@ -1154,10 +1214,10 @@ index a1b8953..8dc88d2 100644
  			imask &= ~S3C2410_SDIIMSK_SDIOIRQ;
 -			writel(imask, context->base + S3C2440_SDIIMSK);
 +			writel(imask, context->base + S3C2410_SDIIMSK);
- 			SDIO_HandleHcdEvent(&context->hcd, EVENT_HCD_SDIO_IRQ_PENDING);
+ 			schedule_work(&context->irq_work);
  		}
- 
-@@ -875,20 +875,20 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
+ 	}
+@@ -895,20 +895,20 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
  
  		if (int_data->SlotIRQEnable &
  		    (IRQ_DETECT_1_BIT | IRQ_DETECT_4_BIT | IRQ_DETECT_MULTI_BLK) ) {
@@ -1181,8 +1241,8 @@ index a1b8953..8dc88d2 100644
  			}
  		}
  		status = SDIO_STATUS_SUCCESS;
-@@ -898,9 +898,9 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
- 		spin_lock_irqsave(&context->lock,flags);
+@@ -917,9 +917,9 @@ SDIO_STATUS s3c24xx_hcd_config(PSDHCD hcd, PSDCONFIG config)
+ 		DBG_PRINT(SDDBG_TRACE, ("config SDIO_REARM_INT\n"));
  
  		context->int_sdio = 1;
 -		imsk = readl(context->base + S3C2440_SDIIMSK);
@@ -1191,9 +1251,9 @@ index a1b8953..8dc88d2 100644
 -		writel(imsk, context->base + S3C2440_SDIIMSK);
 +		writel(imsk, context->base + S3C2410_SDIIMSK);
  
- 		spin_unlock_irqrestore(&context->lock,flags);
- 
-@@ -1090,7 +1090,7 @@ SDIO_STATUS s3c24xx_hcd_request(PSDHCD hcd)
+ 		status = SDIO_STATUS_SUCCESS;
+ 		break;
+@@ -1110,7 +1110,7 @@ SDIO_STATUS s3c24xx_hcd_request(PSDHCD hcd)
  	if (context->int_sdio)
  		imask |= S3C2410_SDIIMSK_SDIOIRQ;
  	context->int_mask = imask;
@@ -1202,7 +1262,25 @@ index a1b8953..8dc88d2 100644
  	writel(req->Argument, context->base + S3C2410_SDICMDARG);
  	writel(cmdcon, context->base + S3C2410_SDICMDCON);
  
-@@ -1376,7 +1376,7 @@ static int s3c24xx_hcd_debugfs_show(struct seq_file *s, void *data)
+@@ -1388,7 +1388,7 @@ static int s3c24xx_hcd_suspend(struct platform_device * pdev, pm_message_t state
+ 	context->suspend_regs.datcnt 	= readl(context->base + S3C2410_SDIDCNT);
+ 	context->suspend_regs.datsta 	= readl(context->base + S3C2410_SDIDSTA);
+ 	context->suspend_regs.fsta 	= readl(context->base + S3C2410_SDIFSTA);
+-	context->suspend_regs.imask   = readl(context->base + S3C2440_SDIIMSK);
++	context->suspend_regs.imask   = readl(context->base + S3C2410_SDIIMSK);
+ 
+ 	spin_unlock_irqrestore(&context->lock, flags);
+ 	return 0;
+@@ -1416,7 +1416,7 @@ static int s3c24xx_hcd_resume(struct platform_device * pdev)
+ 	writel(context->suspend_regs.datcnt, context->base + S3C2410_SDIDCNT);
+ 	writel(context->suspend_regs.datsta, context->base + S3C2410_SDIDSTA);
+ 	writel(context->suspend_regs.fsta, context->base + S3C2410_SDIFSTA);
+-	writel(context->suspend_regs.imask, context->base + S3C2440_SDIIMSK);
++	writel(context->suspend_regs.imask, context->base + S3C2410_SDIIMSK);
+ 
+ 	spin_unlock_irqrestore(&context->lock, flags);
+ 	return 0;
+@@ -1462,7 +1462,7 @@ static int s3c24xx_hcd_debugfs_show(struct seq_file *s, void *data)
  	datcnt 	= readl(context->base + S3C2410_SDIDCNT);
  	datsta 	= readl(context->base + S3C2410_SDIDSTA);
  	fsta 	= readl(context->base + S3C2410_SDIFSTA);
