@@ -569,6 +569,12 @@ void neod_buttonactions_popup_selected_screenshot( GtkWidget* button, gpointer u
 void neod_buttonactions_popup_selected_lock( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( power_menu );
+
+    if (getenv("DO_NOT_USE_APM") == NULL) {
+           system("/usr/bin/apm -s");
+           return;
+    }
+
     int fd = open( "/sys/power/state", O_WRONLY );
     if ( fd != -1 )
     {
