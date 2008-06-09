@@ -109,8 +109,8 @@ setenv menu_2 'Set console to serial: setenv stdin serial; setenv stdout serial;
 setenv menu_3 'Power off: neo1973 power-off'
 setenv splashimage 'nand read.e $splash_addr splash $splash_size; unzip $splash_addr 0x33d00000 0x96000'
 setenv mtdids nand0=neo1973-nand
-setenv mtdparts mtdparts=neo1973-nand:0x00050000(u-boot),0x00004000(u-boot_env),0x00208000(kernel),0x00010000(splash),0x039a4000(rootfs)
-#dynpart
+#setenv mtdparts mtdparts=neo1973-nand:0x00050000(u-boot),0x00004000(u-boot_env),0x00208000(kernel),0x00010000(splash),0x039a4000(rootfs)
+dynpart
 nand write.e $kernel_addr u-boot $uboot_size
 dynenv set u-boot_env
 saveenv"

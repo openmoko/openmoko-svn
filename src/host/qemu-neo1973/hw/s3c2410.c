@@ -632,8 +632,10 @@ static void s3c_clkpwr_write(void *opaque, target_phys_addr_t addr,
             cpu_interrupt(s->env, CPU_INTERRUPT_HALT);
             printf("%s: processor powered off\n", __FUNCTION__);
             s3c_gpio_setpwrstat(s->io, 2);
+#if 0
             cpu_reset(s->env);
             s->env->regs[15] = 0;	/* XXX */
+#endif
         } else
             if (value & (1 << 2))	/* Normal IDLE mode */
                 cpu_interrupt(s->env, CPU_INTERRUPT_HALT);

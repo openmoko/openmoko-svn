@@ -95,6 +95,8 @@ struct neo_board_s {
     const char *kernel;
     struct sd_card_s *mmc;
     uint32_t id;
+
+    int bl_level;
 };
 
 /* Handlers for output ports */
@@ -105,12 +107,17 @@ static void neo_bl_switch(void *opaque, int line, int level)
 
 static void neo_bl_intensity(int line, int level, void *opaque)
 {
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+
 #if 0
     if (((s->io->bank[1].con >> (line * 2)) & 3) == 2)		/* TOUT0 */
         neo_printf("LCD Backlight now at %i/%i.\n",
                         s->timers->compareb[line], s->timers->countb[line]);
 #else
-    neo_printf("LCD Backlight now at %i/64.\n", level >> 8);	/* XXX */
+    if ((level >> 8) != s->bl_level) {
+        s->bl_level = level >> 8;
+        neo_printf("LCD Backlight now at %i/64.\n", s->bl_level);
+    }
 #endif
 }
 
