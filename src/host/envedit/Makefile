@@ -25,7 +25,7 @@ dep depend .depend:
 		  { rm -f .depend; exit 1; }
 
 clean:
-		rm -f $(OBJS)
+		rm -f $(OBJS) .depend
 
 spotless:	clean
 		rm -f envedit
@@ -33,3 +33,8 @@ spotless:	clean
 test tests:	envedit
 		$(MAKE) -C tests
 		$(MAKE) -C xtests
+
+
+ifeq (.depend,$(wildcard .depend))
+include .depend
+endif
