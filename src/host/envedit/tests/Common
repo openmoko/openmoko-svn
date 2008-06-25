@@ -11,7 +11,7 @@ fail()
 
 setup()
 {
-    echo -n "$1: " 1>&2
+    /bin/echo -n "$1: " 1>&2
     shift
     ../envedit -o _env "$@" -P ../envcpp.pl -f - || fail
 }

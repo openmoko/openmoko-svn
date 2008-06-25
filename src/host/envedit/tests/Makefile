@@ -4,7 +4,7 @@
 
 tests:
 	for n in [abcdefghijklmnopqrstuvwxyz]*; do \
-	  SCRIPT=$$n . ./$$n; done; \
+	  SCRIPT=$$n PATH=.:$$PATH . ./$$n; done; \
 	  echo "Passed all $$passed tests" 2>&1
 
 clean:
