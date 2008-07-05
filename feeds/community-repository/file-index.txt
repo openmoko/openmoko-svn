@@ -1,1 +1,2 @@
+/var/lib/gforge/download/comicreader/community-repository/comicreadersvn43/comic-reader_svnr43.ipk
 /var/lib/gforge/download/siteadmin/community-repository/0.2/tangogps_0.9.0.3-r1_armv4t.ipk
