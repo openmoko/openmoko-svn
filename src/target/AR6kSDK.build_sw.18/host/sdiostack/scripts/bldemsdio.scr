@@ -1,0 +1,352 @@
+#!/bin/sh
+# automated build scripts for EMSDIO
+#  bldemsdio [output path] [cvs branch rev] [image base name] [optional platform name]
+# Example:
+#    ./bldemsdio /usr/dev/builds HEAD EMSDIO
+#                  - or -
+#    ./bldemsdio /usr/dev/builds HEAD EMSDIO LOCAL_X86
+#
+#  The output path (/usr/local/emsdio_builds) must contain the following directories:
+#         drops/     - assembled PDK and HDK 
+#         install/   - final tar'd and zipped PDK and HDK
+#         scratch/   - temp location for source
+#  
+#  The 3rd argument is the image directory name that will appear on the user's machine
+#  for example EMSDIO/ is typicall used.
+#
+#  Copyright 2004-2006 Atheros Communications, Inc.
+#
+
+split_date()
+{
+	## Assign defaults when no variable names are given on the command line
+	sd_1=${2:-SD_YEAR}
+	sd_2=${3:-SD_MONTH}
+	sd_3=${4:-SD_DAY}
+	oldIFS=$IFS ## save current value of field separator
+	IFS='-/. $TAB$NL' ## new value allows date to be supplied in other formats
+		set -- $1 ## place the date into the positional parameters
+	IFS=$oldIFS ## restore IFS
+	[ $# -lt 3 ] && return 1 ## The date must have 3 fields
+	## Remove leading zeroes and assign to variables
+	eval "$sd_1=\"${1#0}\" $sd_2=\"${2#0}\" $sd_3=\"${3#0}\""
+}
+
+date2julian()
+{
+    split_date `date +%Y-%m-%d` d2j_year d2j_month d2j_day || return 2
+	## Since leap years add a day at the end of February,
+	## calculations are done from 1 March 0000 (a fictional year)
+	d2j_tmpmonth=$((12 * $d2j_year + $d2j_month - 3))
+	## If it is not yet March, the year is changed to the previous year
+	d2j_tmpyear=$(( $d2j_tmpmonth / 12))
+	## The number of days from 1 March 0000 is calculated
+	## and the number of days from 1 Jan. 4713BC is added
+	_DATE2JULIAN=$((
+		(734 * $d2j_tmpmonth + 15) / 24 - 2 * $d2j_tmpyear + $d2j_tmpyear/4
+		- $d2j_tmpyear/100 + $d2j_tmpyear/400 + $d2j_day + 1721119 ))
+}
+
+
+SOURCE_BASE_PATH=$1/scratch/$2
+DROP_BASE_PATH=$1/drops
+OUTPUT_BASE_PATH=$DROP_BASE_PATH/$2
+BRANCH_LEVEL=$2
+IMAGE_OUT_PDK=$3_PDK
+IMAGE_OUT_HDK=$3_HDK
+mext=ko
+INSTALL_LOCATION=$1/install
+
+if [ -z "$1" ]; then
+	echo "missing build path"
+	exit
+fi
+
+if [ -z "$2" ]; then
+	echo "CVS branch"
+	exit
+fi
+
+if [ -z "$3" ]; then
+	echo "missing image dir"
+	exit
+fi
+
+BASE_IN_FILES_DIR=$SOURCE_BASE_PATH/EMSDIO
+BASE_IN_SRC_DIR=$SOURCE_BASE_PATH/EMSDIO/src
+BASE_OUT_HDK_FILE_DIR=$OUTPUT_BASE_PATH/HDK/$IMAGE_OUT_HDK
+BASE_OUT_PDK_FILE_DIR=$OUTPUT_BASE_PATH/PDK/$IMAGE_OUT_PDK
+BASE_OUT_HDK_SRC_DIR=$BASE_OUT_HDK_FILE_DIR/src
+BASE_OUT_PDK_SRC_DIR=$BASE_OUT_PDK_FILE_DIR/src
+BASE_OUT_ADDON_FILE_DIR=$OUTPUT_BASE_PATH/ADDON
+
+export CVSROOT=seungyi@codetserv:/usr/local/cvsroot
+
+cleanup() {
+	if [ -d $SOURCE_BASE_PATH ]; then
+		echo cleaning up $SOURCE_BASE_PATH ...
+		rm -f -r $SOURCE_BASE_PATH
+#		rmdir $1
+	fi
+	if [ -d $OUTPUT_BASE_PATH ]; then
+		echo cleaning up $OUTPUT_BASE_PATH ....
+		rm -f -r $OUTPUT_BASE_PATH
+#		rmdir $2
+	fi
+
+}
+
+getcvsdir() {
+	cvs -Q -d :pserver:$CVSROOT export -r $BRANCH_LEVEL EMSDIO/$1
+}
+
+copysrccode_linux() {
+  mkdir --parents $2/$1/linux
+  cp  -r $BASE_IN_SRC_DIR/$1/linux $2/$1
+  cp  $BASE_IN_SRC_DIR/$1/*   $2/$1
+}
+
+setupcommonstuff()
+{
+  copysrccode_linux include $1
+  copysrccode_linux function/bluetooth $1
+  copysrccode_linux function/sample $1
+  cp $BASE_IN_SRC_DIR/function/Makefile    $1/function
+  cp $BASE_IN_SRC_DIR/Makefile $1
+  cp $BASE_IN_SRC_DIR/localmake.linux.inc $1
+  cp $BASE_IN_FILES_DIR/scripts/loadsdiosample.scr  $2
+  cp $BASE_IN_FILES_DIR/scripts/makesdiosampledev.scr  $2
+  cp $BASE_IN_FILES_DIR/doc/readme.txt $2
+  cp $BASE_IN_FILES_DIR/doc/addon_readme.txt $2
+}
+
+setupHDKsrc() {
+   setupcommonstuff $BASE_OUT_HDK_SRC_DIR $BASE_OUT_HDK_FILE_DIR 
+   rm -f $BASE_OUT_HDK_SRC_DIR/include/sdio_hcd_defs_pdk.h
+   copysrccode_linux hcd/pci_ellen $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/stdhost  $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/pxa255   $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/pxa270   $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/omap     $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/mx21     $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/omap_2420  $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_SRC_DIR/hcd/Makefile $BASE_OUT_HDK_SRC_DIR/hcd
+   cp $BASE_IN_FILES_DIR/scripts/build.scr.hdk    $BASE_OUT_HDK_SRC_DIR/build.scr
+   pushd .   
+   cd $BASE_OUT_HDK_FILE_DIR
+   if [ -f $DROP_BASE_PATH/OVERRIDES/help_hdk.tar  ]; then
+       tar -xf $DROP_BASE_PATH/OVERRIDES/help_hdk.tar 
+   else 
+       tar -xf $BASE_IN_FILES_DIR/doc/Help-PostProcessed/help_hdk.tar 
+   fi
+   
+   popd
+   chmod 777 -R $BASE_OUT_HDK_FILE_DIR/doc
+}
+
+setupPDKsrc() {
+   setupcommonstuff $BASE_OUT_PDK_SRC_DIR $BASE_OUT_PDK_FILE_DIR 
+   rm -f $BASE_OUT_PDK_SRC_DIR/include/sdio_hcd_defs.h
+   mv $BASE_OUT_PDK_SRC_DIR/include/sdio_hcd_defs_pdk.h $BASE_OUT_PDK_SRC_DIR/include/sdio_hcd_defs.h
+   cp $BASE_IN_FILES_DIR/scripts/build.scr.pdk    $BASE_OUT_PDK_SRC_DIR/build.scr
+   pushd .
+   cd $BASE_OUT_PDK_FILE_DIR
+   if [ -f $DROP_BASE_PATH/OVERRIDES/help_pdk.tar   ]; then
+        tar -xf $DROP_BASE_PATH/OVERRIDES/help_pdk.tar 
+   else 
+        tar -xf $BASE_IN_FILES_DIR/doc/Help-PostProcessed/help_pdk.tar 
+   fi
+   
+   popd
+   chmod 777 -R $BASE_OUT_PDK_FILE_DIR/doc
+}
+
+preparedirectories() { 
+	echo preparing directories...
+	mkdir $SOURCE_BASE_PATH
+	mkdir $OUTPUT_BASE_PATH
+	mkdir --parents $BASE_OUT_HDK_FILE_DIR/modules
+    mkdir --parents $BASE_OUT_HDK_FILE_DIR/doc
+	mkdir --parents $BASE_OUT_PDK_FILE_DIR/modules
+    mkdir --parents $BASE_OUT_PDK_FILE_DIR/doc
+    mkdir --parents $BASE_OUT_ADDON_FILE_DIR
+	echo getting source from cvs..
+	pushd .
+	cd $SOURCE_BASE_PATH
+	cvs -d :pserver:$CVSROOT login
+	getcvsdir src
+	getcvsdir doc
+	getcvsdir scripts
+	setupPDKsrc
+	setupHDKsrc
+	if [ -f $DROP_BASE_PATH/OVERRIDES/localmake.linux.inc ]; then
+	    echo overriding makefile includes .....
+        cp -f $DROP_BASE_PATH/OVERRIDES/localmake.linux.inc $BASE_OUT_PDK_FILE_DIR/src
+        cp -f $DROP_BASE_PATH/OVERRIDES/localmake.linux.inc $BASE_OUT_HDK_FILE_DIR/src
+    fi
+	popd
+}
+
+createmodulespath() {
+	mkdir --parents $BASE_OUT_HDK_FILE_DIR/modules/$1
+	mkdir --parents $BASE_OUT_PDK_FILE_DIR/modules/$1
+}
+
+build_apps() {
+	pushd .
+	rm -f $4/testcmd
+	rm -f $3src/function/sample/linux/testapp/testcmd
+	cd $3/src/function/sample/linux/testapp
+	make
+	cp -v $3/src/function/sample/linux/testapp/testcmd $4/testcmd
+	popd
+}
+
+build_modules() {
+    createmodulespath $3
+	pushd . 
+	cd $BASE_IN_SRC_DIR
+	make ALL_BUILD=1 CT_OS_TYPE=linux CT_BUILD_TYPE=$1 CT_CPU_EXTENSION=$2 clean 
+	make ALL_BUILD=1 CT_OS_TYPE=linux CT_BUILD_TYPE=$1 CT_CPU_EXTENSION=$2 default CT_SRC_BASE=$BASE_IN_SRC_DIR
+	getmodulesbits $BASE_IN_SRC_DIR $BASE_OUT_PDK_FILE_DIR/modules/$3
+    getmodulesbits $BASE_IN_SRC_DIR $BASE_OUT_HDK_FILE_DIR/modules/$3
+    #make ALL_BUILD=1 CT_OS_TYPE=linux CT_BUILD_TYPE=$1 CT_CPU_EXTENSION=$2 clean 
+	popd
+}
+
+checkandcopy()
+{
+  if [ -f $1/$2/$3 ]; then
+	 cp -v $1/$2/$3 $4/$3
+     if [ -f $1/$2/$2_readme.txt ]; then
+          cp -v $1/$2/$2_readme.txt $4/$2_readme.txt
+     fi
+  fi  
+}
+ 
+getmodulesbits() {	
+    checkandcopy $1          busdriver sdio_busdriver.$mext    $2
+	checkandcopy $1          lib       sdio_lib.$mext          $2
+	checkandcopy $1/function bluetooth sdio_bluetooth_fd.$mext $2
+	checkandcopy $1/function memory    sdio_memory_fd.$mext    $2
+	checkandcopy $1/function gps       sdio_gps_fd.$mext       $2
+	checkandcopy $1/function sample    sdio_sample_fd.$mext    $2
+	
+    checkandcopy $1/hcd pci_ellen    sdio_pciellen_hcd.$mext $2
+    checkandcopy $1/hcd pci_std      sdio_pcistd_hcd.$mext   $2
+	checkandcopy $1/hcd pxa255       sdio_pxa255hcd.$mext    $2
+    checkandcopy $1/hcd pxa270       sdio_pxa270hcd.$mext    $2
+	checkandcopy $1/hcd omap_raw_spi sdio_omap_raw_spi_hcd.$mext $2
+    checkandcopy $1/hcd omap         sdio_omap_hcd.$mext     $2
+    checkandcopy $1/hcd mx21         sdio_mx21_hcd.$mext     $2
+    checkandcopy $1/hcd omap_2420    sdio_omap_hcd.$mext     $2
+}
+
+
+outputarchive()
+{
+pushd .
+cd $1
+cd ..
+tar -cf $3.tar $2
+gzip $3.tar
+popd
+}
+ 
+buildkit()
+{
+mext=ko
+case $1 in
+    LOCAL_i686)  
+	build_modules LOCAL_i686  i686   FC3/i686
+    ;;
+    LOCAL_i586) 
+	build_modules LOCAL_i586  i586   FC3/i586  
+    ;;
+    LOCAL_i686_ATHEROS) 
+	build_modules LOCAL_i686_ATHEROS  i686   FC3-ATH/i686
+    ;;
+    GUMSTIX_ARM)
+	build_modules GUMSTIX_ARM     xscale  GUMSTIX_2.6.9/pxa255
+    ;;
+    OMAP1610_ARM)
+    build_modules OMAP1610_ARM    arm     OMAP_2.6.9/1610H2
+    ;;
+    MV_OMAP5912_ATHEROS)
+    mext=o
+    build_modules MV_OMAP5912_ATHEROS arm     OMAP_2.4.20/5912
+    ;;
+    MV_OMAP5912_ARM)
+    mext=o
+    build_modules MV_OMAP5912_ARM arm     OMAP_2.4.20/5912
+    ;;
+    MV_OMAP1610_ARM) 
+    mext=o
+    build_modules MV_OMAP1610_ARM arm    OMAP_2.4.20/1610H2 
+    ;;
+    SANDGATEII_ARM)
+    build_modules SANDGATEII_ARM  arm    SANDGATE_IIP_2.6.9/pxa270
+    ;;
+    MX21_ARM)
+    mext=o
+    MX21_MODULE_PATH=iMX21ADS_2.4.20/mx21
+    build_modules MX21_ARM  arm  $MX21_MODULE_PATH
+    ;;
+    OMAP2420_ARM)
+    mext=ko
+    OMAP2420_MODULE_PATH=OMAP_2.6.10/2420
+    build_modules OMAP2420_ARM  arm  $OMAP2420_MODULE_PATH
+    ;;
+    *)
+    echo "Invalid build type" 
+    exit
+    ;;
+esac
+}
+
+
+###########################################################################################
+### stuff starts to happen below this line
+#########################################################################################
+date2julian
+echo $_DATE2JULIAN
+cleanup 
+
+PDK_TAR=$INSTALL_LOCATION/EMSDIO_PDK.$BRANCH_LEVEL.$_DATE2JULIAN
+HDK_TAR=$INSTALL_LOCATION/EMSDIO_HDK.$BRANCH_LEVEL.$_DATE2JULIAN
+
+rm -f $PDK_TAR.*
+rm -f $HDK_TAR.*          
+preparedirectories 
+
+
+# special platforms:  
+#     LOCAL_i686_ATHEROS  - Atheros locked HDK 
+if [ -n "$4" ]; then
+	echo "Building Special Platform"
+	buildkit $4
+	   # output the kit archives
+    outputarchive $BASE_OUT_PDK_FILE_DIR $IMAGE_OUT_PDK $PDK_TAR
+    outputarchive $BASE_OUT_HDK_FILE_DIR $IMAGE_OUT_HDK $HDK_TAR
+    exit
+fi
+
+if [ -z "$4" ]; then
+	echo "Building Standard Kits"	
+    for PLAT in LOCAL_i686 LOCAL_i586 GUMSTIX_ARM MV_OMAP1610_ARM OMAP1610_ARM SANDGATEII_ARM MX21_ARM
+    do
+        buildkit $PLAT
+    done
+    
+    # output the standard kit archives
+    outputarchive $BASE_OUT_PDK_FILE_DIR $IMAGE_OUT_PDK $PDK_TAR
+    outputarchive $BASE_OUT_HDK_FILE_DIR $IMAGE_OUT_HDK $HDK_TAR
+    exit
+fi
+
+
+
+#build_apps    LOCAL_X86 i686 $SOURCE_BASE_PATH $OUTPUT_BASE_PATH/bin/x86
+
+ 
+

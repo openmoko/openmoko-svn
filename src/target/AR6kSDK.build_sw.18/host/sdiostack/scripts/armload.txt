@@ -1,0 +1,32 @@
+Put onto the mmc card:
+insmod
+rmmod
+lsmod
+sdio_busdriver.ko
+sdio_local_bus.ko
+sdio_generic_function.ko
+bdtest
+armld.scr
+armunld.scr
+armfnld.scr
+
+
+Boot the system, log in and switch to
+#cd /mnt/mmc
+Load the modules using
+#./armld.scr
+You should get a few messages, like the major number displayed. 
+To debug messages use:
+#dmesg
+You'll get lots of debug, with our stuff at the end. You can use this at anytime.
+To force a card inseration, you can use the test application. 
+This will send IOCTL to the local bus driver telling it to announce the arrival of a certain card.
+The bus driver will then look for a function driver and find sdio_generic_functiom has refistered for this card.
+The bus driver will call the function drivers probe. This function will acept the card.
+#bdtest -i
+
+Do a dmesg and you'll see what went on.
+
+This should give you enough to excercise the infrastructure.
+
+

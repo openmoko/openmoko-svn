@@ -1,0 +1,101 @@
+Sections
+A) Code Organization
+B) Building the code and loading the Driver
+
+A) Code organization
+
+The host side code for different platforms is organized as follows:
+1) os: Captures the os specific dependencies. The network adaptor driver is implemented in this directory.
+2) wmi: Implements the wireless module interface.
+3) htc: Implements the host transport communication interface.
+4) hif: Implements the host interconnect framework for different interfaces.
+6) tools: Contains the implementation for several tools used to interact with the wlan driver.
+7) wlan: Implements some utility functions related to the core wireless lan.
+8) sdiostack: Contains the sources for the SDIO/SPI stack.
+9) bmi: Implements the bootloader messaging interface.
+10) support: Contains scripts to load the driver and control some aspects of the wlan device using the tools present in the tools directory. 
+
+host/
+
+|-- Makefile
+|-- apps
+|-- bmi
+|   |-- include
+|   |   `-- bmi header files
+|   `-- src
+|       `-- bmi source files
+|-- hif
+|   |
+|   |-- sdio
+|       |-- Makefile
+|       `
+|-- htc
+|   |-- AR6000
+|       |-- include
+|       |   `-- htc header files
+|       `-- src
+|           `-- htc source files
+|-- include
+|   `-- common host header files
+|-- localmake.linux.inc
+|-- os
+|   `-- linux
+|       |-- Makefile
+|       |-- os specific wlan driver source files
+|       `-- include
+|           `-- os specific include files
+|-- sdiostack
+|   |-- doc
+|   |-- integrity
+|   |-- scripts
+|   |-- src
+|   |   |-- hcd
+|   |   |   |-- pci_ellen
+|   |   |   |-- pci_std
+|   |   |   `-- stdhost
+|   |   |-- include
+|   |   |-- lib
+|   |   |-- linux
+|   |   |-- loader
+|   |   |-- localmake.linux.inc
+|   |   |-- localmake.linux.private.inc
+
+|-- support
+|   |-- loadAR6000.sh
+|   |-- phyregs.bin
+|   |-- platform.sh
+|   |-- refclk.sh
+|   `-- tunefw.sh
+|-- tools
+|   `-- wmiconfig
+|-- wlan
+|   |-- include
+|   |   `-- wlan header files
+|   `-- src
+|       `-- wlan source files
+`-- wmi
+    `-- wmi source files
+
+
+B) Building the code
+   -----------------
+  cd into the top-level directory of the distribution
+  Set environment variables (also see host/localmake.linux.inc):
+      export WORKAREA=`pwd`  [Note: Use backticks, not quote marks]
+      export ATH_BUILD_TYPE=LOCAL_i686
+      export ATH_LINUXPATH=/usr/src/redhat/BUILD/kernel-2.6.9/linux-2.6.9  [Note: This is an example]
+      export ATH_BUS_TYPE=SDIO
+      export ATH_HC_DRIVERS=pci_std/
+      export ATH_PLATFORM=$ATH_BUILD_TYPE-$ATH_BUS_TYPE
+
+  Build device driver and support tools:
+      make -C host
+
+  Load the wireless driver on your system:
+     host/support/loadAR6000.sh
+
+  Configure the wireless network interface with ifconfig and iwconfig.
+  For example:
+     ifconfig eth1 192.168.1.99 up
+     iwconfig eth1 essid "MyAccessPointSSID"
+

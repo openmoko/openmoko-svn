@@ -1,0 +1,14 @@
+#!/bin/sh
+#unload sdio stack on local machine
+#uses current directory
+modulelib="sdio_lib"
+modulehcd="sdio_pciellen_hcd"
+modulebus="sdio_busdriver"
+
+/sbin/rmmod -f sdio_generic_fd.ko $* 
+/sbin/rmmod -f sdio_memory_fd.ko $*
+/sbin/rmmod -f sdio_bluetooth_fd.ko $*
+/sbin/rmmod -f sdio_gps_fd.ko $*
+/sbin/rmmod -f $modulehcd.ko $* 
+/sbin/rmmod -f $modulebus.ko $* 
+/sbin/rmmod -f $modulelib.ko $* 

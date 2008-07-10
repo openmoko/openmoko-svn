@@ -1,0 +1,12 @@
+#!/bin/sh
+#unload sdio stack on local machine
+#uses current directory 
+modulehcd="../src/hcd/pxa255/sdio_pxa255hcd"
+modulebus="../src/busdriver/sdio_busdriver"
+modulefunction="../src/function/generic/sdio_generic_fd"
+
+
+./rmmod $modulefunction.ko 
+./rmmod $modulehcd.ko 
+./rmmod $modulebus.ko 
+

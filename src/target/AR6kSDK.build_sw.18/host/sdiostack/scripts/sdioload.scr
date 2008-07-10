@@ -1,0 +1,19 @@
+#!/bin/sh
+#load sdio stack on local machine
+#uses current directory
+
+modulelib="sdio_lib"
+modulehcd="sdio_pciellen_hcd" 
+modulebus="sdio_busdriver"
+
+
+# invoke insmod with all arguments we were passed
+# and use a pathname, as newer modutils don't look in
+#
+/sbin/insmod -f $modulelib.ko debuglevel=3 
+/sbin/insmod -f $modulebus.ko debuglevel=3  
+/sbin/insmod -f sdio_memory_fd.ko debuglevel=3  
+/sbin/insmod -f sdio_generic_fd.ko debuglevel=3 
+/sbin/insmod -f sdio_bluetooth_fd.ko debuglevel=3 
+/sbin/insmod -f sdio_gps_fd.ko debuglevel=3 
+/sbin/insmod -f $modulehcd.ko debuglevel=3 

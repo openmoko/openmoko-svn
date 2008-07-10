@@ -1,0 +1,21 @@
+#!/bin/sh
+#create the sdio function driver nodes
+#uses development directory structure
+function="sdiofn0"
+mode="664"
+
+# remove stale nodes
+busybox rm -f /dev/$(function)
+
+#major=`awk "\\$2==\"sdiofn\" {print \\$1}" /proc/devices`
+major=`sed -n -e 's,\([0-9]\) sdiofn,\1,p' /proc/devices`
+busybox echo Function major:$major
+busybox mknod /dev/$(function) c $major 0
+  
+# give appropriate group/permissions, and change the group.
+# Not all distributions have staff; some have "wheel" instead.
+group="staff"
+busybox grep '^staff:' /etc/group > /dev/null || group="wheel"
+
+busybox chgrp $group /dev/$(function)
+busybox chmod $mode /dev/$(function)

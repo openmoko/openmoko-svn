@@ -1,0 +1,14 @@
+#!/bin/sh
+rm /dev/sdio0p1
+mknod /dev/sdio0p1 b $1 1
+mount -t vfat /dev/sdio0p1 /mnt/mmc 
+while [ 1 ]
+do
+   echo "reading file.."
+   cat /mnt/mmc/$2 > /dev/null
+   echo "read done.."
+   umount /mnt/mmc
+   mount -t vfat /dev/sdio0p1 /mnt/mmc 
+done
+
+ 

@@ -1,0 +1,30 @@
+#!/bin/sh
+#load sdio stack on local machine
+#uses development directory structure
+modulehcd="../src/hcd/pxa255/sdio_pxa255hcd"
+modulebus="../src/busdriver/sdio_busdriver"
+modulefunction="../src/function/generic/sdio_generic_fd"
+device="sdiobd0"
+mode="664"
+
+# invoke insmod with all arguments we were passed
+# and use a pathname, as newer modutils don't look in . by default
+/sbin/insmod -f $modulebus.ko $* || exit 1
+/sbin/insmod -f $modulehcd.ko $* || exit 1
+/sbin/insmod -f $modulefunction.ko $* || exit 1
+
+# remove stale nodes
+rm -f /dev/${device}
+
+major=`awk "\\$2==\"$device\" {print \\$1}" /proc/devices`
+echo Busdriver major:$major
+mknod /dev/${device} c $major 0
+
+# give appropriate group/permissions, and change the group.
+# Not all distributions have staff; some have "wheel" instead.
+group="staff"
+grep '^staff:' /etc/group > /dev/null || group="wheel"
+
+chgrp $group /dev/${device}
+chmod $mode /dev/${device}
+

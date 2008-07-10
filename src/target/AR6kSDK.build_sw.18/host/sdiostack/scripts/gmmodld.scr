@@ -1,0 +1,16 @@
+#!/bin/sh
+#load sdio stack on local machine
+# loads modules for modulized gumstix build
+#uses current directory
+
+modprobe vfat
+modprobe nls_cp437
+modprobe nls_iso8859-1
+modprobe unix
+
+
+insmod sdio_lib.ko
+insmod sdio_busdriver.ko
+insmod sdio_pxa255hcd.ko
+
+#load function driver next

@@ -1,0 +1,44 @@
+#!/bin/sh
+#create the sdio function driver nodes
+#uses development directory structure
+
+HCD_DRIVER=xxxx
+
+# *** NOTE **** 
+# For Linux 2.4 the file extension for insmod/rmmod has to be altered.
+#   When using insmod, use the .o file extension.
+#   When using rmmod, ommit the extension entirely.
+
+case $1 in
+    pxa255 ) 
+    HCD_DRIVER=sdio_pxa255hcd.ko
+    ;;
+    pci_ellen )
+    HCD_DRIVER=sdio_pciellen_hcd.ko
+    ;;
+    *)
+    echo "Invalid HCD Driver (requires pci_ellen or pxa255)" 
+    exit
+    ;;
+esac
+
+case $2 in
+    unloadall ) 
+    echo "..unloading all"
+    /sbin/rmmod  modules/sdio_sample_fd.ko
+    /sbin/rmmod  modules/sdio_memory_fd.ko
+    /sbin/rmmod  modules/$HCD_DRIVER
+    /sbin/rmmod  modules/sdio_busdriver.ko
+    /sbin/rmmod  modules/sdio_lib.ko
+    ;;
+    * ) 
+    /sbin/insmod modules/sdio_lib.ko
+    /sbin/insmod modules/sdio_busdriver.ko
+    /sbin/insmod modules/$HCD_DRIVER
+    /sbin/insmod modules/sdio_sample_fd.ko debuglevel=7
+    /sbin/insmod modules/sdio_memory_fd.ko
+    ;;
+esac
+
+  
+

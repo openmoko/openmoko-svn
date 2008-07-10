@@ -1,0 +1,105 @@
+#!/bin/sh
+#  automated packaging script for SDIO Stack on Linux
+#  
+#  usage:
+#      package_linux_src.scr [output directory]
+#  
+#  example:
+#     ./package_linux_src.scr $HOME/Output/SDIOSrc
+#
+#  Copyright 2004-2006 Atheros Communications, Inc.
+#
+
+SOURCE_BASE_PATH=$(pwd)/../..
+OUTPUT_BASE_PATH=$1
+
+if [ -z "$1" ]; then
+	echo "missing output directory"
+	exit
+fi
+
+BASE_IN_FILES_DIR=$SOURCE_BASE_PATH/sdiostack
+BASE_IN_SRC_DIR=$BASE_IN_FILES_DIR/src
+BASE_OUT_HDK_FILE_DIR=$OUTPUT_BASE_PATH/sdiostack
+BASE_OUT_HDK_SRC_DIR=$BASE_OUT_HDK_FILE_DIR/src
+
+cleanup() {
+	if [ -d $OUTPUT_BASE_PATH ]; then
+		echo cleaning up $OUTPUT_BASE_PATH ....
+		rm -f -R $OUTPUT_BASE_PATH
+	fi
+}
+
+copysrccode_linux() {
+  mkdir --parents $2/$1/linux
+  cp  -r $BASE_IN_SRC_DIR/$1/linux  $2/$1
+  cp  $BASE_IN_SRC_DIR/$1/*.*       $2/$1
+  if [ -f $BASE_IN_SRC_DIR/$1/Makefile ]; then
+      cp  $BASE_IN_SRC_DIR/$1/Makefile  $2/$1
+  fi
+  
+}
+
+setupsrc() {
+   copysrccode_linux include $BASE_OUT_HDK_SRC_DIR
+   rm -f $BASE_OUT_HDK_SRC_DIR/include/sdio_hcd_defs_pdk.h
+   copysrccode_linux busdriver $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux lib $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux function/memory $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux function/gps $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux function/bench/common $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux function/bench/emsdio $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_SRC_DIR/function/bench/Makefile $BASE_OUT_HDK_SRC_DIR/function/bench/Makefile 
+   copysrccode_linux function/bluetooth $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux function/sample $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_SRC_DIR/function/Makefile    $BASE_OUT_HDK_SRC_DIR/function
+   cp $BASE_IN_SRC_DIR/Makefile $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_SRC_DIR/localmake.linux.inc $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_FILES_DIR/scripts/loadsdiosample.scr  $BASE_OUT_HDK_FILE_DIR
+   cp $BASE_IN_FILES_DIR/doc/readme.txt $BASE_OUT_HDK_FILE_DIR
+   cp $BASE_IN_FILES_DIR/scripts/getobjects.scr  $BASE_OUT_HDK_FILE_DIR/scripts
+   copysrccode_linux hcd/pci_ellen $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/stdhost  $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/pci_std  $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/pxa255   $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/pxa270   $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/omap     $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/mx21     $BASE_OUT_HDK_SRC_DIR
+   copysrccode_linux hcd/omap_2420  $BASE_OUT_HDK_SRC_DIR
+   #copysrccode_linux hcd/omap_raw_spi      $BASE_OUT_HDK_SRC_DIR
+   #copysrccode_linux hcd/omap2420_raw_spi  $BASE_OUT_HDK_SRC_DIR
+   cp $BASE_IN_SRC_DIR/hcd/Makefile $BASE_OUT_HDK_SRC_DIR/hcd
+   cp $BASE_IN_FILES_DIR/scripts/build.scr.all    $BASE_OUT_HDK_SRC_DIR/build.scr.all
+   pushd .   
+   cd $BASE_OUT_HDK_FILE_DIR
+   tar -xf $BASE_IN_FILES_DIR/doc/Help-PostProcessed/help_hdk.tar 
+   popd
+   chmod 777 -R $BASE_OUT_HDK_FILE_DIR/doc
+}
+
+preparedirectories() { 
+	echo preparing directories...
+	mkdir --parents $OUTPUT_BASE_PATH
+	mkdir --parents $BASE_OUT_HDK_SRC_DIR
+    mkdir --parents $BASE_OUT_HDK_FILE_DIR/doc
+    mkdir --parents $BASE_OUT_HDK_FILE_DIR/scripts
+	setupsrc
+}
+
+
+outputarchive()
+{
+pushd .
+cd $1
+cd ..
+tar -czf $3.tgz $2
+popd
+}
+
+cleanup       
+preparedirectories 
+outputarchive $BASE_OUT_HDK_FILE_DIR sdiostack emsdio_src
+
+
+ 
+

@@ -1,0 +1,23 @@
+#!/bin/sh
+#create the sdio function driver nodes
+# use this script when udev is not available
+# this script should only be run when the sdio card is installed
+# and claimed by the function driver
+
+function="sdiosam0"
+mode="664"
+
+    #below items can be done automatically via udev
+    # remove stale nodes
+    rm -f /dev/${function}
+    major=`awk "\\$2==\"$function\" {print \\$1}" /proc/devices`
+    echo Function major:$major
+    mknod /dev/${function} c $major 0
+    group="staff"
+    grep '^staff:' /etc/group > /dev/null || group="wheel"
+    chgrp $group /dev/${function}
+    chmod $mode /dev/${function}
+    
+
+  
+

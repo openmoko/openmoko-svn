@@ -1,0 +1,28 @@
+#!/bin/sh
+# build the linux SDIO HDK sample drivers and optionally a user supplied directory
+# Usage:
+#        ./build.scr [make target] [build type] [optional "project path"]
+#
+# Arguments: 
+#        make target  : "default" or "clean"
+#        build type   : LOCAL_i686, LOCAL_i586, GUMSTIX_ARM  etc...
+#        project path : optional path to compile user created host or 
+#                       function drivers
+#
+# Example:
+#        /build.scr default LOCAL_i686 $HOME/SDIOProjects/MySDIODriver
+#
+# If [project path] is ommitted the build operation will build sample drivers only
+
+if [ -z "$1" ]; then
+	echo "missing make target, must be 'default' or 'clean' "
+	exit
+fi
+
+if [ -z "$2" ]; then
+	echo "missing build type, see localmake.linux.inc for valid types"
+	exit
+fi
+
+make PDK_BUILD=1 CT_OS_TYPE=linux CT_BUILD_TYPE=$2 CT_BUILD_SUB_PROJ=$3 CT_SRC_BASE=$PWD $1
+

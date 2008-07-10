@@ -1,0 +1,21 @@
+#!/bin/sh
+#create the sdio function driver nodes
+#uses development directory structure
+function="sdiofn0"
+mode="664"
+
+
+# remove stale nodes
+rm -f /dev/${function}
+
+major=`awk "\\$2==\"$function\" {print \\$1}" /proc/devices`
+echo Function major:$major
+mknod /dev/${function} c $major 0
+
+# give appropriate group/permissions, and change the group.
+# Not all distributions have staff; some have "wheel" instead.
+group="staff"
+grep '^staff:' /etc/group > /dev/null || group="wheel"
+
+chgrp $group /dev/${function}
+chmod $mode /dev/${function}
