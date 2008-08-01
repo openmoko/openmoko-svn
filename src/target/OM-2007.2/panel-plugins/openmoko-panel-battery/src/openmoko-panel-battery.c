@@ -22,6 +22,8 @@
 
 #include <libmokopanelui2/moko-panel-applet.h>
 
+#include <libnotify/notify.h>
+
 #include <gtk/gtklabel.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -105,6 +107,89 @@ static void battery_applet_init_dbus( BatteryApplet* applet )
     dbus_connection_add_filter (bus, signal_filter, applet, NULL);
 }
 
+static void battery_applet_notification (BatteryApplet *applet,
+				         apm_info *info, int type)
+{
+    NotifyNotification *n;
+    static gint displayed = 0;
+    const gchar *summary;
+    const gchar *details;
+    gint urgency;
+
+    /* battery status information */
+    if (type == 1)
+    {
+	switch (info->battery_status)
+	{
+	    case BATTERY_STATUS_CHARGING:
+		details = g_strdup ("<b>Status:</b> Charging");
+		break;
+	    case BATTERY_STATUS_ABSENT:
+		details = g_strdup ("<b>Status:</b> Missing");
+		break;
+	    default:
+		details = g_strdup_printf ("<b>Status</b>: Discharging\n"
+					   "<b>Percentage charge:</b> %d%%",
+					   info->battery_percentage);
+		break;
+	}
+	summary = g_strdup ("Battery info");
+	urgency = NOTIFY_URGENCY_NORMAL;
+    }
+    else
+    /* battery status notifications */
+    {
+	if (info->battery_status == BATTERY_STATUS_ABSENT ||
+    	    info->battery_status == BATTERY_STATUS_CHARGING)
+	{
+	    displayed = 0;
+	    return;
+	}
+	/* 
+	 display battery critically low notification only if battery
+	 level <= 3 and notification wasn't show yet
+	*/
+	else if ((info->battery_percentage <= 3) && !(displayed & 0x1))
+	{
+	    summary = g_strdup ("Phone battery critically low");
+	    details = g_strdup ("The battery is below the critical level and "
+		    		"this phone will <b>power-off</b> when the "
+		    		"battery becomes completely empty.");
+	    urgency = NOTIFY_URGENCY_CRITICAL;
+	    displayed |= 0x1;
+	}
+	/* 
+         display battery critically low notification only if battery
+         level <= 10 and notification wasn't show yet
+	*/
+	else if ((info->battery_percentage <= 10) && !(displayed & 0x2))
+	{
+	    summary = g_strdup ("Phone battery low");
+	    details = g_strdup_printf ("You have approximately <b>%d%%</b> "
+				       "of remaining battery life.",
+				       info->battery_percentage);
+	    urgency = NOTIFY_URGENCY_NORMAL;
+	    displayed |= 0x2;
+	}
+	else
+	    return;
+    }
+    
+    /* FIXME: add battery icon to notification popup */
+    n = notify_notification_new (summary, details, NULL, GTK_WIDGET(applet->mokoapplet));
+    
+    notify_notification_set_urgency (n, urgency);
+
+    if (type == 1)
+        /* display status information 3 sec */
+	notify_notification_set_timeout (n, 3000);
+    else
+	/* display notification forever */
+	notify_notification_set_timeout (n, 0);
+
+    if (!notify_notification_show (n, NULL)) 
+        g_debug ("failed to send notification"); 
+}
 
 /* Called frequently */
 static gboolean timeout( BatteryApplet *applet )
@@ -145,9 +230,21 @@ static gboolean timeout( BatteryApplet *applet )
 
     applet->last_icon = icon;
 
+    battery_applet_notification (applet, &info, 0);
     moko_panel_applet_set_icon( applet->mokoapplet, icon );
 
     return TRUE;
+}
+
+static void
+on_clicked_cb (GtkButton *button, BatteryApplet *applet)
+{
+    apm_info info;
+
+    memset (&info, 0, sizeof (apm_info));
+    apm_read (&info);
+
+    battery_applet_notification (applet, &info, 1);
 }
 
 G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
@@ -162,9 +259,14 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
 
     applet->last_icon = NULL; 
 
+    notify_init ("Battery Applet");
+
     timeout( applet );
     battery_applet_init_dbus( applet );
     applet->timeout_id = g_timeout_add_seconds( 60, (GSourceFunc) timeout, applet);
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
+    
+    g_signal_connect (mokoapplet, "clicked", G_CALLBACK (on_clicked_cb), applet);
+
     return GTK_WIDGET(mokoapplet);
 }

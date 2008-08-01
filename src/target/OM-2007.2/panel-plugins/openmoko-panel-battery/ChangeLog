@@ -1,3 +1,6 @@
+2008-08-01	Michael Lauer <mickey@openmoko.org>
+	* add libnotify support. Patch by roman.moravcik@gmail.com
+
 2007-11-05	Michael Lauer <mickey@openmoko.org>
 
 	* src/openmoko-panel-battery.c: Use g_timeout_add_seconds.
