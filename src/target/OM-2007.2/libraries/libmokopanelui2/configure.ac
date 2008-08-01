@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libmokopanelui2, 0.3.0, http://www.openmoko.org/)
+AC_INIT(libmokopanelui2, 0.3.1, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokopanelui/moko-panel-applet.c)
 AM_CONFIG_HEADER(config.h)
@@ -17,7 +17,7 @@ AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 
 # base deps
-PKG_CHECK_MODULES(DEPS, matchbox-panel )
+PKG_CHECK_MODULES(DEPS, matchbox-panel gtk+-2.0)
 
 if test x$MOKO_DEVEL = xon ; then
     AC_MSG_NOTICE([removing -O2 from CFLAGS])
