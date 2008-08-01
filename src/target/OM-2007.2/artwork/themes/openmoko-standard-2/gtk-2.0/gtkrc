@@ -1,5 +1,7 @@
-# Set the default font and font size
-gtk-font-name = "Sans 5" 
+# Set the default font and font size (if not using settings daemon)
+gtk-font-name = "Sans 5"
+# same for icon theme
+gtk-icon-theme-name = "openmoko-standard"
 
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
