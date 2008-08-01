@@ -1,3 +1,6 @@
+# Set the default font and font size
+gtk-font-name = "Sans 5" 
+
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
 # Note: libtaku supports multiple orientations. To enable:

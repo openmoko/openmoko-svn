@@ -1,3 +1,6 @@
+# Set the default font and font size 
+gtk-font-name = "Sans 5" 
+
 gtk-icon-sizes = "gtk-button=16,16:gtk-small-toolbar=24,24:gtk-large-toolbar=24,24:taku-icon=32,32"
 
 gtk_button_images = 0
