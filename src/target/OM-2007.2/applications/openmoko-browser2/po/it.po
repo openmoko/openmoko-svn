@@ -1,0 +1,44 @@
+# Italian translation of openmoko-browser.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Milo Casagrande <milo_casagrande@yahoo.it>, 2007
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmoko-browser2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-11-12 21:40+0100\n"
+"PO-Revision-Date: 2007-12-09 21:17+0100\n"
+"Last-Translator: Milo Casagrande <milo_casagrande@yahoo.it>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/main.c:60
+msgid "Browser"
+msgstr "Browser"
+
+#: ../src/go-page.c:45
+msgid "Url"
+msgstr "Url"
+
+#: ../src/go-page.c:46 ../src/go-page.c:48
+msgid "Search"
+msgstr "Cerca"
+
+#: ../src/go-page.c:47
+msgid "Open Url"
+msgstr "Apri Url"
+
+#: ../src/go-page.c:49
+msgid "Open Url in a new page"
+msgstr "Apre un URL in una nuova pagina"
+
+#: ../src/go-page.c:50
+msgid "Search in a new page"
+msgstr "Cerca in una nuova pagina"
+
+#: ../src/open-pages-page.c:76
+msgid "Title"
+msgstr "Titolo"
