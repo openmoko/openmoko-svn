@@ -6,6 +6,6 @@ Version=0.1
 Type=Application
 Exec=openmoko-appearance
 Terminal=false
-Categories=GTK;Utilities
+Categories=GTK;Utility;
 X-MB-SingleInstance=true
 
