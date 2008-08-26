@@ -223,16 +223,23 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
     moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "OpenMoko Dialer");
+    moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
     moko_journal_voice_info_set_distant_number (priv->entry, number);
     if (entry && entry->contact->uid)
       moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
   }
   moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
-  /* TODO: No idea where '129' comes from, taken from libmokogsmd - refer to 
-   * libgsmd.h in gsmd - It says "Refer to GSM 04.08 [8] subclause 10.5.4.7"
+  /* <type>: integer type; Type of address octet. (refer GSM 04.08 section 10.5.4.7)
+   * 129        ISDN / telephony numbering plan, national / international unknown
+   * 145        ISDN / telephony numbering plan, international number
+   * 161        ISDN / telephony numbering plan, national number
+   * 128 - 255 Other values refer GSM 04.08 section 10.5.4.7
+   * <type>: type of address octet in integer format (refer GSM 04.08 [8] subclause 10.5.4.7); default 145 when dialling
+   * string includes international access code character "+", otherwise 129
    */
-  addr.type = 129;
+
+  if ( number[0] != '+' ) { addr.type = 129; } else { addr.type = 145; };
   g_stpcpy (&addr.addr[0], number);
   lgsm_voice_out_init (handle, &addr);
 
