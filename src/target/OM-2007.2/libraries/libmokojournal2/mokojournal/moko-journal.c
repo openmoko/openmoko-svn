@@ -672,11 +672,14 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   icalcomponent_add_property (comp, prop) ;
 
   /*add location start*/
-  struct icalgeotype geo;
-  if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)(void*)&geo))
+  if ( ( a_entry->start_longitude != 0.0 ) && ( a_entry->start_latitude != 0.0 ) )
   {
-    prop = icalproperty_new_geo (geo) ;
-    icalcomponent_add_property (comp, prop) ;
+    struct icalgeotype geo;
+    if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)(void*)&geo))
+    {
+      prop = icalproperty_new_geo (geo) ;
+      icalcomponent_add_property (comp, prop) ;
+    }
   }
 
   /*add source*/
@@ -693,15 +696,19 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
    * x-property named X-OPENMOKO-ENTRY-GSM-LOCATION that has the form:
    * X-OPENMOKO-GSMLOCATION;LAC="<int16>";CID=<int 16>: dummy
    */
-  prop = icalproperty_new_x ("dummy") ;
-  icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-GSM-LOCATION") ;
-  str = g_strdup_printf ("%d", a_entry->gsm_loc.lac);
-  icalproperty_set_parameter_from_string (prop, "X-LAC", str) ;
-  g_free (str) ;
-  str = g_strdup_printf ("%d", a_entry->gsm_loc.cid);
-  icalproperty_set_parameter_from_string (prop, "X-CID", str) ;
-  g_free (str) ;
-  icalcomponent_add_property (comp, prop) ;
+  if ( ( a_entry->gsm_loc.lac > 0 ) && ( a_entry->gsm_loc.cid > 0 ) )
+  {
+    prop = icalproperty_new_x ("dummy") ;
+    icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-GSM-LOCATION") ;
+    str = g_strdup_printf ("%d", a_entry->gsm_loc.lac);
+    icalproperty_set_parameter_from_string (prop, "X-LAC", str) ;
+    g_free (str) ;
+    str = g_strdup_printf ("%d", a_entry->gsm_loc.cid);
+    icalproperty_set_parameter_from_string (prop, "X-CID", str) ;
+    g_free (str) ;
+    icalcomponent_add_property (comp, prop) ;
+  }
+
   /*add entry type*/
   prop = icalproperty_new_x
                 (entry_type_to_string (moko_journal_entry_get_entry_type (a_entry))) ;
@@ -727,19 +734,37 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
          * serialize caller number
          */
         if (moko_journal_voice_info_get_distant_number (a_entry))
+        {
           number = (gchar*)moko_journal_voice_info_get_distant_number (a_entry) ;
-        prop = icalproperty_new_x (number) ;
-        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLER-NUMBER") ;
-        icalcomponent_add_property (comp, prop) ;
+          prop = icalproperty_new_x (number) ;
+          if (dir == DIRECTION_OUT)
+          {
+	        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLEE-NUMBER") ;
+          }
+          else
+          {
+            icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLER-NUMBER") ;
+          }
+          icalcomponent_add_property (comp, prop) ;
+        }
 
         /*
          * serialize the local_number property
          */
         if (moko_journal_voice_info_get_local_number (a_entry))
-          number = (gchar*)moko_journal_voice_info_get_distant_number (a_entry) ;
-        prop = icalproperty_new_x (number) ;
-        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLEE-NUMBER") ;
-        icalcomponent_add_property (comp, prop) ;
+        {
+          number = (gchar*)moko_journal_voice_info_get_local_number (a_entry) ;
+          prop = icalproperty_new_x (number) ;
+          if (dir == DIRECTION_OUT)
+          {
+            icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLER-NUMBER") ;
+          }
+          else
+          {
+            icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLEE-NUMBER") ;
+          }
+          icalcomponent_add_property (comp, prop) ;
+        }
 
         /*
          * serialize the "was-missed" property
@@ -790,6 +815,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
                         FALSE) ;
 
   entry = moko_journal_entry_alloc () ;
+  MessageDirection direction = DIRECTION_OUT;
 
   /*get the type*/
   if (icalcomponent_find_property_as_string (a_comp, "X-OPENMOKO-ENTRY-TYPE",
@@ -822,10 +848,11 @@ icalcomponent_to_entry (icalcomponent *a_comp,
                                      &prop_value))
   {
     if (prop_value && !strcmp (prop_value, "IN"))
-      moko_journal_entry_set_direction (entry, DIRECTION_IN) ;
+      direction = DIRECTION_IN;
     else
-      moko_journal_entry_set_direction (entry, DIRECTION_OUT) ;
+      direction = DIRECTION_OUT;
   }
+  moko_journal_entry_set_direction (entry, direction);
   if (icalcomponent_find_property_as_string
                                     (a_comp, "X-OPENMOKO-ENTRY-SOURCE",
                                      &prop_value))
@@ -920,7 +947,14 @@ icalcomponent_to_entry (icalcomponent *a_comp,
         {
           if (prop_value)
           {
-            moko_journal_voice_info_set_distant_number (entry, prop_value) ;
+            if ( direction == DIRECTION_OUT)
+            {
+              moko_journal_voice_info_set_local_number (entry, prop_value);
+            }
+            else
+            {
+              moko_journal_voice_info_set_distant_number (entry, prop_value);
+            }
           }
         }
 
@@ -934,7 +968,14 @@ icalcomponent_to_entry (icalcomponent *a_comp,
         {
           if (prop_value)
           {
-            moko_journal_voice_info_set_local_number (entry, prop_value) ;
+            if ( direction == DIRECTION_OUT)
+            {
+              moko_journal_voice_info_set_distant_number (entry, prop_value);
+            }
+            else
+            {
+              moko_journal_voice_info_set_local_number (entry, prop_value);
+            }
           }
         }
         prop_value = NULL ;
