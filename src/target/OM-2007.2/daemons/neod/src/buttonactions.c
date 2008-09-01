@@ -49,7 +49,8 @@ static int backlight_max_brightness = 1;
 #ifdef NEOD_PLATFORM_FIC_NEO1973
     #define AUX_BUTTON_KEYCODE 169    /* aux */
     #define POWER_BUTTON_KEYCODE 116  /* power */
-    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+    #define TOUCHSCREEN_BUTTON_KEYCODE_MIN 0x140 /* BTN_DIGI */
+    #define TOUCHSCREEN_BUTTON_KEYCODE_MAX 0x14E /* BTN_TOOL_TRIPLETAP */
 #elif NEOD_PLATFORM_MOTOROLA_EZX
     #define AUX_BUTTON_KEYCODE 0xa7   /* voice */
     #define POWER_BUTTON_KEYCODE 0xd4 /* camera */
@@ -66,6 +67,11 @@ static int backlight_max_brightness = 1;
     #define AUX_BUTTON_KEYCODE 0x22
     #define POWER_BUTTON_KEYCODE 0x23
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+#endif
+
+#ifndef TOUCHSCREEN_BUTTON_KEYCODE_MIN
+    #define TOUCHSCREEN_BUTTON_KEYCODE_MIN TOUCHSCREEN_BUTTON_KEYCODE
+    #define TOUCHSCREEN_BUTTON_KEYCODE_MAX TOUCHSCREEN_BUTTON_KEYCODE
 #endif
 
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
@@ -362,7 +368,9 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 }
             }
             else
-            if ( event.type == 1 && event.code == TOUCHSCREEN_BUTTON_KEYCODE )
+            if ( event.type == 1
+		 && event.code >= TOUCHSCREEN_BUTTON_KEYCODE_MIN
+		 && event.code <= TOUCHSCREEN_BUTTON_KEYCODE_MAX )
             {
                 if ( event.value == 1 ) /* pressed */
                 {
