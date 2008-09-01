@@ -1,7 +1,0 @@
-# the oe one is for use with OE xserver-kdrive_1.3.0.0.bb
-#xglamo-build.patch
-xglamo-build-oe.patch
-
-xglamo.patch
-xglamo-kaa.patch
-xglamo-xv.patch
