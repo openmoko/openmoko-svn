@@ -290,9 +290,11 @@ int packing_7bit_character(const char *src, struct lgsm_sms *dest)
 int unpacking_7bit_character(const struct gsmd_sms *src, char *dest)
 {
 	int i = 0;
+	int l = 0;
 
 	if (src->has_header)
-		i += ((src->data[0] << 3) + 14) / 7;
+		l += ((src->data[0] << 3) + 14) / 7;
+	i += l;
 	for (; i < src->length; i ++)
 		*(dest ++) =
 			((src->data[(i * 7 + 7) >> 3] <<
@@ -301,7 +303,7 @@ int unpacking_7bit_character(const struct gsmd_sms *src, char *dest)
 			  ((i * 7) & 7))) & 0x7f;
 	*dest = '\0';
 
-	return i;
+	return i - l;
 }
 
 int cbm_unpacking_7bit_character(const char *src, char *dest)
