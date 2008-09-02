@@ -288,10 +288,140 @@ on_incoming_sms (MokoListener *listener, struct lgsm_handle *handle,
   message = NULL;
   switch (sms->payload.coding_scheme) {
   case ALPHABET_DEFAULT :
-    g_debug ("Decoding 7-bit ASCII message:");
-    message = g_malloc0 (GSMD_SMS_DATA_MAXLEN);
-    unpacking_7bit_character (&sms->payload, message);
-    break;
+    {
+      gint i;
+      gint l;
+      gchar *gsmdefault;
+      gchar *dest;
+      g_debug ("Decoding GSM 7-bit default alphabet message:");
+      gsmdefault = g_malloc0 (GSMD_SMS_DATA_MAXLEN + 1);
+      l = unpacking_7bit_character (&sms->payload, gsmdefault);
+      message = g_malloc0 (1 + 3 * l);
+      dest = message;
+      for (i = 0; i < l; i++) {
+        /* Decoding based on the mapping at
+         * http://unicode.org/Public/MAPPINGS/ETSI/GSM0338.TXT
+         */
+        switch (gsmdefault[i]) {
+        case 0x00: // COMMERCIAL AT
+          *(dest++) = '@'; break;
+        case 0x01: // POUND SIGN
+          *(dest++) = 0xc2; *(dest++) = 0xa3; break;
+        case 0x02: // DOLLAR SIGN
+          *(dest++) = '$'; break;
+        case 0x03: // YEN SIGN
+          *(dest++) = 0xc2; *(dest++) = 0xa5; break;
+        case 0x04: // LATIN SMALL LETTER E WITH GRAVE
+          *(dest++) = 0xc3; *(dest++) = 0xa8; break;
+        case 0x05: // LATIN SMALL LETTER E WITH ACUTE
+          *(dest++) = 0xc3; *(dest++) = 0xa9; break;
+        case 0x06: // LATIN SMALL LETTER U WITH GRAVE
+          *(dest++) = 0xc3; *(dest++) = 0xb9; break;
+        case 0x07: // LATIN SMALL LETTER I WITH GRAVE
+          *(dest++) = 0xc3; *(dest++) = 0xac; break;
+        case 0x08: // LATIN SMALL LETTER O WITH GRAVE
+          *(dest++) = 0xc3; *(dest++) = 0xb2; break;
+        case 0x09: // LATIN SMALL LETTER C WITH CEDILLA
+          *(dest++) = 0xc3; *(dest++) = 0xa7; break;
+        case 0x0b: // LATIN CAPITAL LETTER O WITH STROKE
+          *(dest++) = 0xc3; *(dest++) = 0x98; break;
+        case 0x0c: // LATIN SMALL LETTER O WITH STROKE
+          *(dest++) = 0xc3; *(dest++) = 0xb8; break;
+        case 0x0e: // LATIN CAPITAL LETTER A WITH RING ABOVE
+          *(dest++) = 0xc3; *(dest++) = 0x85; break;
+        case 0x0f: // LATIN SMALL LETTER A WITH RING ABOVE
+          *(dest++) = 0xc3; *(dest++) = 0xa5; break;
+        case 0x10: // GREEK CAPITAL LETTER DELTA
+          *(dest++) = 0xce; *(dest++) = 0x94; break;
+        case 0x11: // LOW LINE
+          *(dest++) = '_'; break;
+        case 0x12: // GREEK CAPITAL LETTER PHI
+          *(dest++) = 0xce; *(dest++) = 0xa6; break;
+        case 0x13: // GREEK CAPITAL LETTER GAMMA
+          *(dest++) = 0xce; *(dest++) = 0x93; break;
+        case 0x14: // GREEK CAPITAL LETTER LAMDA
+          *(dest++) = 0xce; *(dest++) = 0x9b; break;
+        case 0x15: // GREEK CAPITAL LETTER OMEGA
+          *(dest++) = 0xce; *(dest++) = 0xa9; break;
+        case 0x16: // GREEK CAPITAL LETTER PI
+          *(dest++) = 0xce; *(dest++) = 0xa0; break;
+        case 0x17: // GREEK CAPITAL LETTER PSI
+          *(dest++) = 0xce; *(dest++) = 0xa8; break;
+        case 0x18: // GREEK CAPITAL LETTER SIGMA
+          *(dest++) = 0xce; *(dest++) = 0xa3; break;
+        case 0x19: // GREEK CAPITAL LETTER THETA
+          *(dest++) = 0xce; *(dest++) = 0x98; break;
+        case 0x1a: // GREEK CAPITAL LETTER XI
+          *(dest++) = 0xce; *(dest++) = 0x9e; break;
+        case 0x1b: // Escape character
+          switch (gsmdefault[++i]) {
+          case 0x0a: // FORM FEED
+            *(dest++) = 0x0c; break;
+          case 0x14: // CIRCUMFLEX ACCENT
+            *(dest++) = '^'; break;
+          case 0x28: // LEFT CURLY BRACKET
+            *(dest++) = '{'; break;
+          case 0x29: // RIGHT CURLY BRACKET
+            *(dest++) = '}'; break;
+          case 0x2f: // REVERSE SOLIDUS
+            *(dest++) = '\\'; break;
+          case 0x3c: // LEFT SQUARE BRACKET
+            *(dest++) = '['; break;
+          case 0x3d: // TILDE
+            *(dest++) = '~'; break;
+          case 0x3e: // RIGHT SQUARE BRACKET
+            *(dest++) = ']'; break;
+          case 0x40: // VERTICAL LINE
+            *(dest++) = '|'; break;
+          case 0x65: // EURO SIGN
+            *(dest++) = 0xe2; *(dest++) = 0x82;
+            *(dest++) = 0xac; break;
+          default: // NBSP (for compatibility)
+            *(dest++) = 0xc2; *(dest++) = 0xa0;
+            i--; // Do not consume next character
+          }
+          break;
+        case 0x1c: // LATIN CAPITAL LETTER AE
+          *(dest++) = 0xc3; *(dest++) = 0x86; break;
+        case 0x1d: // LATIN SMALL LETTER AE
+          *(dest++) = 0xc3; *(dest++) = 0xa6; break;
+        case 0x1e: // LATIN SMALL LETTER SHARP S
+          *(dest++) = 0xc3; *(dest++) = 0x9f; break;
+        case 0x1f: // LATIN CAPITAL LETTER E WITH ACUTE
+          *(dest++) = 0xc3; *(dest++) = 0x89; break;
+        case 0x24: // CURRENCY SIGN
+          *(dest++) = 0xc2; *(dest++) = 0xa4; break;
+        case 0x40: // INVERTED EXCLAMATION MARK
+          *(dest++) = 0xc2; *(dest++) = 0xa1; break;
+        case 0x5b: // LATIN CAPITAL LETTER A WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0x84; break;
+        case 0x5c: // LATIN CAPITAL LETTER O WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0x96; break;
+        case 0x5d: // LATIN CAPITAL LETTER N WITH TILDE
+          *(dest++) = 0xc3; *(dest++) = 0x91; break;
+        case 0x5e: // LATIN CAPITAL LETTER U WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0x9c; break;
+        case 0x5f: // SECTION SIGN
+          *(dest++) = 0xc2; *(dest++) = 0xa7; break;
+        case 0x60: // INVERTED QUESTION MARK
+          *(dest++) = 0xc2; *(dest++) = 0xbf; break;
+        case 0x7b: // LATIN SMALL LETTER A WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0xa4; break;
+        case 0x7c: // LATIN SMALL LETTER O WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0xb6; break;
+        case 0x7d: // LATIN SMALL LETTER N WITH TILDE
+          *(dest++) = 0xc3; *(dest++) = 0xb1; break;
+        case 0x7e: // LATIN SMALL LETTER U WITH DIAERESIS
+          *(dest++) = 0xc3; *(dest++) = 0xbc; break;
+        case 0x7f: // LATIN SMALL LETTER A WITH GRAVE
+          *(dest++) = 0xc3; *(dest++) = 0xa0; break;
+        default: // Untranslated
+          *(dest++) = gsmdefault[i];
+        }
+      }
+      g_free (gsmdefault);
+      break;
+    }
   case ALPHABET_8BIT :
     /* TODO: Verify: Is this encoding just UTF-8? (it is on my Samsung phone) */
     g_debug ("Decoding UTF-8 message:");
@@ -744,10 +874,12 @@ moko_sms_send (MokoSms *self, const gchar *number,
   MokoSmsPrivate *priv;
   struct lgsm_sms sms;
   gint msg_length, c;
-  gboolean ascii;
+  glong  msg16_length;
+  gboolean gsm7bit;
   JanaNote *note;
   gchar *dialcode = NULL;
   gchar *sub_num = NULL;
+  gunichar2 *message16;
   
   g_assert (self && number && message);
   priv = self->priv;
@@ -782,31 +914,115 @@ moko_sms_send (MokoSms *self, const gchar *number,
   } else {
     strcpy (sms.addr, number);
   }
-  
   /* Set message */
-  /* Check if the text is ascii (and pack in 7 bits if so) */
-  ascii = TRUE;
-  for (c = 0; message[c] != '\0'; c++) {
-    if (((guint8)message[c]) > 0x7F) {
-      ascii = FALSE;
-      break;
-    }
-  }
+  /* Try to encode to the 7-bit default alphabet, fall back to UTF-8 */
+  message16 = g_utf8_to_utf16 (message, -1, NULL, &msg16_length, NULL);
+  gsm7bit = TRUE;
   
   /* TODO: Multi-part messages using UDH */
   msg_length = strlen (message);
-  if ((ascii && (msg_length > 160)) || (msg_length > 140)) {
+  gchar *smschars = g_malloc0 (162);
+  gint i = 0;
+  for (c = 0; c < msg16_length; c++) {
+    /* See http://unicode.org/Public/MAPPINGS/ETSI/GSM0338.TXT for details */
+    switch (message16[c]) {
+    case 0x000c: smschars[i++] = 0x1b; smschars[i++] = 0x0a; break;
+    case 0x0024: smschars[i++] = 0x02; break;
+    /* HACK: 0x80 instead of 0x00, avoids string termination */
+    case 0x0040: smschars[i++] = 0x80; break;
+    case 0x005b: smschars[i++] = 0x1b; smschars[i++] = 0x3c; break;
+    case 0x005c: smschars[i++] = 0x1b; smschars[i++] = 0x2f; break;
+    case 0x005d: smschars[i++] = 0x1b; smschars[i++] = 0x3e; break;
+    case 0x005e: smschars[i++] = 0x1b; smschars[i++] = 0x14; break;
+    case 0x005f: smschars[i++] = 0x11; break;
+    case 0x007b: smschars[i++] = 0x1b; smschars[i++] = 0x28; break;
+    case 0x007c: smschars[i++] = 0x1b; smschars[i++] = 0x40; break;
+    case 0x007d: smschars[i++] = 0x1b; smschars[i++] = 0x29; break;
+    case 0x007e: smschars[i++] = 0x1b; smschars[i++] = 0x3d; break;
+    case 0x00a1: smschars[i++] = 0x40; break;
+    case 0x00a3: smschars[i++] = 0x01; break;
+    case 0x00a4: smschars[i++] = 0x24; break;
+    case 0x00a5: smschars[i++] = 0x03; break;
+    case 0x00a7: smschars[i++] = 0x5f; break;
+    case 0x00bf: smschars[i++] = 0x60; break;
+    case 0x00c4: smschars[i++] = 0x5b; break;
+    case 0x00c5: smschars[i++] = 0x0e; break;
+    case 0x00c6: smschars[i++] = 0x1c; break;
+    case 0x00c9: smschars[i++] = 0x1f; break;
+    case 0x00d1: smschars[i++] = 0x5d; break;
+    case 0x00d6: smschars[i++] = 0x5c; break;
+    case 0x00d8: smschars[i++] = 0x0b; break;
+    case 0x00dc: smschars[i++] = 0x5e; break;
+    case 0x00df: smschars[i++] = 0x1e; break;
+    case 0x00e0: smschars[i++] = 0x7f; break;
+    case 0x00e4: smschars[i++] = 0x7b; break;
+    case 0x00e5: smschars[i++] = 0x0f; break;
+    case 0x00e6: smschars[i++] = 0x1d; break;
+    case 0x00e7: smschars[i++] = 0x09; break;
+    case 0x00e8: smschars[i++] = 0x04; break;
+    case 0x00e9: smschars[i++] = 0x05; break;
+    case 0x00ec: smschars[i++] = 0x07; break;
+    case 0x00f1: smschars[i++] = 0x7d; break;
+    case 0x00f2: smschars[i++] = 0x08; break;
+    case 0x00f6: smschars[i++] = 0x7c; break;
+    case 0x00f8: smschars[i++] = 0x0c; break;
+    case 0x00f9: smschars[i++] = 0x06; break;
+    case 0x00fc: smschars[i++] = 0x7e; break;
+    /* Greek characters have the same mapping as capital Latin characters where
+     * they both have the same form.
+     */
+    case 0x0391: smschars[i++] = 0x41; break;
+    case 0x0392: smschars[i++] = 0x42; break;
+    case 0x0393: smschars[i++] = 0x13; break;
+    case 0x0394: smschars[i++] = 0x10; break;
+    case 0x0395: smschars[i++] = 0x45; break;
+    case 0x0396: smschars[i++] = 0x5a; break;
+    case 0x0397: smschars[i++] = 0x48; break;
+    case 0x0398: smschars[i++] = 0x19; break;
+    case 0x0399: smschars[i++] = 0x49; break;
+    case 0x039a: smschars[i++] = 0x4b; break;
+    case 0x039b: smschars[i++] = 0x14; break;
+    case 0x039c: smschars[i++] = 0x4d; break;
+    case 0x039d: smschars[i++] = 0x4e; break;
+    case 0x039e: smschars[i++] = 0x1a; break;
+    case 0x039f: smschars[i++] = 0x4f; break;
+    case 0x03a0: smschars[i++] = 0x16; break;
+    case 0x03a1: smschars[i++] = 0x50; break;
+    case 0x03a3: smschars[i++] = 0x18; break;
+    case 0x03a4: smschars[i++] = 0x54; break;
+    case 0x03a5: smschars[i++] = 0x55; break;
+    case 0x03a6: smschars[i++] = 0x12; break;
+    case 0x03a7: smschars[i++] = 0x58; break;
+    case 0x03a8: smschars[i++] = 0x17; break;
+    case 0x03a9: smschars[i++] = 0x15; break;
+    case 0x20ac: smschars[i++] = 0x1b; smschars[i++] = 0x65; break;
+    default:
+      {
+        gunichar2 d = message16[c];
+        if (d == 0x000a || d == 0x000d ||
+            (d >= 0x0020 && d < 0x005b) || (d >= 0x0061 && d < 0x0080))
+          smschars[i++] = (gchar) d;
+        else
+          gsm7bit = FALSE;
+      }
+    }
+    if (i > 160 || !gsm7bit) break;
+  }
+  if ((i > 160 && gsm7bit) || (msg_length > 140 && !gsm7bit)) {
       *error = g_error_new (PHONE_KIT_SMS_ERROR, PK_SMS_ERROR_MSG_TOOLONG,
                             "Message too long");
+      g_free (smschars);
       return FALSE;
   }
-  if (ascii) {
-    packing_7bit_character (message, &sms);
-  } else {
+  if (gsm7bit) {
+    packing_7bit_character (smschars, &sms);
+  }
+  else {
     sms.alpha = ALPHABET_8BIT;
     strcpy ((gchar *)sms.data, message);
+    sms.length = msg_length;
   }
-  sms.length = msg_length;
+  g_free (smschars);
   
   /* Send message */
   lgsm_sms_send (handle, &sms);
