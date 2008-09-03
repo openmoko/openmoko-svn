@@ -1,0 +1,161 @@
+images {
+   image: "boots.png" LOSSY 80;
+}
+
+collections {
+   group { name: "e/init/splash";
+      parts {
+	 part { name: "background_image";
+	    description { state: "default" 0.0;
+	       aspect: 0.75 0.75;
+	       aspect_preference: NONE;
+	       image.normal: "boots.png";
+	    }
+	 }
+         
+	 part { name: "bar_bg";
+	    type: RECT;
+	    description { state: "default" 0.0;
+	       rel1.relative: 0.0 0.0;
+	       rel2.relative: 1.0 0.0;
+	       color: 0 0 0 128;
+	    }
+	    description { state: "visible" 0.0;
+	       inherit: "default" 0.0;
+	       rel1.relative: 0.0 0.4;
+	       rel2.relative: 1.0 0.6;
+	    }
+	 }
+	 part { name: "bar";
+	    type: RECT;
+	    description { state: "default" 0.0;
+	       rel1.to: "bar_bg";
+	       rel2 {
+		  to_x: "exquisite.progress";
+		  to_y: "bar_bg";
+		  relative: 1.0 1.0;
+		  offset: -1 -1;
+	       }
+	       color: 0 255 0 255;
+	    }
+	    description { state: "pulse" 1.0;
+	       inherit: "default" 0.0;
+	       rel1 {
+		  to: "bar_bg";
+		  relative: 0.0 0.0;
+		  offset: 0 0;
+	       }
+	       rel2 {
+		  to: "bar_bg";
+		  relative: 0.2 1.0;
+		  offset: -1 -1;
+	       }
+	    }
+	    description { state: "pulse" 0.0;
+	       inherit: "pulse" 1.0;
+	       rel1 {
+		  to: "bar_bg";
+		  relative: 0.8 0.0;
+		  offset: 0 0;
+	       }
+	       rel2 {
+		  to: "bar_bg";
+		  relative: 1.0 1.0;
+		  offset: -1 -1;
+	       }				
+	    }
+	 }
+	 
+	 part { name: "exquisite.progress";
+	    mouse_events: 0;
+	    type: RECT;
+	    dragable {
+	       x: 1 1 0;
+	       y: 0 0 0;
+	       confine: "bar_bg";
+	    }
+	    description { state: "default" 0.0;
+	       visible: 0;
+	       rel1 {
+		  to: "bar_bg";
+		  relative: 0.5 0.5;
+		  offset: 0 0;
+	       }
+	       rel2 {
+		  to: "bar_bg";
+		  relative: 0.5 0.5;
+		  offset: 0 0;
+	       }
+	    }
+	 }
+	 
+	 part { name: "black";
+	    mouse_events: 0;
+	    type: RECT;
+	    description {
+	       state: "default" 0.0;
+	       color: 0 0 0 0;
+	    }
+	    description {
+	       state: "visible" 0.0;
+	       color: 0 0 0 255;
+	    }
+	 }
+      }
+      
+      programs {
+	 program {
+	    name: "logo-anim";
+	    in: 0.5 0.0;
+	    signal: "show";
+	    source: "";
+	    action: STATE_SET "visible" 0.0;
+	    target: "bar_bg";
+	    transition: DECELERATE 1.0;
+	    after: "pulsate";
+	 }
+	 
+	 program {
+	    name: "exit";
+	    signal: "e,state,done";
+	    source: "e";
+	    action: STATE_SET "visible" 0.0;
+	    target: "black";
+	    transition: LINEAR 0.5;
+	    after: "exit2";
+	 }
+	 program {
+	    name: "exit2";
+	    action: SIGNAL_EMIT "e,state,done_ok" "e";
+	 }
+	 
+	 program {
+	    name: "pulsate";
+	    action: STATE_SET "pulse" 1.0;
+	    target: "bar";
+	    after: "pulsate2";
+	 }
+	 program {
+	    name: "pulsate2";
+	    action: STATE_SET "pulse" 0.0;
+	    target: "bar";
+	    transition: SINUSOIDAL 0.8;
+	    after: "pulsate3";
+	 }
+	 program {
+	    name: "pulsate3";
+	    action: STATE_SET "pulse" 1.0;
+	    target: "bar";
+	    transition: SINUSOIDAL 0.8;
+	    after: "pulsate2";
+	 }
+	 
+	 program {
+	    name: "pulsate_stop";
+	    action: ACTION_STOP;
+	    target: "pulsate2";
+	    target: "pulsate3";
+	 }
+      }
+   }
+}
