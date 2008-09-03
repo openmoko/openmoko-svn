@@ -402,13 +402,15 @@ main (int argc, char **argv)
   GError *error = NULL;
   guint32 ret;
 
-  DBusError err = {0};
-  DBusConnection* bus = dbus_bus_get (DBUS_BUS_SESSION, &err);
+  DBusError err;
+  // initialise the error value
+  dbus_error_init(&err);
 
-  if (!bus)
+  DBusConnection* bus = dbus_bus_get (DBUS_BUS_SESSION, &err);
+  if (dbus_error_is_set(&err))
   {   
-     gchar buffer[100];
-     sprintf (buffer, "Failed to connect to the D-BUS daemon: %s", err.message);
+     gchar buffer[200];
+     g_snprintf ( buffer, 200, "Failed to connect to the D-BUS daemon: %s", err.message);
      g_critical (buffer);
      dbus_error_free (&err);
      return 1;
