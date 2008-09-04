@@ -428,24 +428,6 @@ group "E_Config" struct {
           value "resizable" uchar: 0;
         }
       }
-      group "clients" list {
-        group "E_Config_Gadcon_Client" struct {
-          value "name" string: "illume-cfg";
-          value "id" string: "illume-cfg";
-          value "geom.pos" int: 0;
-          value "geom.size" int: 32;
-          value "geom.res" int: 472;
-          value "geom.pos_x" double: 0.0000000000000000000000000;
-          value "geom.pos_y" double: 0.0000000000000000000000000;
-          value "geom.size_w" double: 0.0000000000000000000000000;
-          value "geom.size_h" double: 0.0000000000000000000000000;
-          value "state_info.seq" int: 1;
-          value "state_info.flags" int: 1;
-          value "style" string: "plain";
-          value "autoscroll" uchar: 0;
-          value "resizable" uchar: 0;
-        }
-      }
     }
   }
   value "font_hinting" int: 0;
@@ -486,7 +468,7 @@ group "E_Config" struct {
   value "border_raise_on_mouse_action" int: 1;
   value "border_raise_on_focus" int: 1;
   value "desk_flip_wrap" int: 0;
-  value "icon_theme" string: "openmoko-standard";
+  value "icon_theme" string: "openmoko-asu";
   value "desk_flip_animate_mode" int: 0;
   value "desk_flip_animate_interpolation" int: 0;
   value "desk_flip_animate_time" double: 0.2000000000000000111022302;
