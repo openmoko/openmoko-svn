@@ -1,0 +1,13 @@
+%%
+headers
+#include <pygobject.h>
+#include <Evas_Data.h>
+#include <Evas.h>
+%%
+modulename evas                     
+%%
+import gtk.Plug as PyGtkPlug_Type       
+%%
+ignore-glob
+  *_get_type                            
+%%

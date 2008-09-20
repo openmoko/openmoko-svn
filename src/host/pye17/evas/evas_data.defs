@@ -1,0 +1,485 @@
+;; -*- scheme -*-
+; object definitions ...
+(define-object Evas_Array
+  (c-name "Evas_Array")
+  (gtype-id "Evas_Array")
+)
+
+(define-object Evas_Hash
+  (c-name "Evas_Hash")
+  (gtype-id "Evas_Hash")
+)
+
+(define-object Evas_List
+  (c-name "Evas_List")
+  (gtype-id "Evas_List")
+)
+
+(define-object Evas_Object_List
+  (c-name "Evas_Object_List")
+  (gtype-id "Evas_Object_List")
+)
+
+;; Enumerations and flags ...
+
+
+;; From Evas_Data.h
+
+(define-function evas_array_new
+  (c-name "evas_array_new")
+  (is-constructor-of "EvasArray")
+  (return-type "Evas_Array*")
+  (parameters
+    '("unsigned-int" "step")
+  )
+)
+
+(define-function evas_array_setup
+  (c-name "evas_array_setup")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+    '("unsigned-int" "step")
+  )
+)
+
+(define-function evas_array_free
+  (c-name "evas_array_free")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+  )
+)
+
+(define-function evas_array_append
+  (c-name "evas_array_append")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+    '("void*" "data")
+  )
+)
+
+(define-function evas_array_get
+  (c-name "evas_array_get")
+  (return-type "void*")
+  (parameters
+    '("Evas_Array*" "array")
+    '("unsigned-int" "index")
+  )
+)
+
+(define-function evas_array_clean
+  (c-name "evas_array_clean")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+  )
+)
+
+(define-function evas_array_flush
+  (c-name "evas_array_flush")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+  )
+)
+
+(define-function evas_array_remove
+  (c-name "evas_array_remove")
+  (return-type "none")
+  (parameters
+    '("Evas_Array*" "array")
+    '("void*" "callback")
+    '("void*" "gdata")
+  )
+)
+
+(define-function evas_array_hash_new
+  (c-name "evas_array_hash_new")
+  (is-constructor-of "EvasArrayHash")
+  (return-type "Evas_Array_Hash*")
+)
+
+(define-function evas_array_hash_free
+  (c-name "evas_array_hash_free")
+  (return-type "none")
+  (parameters
+    '("Evas_Array_Hash*" "hash")
+  )
+)
+
+(define-function evas_array_hash_add
+  (c-name "evas_array_hash_add")
+  (return-type "none")
+  (parameters
+    '("Evas_Array_Hash*" "hash")
+    '("int" "key")
+    '("int" "data")
+  )
+)
+
+(define-function evas_array_hash_search
+  (c-name "evas_array_hash_search")
+  (return-type "int")
+  (parameters
+    '("Evas_Array_Hash*" "hash")
+    '("int" "key")
+  )
+)
+
+(define-function evas_hash_add
+  (c-name "evas_hash_add")
+  (return-type "Evas_Hash*")
+  (parameters
+    '("Evas_Hash*" "hash")
+    '("const-char*" "key")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_hash_direct_add
+  (c-name "evas_hash_direct_add")
+  (return-type "Evas_Hash*")
+  (parameters
+    '("Evas_Hash*" "hash")
+    '("const-char*" "key")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_hash_del
+  (c-name "evas_hash_del")
+  (return-type "Evas_Hash*")
+  (parameters
+    '("Evas_Hash*" "hash")
+    '("const-char*" "key")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_hash_find
+  (c-name "evas_hash_find")
+  (return-type "void*")
+  (parameters
+    '("const-Evas_Hash*" "hash")
+    '("const-char*" "key")
+  )
+)
+
+(define-function evas_hash_modify
+  (c-name "evas_hash_modify")
+  (return-type "void*")
+  (parameters
+    '("Evas_Hash*" "hash")
+    '("const-char*" "key")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_hash_size
+  (c-name "evas_hash_size")
+  (return-type "int")
+  (parameters
+    '("const-Evas_Hash*" "hash")
+  )
+)
+
+(define-function evas_hash_free
+  (c-name "evas_hash_free")
+  (return-type "none")
+  (parameters
+    '("Evas_Hash*" "hash")
+  )
+)
+
+(define-function evas_hash_foreach
+  (c-name "evas_hash_foreach")
+  (return-type "none")
+  (parameters
+    '("const-Evas_Hash*" "hash")
+    '("void*" "callback")
+    '("const-void*" "fdata")
+  )
+)
+
+(define-function evas_hash_alloc_error
+  (c-name "evas_hash_alloc_error")
+  (return-type "int")
+)
+
+(define-function evas_list_append
+  (c-name "evas_list_append")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_list_prepend
+  (c-name "evas_list_prepend")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_list_append_relative
+  (c-name "evas_list_append_relative")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+    '("const-void*" "relative")
+  )
+)
+
+(define-function evas_list_append_relative_list
+  (c-name "evas_list_append_relative_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+    '("Evas_List*" "relative")
+  )
+)
+
+(define-function evas_list_prepend_relative
+  (c-name "evas_list_prepend_relative")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+    '("const-void*" "relative")
+  )
+)
+
+(define-function evas_list_prepend_relative_list
+  (c-name "evas_list_prepend_relative_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+    '("Evas_List*" "relative")
+  )
+)
+
+(define-function evas_list_remove
+  (c-name "evas_list_remove")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_list_remove_list
+  (c-name "evas_list_remove_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("Evas_List*" "remove_list")
+  )
+)
+
+(define-function evas_list_promote_list
+  (c-name "evas_list_promote_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("Evas_List*" "move_list")
+  )
+)
+
+(define-function evas_list_find
+  (c-name "evas_list_find")
+  (return-type "void*")
+  (parameters
+    '("const-Evas_List*" "list")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_list_find_list
+  (c-name "evas_list_find_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("const-Evas_List*" "list")
+    '("const-void*" "data")
+  )
+)
+
+(define-function evas_list_free
+  (c-name "evas_list_free")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_last
+  (c-name "evas_list_last")
+  (return-type "Evas_List*")
+  (parameters
+    '("const-Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_next
+  (c-name "evas_list_next")
+  (return-type "Evas_List*")
+  (parameters
+    '("const-Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_prev
+  (c-name "evas_list_prev")
+  (return-type "Evas_List*")
+  (parameters
+    '("const-Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_data
+  (c-name "evas_list_data")
+  (return-type "void*")
+  (parameters
+    '("const-Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_count
+  (c-name "evas_list_count")
+  (return-type "int")
+  (parameters
+    '("const-Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_nth
+  (c-name "evas_list_nth")
+  (return-type "void*")
+  (parameters
+    '("const-Evas_List*" "list")
+    '("int" "n")
+  )
+)
+
+(define-function evas_list_nth_list
+  (c-name "evas_list_nth_list")
+  (return-type "Evas_List*")
+  (parameters
+    '("const-Evas_List*" "list")
+    '("int" "n")
+  )
+)
+
+(define-function evas_list_reverse
+  (c-name "evas_list_reverse")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+  )
+)
+
+(define-function evas_list_sort
+  (c-name "evas_list_sort")
+  (return-type "Evas_List*")
+  (parameters
+    '("Evas_List*" "list")
+    '("int" "size")
+    '("void*" "callback")
+  )
+)
+
+(define-function evas_list_alloc_error
+  (c-name "evas_list_alloc_error")
+  (return-type "int")
+)
+
+(define-function evas_object_list_append
+  (c-name "evas_object_list_append")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+  )
+)
+
+(define-function evas_object_list_prepend
+  (c-name "evas_object_list_prepend")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+  )
+)
+
+(define-function evas_object_list_append_relative
+  (c-name "evas_object_list_append_relative")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+    '("void*" "in_relative")
+  )
+)
+
+(define-function evas_object_list_prepend_relative
+  (c-name "evas_object_list_prepend_relative")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+    '("void*" "in_relative")
+  )
+)
+
+(define-function evas_object_list_remove
+  (c-name "evas_object_list_remove")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+  )
+)
+
+(define-function evas_object_list_find
+  (c-name "evas_object_list_find")
+  (return-type "void*")
+  (parameters
+    '("void*" "in_list")
+    '("void*" "in_item")
+  )
+)
+
+(define-function evas_stringshare_init
+  (c-name "evas_stringshare_init")
+  (return-type "none")
+)
+
+(define-function evas_stringshare_shutdown
+  (c-name "evas_stringshare_shutdown")
+  (return-type "none")
+)
+
+(define-function evas_stringshare_add
+  (c-name "evas_stringshare_add")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "str")
+  )
+)
+
+(define-function evas_stringshare_del
+  (c-name "evas_stringshare_del")
+  (return-type "none")
+  (parameters
+    '("const-char*" "str")
+  )
+)
+
+
