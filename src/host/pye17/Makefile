@@ -1,6 +1,4 @@
 
-if-exists = $(if ($wildcard $1),$2,$3)
-
 # E_PATH not given (env variable)
 ifeq ($(wildcard $(E_PATH)),)
 
