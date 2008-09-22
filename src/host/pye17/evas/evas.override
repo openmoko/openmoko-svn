@@ -4,10 +4,23 @@ headers
 #include <Evas_Data.h>
 #include <Evas.h>
 %%
-modulename evas                     
+modulename evas
 %%
-import gtk.Plug as PyGtkPlug_Type       
+import gtk.Plug as PyGtkPlug_Type
 %%
 ignore-glob
-  *_get_type                            
+  *_get_type
 %%
+override evas_stringshare_init kwargs
+static PyObject *
+_wrap_evas_stringshare_init(PyObject *self)
+{
+	/* Evas_Data.h - not implemented yet */
+}
+%%
+override evas_stringshare_shutdown kwargs
+static PyObject *
+_wrap_evas_stringshare_shutdown(PyObject *self)
+{
+	/* Evas_Data.h - not implemented yet */
+}

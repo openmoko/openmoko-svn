@@ -19,7 +19,13 @@ CODEGEN_PATH = $(PWD)/codegen
 PYTHON = $(shell which python)
 
 
-e_bindings = evas edje
+e_bindings = evas
+
+### ToDo ###
+# ecore
+# eet ? embryo ?
+# edje
+
 
 e_bindings_mk = $(e_bindings:=.mk)
 
