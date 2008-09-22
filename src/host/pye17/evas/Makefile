@@ -2,7 +2,7 @@
 EVAS_PATH=$(E_PATH)/evas/src/lib
 
 CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -I/usr/include/python2.5 -I/usr/include/pygtk-2.0/ -I$(EVAS_PATH) -I. -g
-LDFLAGS = -levas -L$(EVAS_PATH)/.libs/libevas.so -lglib-2.0
+LDFLAGS = -levas -L/usr/local/lib -lglib-2.0
 
 .PHONY: all clean evas.so
 

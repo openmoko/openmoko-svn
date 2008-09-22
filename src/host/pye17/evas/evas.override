@@ -6,8 +6,6 @@ headers
 %%
 modulename evas
 %%
-import gtk.Plug as PyGtkPlug_Type
-%%
 ignore-glob
   *_get_type
 %%
