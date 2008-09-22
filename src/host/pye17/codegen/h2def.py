@@ -38,7 +38,7 @@ def to_upper_str(name):
 def typecode(typename):
     """create a typecode (eg. GTK_TYPE_WIDGET) from a typename"""
     #return string.replace(to_upper_str(typename), '_', '_TYPE_', 1)
-    return typename
+    return to_upper_str(typename)
 
 
 # ------------------ Find object definitions -----------------
@@ -62,7 +62,7 @@ def strip_comments(buf):
 
 obj_name_pat = "[A-Za-z0-9_]*"
 
-split_prefix_pat = re.compile('([A-Z]+[a-z]*)([A-Za-z0-9]+)')
+split_prefix_pat = re.compile('([A-Za-z]*)_([A-Za-z0-9]+)')
 
 def find_obj_defs(buf, objdefs=[]):
     """
@@ -217,13 +217,14 @@ def find_enum_defs(buf, enums=[]):
         m = enum_pat.search(buf, pos)
         if not m: break
 
-	#print "name: " + m.group(2)
-	#print "vals: " + m.group(1)
+	#print "vals: " + m.group(2)
+	#print "name: " + m.group(1)
 	#print "alt. name: >" + m.group(3) + "<"
 
-        name = m.group(1)
+	name = m.group(3)
+
 	if not name:
-		name = m.group(3)
+		name = m.group(1)
 
 	if name in enum_typedef:
 		name = enum_typedef[name]
@@ -368,7 +369,7 @@ class DefsWriter:
             m = split_prefix_pat.match(cname)
             if m:
                 module = m.group(1)
-                name = m.group(2)
+                #name = m.group(2)
             if isflags:
                 fp.write('(define-flags ' + name + '\n')
             else:
@@ -376,7 +377,8 @@ class DefsWriter:
             if module:
                 fp.write('  (in-module "' + module + '")\n')
             fp.write('  (c-name "' + cname + '")\n')
-            fp.write('  (gtype-id "' + typecode(cname) + '")\n')
+	    fp.write('  (gtype-id "77")\n')
+            #fp.write('  (gtype-id "' + typecode(cname) + '")\n')
             prefix = entries[0]
             for ent in entries:
                 # shorten prefix til we get a match ...
@@ -402,11 +404,11 @@ class DefsWriter:
             if filter:
                 if klass in filter:
                     continue
-            #m = split_prefix_pat.match(klass)
+            m = split_prefix_pat.match(klass)
             cmodule = None
             cname = klass
-            #if m:
-                #cmodule = m.group(1)
+            if m:
+                cmodule = m.group(1)
                 #cname = m.group(2)
             fp.write('(define-object ' + cname + '\n')
             if cmodule:
@@ -414,7 +416,8 @@ class DefsWriter:
             if parent:
                 fp.write('  (parent "' + parent + '")\n')
             fp.write('  (c-name "' + klass + '")\n')
-            fp.write('  (gtype-id "' + typecode(klass) + '")\n')
+            #fp.write('  (gtype-id "' + typecode(klass) + '")\n')
+	    fp.write('  (gtype-id "' + klass + '")\n')
             # should do something about accessible fields
             fp.write(')\n\n')
 

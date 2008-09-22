@@ -1620,7 +1620,9 @@ typedef intobjargproc ssizeobjargproc;
 
         self.fp.write(
                 '%(indent)spygobject_register_class(d, "%(c_name)s", %(typecode)s, &Py%(c_name)s_Type, %(bases)s);\n'
-                % dict(indent=indent_str, c_name=obj.c_name, typecode=obj.typecode, bases=bases_str))
+                % dict(indent=indent_str, c_name=obj.c_name, typecode=77, bases=bases_str))
+                #'%(indent)spygobject_register_class(d, "%(c_name)s", %(typecode)s, &Py%(c_name)s_Type, %(bases)s);\n'
+                #% dict(indent=indent_str, c_name=obj.c_name, typecode=obj.typecode, bases=bases_str))
 
         if obj.has_new_constructor_api:
             self.fp.write(
