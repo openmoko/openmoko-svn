@@ -3,4 +3,4 @@
 /var/lib/gforge/download/diversity/community-repository/diversity-wifisvn509/diversity-wifi-svn509.ipk 104804 8d8816013cbae7ebd8a28a57d6d38561
 /var/lib/gforge/download/moko-sudoku/community-repository/moko-sudoku_0.21/moko-sudoku_0.21_armv4t.ipk 21358 ae7687683b21f66211fc08c77bf00625
 /var/lib/gforge/download/orrery/community-repository/orreryversion1.1/orrery_1.1_arm_2008.8.ipk 398220 6bdea3f3ed8b833a3d77bdfab4eb61db
-/var/lib/gforge/download/omview/community-repository/revision15/omview_r15_armv4t.ipk 142132 bd850bdfb45a5c25622edf9d006b7c64
+/var/lib/gforge/download/omview/community-repository/revision27/omview_r27_armv4t.ipk 123738 afad62b82b3d537c66bdad83571c5c40
