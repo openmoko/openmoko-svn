@@ -377,7 +377,7 @@ class DefsWriter:
             if module:
                 fp.write('  (in-module "' + module + '")\n')
             fp.write('  (c-name "' + cname + '")\n')
-	    fp.write('  (gtype-id "77")\n')
+	    fp.write('  (gtype-id "G_TYPE_OBJECT")\n')
             #fp.write('  (gtype-id "' + typecode(cname) + '")\n')
             prefix = entries[0]
             for ent in entries:

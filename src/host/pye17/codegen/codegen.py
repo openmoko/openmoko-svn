@@ -1620,7 +1620,7 @@ typedef intobjargproc ssizeobjargproc;
 
         self.fp.write(
                 '%(indent)spygobject_register_class(d, "%(c_name)s", %(typecode)s, &Py%(c_name)s_Type, %(bases)s);\n'
-                % dict(indent=indent_str, c_name=obj.c_name, typecode=77, bases=bases_str))
+                % dict(indent=indent_str, c_name=obj.c_name, typecode="G_TYPE_OBJECT", bases=bases_str))
                 #'%(indent)spygobject_register_class(d, "%(c_name)s", %(typecode)s, &Py%(c_name)s_Type, %(bases)s);\n'
                 #% dict(indent=indent_str, c_name=obj.c_name, typecode=obj.typecode, bases=bases_str))
 
