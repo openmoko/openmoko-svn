@@ -19,7 +19,7 @@ evas.defs: $(CODEGEN_PATH)/h2def.py $(EVAS_PATH)/Evas.h $(EVAS_PATH)/Evas_Data.h
 	$(CODEGEN_PATH)/h2def.py $(EVAS_PATH)/Evas_Data.h >> $@
 
 clean:
-	rm -f *.o evas.c evas.defs
+	rm -f *.o *~ evas.defs evas.c evas.so
 
 
 ### may need later ??

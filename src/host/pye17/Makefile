@@ -19,7 +19,7 @@ CODEGEN_PATH = $(PWD)/codegen
 PYTHON = $(shell which python)
 
 
-e_bindings = evas
+e_bindings = evas ecore
 
 ### ToDo ###
 # ecore

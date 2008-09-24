@@ -461,7 +461,8 @@ class DefsWriter:
 				#print "argument: " + argument
 				callback = argument.find('(')
 				if callback > -1:
-					argument = 'void* callback'
+					func_name_end = argument.find(')')
+					argument = 'void* callback_' + argument[callback+1:func_name_end].lstrip("* ")
 				spaces = string.count(argument, ' ')
 				if spaces > 1:
 					argument = string.replace(argument, ' ', '-', spaces - 1)

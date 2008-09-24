@@ -1,0 +1,95 @@
+%%
+headers
+#include <pygobject.h>
+#include <Ecore_Data.h>
+#include <Ecore.h>
+%%
+modulename ecore
+%%
+ignore-glob
+  *_get_type
+%%
+override ecore_list_merge kwargs
+static PyObject *
+_wrap_ecore_list_merge(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Compare_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_list_node_destroy kwargs
+static PyObject *
+_wrap_ecore_list_node_destroy(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_list_free_cb_set kwargs
+static PyObject *
+_wrap_ecore_list_free_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    /* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_dlist_merge kwargs
+static PyObject *
+_wrap_ecore_dlist_merge(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Compare_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_dlist_node_destroy kwargs
+static PyObject *
+_wrap_ecore_dlist_node_destroy(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_dlist_free_cb_set kwargs
+static PyObject *
+_wrap_ecore_dlist_free_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    /* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_hash_free_key_cb_set kwargs
+static PyObject *
+_wrap_ecore_hash_free_key_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_hash_free_value_cb_set kwargs
+static PyObject *
+_wrap_ecore_hash_free_value_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_sheap_free_cb_set kwargs
+static PyObject *
+_wrap_ecore_sheap_free_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_tree_node_destroy kwargs
+static PyObject *
+_wrap_ecore_tree_node_destroy(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_tree_free_value_cb_set kwargs
+static PyObject *
+_wrap_ecore_tree_free_value_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
+override ecore_tree_free_key_cb_set kwargs
+static PyObject *
+_wrap_ecore_tree_free_key_cb_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	/* not supported at the moment - Ecore_Free_Cb in Ecore_Data.h needs fixing */
+}
+%%
