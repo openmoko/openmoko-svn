@@ -448,7 +448,7 @@ class DefsWriter:
 	    num_open_brackets = 0
 	    begin_copy = 0
             for i in range(len(args)):
-		# either it is the end of an argument >'< or the last character
+		# either it is the end of an argument >,< or the last character
 		if args[i] == "," or i + 1 == len(args):
 			# no open brackets (we are not in a callback) or the last argument is a callback
 			if num_open_brackets == 0 or (i + 1 == len(args) and num_open_brackets == 1 and args[i] == ")"):

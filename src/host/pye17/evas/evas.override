@@ -22,3 +22,4 @@ _wrap_evas_stringshare_shutdown(PyObject *self)
 {
 	/* Evas_Data.h - not implemented yet */
 }
+%%

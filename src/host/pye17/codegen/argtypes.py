@@ -1140,7 +1140,13 @@ matcher.register_pointer('Ecore_Event_Handler', 'G_TYPE_OBJECT')
 matcher.register_pointer('Ecore_Event', 'G_TYPE_OBJECT')
 matcher.register_pointer('Ecore_Plugin', 'G_TYPE_OBJECT')
 matcher.register_pointer('Ecore_Free_Cb', 'G_TYPE_NONE')
-#matcher.register_pointer('Ecore_Compare_Cb', 'G_TYPE_NONE')
+
+# ecore_evas
+matcher.register_pointer('Ecore_Evas', 'G_TYPE_OBJECT')
+matcher.register('Ecore_X_Window', UIntArg())
+matcher.register_pointer('Ecore_DirectFB_Window', 'G_TYPE_OBJECT')
+matcher.register_pointer('Ecore_Win32_Window', 'G_TYPE_OBJECT')
+matcher.register_pointer('Ecore_WinCE_Window', 'G_TYPE_OBJECT')
 
 # matcher.register_pointer('', 'G_TYPE_OBJECT')
 
