@@ -1,0 +1,9 @@
+%%
+headers
+#include <pygobject.h>
+#include <Ecore_Evas.h>
+%%
+modulename ecore_evas
+%%
+ignore-glob
+  *_get_type
