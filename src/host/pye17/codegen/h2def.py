@@ -221,6 +221,8 @@ def find_enum_defs(buf, enums=[]):
 	#print "name: " + m.group(1)
 	#print "alt. name: >" + m.group(3) + "<"
 
+	pos = m.end()
+
 	name = m.group(3)
 
 	if not name:
@@ -228,6 +230,10 @@ def find_enum_defs(buf, enums=[]):
 
 	if name in enum_typedef:
 		name = enum_typedef[name]
+
+	# enums without names act like defines (e.g. #define bla 1)
+	if not name:
+		continue
 
         vals = m.group(2)
 
@@ -239,8 +245,6 @@ def find_enum_defs(buf, enums=[]):
         if name != 'GdkCursorType':
             enums.append((name, isflags, entries))
 
-        pos = m.end()
-
 # ------------------ Find function definitions -----------------
 
 def clean_func(buf):
@@ -251,6 +255,11 @@ def clean_func(buf):
     """
     # bulk comments
     buf = strip_comments(buf)
+
+    # e stuff - "//(/) <comments> \n"
+    pat = re.compile(r'/[/]+.*\n', re.VERBOSE)
+    buf = pat.sub('', buf)
+    #print "functions 0: >>" + buf + "<<"
 
     # compact continued lines
     pat = re.compile(r"""\\\n""", re.MULTILINE)
@@ -456,8 +465,10 @@ class DefsWriter:
 					argument = args[begin_copy:i]
 				else:
 					argument = args[begin_copy:i + 1]
+
 				begin_copy = i + 1
-				argument = argument.lstrip(", ")
+				argument = argument.lstrip(", ").rstrip(" ")
+
 				#print "argument: " + argument
 				callback = argument.find('(')
 				if callback > -1:
@@ -466,6 +477,7 @@ class DefsWriter:
 				spaces = string.count(argument, ' ')
 				if spaces > 1:
 					argument = string.replace(argument, ' ', '-', spaces - 1)
+				#print "argument: " + argument + "; num spaces: " + str(spaces)
 				arguments.append(argument)
 
 		# look for callback parameters

@@ -1148,5 +1148,11 @@ matcher.register_pointer('Ecore_DirectFB_Window', 'G_TYPE_OBJECT')
 matcher.register_pointer('Ecore_Win32_Window', 'G_TYPE_OBJECT')
 matcher.register_pointer('Ecore_WinCE_Window', 'G_TYPE_OBJECT')
 
+# edje
+matcher.register_pointer('Evas_List', 'G_TYPE_OBJECT')
+matcher.register_pointer('Evas_Coord', 'G_TYPE_OBJECT')
+matcher.register('Evas_Event_Flags', UIntArg())  # how to handle enum ?
+
+
 # matcher.register_pointer('', 'G_TYPE_OBJECT')
 

@@ -7,3 +7,4 @@ modulename ecore_evas
 %%
 ignore-glob
   *_get_type
+%%

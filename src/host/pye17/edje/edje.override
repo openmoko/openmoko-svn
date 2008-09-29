@@ -1,14 +1,11 @@
 %%
 headers
-#include <Python.h>               
 #include "pygobject.h"
-#include "Evas.h"
 #include "Edje.h"
+#include "Edje_Edit.h"
 %%
-modulename edje                     
-%%
-import gtk.Plug as PyGtkPlug_Type       
+modulename edje
 %%
 ignore-glob
-  *_get_type                            
+  *_get_type
 %%
