@@ -386,7 +386,7 @@ class DefsWriter:
             if module:
                 fp.write('  (in-module "' + module + '")\n')
             fp.write('  (c-name "' + cname + '")\n')
-	    fp.write('  (gtype-id "G_TYPE_OBJECT")\n')
+	    fp.write('  (gtype-id "G_TYPE_ENUM")\n')
             #fp.write('  (gtype-id "' + typecode(cname) + '")\n')
             prefix = entries[0]
             for ent in entries:
@@ -525,13 +525,13 @@ class DefsWriter:
 
         # Hmmm... Let's asume that a constructor function name
         # ends with '_new' and it returns a pointer.
-        m = func_new_pat.match(name)
-        if pointer_pat.match(ret) and m:
-            cname = ''
-            for s in m.group(1).split ('_'):
-                cname += s.title()
-            if cname != '':
-                self.fp.write('  (is-constructor-of "' + cname + '")\n')
+        #m = func_new_pat.match(name)
+        #if pointer_pat.match(ret) and m:
+            #cname = ''
+            #for s in m.group(1).split ('_'):
+                #cname += s.title()
+            #if cname != '':
+                #self.fp.write('  (is-constructor-of "' + cname + '")\n')
 
         self._write_return(ret)
         self._write_arguments(args)

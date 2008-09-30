@@ -1145,8 +1145,12 @@ matcher.register_pointer('Ecore_Free_Cb', 'G_TYPE_NONE')
 matcher.register_pointer('Ecore_Evas', 'G_TYPE_OBJECT')
 matcher.register('Ecore_X_Window', UIntArg())
 matcher.register_pointer('Ecore_DirectFB_Window', 'G_TYPE_OBJECT')
-matcher.register_pointer('Ecore_Win32_Window', 'G_TYPE_OBJECT')
-matcher.register_pointer('Ecore_WinCE_Window', 'G_TYPE_OBJECT')
+# --> win32 only
+#matcher.register_pointer('Ecore_Win32_Window', 'G_TYPE_OBJECT')
+#matcher.register_pointer('Ecore_WinCE_Window', 'G_TYPE_OBJECT')
+# <--
+
+matcher.register('Evas_Callback_Type', UIntArg()) # enum
 
 # edje
 matcher.register_pointer('Evas_List', 'G_TYPE_OBJECT')
