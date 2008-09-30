@@ -1,8 +1,7 @@
+CFLAGS = `pkg-config --cflags ecore glib-2.0 pygtk-2.0` `python-config --includes`
+LDFLAGS = `pkg-config --libs ecore glib-2.0 pygtk-2.0` `python-config --libs`
 
 ECORE_PATH=$(E_PATH)/ecore/src/lib/ecore
-
-CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -I/usr/include/python2.5 -I/usr/include/pygtk-2.0/ -I$(ECORE_PATH) -I. -g
-LDFLAGS = -lecore -L/usr/local/lib -lglib-2.0
 
 .PHONY: all clean ecore.so
 

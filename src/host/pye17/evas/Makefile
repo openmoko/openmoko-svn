@@ -1,8 +1,7 @@
+CFLAGS = `pkg-config --cflags evas glib-2.0 pygtk-2.0` `python-config --includes`
+LDFLAGS = `pkg-config --libs evas glib-2.0 pygtk-2.0` `python-config --libs`
 
 EVAS_PATH=$(E_PATH)/evas/src/lib
-
-CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -I/usr/include/python2.5 -I/usr/include/pygtk-2.0/ -I$(EVAS_PATH) -I. -g
-LDFLAGS = -levas -L/usr/local/lib -lglib-2.0
 
 .PHONY: all clean evas.so
 

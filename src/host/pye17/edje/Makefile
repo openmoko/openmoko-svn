@@ -1,8 +1,7 @@
+CFLAGS = `pkg-config --cflags edje glib-2.0 pygtk-2.0` `python-config --includes`
+LDFLAGS = `pkg-config --libs edje glib-2.0 pygtk-2.0` `python-config --libs`
 
 EDJE_PATH=$(E_PATH)/edje/src/lib
-
-CFLAGS = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -I/usr/include/python2.5 -I/usr/include/pygtk-2.0/ -I$(EDJE_PATH) -I.
-LDFLAGS = -ledje -L/usr/local/lib -lglib-2.0
 
 .PHONY: all clean edje.so
 
