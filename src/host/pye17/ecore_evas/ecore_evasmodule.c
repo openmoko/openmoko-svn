@@ -17,6 +17,10 @@ initecore_evas(void)
   ecore_evas_register_classes(d);
 
   if (PyErr_Occurred()) {
-    Py_FatalError ("can't initialise module ecore_evas");
+    Py_FatalError("can't register ecore_evas functions");
+  }
+
+  if (ecore_evas_init() != 1) {
+    Py_FatalError("can't initialise module ecore_evas");
   }
 }

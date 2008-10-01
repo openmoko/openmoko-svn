@@ -17,6 +17,10 @@ initecore(void)
   ecore_register_classes(d);
 
   if (PyErr_Occurred()) {
-    Py_FatalError ("can't initialise module ecore");
+    Py_FatalError("can't register ecore functions");
+  }
+
+  if (ecore_init() != 1) {
+    Py_FatalError("can't initialise ecore module");
   }
 }

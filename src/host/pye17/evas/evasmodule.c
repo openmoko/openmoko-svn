@@ -17,6 +17,10 @@ initevas(void)
   evas_register_classes(d);
 
   if (PyErr_Occurred()) {
-    Py_FatalError ("can't initialise module evas");
+    Py_FatalError("can't register evas functions");
+  }
+
+  if (evas_init() != 1) {
+    Py_FatalError("can't initialise evas module");
   }
 }
