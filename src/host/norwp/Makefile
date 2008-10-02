@@ -1,5 +1,5 @@
 CFLAGS=-Wall -I/usr/local/include
-LDFLAGS=-L/usr/local/lib -lftdi
+LDFLAGS=-L/usr/local/lib -lftdi -lusb
 
 PREFIX=/usr
 
