@@ -536,7 +536,7 @@ class ObjectArg(ArgType):
 	    #fd.close
 
             if typename != ptype:
-	        info.arglist.append('(%s *) %s' % (ptype[:-1], pname))
+                info.arglist.append('(%s *) %s' % (ptype[:-1], pname))
             else:
                 info.arglist.append(pname)
 

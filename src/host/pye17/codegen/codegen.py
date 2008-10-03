@@ -320,19 +320,19 @@ class Wrapper:
         if function_obj.varargs:
             raise argtypes.ArgTypeNotFoundError("varargs functions not supported")
 
-	fd = open("/tmp/codegen.log","a+")
-	fd.write(">>> write_function_wrapper() >>>\n")
-	fd.write("arglist 1: " + str(info.get_arglist()) + "\n")
+	#fd = open("/tmp/codegen.log","a+")
+	#fd.write(">>> write_function_wrapper() >>>\n")
+	#fd.write("arglist 1: " + str(info.get_arglist()) + "\n")
 
         for param in function_obj.params:
             if param.pdflt != None and '|' not in info.parsestr:
                 info.add_parselist('|', [], [])
             handler = argtypes.matcher.get(param.ptype)
-	    fd.write("pname: " + param.pname + "; ptype: " + str(param.ptype) + "; pdflt: " + str(param.pdflt) + "; pnull: " + str(param.pnull) + "; handler: " + str(handler) + "\n")
+	    #fd.write("pname: " + param.pname + "; ptype: " + str(param.ptype) + "; pdflt: " + str(param.pdflt) + "; pnull: " + str(param.pnull) + "; handler: " + str(handler) + "\n")
             handler.write_param(param.ptype, param.pname, param.pdflt,
                                 param.pnull, info)
 
-	fd.write("arglist 2: " + str(info.get_arglist()) + "\n")
+	#fd.write("arglist 2: " + str(info.get_arglist()) + "\n")
 
         substdict['setreturn'] = ''
         if handle_return:
@@ -342,7 +342,7 @@ class Wrapper:
             handler.write_return(function_obj.ret,
                                  function_obj.caller_owns_return, info)
 
-	fd.write("arglist 3: " + str(info.get_arglist()) + "\n")
+	#fd.write("arglist 3: " + str(info.get_arglist()) + "\n")
 
         if function_obj.deprecated != None:
             deprecated = self.deprecated_tmpl % {
@@ -389,10 +389,10 @@ class Wrapper:
             substdict['extraparams'] = ''
             flags = 'METH_NOARGS'
 
-	fd.write("arglist: " + str(info.get_arglist()) + "\n")
-	for key,item in substdict.iteritems():
-		fd.write("key: " + str(key) + ", item: " + str(item) + "\n")
-        fd.close()
+	#fd.write("arglist: " + str(info.get_arglist()) + "\n")
+	#for key,item in substdict.iteritems():
+		#fd.write("key: " + str(key) + ", item: " + str(item) + "\n")
+        #fd.close()
 
         return template % substdict, flags
 

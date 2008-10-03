@@ -64,15 +64,13 @@ obj_name_pat = "[A-Za-z0-9_]*"
 
 split_prefix_pat = re.compile('([A-Za-z]*)_([A-Za-z0-9]+)')
 
-def find_obj_defs(buf, objdefs=[]):
+def find_obj_defs(buf, objdefs=[], objtypedefs={}):
     """
     Try to find object definitions in header files.
     """
 
     # filter out comments from buffer.
     buf = strip_comments(buf)
-
-    struct_typedef = {}
 
     # handle typedef enum style defs.
     pat = re.compile("typedef struct\s*([_A-Za-z]*)\s*([_A-Za-z]*)\s*;", re.MULTILINE)
@@ -81,7 +79,7 @@ def find_obj_defs(buf, objdefs=[]):
         m = pat.search(buf, pos)
         if not m: break
 	#print "typedef struct: " + m.group(1) + " => " + m.group(2)
-	struct_typedef[m.group(1)] = m.group(2)
+	objtypedefs[m.group(1)] = m.group(2)
         pos = m.end()
 
     # first find all structures that look like they may represent a GtkObject
@@ -94,8 +92,8 @@ def find_obj_defs(buf, objdefs=[]):
 	#print "struct: " + m.group(1) + " => " + m.group(2)
 
 	name = m.group(1)
-	if name in struct_typedef:
-		name = struct_typedef[name]
+	if name in objtypedefs:
+		name = objtypedefs[name]
 
         objdefs.append((name, None))
         pos = m.end()
@@ -327,7 +325,7 @@ proto_pat=re.compile(r"""
 #"""
 arg_split_pat = re.compile("\s*,\s*")
 
-get_type_pat = re.compile(r'(const-)?([A-Za-z0-9]+)\*?\s+')
+get_type_pat = re.compile(r'(const-)?([A-Za-z0-9_]+)\*?\s+')
 pointer_pat = re.compile('.*\*$')
 func_new_pat = re.compile('(\w+)_new$')
 
@@ -401,9 +399,11 @@ class DefsWriter:
             fp.write('  )\n')
             fp.write(')\n\n')
 
-    def write_obj_defs(self, objdefs, fp=None):
+    def write_obj_defs(self, objdefs, objtypedefs, fp=None):
         if not fp:
             fp = self.fp
+
+        written_objs = 0
 
         fp.write(';; -*- scheme -*-\n')
         fp.write('; object definitions ...\n')
@@ -413,22 +413,31 @@ class DefsWriter:
             if filter:
                 if klass in filter:
                     continue
-            m = split_prefix_pat.match(klass)
-            cmodule = None
-            cname = klass
-            if m:
-                cmodule = m.group(1)
-                #cname = m.group(2)
-            fp.write('(define-object ' + cname + '\n')
-            if cmodule:
-                fp.write('  (in-module "' + cmodule + '")\n')
-            if parent:
-                fp.write('  (parent "' + parent + '")\n')
-            fp.write('  (c-name "' + klass + '")\n')
-            #fp.write('  (gtype-id "' + typecode(klass) + '")\n')
-	    fp.write('  (gtype-id "' + klass + '")\n')
-            # should do something about accessible fields
-            fp.write(')\n\n')
+            self.write_obj_defs_to_file(fp, klass, parent)
+            written_objs += 1
+
+        # if we have no struct definitions (e.g. ecore_evas) we should try add some objects for the object generation
+        if written_objs == 0:
+            for klass in objtypedefs:
+                self.write_obj_defs_to_file(fp, objtypedefs[klass], None)
+
+    def write_obj_defs_to_file(self, fp, klass, parent):
+        m = split_prefix_pat.match(klass)
+        cmodule = None
+        cname = klass
+        if m:
+            cmodule = m.group(1)
+            #cname = m.group(2)
+        fp.write('(define-object ' + cname + '\n')
+        if cmodule:
+            fp.write('  (in-module "' + cmodule + '")\n')
+        if parent:
+            fp.write('  (parent "' + parent + '")\n')
+        fp.write('  (c-name "' + klass + '")\n')
+        #fp.write('  (gtype-id "' + typecode(klass) + '")\n')
+        fp.write('  (gtype-id "' + klass + '")\n')
+        # should do something about accessible fields
+        fp.write(')\n\n')
 
     def _define_func(self, buf):
         buf = clean_func(buf)
@@ -504,9 +513,9 @@ class DefsWriter:
             # methods must have at least one argument
             munged_name = name.replace('_', '')
             m = get_type_pat.match(args[0])
-            if m:
+            if m and name.find('new') < 0:
                 obj = m.group(2)
-                if munged_name[:len(obj)] == obj.lower():
+                if name[:len(obj)].lower() == obj.lower():
                     self._write_method(obj, name, ret, args)
                     return
 
@@ -525,13 +534,13 @@ class DefsWriter:
 
         # Hmmm... Let's asume that a constructor function name
         # ends with '_new' and it returns a pointer.
-        #m = func_new_pat.match(name)
-        #if pointer_pat.match(ret) and m:
-            #cname = ''
-            #for s in m.group(1).split ('_'):
-                #cname += s.title()
-            #if cname != '':
-                #self.fp.write('  (is-constructor-of "' + cname + '")\n')
+        m = func_new_pat.match(name)
+        if pointer_pat.match(ret) and m:
+            cname = ''
+            for s in m.group(1).split ('_'):
+                cname += s.title()
+            if cname != '':
+                self.fp.write('  (is-constructor-of "' + cname + '")\n')
 
         self._write_return(ret)
         self._write_arguments(args)
@@ -613,10 +622,11 @@ def main(args):
 
     # read all the object definitions in
     objdefs = []
+    objtypedefs = {}
     enums = []
     for filename in args:
         buf = open(filename).read()
-        find_obj_defs(buf, objdefs)
+        find_obj_defs(buf, objdefs, objtypedefs)
         find_enum_defs(buf, enums)
     #objdefs = sort_obj_defs(objdefs)
 
@@ -626,7 +636,7 @@ def main(args):
 
         dw = DefsWriter(methods, prefix=modulename, verbose=verbose,
                         defsfilter=defsfilter)
-        dw.write_obj_defs(objdefs, types)
+        dw.write_obj_defs(objdefs, objtypedefs, types)
         dw.write_enum_defs(enums, types)
         print "Wrote %s-types.defs" % separate
 
@@ -640,9 +650,9 @@ def main(args):
         if onlyenums:
             dw.write_enum_defs(enums)
         elif onlyobjdefs:
-            dw.write_obj_defs(objdefs)
+            dw.write_obj_defs(objdefs, objtypedefs)
         else:
-            dw.write_obj_defs(objdefs)
+            dw.write_obj_defs(objdefs, objtypedefs)
             dw.write_enum_defs(enums)
 
             for filename in args:
