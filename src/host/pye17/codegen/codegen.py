@@ -321,7 +321,7 @@ class Wrapper:
             raise argtypes.ArgTypeNotFoundError("varargs functions not supported")
 
 	#fd = open("/tmp/codegen.log","a+")
-	#fd.write(">>> write_function_wrapper() >>>\n")
+	#fd.write(">>> write_function_wrapper() " + function_obj.c_name + " >>>\n")
 	#fd.write("arglist 1: " + str(info.get_arglist()) + "\n")
 
         for param in function_obj.params:
@@ -363,7 +363,7 @@ class Wrapper:
 
         if self.objinfo:
             substdict['typename'] = self.objinfo.c_name
-        substdict.setdefault('cname',  function_obj.c_name)
+        substdict.setdefault('cname', function_obj.c_name)
         substdict['varlist'] = info.get_varlist()
         substdict['typecodes'] = info.parsestr
         substdict['parselist'] = info.get_parselist()
@@ -391,7 +391,7 @@ class Wrapper:
 
 	#fd.write("arglist: " + str(info.get_arglist()) + "\n")
 	#for key,item in substdict.iteritems():
-		#fd.write("key: " + str(key) + ", item: " + str(item) + "\n")
+	#	fd.write("key: " + str(key) + ", item: " + str(item) + "\n")
         #fd.close()
 
         return template % substdict, flags
@@ -952,7 +952,7 @@ class GObjectWrapper(Wrapper):
         '%(parseargs)s'
         '%(codebefore)s'
         '    %(begin_allow_threads)s\n'
-        '    %(setreturn)s%(cname)s(%(cast)s(self->obj)%(arglist)s);\n'
+        '    %(setreturn)s%(cname)s((%(cast)s *)(self->obj)%(arglist)s);\n'
         '    %(end_allow_threads)s\n'
         '%(codeafter)s\n'
         '}\n\n'

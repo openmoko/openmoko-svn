@@ -493,19 +493,19 @@ class ObjectArg(ArgType):
     nulldflt = ('    if ((PyObject *)py_%(name)s == Py_None)\n'
                 '        %(name)s = NULL;\n'
                 '    else if (py_%(name)s && pygobject_check(py_%(name)s, &Py%(type)s_Type))\n'
-                '        %(name)s = %(cast)s(py_%(name)s->obj);\n'
+                '        %(name)s = (%(cast)s *)(py_%(name)s->obj);\n'
                 '    else if (py_%(name)s) {\n'
                 '        PyErr_SetString(PyExc_TypeError, "%(name)s should be a %(type)s or None");\n'
                 '        return NULL;\n'
                 '    }\n')
     null = ('    if (py_%(name)s && pygobject_check(py_%(name)s, &Py%(type)s_Type))\n'
-            '        %(name)s = %(cast)s(py_%(name)s->obj);\n'
+            '        %(name)s = (%(cast)s *)(py_%(name)s->obj);\n'
             '    else if ((PyObject *)py_%(name)s != Py_None) {\n'
             '        PyErr_SetString(PyExc_TypeError, "%(name)s should be a %(type)s or None");\n'
             '        return NULL;\n'
             '    }\n')
     dflt = '    if (py_%(name)s)\n' \
-           '        %(name)s = %(cast)s(py_%(name)s->obj);\n'
+           '        %(name)s = (%(cast)s *)(py_%(name)s->obj);\n'
     def __init__(self, objname, parent, typecode):
         self.objname = objname
         self.cast = string.replace(typecode, '_TYPE_', '_', 1)
