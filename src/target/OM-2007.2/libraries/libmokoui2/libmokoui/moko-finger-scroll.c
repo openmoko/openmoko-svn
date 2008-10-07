@@ -253,11 +253,11 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	priv->ix = priv->x;
 	priv->iy = priv->y;
 	/* Don't allow a click if we're still moving fast, where fast is
-	 * defined as a quarter of our top possible speed.
+         * defined as 1/10 of our top possible speed.
 	 * TODO: Make 'fast' configurable?
 	 */
-	if ((ABS (priv->vel_x) < (priv->vmax * 0.25)) &&
-	    (ABS (priv->vel_y) < (priv->vmax * 0.25)))
+	if ((ABS (priv->vel_x) < (priv->vmax * 0.10)) &&
+	    (ABS (priv->vel_y) < (priv->vmax * 0.10)))
 		priv->child = moko_finger_scroll_get_topmost (
 			GTK_BIN (priv->align)->child->window,
 			event->x, event->y, &x, &y);
@@ -959,7 +959,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Maximum scroll velocity",
 			"Maximum distance the child widget should scroll "
 				"per 'frame', in pixels.",
-			0, G_MAXDOUBLE, 48,
+			0, G_MAXDOUBLE, 96,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property (
