@@ -7,14 +7,15 @@
 OPENOCD_HOST=localhost
 PLATFORM=gta02
 BOARD=v5
+RELEASE=Om2008.9
 
-stuff=http://buildhost.openmoko.org/daily/neo1973/deploy/glibc/images/neo1973/
+stuff=http://downloads.openmoko.org
 
-LOWLEVEL=$stuff/lowlevel-foo-$PLATFORM$BOARD-latest.bin
-UBOOT=$stuff/uboot-$PLATFORM$BOARD-latest.bin
-UIMAGE=$stuff/uImage-om-$PLATFORM-latest.bin
-ROOTFS=$stuff/openmoko-devel-image-om-$PLATFORM.jffs2
+LOWLEVEL=$stuff/daily/${PLATFORM}${BOARD}_and_up-lowlevel.bin
+UBOOT=$stuff/daily/${PLATFORM}${BOARD}_and_up-u-boot.bin
+UIMAGE=$stuff/releases/$RELEASE/$RELEASE.uImage.bin
+ROOTFS=$stuff/releases/$RELEASE/$RELEASE.rootfs.jffs2
 
-DFU_UTIL=$stuff/dfu-util
+DFU_UTIL=$stuff/daily/dfu-util
 #OPENOCD=$stuff/openocd
 OPENOCD_CFG=http://people.openmoko.org/werner/openocd.cfg
