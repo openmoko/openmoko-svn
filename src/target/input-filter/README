@@ -1,0 +1,66 @@
+From laforge@openmoko.org Fri Oct 10 01:34:22 2008
+Date: Fri, 10 Oct 2008 01:34:22 +0200
+From: Harald Welte <laforge@openmoko.org>
+To: smartphones-standards@linuxtogo.org
+Cc: Thomas Seiler <Thomas.Seiler@swisscom.com>,
+	Michael Lauer <mickey@vanille-media.de>,
+	Carsten Haitzler <raster@openmoko.org>
+Subject: Re: frameworkd: performance problems in /dev/input handling
+
+Hi!
+
+I've been thinking about this problem for quite some time and haven't
+really come up with any satisfactory solution that would give quick results
+without introducing big kludges into either the kernel or frameworkd.
+
+However, when I used my input-stat tool to get some statistics on how
+much events the touchscreen driver issues to userspace, I noticed that
+this C program was never consuming more than 0.1% CPU while dropping all
+incoming events.
+
+This lead to the idea to implement a small filter program in C, called
+input-filter.  It is available from
+http://svn.openmoko.org/trunk/src/target/input-filter/
+
+What it does:
+
+* read input_events from the input device (first argument)
+* remove all ABS_* and REL_* events from the stream
+* pass on all other events to the FIFO (named pipe) that is
+  specified as second argument
+* create some nice statistics that are printed to stdout if
+  you send a SIGHUP and get reset if you send SIGUSR1
+
+How to use:
+
+1) create fifo and start input-filter
+
+# mkfifo /dev/input/event5
+# input-filter /dev/input/event1 /dev/input/event5
+
+2) ensure that odeviced.input and odeviced.idlenotifier ignore input
+   device '1' (ignoreinput=1,2,3) instead of only 2,3
+
+3) ensure that odeviced.input ignores input also ignores input device
+   '5'.  This is neccessarry, since you cannot have two readers on the
+   same FIFO.  This is a hack, but to the best of my knowledge, touchscreen
+   related events are not important for odeviced.input for the time being.
+
+4) start frameworkd as usual
+
+Results:
+
+Touching the touchscreen and keeping it touched now makes frameworkd to go to
+0-2% CPU usage (98% without input filter).  
+
+This solves the problem that currently any UI app will get starved of CPU
+cycles if you try to use scrollbars or drag+drop like functionality.
+
+I know it's not nice, but still the least invasive solution that I could come
+up with.  Maybe you could consider merging it until a better solution is found.
+
+Cheers,
+-- 
+- Harald Welte <laforge@openmoko.org>          	        http://openmoko.org/
+============================================================================
+Software for the world's first truly open Free Software mobile phone
