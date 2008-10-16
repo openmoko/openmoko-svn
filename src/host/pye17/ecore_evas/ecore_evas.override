@@ -8,3 +8,41 @@ modulename ecore_evas
 ignore-glob
   *_get_type
 %%
+ignore
+  ecore_evas_init
+  ecore_evas_shutdown
+  ecore_evas_ecore_evas_get
+%%
+define software_x11_new kwargs
+static Ecore_Evas *
+_wrap_software_x11_new(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "w", "h", NULL };
+    PyGObject *new_self;
+    int w, h;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,"ii:software_x11_new.__new__", kwlist, &w, &h))
+        return NULL;
+
+    new_self = PyObject_GC_New(PyGObject, &PyEcore_Evas_Type);
+
+    if (new_self == NULL)
+        return NULL;
+
+    new_self->inst_dict = NULL;
+    new_self->weakreflist = NULL;
+    new_self->private_flags.flags = 0;
+    new_self->obj = ecore_evas_software_x11_new(NULL, 0, 0, 0, w, h);
+
+    if(new_self->obj == NULL) {
+        Py_DECREF(new_self);
+        PyErr_SetString(PyExc_TypeError, "Can't create ecore_evas object. Check your DISPLAY variable!");
+        return NULL;
+    }
+
+    //g_object_ref(new_self->obj);
+    //pygobject_register_wrapper_full(new_self, FALSE);
+    PyObject_GC_Track((PyObject *)new_self);
+
+    return (PyObject*)new_self;
+}

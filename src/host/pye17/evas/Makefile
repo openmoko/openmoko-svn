@@ -1,13 +1,14 @@
 CFLAGS = `pkg-config --cflags evas glib-2.0 pygtk-2.0` `python-config --includes`
 LDFLAGS = `pkg-config --libs evas glib-2.0 pygtk-2.0` `python-config --libs`
 
-EVAS_PATH=$(E_PATH)/evas/src/lib
+EVAS_PATH = $(E_PATH)/evas/src/lib
+LIB_NAME = evas.so
 
-.PHONY: all clean evas.so
+.PHONY: all clean examples
 
-all: evas.so
+all: $(LIB_NAME)
 
-evas.so: evas.o evasmodule.o
+$(LIB_NAME): evas.o evasmodule.o
 	$(CC) $(LDFLAGS) -shared $^ -o $@
 
 evas.c: evas.defs evas.override
@@ -18,4 +19,9 @@ evas.defs: $(CODEGEN_PATH)/h2def.py $(EVAS_PATH)/Evas.h $(EVAS_PATH)/Evas_Data.h
 	$(CODEGEN_PATH)/h2def.py $(EVAS_PATH)/Evas_Data.h >> $@
 
 clean:
-	rm -f *.o *~ evas.defs evas.c evas.so
+	rm -f *.o *~ evas.defs evas.c $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
+
+examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
+
+$(EXAMPLE_PATH)/$(LIB_NAME):
+	cp $(LIB_NAME) $(EXAMPLE_PATH)

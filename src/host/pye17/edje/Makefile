@@ -1,13 +1,14 @@
 CFLAGS = `pkg-config --cflags edje glib-2.0 pygtk-2.0` `python-config --includes`
 LDFLAGS = `pkg-config --libs edje glib-2.0 pygtk-2.0` `python-config --libs`
 
-EDJE_PATH=$(E_PATH)/edje/src/lib
+EDJE_PATH = $(E_PATH)/edje/src/lib
+LIB_NAME = edje.so
 
-.PHONY: all clean edje.so
+.PHONY: all clean examples
 
-all: edje.so
+all: $(LIB_NAME)
 
-edje.so: edje.o edjemodule.o
+$(LIB_NAME): edje.o edjemodule.o
 	$(CC) $(LDFLAGS) -shared $^ -o $@
 
 edje.c: edje.defs edje.override
@@ -18,4 +19,9 @@ edje.defs: $(CODEGEN_PATH)/h2def.py $(EDJE_PATH)/Edje.h $(EDJE_PATH)/Edje_Edit.h
 	$(CODEGEN_PATH)/h2def.py $(EDJE_PATH)/Edje_Edit.h >> edje.defs
 
 clean:
-	rm -f *.o *~ edje.defs edje.c edje.so
+	rm -f *.o *~ edje.defs edje.c $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
+
+examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
+
+$(EXAMPLE_PATH)/$(LIB_NAME):
+	cp $(LIB_NAME) $(EXAMPLE_PATH)
