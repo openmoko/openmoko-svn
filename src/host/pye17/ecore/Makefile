@@ -21,8 +21,10 @@ ecore.defs: $(CODEGEN_PATH)/h2def.py $(ECORE_PATH)/Ecore.h $(ECORE_PATH)/Ecore_D
 clean:
 	rm -f *.o *~ ecore.defs ecore.c $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/*/$(LIB_NAME)
 
-examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
-	ln -s $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/
+examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/$(LIB_NAME)
 
-$(EXAMPLE_PATH)/$(LIB_NAME):
+$(EXAMPLE_PATH)/$(LIB_NAME): $(LIB_NAME)
 	cp $(LIB_NAME) $(EXAMPLE_PATH)
+
+$(EXAMPLE_PATH)/ecore_evas/$(LIB_NAME):
+	ln -s $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/

@@ -2,7 +2,7 @@
 # E_PATH not given (env variable)
 ifeq ($(wildcard $(E_PATH)),)
 
-E_PATH_TMP=~/openmoko/e17/libs
+E_PATH_TMP=~/openmoko/e17
 ifneq ($(wildcard $(E_PATH_TMP)),)
 E_PATH = $(E_PATH_TMP)
 endif
@@ -10,7 +10,7 @@ endif
 endif
 
 ifeq ($(wildcard $(E_PATH)),)
-$(error Path to enlightenment libaries variable is missing, please set E_PATH (e.g. ~/e17/libs))
+$(error Path to enlightenment libaries variable is missing, please set E_PATH (e.g. ~/e17))
 endif
 
 

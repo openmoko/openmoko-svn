@@ -23,5 +23,5 @@ clean:
 
 examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
 
-$(EXAMPLE_PATH)/$(LIB_NAME):
+$(EXAMPLE_PATH)/$(LIB_NAME): $(LIB_NAME)
 	cp $(LIB_NAME) $(EXAMPLE_PATH)

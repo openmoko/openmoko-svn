@@ -20,8 +20,10 @@ ecore_evas.defs: $(CODEGEN_PATH)/h2def.py $(ECORE_EVAS_PATH)/Ecore_Evas.h
 clean:
 	rm -f *.o *~ ecore_evas.defs ecore_evas.c $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/*/$(LIB_NAME)
 
-examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME)
-	ln -s $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/
+examples: $(LIB_NAME) $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/$(LIB_NAME)
 
-$(EXAMPLE_PATH)/$(LIB_NAME):
+$(EXAMPLE_PATH)/$(LIB_NAME): $(LIB_NAME)
 	cp $(LIB_NAME) $(EXAMPLE_PATH)
+
+$(EXAMPLE_PATH)/ecore_evas/$(LIB_NAME):
+	ln -s $(EXAMPLE_PATH)/$(LIB_NAME) $(EXAMPLE_PATH)/ecore_evas/
