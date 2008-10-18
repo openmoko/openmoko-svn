@@ -52,8 +52,8 @@ public class OpenMokoTerminal2.MainWindow : Window
         setup_toolbar();
         setup_notebook();
         update_toolbar();
-        idle_add( on_idle, this );
-        idle_add( on_idle_first_command, this );
+        Idle.add( on_idle );
+        Idle.add( on_idle_first_command );
         //window.add_filter( on_gdk_filter, this );
     }
 
@@ -99,7 +99,7 @@ public class OpenMokoTerminal2.MainWindow : Window
         vbox.pack_start( notebook, true, true, 0 );
 
         var terminal = new OpenMokoTerminal2.MokoTerminal();
-        notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        notebook.append_page( terminal, new Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
         notebook.child_set (terminal, "tab-expand", true, null );
     }
 
@@ -121,7 +121,7 @@ public class OpenMokoTerminal2.MainWindow : Window
         stdout.printf( "on_idle\n" );
         notebook.switch_page += (o, page, num) => {
             btn_delete.set_sensitive( notebook.get_n_pages() > 1 );
-            OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( (int)num ); btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
+            OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( (int)num ); btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
             btn_zoom_out.set_sensitive( terminal.get_font_size() > 1 );
         };
         notebook.page_removed += (o, page, num) => {
@@ -137,7 +137,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private bool on_idle_first_command()
     {
         stdout.printf( "on_idle_first_command\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( 0 );
+        OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( 0 );
         if ( initial_command != null )
             terminal.paste_command( initial_command );
         return false;
@@ -147,7 +147,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     {
         stdout.printf( "on_new_clicked\n" );
         var terminal = new OpenMokoTerminal2.MokoTerminal();
-        notebook.append_page( terminal, Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
+        notebook.append_page( terminal, new Image.from_stock( STOCK_INDEX, IconSize.LARGE_TOOLBAR ) );
         notebook.child_set (terminal, "tab-expand", true, null );
         notebook.show_all();
         update_toolbar();
@@ -164,7 +164,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private void on_zoom_in_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_zoom_in_clicked\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
+        OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( notebook.get_current_page() );
         terminal.zoom_in();
         update_toolbar();
     }
@@ -172,7 +172,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private void on_zoom_out_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_zoom_out_clicked\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
+        OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( notebook.get_current_page() );
         terminal.zoom_out();
         update_toolbar();
     }
@@ -180,7 +180,7 @@ public class OpenMokoTerminal2.MainWindow : Window
     private void on_paste_clicked( Gtk.ToolButton b )
     {
         stdout.printf( "on_paste_clicked\n" );
-        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
+        OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( notebook.get_current_page() );
         terminal.paste();
         update_toolbar();
     }
@@ -194,14 +194,15 @@ public class OpenMokoTerminal2.MainWindow : Window
             return;
         }
         btn_delete.set_sensitive( notebook.get_n_pages() > 1 );
-        OpenMokoTerminal2.MokoTerminal terminal = notebook.get_nth_page( notebook.get_current_page() );
-        stdout.printf( "current font size for terminal is %d\n", terminal.get_font_size() );
+        OpenMokoTerminal2.MokoTerminal terminal = (OpenMokoTerminal2.MokoTerminal) notebook.get_nth_page( notebook.get_current_page() );
+        stdout.printf( "current font size for terminal is %u\n", terminal.get_font_size() );
         btn_zoom_in.set_sensitive( terminal.get_font_size() < 10 );
         btn_zoom_out.set_sensitive( terminal.get_font_size() > 1 );
     }
 
     public void run()
     {
+        // FIXME default focus needs to be on the terminal (in order to play nice with on-screen keyboards)
         show_all();
         Gtk.main();
     }
@@ -214,11 +215,13 @@ public class OpenMokoTerminal2.MainWindow : Window
 
     static int main (string[] args) {
         try {
-            Gtk.init_with_args(ref args.length, ref args, " - a lightweight terminal for the OpenMoko environment", options, null);
+            // FIXME revisit once http://bugzilla.gnome.org/show_bug.cgi?id=547135 got fixed
+            // Gtk.init_with_args( ref args, " - a lightweight terminal for the OpenMoko environment", options, "openmoko-terminal" );
+            Gtk.init( ref args );
         } catch (Error e)
         {
             stderr.printf("Error: %s\n", e.message);
-            return 1; 
+            return 1;
         }
 
         var window = new MainWindow();

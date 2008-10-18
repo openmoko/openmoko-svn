@@ -27,7 +27,7 @@ openmoko_terminal2_SOURCES = \
 	$(NULL)
 
 src/openmoko-terminal2.vala.stamp: $(openmoko_terminal2_VALASOURCES)
-	$(VALAC) --pkg vte --basedir $(top_srcdir) $^
+	$(VALAC) --pkg vte --save-temps --basedir $(top_srcdir) $^
 	touch $@
 
 openmoko_terminal2_LDADD = \
