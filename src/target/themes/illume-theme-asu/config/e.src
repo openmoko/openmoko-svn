@@ -1,5 +1,5 @@
 group "E_Config" struct {
-  value "config_version" int: 65828;
+  value "config_version" int: 65832;
   value "show_splash" int: 1;
   value "init_default_theme" string: "asu_init.edj";
   value "desktop_default_name" string: "Desktop %i, %i";
@@ -468,7 +468,7 @@ group "E_Config" struct {
   value "border_raise_on_mouse_action" int: 1;
   value "border_raise_on_focus" int: 1;
   value "desk_flip_wrap" int: 0;
-  value "icon_theme" string: "openmoko-asu";
+  value "icon_theme" string: "hicolor";
   value "desk_flip_animate_mode" int: 0;
   value "desk_flip_animate_interpolation" int: 0;
   value "desk_flip_animate_time" double: 0.2000000000000000111022302;
@@ -539,5 +539,19 @@ group "E_Config" struct {
   value "thumbscroll_threshhold" int: 24;
   value "thumbscroll_momentum_threshhold" double: 100.0000000000000000000000000;
   value "thumbscroll_friction" double: 1.0000000000000000000000000;
+  value "mouse_hand" int: 1;
+  value "hal_desktop" int: 1;
+  value "border_keyboard.timeout" double: 5.0000000000000000000000000;
+  value "border_keyboard.move.dx" uchar: 5;
+  value "border_keyboard.move.dy" uchar: 5;
+  value "border_keyboard.resize.dx" uchar: 5;
+  value "border_keyboard.resize.dy" uchar: 5;
+  value "scale.min" double: 1.0;
+  value "scale.max" double: 3.0;
+  value "scale.factor" double: 1.0;
+  value "scale.base_dpi" int: 142;
+  value "scale.use_dpi" uchar: 1;
+  value "scale.use_custom" uchar: 0;
+  value "show_cursor" uchar: 0;
+  value "idle_cursor" uchar: 0;
 }
-
