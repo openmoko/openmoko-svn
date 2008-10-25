@@ -2350,7 +2350,7 @@ collections {
 
 /////////////////////////////////////////////////////////////////////////////
    /*** MOD: ILLUME FM ***/
-   group { name: "e/fileman/default/icon/fixed";
+   group { name: "e/fileman/desktop/icon/fixed";
       images {
 	 image: "box.png" COMP;
       }
