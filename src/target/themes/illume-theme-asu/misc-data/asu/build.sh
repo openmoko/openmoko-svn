@@ -1,2 +1,2 @@
 #!/bin/sh
-edje_cc freerunner.edc *.png *.ttf -o asu.edj
+edje_cc $@ -id . -fd . freerunner.edc -o asu.edj
