@@ -1,0 +1,314 @@
+#####
+# Restore the 2007.2 gtkrc settings
+#####
+
+style "default"
+{
+  GtkButton::inner_border = {0, 0, 0, 0}
+}
+
+
+#####
+# Background
+#####
+
+
+style "omp-main-background"
+{
+        bg_pixmap[NORMAL] = "mokomediaplayer/background.png"
+}
+widget "*omp-main-background" style "omp-main-background"
+
+
+#####
+# Top widgets (album cover, track title & Co)
+#####
+
+
+style "omp-main-top-cover-placeholder"
+{
+	stock["image"] = {{ "mokomediaplayer/frame_placeholder.png" }}
+}
+widget "*omp-main-top-cover-placeholder" style "omp-main-top-cover-placeholder"
+
+
+style "omp-main-top-cover-padding"
+{
+	xthickness = 11
+	ythickness = 11
+}
+widget "*omp-main-top-cover-padding" style "omp-main-top-cover-padding"
+
+
+style "omp-main-top-cover"
+{
+	stock["no_cover"] = {{ "mokomediaplayer/no_cover.png" }}
+
+	engine "pixmap"
+	{
+        	image
+		{
+			function	= SHADOW
+			shadow		= IN
+			file		= "mokomediaplayer/frame.png"
+			border		= { 2, 2, 2, 2 }
+			stretch		= TRUE
+		}
+	}
+}
+widget "*omp-main-top-cover" style "omp-main-top-cover"
+
+
+style "omp-main-top-label1"
+{
+	fg[NORMAL] = "white"
+	font_name = "Sans 5"
+	xthickness = 7
+}
+widget "*omp-main-top-label1" style "omp-main-top-label1"
+
+
+style "omp-main-top-label2"
+{
+	fg[NORMAL] = "white"
+	font_name = "Sans 5"
+	xthickness = 7
+}
+widget "*omp-main-top-label2" style "omp-main-top-label2"
+
+
+style "omp-main-top-label3"
+{
+	fg[NORMAL] = "#000000"
+	font_name = "Sans 6"
+	ythickness = 2
+}
+widget "*omp-main-top-label3" style "omp-main-top-label3"
+
+
+#####
+# Bottom widgets (playlist pos, track time, control buttons, etc.)
+#####
+
+
+style "omp-main-btm-info-bar"
+{
+	stock["track"] = {{ "mokomediaplayer/ico_track.png" }}
+	stock["time"]  = {{ "mokomediaplayer/ico_time.png" }}
+	fg[NORMAL] = "black"
+	font_name = "Sans 6"
+	xthickness = 6
+	ythickness = 3
+}
+widget "*omp-main-btm-info-bar" style "omp-main-btm-info-bar"
+
+
+style "omp-main-btm-progressbar"
+{
+	# This color must be the same as pgbar_bar.png
+	# The first couple pixels will be drawn with it
+	# Why, you ask? It's GTK...
+	bg[PRELIGHT] = "#b15400"
+
+	xthickness = 6
+	ythickness = 6
+
+	engine "pixmap"
+	{
+		image
+		{
+			function	= BOX
+			detail		= "trough"
+			file		= "mokomediaplayer/pgbar_background.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+			orientation	= HORIZONTAL
+	        }
+		image
+		{
+			function	= BOX
+			detail		= "bar"
+			file		= "mokomediaplayer/pgbar_bar.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+			orientation	= HORIZONTAL
+	        }
+		image
+		{
+			function	= SHADOW
+			shadow		= IN
+			file		= "mokomediaplayer/frame.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+		}
+		image
+		{
+			function	= SHADOW
+			shadow		= OUT
+			file		= "mokomediaplayer/frame.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+		}
+	}
+}
+widget "*omp-main-btm-progressbar" style : highest "omp-main-btm-progressbar"
+
+
+style "omp-main-btm-button-box"
+{
+        bg_pixmap[NORMAL] = "mokomediaplayer/button_box.png"
+	xthickness = 0
+	ythickness = 6
+}
+widget "*omp-main-btm-button-box" style "omp-main-btm-button-box"
+
+
+style "omp-main-btm-button-box2"
+{
+	# This is the second (extended) row
+	bg[NORMAL] = "#000000"
+	xthickness = 0
+	ythickness = 6
+}
+widget "*omp-main-btm-button-box2" style "omp-main-btm-button-box2"
+
+
+style "omp-main-btm-button-expand"
+{
+	stock["image"] = {{ "mokomediaplayer/ico_expand.png" }}
+	xthickness = 0		# Override global GtkButton theming
+	ythickness = 0
+
+	engine "pixmap"
+	{
+        	image
+		{
+			function	= BOX
+			state		= NORMAL
+			file		= "mokomediaplayer/btn_expand.png"
+			stretch		= TRUE
+		}
+        	image
+		{
+			function	= BOX
+			state		= PRELIGHT
+			file		= "mokomediaplayer/btn_expand.png"
+			stretch		= TRUE
+		}
+        	image
+		{
+			function	= BOX
+			state		= ACTIVE
+			file		= "mokomediaplayer/btn_expand.png"
+			stretch		= TRUE
+		}
+	}
+
+
+}
+widget "*omp-main-btm-button-expand" style "omp-main-btm-button-expand"
+
+
+style "omp-main-btm-button-expand-placeholder"
+{
+	stock["image"] = {{ "mokomediaplayer/btn_expand_placeholder.png" }}
+}
+widget "*omp-main-btm-button-expand-placeholder" style "omp-main-btm-button-expand-placeholder"
+
+
+style "omp-main-btm-buttons"
+{
+	stock["rew_prev"]       = {{ "mokomediaplayer/ico_rew_prev.png" }}
+	stock["ffwd_next"]      = {{ "mokomediaplayer/ico_ffwd_next.png" }}
+	stock["play"]           = {{ "mokomediaplayer/ico_play.png" }}
+	stock["pause"]          = {{ "mokomediaplayer/ico_pause.png" }}
+	stock["repeat_off"]     = {{ "mokomediaplayer/ico_repeat_off.png" }}
+	stock["repeat_once"]    = {{ "mokomediaplayer/ico_repeat_once.png" }}
+	stock["repeat_current"] = {{ "mokomediaplayer/ico_repeat_current.png" }}
+	stock["repeat_all"]     = {{ "mokomediaplayer/ico_repeat_all.png" }}
+	stock["shuffle_off"]    = {{ "mokomediaplayer/ico_shuffle_off.png" }}
+	stock["shuffle_on"]     = {{ "mokomediaplayer/ico_shuffle_on.png" }}
+	stock["preferences"]	= {{ "mokomediaplayer/ico_preferences.png" }}
+
+	xthickness = 0		# Override global GtkButton theming
+	ythickness = 0
+
+	engine "pixmap"
+	{
+        	image
+		{
+			function	= BOX
+			state		= NORMAL
+			file		= "mokomediaplayer/btn_white.png"
+			stretch		= TRUE
+		}
+        	image
+		{
+			function	= BOX
+			state		= PRELIGHT
+			file		= "mokomediaplayer/btn_white.png"
+			stretch		= TRUE
+		}
+        	image
+		{
+			function	= BOX
+			state		= ACTIVE
+			file		= "mokomediaplayer/btn_white_down.png"
+			stretch		= TRUE
+		}
+	}
+
+
+}
+widget "*omp-main-btm-buttons" style "omp-main-btm-buttons"
+
+
+style "omp-main-btm-button-padding-y"
+{
+	# We have two outer button paddings: one for the expand button which
+	# must not have padding on the x axis and one for all others
+	xthickness = 0
+	ythickness = 5
+}
+widget "*omp-main-btm-button-padding-y" style "omp-main-btm-button-padding-y"
+
+
+style "omp-main-btm-button-padding-xy"
+{
+	# We have two outer button paddings: one for the expand button which
+	# must not have padding on the x axis and one for all others
+	xthickness = 12
+	ythickness = 6
+}
+widget "*omp-main-btm-button-padding-xy" style "omp-main-btm-button-padding-xy"
+
+
+style "omp-main-btm-volume"
+{
+	stock["volume00"]	= {{ "mokomediaplayer/ico_volume_00.png" }}
+	stock["volume01"]	= {{ "mokomediaplayer/ico_volume_01.png" }}
+	stock["volume02"]	= {{ "mokomediaplayer/ico_volume_02.png" }}
+	stock["volume03"]	= {{ "mokomediaplayer/ico_volume_03.png" }}
+	stock["volume04"]	= {{ "mokomediaplayer/ico_volume_04.png" }}
+	stock["volume05"]	= {{ "mokomediaplayer/ico_volume_05.png" }}
+	stock["volume06"]	= {{ "mokomediaplayer/ico_volume_06.png" }}
+	stock["volume07"]	= {{ "mokomediaplayer/ico_volume_07.png" }}
+	stock["volume08"]	= {{ "mokomediaplayer/ico_volume_08.png" }}
+	stock["volume09"]	= {{ "mokomediaplayer/ico_volume_09.png" }}
+	stock["volume10"]	= {{ "mokomediaplayer/ico_volume_10.png" }}
+
+	fg[NORMAL] = "#d66900"
+	xthickness = 20
+	ythickness = 0
+}
+widget "*omp-main-btm-volume" style "omp-main-btm-volume"
+
+
+style "omp-main-btm-spacer"
+{
+	# Normally, the spacer is left blank but you can assign a
+	# background image if you want as it's an event box
+	ythickness = 13
+}
+widget "*omp-main-btm-spacer" style "omp-main-btm-spacer"
+

@@ -187,5 +187,5 @@ include "openmoko-calculator"
 include "openmoko-contacts"
 include "openmoko-dialer"
 include "openmoko-panel-plugins"
-
+include "openmoko-mediaplayer"
 

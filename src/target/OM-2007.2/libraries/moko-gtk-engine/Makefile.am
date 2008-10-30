@@ -16,6 +16,10 @@ libmoko_engine_la_SOURCES = \
 libmoko_engine_la_LDFLAGS = -module -avoid-version -no-undefined
 libmoko_engine_la_LIBADD = $(GTK_LIBS)
 
+mediaplayerthemedir = $(datadir)/themes/Moko/gtk-2.0/mokomediaplayer
+dist_mediaplayertheme_DATA = \
+  data/gtk-2.0/mokomediaplayer/*
+
 gtkthemedir = $(datadir)/themes/Moko/gtk-2.0
 dist_gtktheme_DATA = \
   data/gtk-2.0/gtkrc \
@@ -23,7 +27,8 @@ dist_gtktheme_DATA = \
   data/gtk-2.0/openmoko-calculator \
   data/gtk-2.0/openmoko-contacts \
   data/gtk-2.0/openmoko-dialer \
-  data/gtk-2.0/openmoko-panel-plugins
+  data/gtk-2.0/openmoko-panel-plugins \
+  data/gtk-2.0/openmoko-mediaplayer
 
 matchboxthemedir = $(datadir)/themes/Moko/matchbox
 dist_matchboxtheme_DATA = \
