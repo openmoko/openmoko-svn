@@ -112,12 +112,12 @@ omp_playback_init()
 		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__STRING,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
-	// Create audio sink for PulseAudio
-	omp_gst_audiosink = gst_element_factory_make("pulsesink", NULL);
+	// Create audio sink for ALSA
+	omp_gst_audiosink = gst_element_factory_make("alsasink", NULL);
 
 	if (!omp_gst_audiosink)
 	{
-		error_dialog_modal(_("Error: gstreamer failed to create the PulseAudio sink.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-plugin-pulse)."));
+		error_dialog_modal(_("Error: gstreamer failed to create the ALSA sink.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-plugin-alsa)."));
 
 		return FALSE;
 	}
