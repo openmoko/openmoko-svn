@@ -130,7 +130,7 @@ set_time_idle (TodayData *data)
 	
 	time = jana_ecal_utils_time_now (data->location);
 	jana_gtk_clock_set_time (JANA_GTK_CLOCK (data->clock), time);
-	date_str = jana_utils_strftime (time, "%A, %d. %B %Y");
+	date_str = jana_utils_strftime (time, _("%A, %d. %B %Y"));
 	gtk_label_set_text (GTK_LABEL (data->date_label), date_str);
 	g_free (date_str);
 	
@@ -413,7 +413,7 @@ is_active_notify (GObject *window, GParamSpec *arg1, TodayData *data)
 {
 	g_object_get (window, "is-active", &active, NULL);
 	if (!active)
-		gtk_window_set_title (GTK_WINDOW (data->window), "Home");
+       	  gtk_window_set_title (GTK_WINDOW (data->window), _("Home"));
 	else
 		set_window_title (data);
 }

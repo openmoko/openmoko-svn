@@ -59,7 +59,7 @@ today_pim_journal_update_messages (TodayData *data)
 			JANA_GTK_EVENT_STORE_COL_SUMMARY, &summary,
 			JANA_GTK_EVENT_STORE_COL_START, &start, -1);
 		
-		message = g_strdup_printf ("(%02d:%02d) %s",
+		message = g_strdup_printf (_("(%02d:%02d) %s"),
 			jana_time_get_hours (start),
 			jana_time_get_minutes (start),
 			summary);

@@ -96,7 +96,7 @@ today_events_store_comp_get_desc (icalcomponent *comp)
 	
 	/* TODO: Read some setting to decide on 24hr/12hr time */
 	if (day_t == start_t)
-		strftime (time_string, sizeof (time_string), "%I:%M%p",
+	  strftime (time_string, sizeof (time_string), _("%I:%M%p"),
 			&start_tm);
 	else
 		strftime (time_string, sizeof (time_string), "%x",

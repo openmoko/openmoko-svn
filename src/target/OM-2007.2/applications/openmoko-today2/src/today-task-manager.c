@@ -718,7 +718,7 @@ today_task_manager_killall_clicked_cb (GtkToolButton *widget, TodayData *data)
 	/* Confirmation dialog first */
 	dialog = gtk_message_dialog_new (GTK_WINDOW (data->window),
 		GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-		"Are you sure you want to close all applications?");
+					 _("Are you sure you want to close all applications?"));
 	response = gtk_dialog_run (GTK_DIALOG (dialog));
 	gtk_widget_destroy (dialog);
 	
