@@ -47,6 +47,10 @@ static gchar* backlight_node = NULL;
 static int backlight_max_brightness = 1;
 
 #ifdef NEOD_PLATFORM_FIC_NEO1973
+    static int hardware = NULL;
+#endif
+
+#ifdef NEOD_PLATFORM_FIC_NEO1973
     #define AUX_BUTTON_KEYCODE 169    /* aux */
     #define POWER_BUTTON_KEYCODE 116  /* power */
     #define TOUCHSCREEN_BUTTON_KEYCODE_MIN 0x140 /* BTN_DIGI */
@@ -119,6 +123,57 @@ enum PowerManagementMode
     DIM_ONLY = 1,
     NONE = 2,
 };
+
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+enum HardwareVersion
+{
+    GTA01 = 1,
+    GTA02 = 2,
+};
+
+static int hardwareVersion()
+{
+    if (hardware==NULL)
+    {
+        char value[255];
+        char key[255];
+
+        FILE* f = fopen( "/proc/cpuinfo" , "r" );
+        if ( f == NULL )
+        {
+            g_debug( "can't open file '/proc/cpuinfo': (%s), aborting.", strerror( errno ) );
+            return;
+        }
+
+        while (EOF != fscanf (f, "%s\t : %s\t*\n", key, value))
+        {
+            if (strcmp(&key,"Hardware")==0)
+            {
+                if (strcmp(&value,"GTA01")==0)
+                    hardware = GTA01;
+                if (strcmp(&value,"GTA02")==0)
+                    hardware = GTA02;
+                break;
+            }
+        }
+        if (hardware==NULL)
+        {
+            g_debug( "can't get hardware version." );
+        }
+        else
+	{
+	    g_debug( "got hardware version: '%s', saved as '%d'.", &value, hardware);
+	}
+
+        fclose( f );
+    }
+    else
+    {
+        g_debug( "allready have hw-version: '%d'.", hardware );
+    }
+    return hardware;
+}
+#endif
 
 int pm_value = 0;
 gboolean orientation = FALSE;
@@ -592,10 +647,9 @@ void neod_buttonactions_popup_selected_lock( GtkWidget* button, gpointer user_da
     }
 }
 
-void neod_buttonactions_popup_selected_lock_display(GtkWidget* button, 
-													gpointer user_data) {
+void neod_buttonactions_popup_selected_lock_display(GtkWidget* button, gpointer user_data) {
     gtk_widget_hide(power_menu);
-	neod_buttonactions_lock_display();
+    neod_buttonactions_lock_display();
 }
 
 void neod_buttonactions_popup_selected_restartUI( GtkWidget* button, gpointer user_data )
@@ -694,12 +748,15 @@ static void peripheral_set_power( int unit, gboolean on )
         case BLUETOOTH:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
             write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on", on );
-	     write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/reset", 0 );
+            write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-bt.0/reset", 0 );
 #endif
             break;
         case GPS:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-gps.0/pwron", on );
+            if (hardwareVersion()==GTA01)
+                system( on ? "/etc/init.d/gps-hardware restart" : "/etc/init.d/gps-hardware stop" );
+            else
+                write_boolean_to_path( "/sys/bus/platform/devices/neo1973-pm-gps.0/pwron", on );
 #endif
             break;
         case WIFI:
@@ -813,9 +870,14 @@ void neod_buttonactions_show_power_menu()
         g_signal_connect( G_OBJECT(gpspower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( GPS ) );
         gtk_box_pack_start_defaults( GTK_BOX(box), gpspower );
 
-        wifipower = gtk_button_new();
-        g_signal_connect( G_OBJECT(wifipower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( WIFI ) );
-        gtk_box_pack_start_defaults( GTK_BOX(box), wifipower );
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+        if (hardwareVersion()==GTA02)
+        {
+            wifipower = gtk_button_new();
+            g_signal_connect( G_OBJECT(wifipower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), GINT_TO_POINTER( WIFI ) );
+            gtk_box_pack_start_defaults( GTK_BOX(box), wifipower );
+        }
+#endif
 
         gtk_box_pack_start_defaults( GTK_BOX(box), gtk_hseparator_new() );
 
@@ -831,12 +893,15 @@ void neod_buttonactions_show_power_menu()
 
         GtkWidget* lock_display = gtk_button_new_with_label("Lock Display");
         g_signal_connect(G_OBJECT(lock_display), "clicked", 
-			G_CALLBACK(neod_buttonactions_popup_selected_lock_display), NULL);
-		gtk_box_pack_start_defaults(GTK_BOX(box), lock_display);
-#if 0
-        GtkWidget* lock = gtk_button_new_with_label("Lock Phone");
-        g_signal_connect( G_OBJECT(lock), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
-        gtk_box_pack_start_defaults( GTK_BOX(box), lock );
+            G_CALLBACK(neod_buttonactions_popup_selected_lock_display), NULL);
+        gtk_box_pack_start_defaults(GTK_BOX(box), lock_display);
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+        if (hardwareVersion()==GTA01)
+        {
+            GtkWidget* lock = gtk_button_new_with_label("Suspend Phone");
+            g_signal_connect( G_OBJECT(lock), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
+            gtk_box_pack_start_defaults( GTK_BOX(box), lock );
+        }
 #endif
         GtkWidget* poweroff = gtk_button_new_with_label( "Shutdown Now" );
         g_signal_connect( G_OBJECT(poweroff), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
@@ -960,7 +1025,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         } else if(gtk_window_is_active(GTK_WINDOW(lock_display))) {
             g_debug("sorry, i'm not going to close the lock window");
             return FALSE;
-		}
+        }
 
         Display* display = XOpenDisplay( NULL );
 
