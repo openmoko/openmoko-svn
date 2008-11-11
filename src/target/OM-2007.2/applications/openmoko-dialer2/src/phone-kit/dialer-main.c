@@ -349,44 +349,47 @@ DBusHandlerResult headset_signal_filter (DBusConnection *bus, DBusMessage *msg, 
 	MokoNetwork *network;
 	MokoDialer *dialer;
 
-	g_debug( "headset signal filter" );
-
-	network = moko_network_get_default ();
-	dialer = moko_dialer_get_default (network);
-	status = moko_dialer_get_status(dialer);  
-
-	if ( dbus_message_is_signal( msg, "org.openmoko.PhoneKit.Headset", "HeadsetIn" ) )
+	if ( !g_strcmp0( dbus_message_get_interface(msg), "org.openmoko.PhoneKit.Headset" ) )
 	{
-		moko_headset_status_set(HEADSET_STATUS_IN);
-		g_debug( "Headset In" );
+		g_debug( "headset signal filter" );
 
-		if ( PK_DIALER_TALKING == status ) {
-			moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
-			g_debug("SOUND_PROFILE_GSM_HEADSET\n");
-		}	
-		else {
-			moko_sound_profile_set(SOUND_PROFILE_HEADSET);
-			g_debug("SOUND_PROFILE_HEADSET\n");
-		}	
-		return DBUS_HANDLER_RESULT_HANDLED;
+		network = moko_network_get_default ();
+		dialer = moko_dialer_get_default (network);
+		status = moko_dialer_get_status(dialer);  
+
+		if ( dbus_message_is_signal( msg, "org.openmoko.PhoneKit.Headset", "HeadsetIn" ) )
+		{
+			moko_headset_status_set(HEADSET_STATUS_IN);
+			g_debug( "Headset In" );
+
+			if ( PK_DIALER_TALKING == status ) {
+				moko_sound_profile_set(SOUND_PROFILE_GSM_HEADSET);
+				g_debug("SOUND_PROFILE_GSM_HEADSET\n");
+			}	
+			else {
+				moko_sound_profile_set(SOUND_PROFILE_HEADSET);
+				g_debug("SOUND_PROFILE_HEADSET\n");
+			}	
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+		else if ( dbus_message_is_signal( msg,"org.openmoko.PhoneKit.Headset", "HeadsetOut" ) )
+		{
+			moko_headset_status_set(HEADSET_STATUS_OUT);
+			g_debug( "Headset Out" );
+
+			if ( PK_DIALER_TALKING == status ) {
+				moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+				g_debug("SOUND_PROFILE_GSM_HANDSET\n");
+			}	
+			else {	
+				moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
+				g_debug("SOUND_PROFILE_STEREO_OUT\n");
+			}	
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		g_debug( "(unknown dbus message, ignoring)" );
 	}
-	else if ( dbus_message_is_signal( msg,"org.openmoko.PhoneKit.Headset", "HeadsetOut" ) )
-	{
-	        moko_headset_status_set(HEADSET_STATUS_OUT);
-		g_debug( "Headset Out" );
-
-		if ( PK_DIALER_TALKING == status ) {
-			moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
-			g_debug("SOUND_PROFILE_GSM_HANDSET\n");
-		}	
-		else {	
-			moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
-			g_debug("SOUND_PROFILE_STEREO_OUT\n");
-		}	
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	g_debug( "(unknown dbus message, ignoring)" );
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }    
 
