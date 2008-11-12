@@ -69,8 +69,8 @@ public class OpenMokoTerminal2.MokoTerminal : HBox
         terminal.set_mouse_autohide( true );
         terminal.set_cursor_blinks( true );
         terminal.set_backspace_binding( TerminalEraseBinding.ASCII_DELETE);
-
-        terminal.fork_command( "/bin/sh", new string[]{}, new string[]{}, Environment.get_variable( "HOME" ), true, true, true );
+        // work around bug in VTE. FIXME: Clear with upstream
+        terminal.fork_command( (string) 0, (string[]) 0, new string[]{}, Environment.get_variable( "HOME" ), true, true, true );
     }
 
     public uint get_font_size()
