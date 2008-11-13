@@ -3109,6 +3109,10 @@ collections {
 	    description { state: "default" 0.0;
 	       color: 176 176 176 255;
 	       align: 1.0 0.0;
+
+               /* Hiding network name of operator as Sean's request */
+               visible: 0;
+
 	       text {
 		  align: 1.0 0.0;
 		  font: "Liberation-Bold";
