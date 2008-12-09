@@ -5,9 +5,12 @@
 #else
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/io.h>
+#ifdef LINUX_PPDEV
 #include <linux/parport.h>
 #include <linux/ppdev.h>
+#else
+#include <sys/io.h>
+#endif
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <fcntl.h>
