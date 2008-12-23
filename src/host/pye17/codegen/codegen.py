@@ -385,15 +385,12 @@ class Wrapper:
 
         substdict['arglist'] = info.get_arglist()
 
-	substdict['cb_code'] = ""
-
 	# TODO: deal with more arguments
 	if info.piscb > 0:
 	  substdict['arglist'] = ", &" + function_obj.c_name + "_cb"
-	  substdict['cb_code'] = cb_template % {'c_name': function_obj.c_name,
-	                                        'cb_name': function_obj.c_name}
-	  template = substdict['cb_code'] + template
-          sys.stderr.write("cb_code: %s\n" % substdict['cb_code'])
+	  cb_code = cb_template % {'c_name': function_obj.c_name,
+	                           'cb_name': function_obj.c_name}
+	  template = cb_code + template
 
         substdict['codebefore'] = deprecated + (
             string.replace(info.get_codebefore(),
@@ -419,8 +416,8 @@ class Wrapper:
 	#for key,item in substdict.iteritems():
 		#sys.stderr.write("key: " + str(key) + ", item: " + str(item) + "\n")
 
-        if info.piscb > 0:
-           sys.stderr.write("template: %s\n" % (template % substdict))
+        #if info.piscb > 0:
+           #sys.stderr.write("template: %s\n" % (template % substdict))
 	   #sys.stderr.write("cb_code (again): %s\n" % substdict['cb_code'])
 	   #substdict['callback_code'] = 'balbla'
 	   #for key,item in substdict.iteritems():
