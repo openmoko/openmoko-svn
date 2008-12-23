@@ -204,6 +204,16 @@ class Wrapper:
         '}\n\n'
         )
 
+    cb_function_tmpl = (
+        'static PyObject *%(cb_name)s_obj = NULL;\n\n'
+        'void %(c_name)s_cb(void)\n'
+        '{\n'
+        '    PyObject *arglist = NULL;\n\n'
+        '    if (%(cb_name)s_obj != NULL)\n'
+	'        PyEval_CallObject(%(cb_name)s_obj, arglist);\n'
+        '}\n\n'
+        )
+
     virtual_accessor_tmpl = (
         'static PyObject *\n'
         '_wrap_%(cname)s(PyObject *cls%(extraparams)s)\n'
@@ -277,9 +287,10 @@ class Wrapper:
 
         # Maybe this could be done in a nicer way, but I'll leave it as it is
         # for now: -- Johan
-        if not self.overrides.slot_is_overriden('%s.tp_init' %
-                                                self.objinfo.c_name):
-            substdict['tp_init'] = self.write_constructor()
+        if not self.overrides.slot_is_overriden('%s.tp_init' % self.objinfo.c_name):
+           #import sys
+           #sys.stderr.write("tp_init: " + str(self.objinfo.c_name) + "\n")
+           substdict['tp_init'] = self.write_constructor()
         substdict['tp_methods'] = self.write_methods()
         substdict['tp_getset'] = self.write_getsets()
 
@@ -302,7 +313,7 @@ class Wrapper:
 
         self.write_virtuals()
 
-    def write_function_wrapper(self, function_obj, template,
+    def write_function_wrapper(self, function_obj, template, cb_template,
                                handle_return=0, is_method=0, kwargs_needed=0,
                                substdict=None):
         '''This function is the guts of all functions that generate
@@ -310,6 +321,8 @@ class Wrapper:
         if not substdict: substdict = {}
 
         info = argtypes.WrapperInfo()
+	info.function_c_name = function_obj.c_name
+	info.piscb = 0
 
         substdict.setdefault('errorreturn', 'NULL')
 
@@ -328,9 +341,11 @@ class Wrapper:
             if param.pdflt != None and '|' not in info.parsestr:
                 info.add_parselist('|', [], [])
             handler = argtypes.matcher.get(param.ptype)
+	    if param.piscb:
+	      info.piscb += 1
 	    #fd.write("pname: " + param.pname + "; ptype: " + str(param.ptype) + "; pdflt: " + str(param.pdflt) + "; pnull: " + str(param.pnull) + "; handler: " + str(handler) + "\n")
             handler.write_param(param.ptype, param.pname, param.pdflt,
-                                param.pnull, info)
+                                param.pnull, info, param.piscb)
 
 	#fd.write("arglist 2: " + str(info.get_arglist()) + "\n")
 
@@ -367,7 +382,19 @@ class Wrapper:
         substdict['varlist'] = info.get_varlist()
         substdict['typecodes'] = info.parsestr
         substdict['parselist'] = info.get_parselist()
+
         substdict['arglist'] = info.get_arglist()
+
+	substdict['cb_code'] = ""
+
+	# TODO: deal with more arguments
+	if info.piscb > 0:
+	  substdict['arglist'] = ", &" + function_obj.c_name + "_cb"
+	  substdict['cb_code'] = cb_template % {'c_name': function_obj.c_name,
+	                                        'cb_name': function_obj.c_name}
+	  template = substdict['cb_code'] + template
+          sys.stderr.write("cb_code: %s\n" % substdict['cb_code'])
+
         substdict['codebefore'] = deprecated + (
             string.replace(info.get_codebefore(),
             'return NULL', 'return ' + substdict['errorreturn'])
@@ -389,19 +416,26 @@ class Wrapper:
             substdict['extraparams'] = ''
             flags = 'METH_NOARGS'
 
-	#fd.write("arglist: " + str(info.get_arglist()) + "\n")
 	#for key,item in substdict.iteritems():
-	#	fd.write("key: " + str(key) + ", item: " + str(item) + "\n")
-        #fd.close()
+		#sys.stderr.write("key: " + str(key) + ", item: " + str(item) + "\n")
 
+        if info.piscb > 0:
+           sys.stderr.write("template: %s\n" % (template % substdict))
+	   #sys.stderr.write("cb_code (again): %s\n" % substdict['cb_code'])
+	   #substdict['callback_code'] = 'balbla'
+	   #for key,item in substdict.iteritems():
+		#sys.stderr.write("key: " + str(key) + ", item: " + str(item) + "\n")
         return template % substdict, flags
 
     def write_constructor(self):
         initfunc = '0'
+	#import sys
+	#sys.stderr.write("searching constructor ...\n")
         constructor = self.parser.find_constructor(self.objinfo,self.overrides)
         if not constructor:
             return self.write_default_constructor()
 
+	#sys.stderr.write("constructor: " + str(constructor.c_name) + "\n")
         funcname = constructor.c_name
         try:
             if self.overrides.is_overriden(funcname):
@@ -430,6 +464,7 @@ class Wrapper:
                             constructor.c_name + '\n')
 
                 # write constructor from template ...
+		#sys.stderr.write("constructor: " + str(funcname) + ", tmpl:" + str(self.constructor_tmpl) + "\n")
                 code = self.write_function_wrapper(constructor,
                     self.constructor_tmpl,
                     handle_return=0, is_method=0, kwargs_needed=1,
@@ -505,8 +540,8 @@ class Wrapper:
                 else:
                     # write constructor from template ...
                     code, methflags = self.write_function_wrapper(meth,
-                        self.method_tmpl, handle_return=1, is_method=1,
-                        substdict=self.get_initial_method_substdict(meth))
+                        self.method_tmpl, self.cb_function_tmpl, handle_return=1,
+			is_method=1, substdict=self.get_initial_method_substdict(meth))
                     self.fp.write(code)
                 methods.append(self.methdef_tmpl %
                                { 'name':  fixname(meth.name),
@@ -856,7 +891,7 @@ _wrap__get_symbol(PyObject *self, PyObject *args)
                 else:
                     # write constructor from template ...
                     code, methflags = self.write_function_wrapper(func,
-                        self.function_tmpl, handle_return=1, is_method=0)
+                        self.function_tmpl, self.cb_function_tmpl, handle_return=1, is_method=0)
                     self.fp.write(code)
                 functions.append((func.name, '_wrap_' + funcname,
                                   methflags, func.docstring))

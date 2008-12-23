@@ -86,3 +86,4 @@ _wrap_software_x11_16_new(PyObject *self, PyObject *args, PyObject *kwargs)
 
     return (PyObject *)new_self;
 }
+%%

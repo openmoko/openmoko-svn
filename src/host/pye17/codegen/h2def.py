@@ -482,11 +482,14 @@ class DefsWriter:
 				callback = argument.find('(')
 				if callback > -1:
 					func_name_end = argument.find(')')
-					argument = 'void* callback_' + argument[callback+1:func_name_end].lstrip("* ")
-				spaces = string.count(argument, ' ')
-				if spaces > 1:
-					argument = string.replace(argument, ' ', '-', spaces - 1)
-				#print "argument: " + argument + "; num spaces: " + str(spaces)
+					argument = 'void* cb_' + argument[callback+1:func_name_end].lstrip("* ") + ' *is_callback*'
+				else:
+					spaces = string.count(argument, ' ')
+					if spaces > 1:
+						argument = string.replace(argument, ' ', '-', spaces - 1)
+					#print "argument: " + argument + "; num spaces: " + str(spaces)
+
+				#sys.stderr.write('append argument: ' + argument + '\n')
 				arguments.append(argument)
 
 		# look for callback parameters
@@ -552,6 +555,10 @@ class DefsWriter:
             l = len(self.prefix) + 1
             if mname[:l] == self.prefix and mname[l+1] == '_':
                 mname = mname[l+1:]
+
+	if mname.find("callback") > -1:
+	  mname = mname.replace("callback", "cb")
+
         self.fp.write('(define-method ' + mname + '\n')
         self.fp.write('  (of-object "' + obj + '")\n')
         self.fp.write('  (c-name "' + name + '")\n')
@@ -576,14 +583,20 @@ class DefsWriter:
             self.fp.write('  (parameters\n')
             for arg in args:
                 if arg != '...':
-                    tupleArg = tuple(string.split(arg))
-                    if len(tupleArg) == 2:
+		    tupleArg = tuple(string.split(arg))
+		    is_callback = 0
+		    if len(tupleArg) == 3 and tupleArg[2] == "*is_callback*":
+		      is_callback = 1
+                    if len(tupleArg) == 2 or is_callback:
 			var_type = tupleArg[0]
 			# some variable types are not supported
 			#if var_type == "unsigned-int":
 				#var_type = "guint" # see gtypes.h
 			#print "var type: " + var_type
-                        self.fp.write('    \'("%s" "%s")\n' % (var_type, tupleArg[1]))
+                        self.fp.write('    \'("%s" "%s"' % (var_type, tupleArg[1]))
+			if is_callback:
+			  self.fp.write(' "is_callback"')
+			self.fp.write(')\n')
             self.fp.write('  )\n')
         if is_varargs:
             self.fp.write('  (varargs #t)\n')

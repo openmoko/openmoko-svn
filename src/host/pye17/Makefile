@@ -2,7 +2,7 @@
 # E_PATH not given (env variable)
 ifeq ($(wildcard $(E_PATH)),)
 
-E_PATH_TMP=~/openmoko/e17
+E_PATH_TMP=~/openmoko/e
 ifneq ($(wildcard $(E_PATH_TMP)),)
 E_PATH = $(E_PATH_TMP)
 endif
