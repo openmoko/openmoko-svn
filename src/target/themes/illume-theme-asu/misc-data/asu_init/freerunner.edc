@@ -1,5 +1,5 @@
 images {
-   image: "boots.png" LOSSY 80;
+   image: "boot_image.png" LOSSY 80;
 }
 
 collections {
@@ -9,7 +9,7 @@ collections {
 	    description { state: "default" 0.0;
 	       aspect: 0.75 0.75;
 	       aspect_preference: NONE;
-	       image.normal: "boots.png";
+	       image.normal: "boot_image.png";
 	    }
 	 }
          
