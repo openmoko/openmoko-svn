@@ -2,7 +2,7 @@
 #
 # mknor - Make a GTA02 NOR binary (containing u-boot and a new environment)
 #
-# Copyright (C) 2008 by OpenMoko, Inc.
+# Copyright (C) 2008, 2009 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
 # All Rights Reserved
 #
@@ -10,9 +10,13 @@
 #
 # Write to NOR with the following commands:
 #
-# flash_unlock /dev/mtd0
-# flash_eraseall /dev/mtd0
-# cat nor.bin >/dev/mtd0
+# - on the host, connected via a debugv3 board:
+#   norwp rw
+#
+# - on the GTA02:
+#   flash_unlock /dev/mtd0
+#   flash_eraseall /dev/mtd0
+#   cat nor.bin >/dev/mtd0
 #
 # To save time, the NOR can also be erased with
 # flash_erase /dev/mtd0 0 13
