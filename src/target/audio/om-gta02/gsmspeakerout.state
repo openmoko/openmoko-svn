@@ -824,7 +824,7 @@ state.neo1973gta02 {
 		comment.count 1
 		iface MIXER
 		name 'DAPM Stereo Out Switch'
-		value false
+		value true
 	}
 	control.88 {
 		comment.access 'read write'
