@@ -1,0 +1,10 @@
+#!/bin/sh
+# Make a Library of Everything
+
+COMPS="aat1275 k4m51323pe lis302dl pcf50633-03-n3 wm8753l"
+LIB=gta02-core.lib
+
+for n in $COMPS; do
+    cat $n.lib
+done |
+sed '1p;/^EESchema-LIBRARY/d;$p;/^#End/d' >$LIB
