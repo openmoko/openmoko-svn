@@ -1,0 +1,8 @@
+#!/bin/sh
+
+B=gta02-core
+
+OUT=$B-all
+SHEETS="$B $B-CPU $B-PMU $B-MEMORY $B-AUDIO $B-IO"
+
+psmerge -o$OUT.ps `for n in $SHEETS; do echo $n.ps; done`

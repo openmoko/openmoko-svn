@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+#
+# expand-pintype
+#
+# usage:
+#
+# expand-pintype input.lib
+# expand-pintype input.lib output.lib
+#
+
+
+$GAP = 50;		# gap between pin and type, in mil
+$CHAR_WIDTH = 66;	# default character width, in mil
+$NAME_WIDTH = 15;	# name field width in ASCII mode, in characters
+
+
+%map = (
+    "I" => "Input",
+    "O" => "Output",
+    "B" => "BiDi",
+    "T" => "3-state",
+    "P" => "Passive",
+    "U" => "Unspec",
+    "W" => "Pwr In",
+    "w" => "Pwr Out",
+    "C" => "OC",
+    "E" => "OE",
+);
+
+if (@ARGV < 2) {
+    $out = 0;
+} elsif (@ARGV == 2) {
+    $file = pop @ARGV;
+    $out = 1;
+    open(FILE, ">$file") || die "$file: $!";
+} else {
+    print STDERR "usage: expand-pintype input.lib [output.lib]\n";
+    exit(1);
+}
+
+while (<>) {
+    if ($out) {
+	# make name differ so that KiCad's cache doesn't get confused
+	s/^DEF\s+/$&X/;
+	s/^F1\s+"+/$&X/;
+	print FILE || die;
+    }
+    next unless /^X/;
+    @a = split(/\s+/);
+    ($name, $pin, $x, $y, $dir, $unit, $pt) = @a[1, 2, 3, 4, 6, 9, 11];
+    $type = $map{$pt};
+    $type = "???" unless defined $type;
+    if ($out) {
+	$off = $GAP+(length $type)*$CHAR_WIDTH/2;
+	if ($dir eq "U") {
+	    ($a, $y) = (90, $y-$off);
+	} elsif ($dir eq "D") {
+	    ($a, $y) = (90, $y+$off);
+	} elsif ($dir eq "R") {
+	    ($a, $x) = (0, $x-$off);
+	} else {
+	    ($a, $x) = (0, $x+$off);
+	} 
+	$type =~ y/ /~/;
+	print FILE sprintf("T %d %d %d 60 0 %d 0 %s Normal 0\n",
+	  $a*10, $x, $y, $unit, $type);
+    } else {
+	$s = "$name ($pin)";
+	$f = $NAME_WIDTH-length $s;
+	$f = "-" x ($f > 0 ? $f : 0);
+	print "$s $f $type\n";
+    }
+}
+if ($out) {
+    close FILE || die;
+}
