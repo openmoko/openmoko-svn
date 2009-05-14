@@ -1,4 +1,4 @@
-update=Wed May 13 12:22:01 2009
+update=Thu May 14 20:29:18 2009
 version=1
 last_client=eeschema
 [pcbnew]
@@ -114,4 +114,3 @@ LibName6=components/lis302dl
 LibName7=components/pcf50633-04-n3
 LibName8=components/wm8753l
 LibName9=components/s3c2442
-LibName10=components/gta02-core-expanded
