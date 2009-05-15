@@ -1,6 +1,6 @@
 #!/bin/sh
 
-B=gta02-core
+B=${1:-gta02-core}
 
 OUT=$B-all
 SHEETS="$B $B-CPU $B-PMU $B-MEMORY $B-AUDIO $B-IO"
