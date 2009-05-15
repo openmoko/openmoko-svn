@@ -1,0 +1,92 @@
+This patch adds a command-line option --plot to eeschema that makes it
+run File -> Plot -> Plot PostScript -> Plot ALL on the specified file.
+It also prevents eeschema from opening a window and from checking for
+concurrent instances.
+
+This lets shell scripts generate plots, i.e., of schematics that have
+been processed by these scripts.
+
+Known issue: if there is an error that causes a dialog to be brought
+up, eeschema will just hang, waiting for the user to click the dialog
+away on the invisible window.
+
+This patch is for KiCad SVN revision 1768.
+
+Signed-off-by: Werner Almesberger <werner@openmoko.org>
+
+---
+
+Index: kicad/eeschema/eeschema.cpp
+===================================================================
+--- kicad.orig/eeschema/eeschema.cpp	2009-05-15 15:53:27.000000000 -0300
++++ kicad/eeschema/eeschema.cpp	2009-05-15 16:08:53.000000000 -0300
+@@ -12,6 +12,7 @@
+ #include "general.h"
+ #include "bitmaps.h"
+ #include "eda_dde.h"
++#include "plotps.h"
+ 
+ #include "libcmp.h"
+ #include "protos.h"
+@@ -137,12 +138,23 @@
+ {
+     wxFileName fn;
+     WinEDA_SchematicFrame* frame = NULL;
++    bool plot_only = FALSE;
+ 
+     g_DebugLevel = 0;   // Debug level */
+ 
+     InitEDA_Appl( wxT( "EESchema" ), APP_TYPE_EESCHEMA );
+ 
+-    if( m_Checker && m_Checker->IsAnotherRunning() )
++    if (argc > 1 && !wxStrcmp(argv[1], wxT("--plot"))) {
++	if (argc < 3) {
++	    fprintf(stderr, "usage: %ls [[--plot] filename]\n", *argv);
++	    exit(1);
++	}
++	plot_only = TRUE;
++	argc--;
++	argv++;
++    }
++
++    if( !plot_only && m_Checker && m_Checker->IsAnotherRunning() )
+     {
+         if( !IsOK( NULL, _( "Eeschema is already running, Continue?" ) ) )
+             return false;
+@@ -164,9 +176,9 @@
+                                        wxPoint( 0, 0 ), wxSize( 600, 400 ) );
+ 
+     SetTopWindow( frame );
+-    frame->Show( TRUE );
++    frame->Show( !plot_only );
+ 
+-    if( CreateServer( frame, KICAD_SCH_PORT_SERVICE_NUMBER ) )
++    if( !plot_only && CreateServer( frame, KICAD_SCH_PORT_SERVICE_NUMBER ) )
+     {
+         // RemoteCommand is in controle.cpp and is called when PCBNEW
+         // sends EESCHEMA a command
+@@ -185,6 +197,15 @@
+         if( frame->DrawPanel
+             && frame->LoadOneEEProject( fn.GetFullPath(), false ) <= 0 )
+             frame->DrawPanel->Refresh( true );
++	else {
++	    if (plot_only) {
++		WinEDA_PlotPSFrame* Ps_frame = new WinEDA_PlotPSFrame( frame );
++		wxCommandEvent dummy;
++
++		Ps_frame->OnPlotPsAllExecuteClick(dummy);
++		exit(0);
++	    }
++	}
+     }
+     else
+     {
+@@ -194,5 +215,8 @@
+             frame->DrawPanel->Refresh( TRUE );
+     }
+ 
++    if (plot_only)
++	exit(1);
++
+     return TRUE;
+ }
