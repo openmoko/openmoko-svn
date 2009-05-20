@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+#
+# diff two KiCad eeschema Postscript files. Removals are red, additions are
+# green.
+#
+
+if (@ARGV != 2) {
+    print STDERR "usage: $0 (file_a.ps|file_a.gz) (file_b.ps|file_b.gz)\n";
+    exit(1);
+}
+
+if ($ARGV[0] =~ /\.gz$/) {
+    open(A, "zcat '$ARGV[0]' |") || die "popen: $!";
+} else {
+    open(A, $ARGV[0]) || die "$ARGV[0]: $!";
+}
+
+if ($ARGV[1] =~ /\.gz$/) {
+    open(B, "zcat '$ARGV[1]' |") || die "popen: $!";
+} else {
+    open(B, $ARGV[0]) || die "$ARGV[1]: $!";
+}
+
+($pa, $pb) = (1, 1);
+while (<A>) {
+    push(@a, $_);
+    $pa++ if /showpage/;
+    $a{"$pa:$_"} = 1;
+}
+
+while (<B>) {
+    push(@b, $_);
+    $pb++ if /showpage/;
+    $b{"$pb:$_"} = 1;
+}
+
+($pa, $pb) = (1, 1);
+while (@a && @b) {
+    while (@a) {
+	$a = shift @a;
+	$pa++ if $a =~ /showpage/;
+	last if $a =~ /cleartomark end/;
+	$diff = !$b{"$pa:$a"} && $a !~ /^%/;
+	if ($diff) {
+	    print "1 0 0 setrgbcolor\n";
+	}
+	print $a;
+	if ($diff) {
+	    print "0 0 0 setrgbcolor\n";
+	}
+    }
+    undef $q;
+    while (@b) {
+	$b = shift @b;
+	next if $b =~ /^%/;
+	$pb++ if $b =~ /showpage/;
+	next if $b =~ /showpage/;
+	next if $b =~ /gsave mark/;
+	last if $b =~ /cleartomark end/;
+	if ($b =~ /^[Qq]/) {
+	     $q .= $b;
+	     next;
+	}
+	if (!$a{"$pb:$b"}) {
+	    print $q if defined $q;
+	    undef $q;
+	    # need to set the color before each line
+	    print "0 0.7 0 setrgbcolor\n";
+	    print $b;
+	}
+    }
+    print "0 0 0 setrgbcolor\n";
+    print $b;
+}
+print "1 0 0 setrgbcolor\n";
+print join("\n", @a);
+print "0 0.7 0 setrgbcolor\n";
+print join("\n", @b);
