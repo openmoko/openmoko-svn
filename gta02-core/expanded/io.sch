@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Mon May 18 06:00:40 2009
-LIBS:power,device,conn,gta02-core-expanded
+EESchema Schematic File Version 2  date Wed May 20 07:04:52 2009
+LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
@@ -16,19 +16,19 @@ $EndDescr
 $Comp
 L XSC32442 U?
 U 2 1 4A11234D
-P 4200 3000
-F 0 "U?" H 4200 2900 50  0000 C CNN
-F 1 "XSC32442" H 4200 3100 50  0000 C CNN
-	2    4200 3000
+P 4200 2450
+F 0 "U?" H 4200 2350 50  0000 C CNN
+F 1 "XSC32442" H 4200 2550 50  0000 C CNN
+	2    4200 2450
 	1    0    0    -1  
 $EndComp
 $Comp
 L XSC32442 U?
 U 5 1 4A112247
-P 4200 5200
-F 0 "U?" H 4200 5100 50  0000 C CNN
-F 1 "XSC32442" H 4200 5300 50  0000 C CNN
-	5    4200 5200
+P 4200 5550
+F 0 "U?" H 4200 5450 50  0000 C CNN
+F 1 "XSC32442" H 4200 5650 50  0000 C CNN
+	5    4200 5550
 	1    0    0    -1  
 $EndComp
 $Comp
