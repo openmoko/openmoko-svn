@@ -1,0 +1,30 @@
+If an old version of Boost is installed, KiCad will fail to compile
+because BOOST_REVERSE_FOREACH is not defined. This quick and dirty
+patch avoids the build error but may cause other problems.
+
+http://tech.groups.yahoo.com/group/kicad-devel/message/2574
+
+- Werner
+
+---
+
+Index: kicad/cvpcb/cvframe.cpp
+===================================================================
+--- kicad.orig/cvpcb/cvframe.cpp	2009-05-15 15:53:38.000000000 -0300
++++ kicad/cvpcb/cvframe.cpp	2009-05-15 15:57:30.000000000 -0300
+@@ -369,6 +369,7 @@
+     if( selection < 0 )
+         selection = m_ListCmp->GetCount() - 1;
+ 
++#if 0
+     BOOST_REVERSE_FOREACH( COMPONENT& component, m_components )
+     {
+         if( component.m_Module.IsEmpty() && ii < selection )
+@@ -378,6 +379,7 @@
+         }
+         ii--;
+     }
++#endif
+ 
+     wxBell();
+     m_ListCmp->SetSelection( selection );

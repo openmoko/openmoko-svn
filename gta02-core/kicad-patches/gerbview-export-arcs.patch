@@ -1,0 +1,102 @@
+Work in progress.
+
+Add support for exporting arcs to gerbview.
+
+Index: kicad/gerbview/export_to_pcbnew.cpp
+===================================================================
+--- kicad.orig/gerbview/export_to_pcbnew.cpp	2009-05-19 18:57:52.000000000 -0300
++++ kicad/gerbview/export_to_pcbnew.cpp	2009-05-19 20:49:23.000000000 -0300
+@@ -94,7 +94,7 @@
+ 
+     fprintf( File, "$SETUP\n" );
+     sprintf( text, "InternalUnit %f INCH\n", 1.0 / PCB_INTERNAL_UNIT );
+-    fprintf( File, text );
++    fprintf( File, "%s", text );
+ 
+     Pcb->m_BoardSettings->m_CopperLayerCount = g_DesignSettings.m_CopperLayerCount;
+     fprintf( File, "Layers %d\n", g_DesignSettings.m_CopperLayerCount );
+@@ -165,6 +165,20 @@
+             drawitem->m_End   = track->m_End;
+             drawitem->m_Width = track->m_Width;
+ 
++	    if( track->m_Shape == S_ARC )
++	    {
++		double cx = -track->m_Param;
++		double cy = track->GetSubNet();
++		double a = atan2( track->m_Start.y-cy, track->m_Start.x-cx );
++		double b = atan2( track->m_End.y-cy, track->m_End.x-cx );
++
++		drawitem->m_Shape = S_ARC;
++		drawitem->m_Angle = (b-a)/M_PI*1800.0;
++		drawitem->m_End = drawitem->m_Start;
++		drawitem->m_Start.x = cx;
++		drawitem->m_Start.y = cy;
++	    }
++
+             pcb->Add( drawitem );
+         }
+         else
+@@ -198,6 +212,9 @@
+                 newtrack->SetLayer( pcb_layer_number );
+             }
+ 
++fprintf(stderr, "%d %d\n", track->m_Shape, newtrack->m_Shape);
++//if (newtrack->m_Shape == S_ARC_RECT)
++//  newtrack->m_Shape = S_ARC;
+             pcb->Add( newtrack );
+         }
+     }
+Index: kicad/gerbview/rs274d.cpp
+===================================================================
+--- kicad.orig/gerbview/rs274d.cpp	2009-05-19 19:38:42.000000000 -0300
++++ kicad/gerbview/rs274d.cpp	2009-05-19 19:39:24.000000000 -0300
+@@ -11,6 +11,9 @@
+ #include "pcbplot.h"
+ #include "protos.h"
+ 
++#undef D
++#define D(x)
++
+ #define IsNumber( x ) ( ( ( (x) >= '0' ) && ( (x) <='9' ) )   \
+                        || ( (x) == '-' ) || ( (x) == '+' )  || ( (x) == '.' ) )
+ 
+Index: kicad/gerbview/rs274x.cpp
+===================================================================
+--- kicad.orig/gerbview/rs274x.cpp	2009-05-19 19:40:34.000000000 -0300
++++ kicad/gerbview/rs274x.cpp	2009-05-19 19:40:41.000000000 -0300
+@@ -10,6 +10,9 @@
+ #include "pcbplot.h"
+ #include "protos.h"
+ 
++#undef D
++#define D(x)
++
+ #define CODE( x, y ) ( ( (x) << 8 ) + (y) )
+ 
+ enum RS274X_PARAMETERS {
+Index: kicad/gerbview/tracepcb.cpp
+===================================================================
+--- kicad.orig/gerbview/tracepcb.cpp	2009-05-19 19:36:58.000000000 -0300
++++ kicad/gerbview/tracepcb.cpp	2009-05-19 19:37:04.000000000 -0300
+@@ -129,7 +129,7 @@
+         if( !(track->ReturnMaskLayer() & printmasklayer) )
+             continue;
+ 
+-        D(printf("D:%p\n", track );)
++        //D(printf("D:%p\n", track );)
+ 
+         if( track->GetNet() == 0 )  // StartPoint
+         {
+Index: kicad/gerbview/trpiste.cpp
+===================================================================
+--- kicad.orig/gerbview/trpiste.cpp	2009-05-19 19:36:58.000000000 -0300
++++ kicad/gerbview/trpiste.cpp	2009-05-19 19:37:15.000000000 -0300
+@@ -43,7 +43,7 @@
+         if( !(track->ReturnMaskLayer() & printmasklayer) )
+             continue;
+ 
+-        D(printf("D:%p\n", track );)
++        //D(printf("D:%p\n", track );)
+ 
+         if( dcode_hightlight == track->GetNet() && track->GetLayer()==layer )
+             Trace_Segment( panel, DC, track, draw_mode | GR_SURBRILL );

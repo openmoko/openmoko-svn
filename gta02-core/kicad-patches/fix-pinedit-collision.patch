@@ -2,20 +2,24 @@ When working with a component that contains multiple independent units,
 KiCad warns about pin locations being occupied even if the conflicting
 pin is in a different unit.
 
-This may to be unnecessary. This patch suppresses the warning if the
-pins are in different units.
+I've attached a patch that suppresses the warning if the pins are in
+different units and if we're in pin-by-pin mode, and thus conflicts
+can neither occur at the GUI nor in the underlying model.
 
 - Werner
 
+---
+
 Index: kicad/eeschema/pinedit.cpp
 ===================================================================
---- kicad.orig/eeschema/pinedit.cpp	2009-05-20 05:21:13.000000000 -0300
-+++ kicad/eeschema/pinedit.cpp	2009-05-20 05:35:53.000000000 -0300
-@@ -193,6 +193,9 @@
+--- kicad.orig/eeschema/pinedit.cpp	2009-05-20 22:30:20.000000000 -0300
++++ kicad/eeschema/pinedit.cpp	2009-05-20 22:30:58.000000000 -0300
+@@ -193,6 +193,10 @@
              continue;
          if( newpos != Pin->m_Pos )
              continue;
-+        if( Pin->m_Unit != CurrentPin->m_Unit &&
++        if( g_EditPinByPinIsOn &&
++	    Pin->m_Unit != CurrentPin->m_Unit &&
 +	    Pin->m_Unit && CurrentPin->m_Unit )
 +            continue;
          if( Pin->m_Flags )

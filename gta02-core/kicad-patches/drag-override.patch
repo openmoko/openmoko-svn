@@ -1,0 +1,136 @@
+Work in progress.
+
+Try to use dragging of tracks and joints ("nodes") to directly drag
+them, without involving intermediate menus.
+
+Index: kicad/common/drawpanel.cpp
+===================================================================
+--- kicad.orig/common/drawpanel.cpp	2009-04-28 17:43:26.000000000 -0300
++++ kicad/common/drawpanel.cpp	2009-04-29 13:37:21.000000000 -0300
+@@ -1151,17 +1151,21 @@
+                     MinDragEventCount++;
+                 else
+                 {
+-                    if( !m_Parent->HandleBlockBegin( &DC, cmd_type, m_CursorStartPos ) )
+-                    {
+-                        // should not occurs: error
+-                        m_Parent->DisplayToolMsg(
+-                            wxT( "WinEDA_DrawPanel::OnMouseEvent() Block Error" ) );
+-                    }
+-                    else
+-                    {
+-                        m_AutoPAN_Request = TRUE;
+-                        SetCursor( m_PanelCursor = wxCURSOR_SIZING );
+-                    }
++fprintf(stderr, "HBB %p\n", m_Parent);
++		    if( !m_Parent->DragOverride( &DC, m_CursorStartPos)) {
++			if( !m_Parent->HandleBlockBegin( &DC, cmd_type,
++			  m_CursorStartPos ) )
++			{
++			    // should not occurs: error
++			    m_Parent->DisplayToolMsg(
++				wxT( "WinEDA_DrawPanel::OnMouseEvent() Block Error" ) );
++			}
++			else
++			{
++			    m_AutoPAN_Request = TRUE;
++			    SetCursor( m_PanelCursor = wxCURSOR_SIZING );
++			}
++		    }
+                 }
+             }
+         }
+@@ -1191,6 +1195,7 @@
+             else if( screen->BlockLocate.m_State == STATE_BLOCK_END )
+             {
+                 m_AutoPAN_Request = FALSE;
++fprintf(stderr, "END %p\n", m_Parent);
+                 m_Parent->HandleBlockEnd( &DC );
+                 SetCursor( m_PanelCursor = m_PanelDefaultCursor );
+                 if( screen->BlockLocate.m_State == STATE_BLOCK_MOVE )
+Index: kicad/include/wxPcbStruct.h
+===================================================================
+--- kicad.orig/include/wxPcbStruct.h	2009-04-28 17:35:37.000000000 -0300
++++ kicad/include/wxPcbStruct.h	2009-04-28 18:27:46.000000000 -0300
+@@ -429,6 +429,8 @@
+     void             HandleBlockPlace( wxDC* DC );
+     int              HandleBlockEnd( wxDC* DC );
+ 
++    bool	     DragOverride( wxDC* DC, const wxPoint& MousePos );
++
+     void             SetToolbars();
+     void             Process_Settings( wxCommandEvent& event );
+     void             InstallPcbOptionsFrame( const wxPoint& pos, wxDC* DC, int id );
+Index: kicad/include/wxstruct.h
+===================================================================
+--- kicad.orig/include/wxstruct.h	2009-04-28 17:35:37.000000000 -0300
++++ kicad/include/wxstruct.h	2009-04-29 14:16:05.000000000 -0300
+@@ -293,6 +293,8 @@
+     virtual void     HandleBlockPlace( wxDC* DC );
+     virtual int      HandleBlockEnd( wxDC* DC );
+ 
++    virtual bool     DragOverride( wxDC* DC, const wxPoint& MousePos );
++
+     void             CopyToClipboard( wxCommandEvent& event );
+ 
+     /* interprocess communication */
+@@ -398,7 +400,7 @@
+     // Constructor and destructor
+     WinEDA_EnterText( wxWindow* parent, const wxString& Title,
+                       const wxString& TextToEdit, wxBoxSizer* BoxSizer,
+-                      const wxSize& Size );
++                      const wxSize& Size, bool Multiline = false );
+ 
+     ~WinEDA_EnterText()
+     {
+Index: kicad/pcbnew/block.cpp
+===================================================================
+--- kicad.orig/pcbnew/block.cpp	2009-04-28 17:35:37.000000000 -0300
++++ kicad/pcbnew/block.cpp	2009-04-29 14:25:14.000000000 -0300
+@@ -396,6 +396,29 @@
+ }
+ 
+ 
++/*********************************************************************/
++bool WinEDA_PcbFrame::DragOverride( wxDC* DC, const wxPoint& MousePos )
++/*********************************************************************/
++{
++    wxPoint cursorPosition = GetScreen()->m_Curseur;
++    BOARD_ITEM* item = GetCurItem();
++
++fprintf(stderr, "DragOverride %p\n", item);
++    if (!item)
++	return FALSE;
++fprintf(stderr, "%u\n", item->Type());
++    if (item->Type() != TYPE_TRACK)
++	return FALSE;
++
++    TRACK* Track = (TRACK*) item;
++
++    if (!Track->IsPointOnEnds( cursorPosition, -1 ))
++	return FALSE;
++    fprintf(stderr, "TOUCHE!\n");
++    return TRUE;
++}
++
++
+ /**************************************************************************/
+ static void DrawMovingBlockOutlines( WinEDA_DrawPanel* panel, wxDC* DC, bool erase )
+ /**************************************************************************/
+Index: kicad/common/drawframe.cpp
+===================================================================
+--- kicad.orig/common/drawframe.cpp	2009-04-28 18:30:44.000000000 -0300
++++ kicad/common/drawframe.cpp	2009-04-29 14:24:49.000000000 -0300
+@@ -546,6 +546,12 @@
+ }
+ 
+ 
++bool WinEDA_DrawFrame::DragOverride( wxDC* DC, const wxPoint& MousePos )
++{
++    return FALSE;
++}
++
++
+ /*********************************************/
+ void WinEDA_DrawFrame::AdjustScrollBars()
+ /*********************************************/

@@ -1,0 +1,194 @@
+Work in progress.
+
+Add auto-overline configuration options.
+
+Index: kicad/eeschema/dialog_options.cpp
+===================================================================
+--- kicad.orig/eeschema/dialog_options.cpp	2009-05-16 19:19:14.000000000 -0300
++++ kicad/eeschema/dialog_options.cpp	2009-05-19 17:52:42.000000000 -0300
+@@ -146,6 +146,13 @@
+     m_DeltaStepYTitle->SetLabel( title );
+ 
+     m_DeltaLabelCtrl->SetValue( g_RepeatDeltaLabel );
++
++    m_AutoOverlinePins->SetValue(g_AutoOverlinePins);
++    m_AutoOverlineNetsLabels->SetValue(g_AutoOverlineNetsLabels);
++    m_AutoOverlineText->SetValue(g_AutoOverlineText);
++    m_AutoOverlinePrefixes->SetValue(g_AutoOverlinePrefixes);
++    m_AutoOverlineSeparators->SetValue(g_AutoOverlineSeparators);
++    m_AutoOverlineKeepPrefix->SetValue(g_AutoOverlineKeepPrefix);
+ }
+ 
+ 
+@@ -177,6 +184,12 @@
+     m_DeltaStepCtrl_Y = NULL;
+     m_DeltaIncTitle = NULL;
+     m_DeltaLabelCtrl = NULL;
++    m_AutoOverlinePins = NULL;
++    m_AutoOverlineNetsLabels = NULL;
++    m_AutoOverlineText = NULL;
++    m_AutoOverlinePrefixes = NULL;
++    m_AutoOverlineSeparators = NULL;
++    m_AutoOverlineKeepPrefix = NULL;
+ ////@end WinEDA_SetOptionsFrame member initialisation
+ 
+ ////@begin WinEDA_SetOptionsFrame creation
+@@ -268,6 +281,58 @@
+     m_Show_Page_Limits->SetSelection(0);
+     itemBoxSizer8->Add(m_Show_Page_Limits, 0, wxGROW|wxALL, 5);
+ 
++
++    wxBoxSizer* itemBoxSizer19 = new wxBoxSizer(wxVERTICAL);
++    itemBoxSizer2->Add(itemBoxSizer19, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
++
++    wxStaticBox* itemStaticBoxSizer20Static = new wxStaticBox(itemDialog1,
++      wxID_ANY, _("Auto-overline"));
++    wxStaticBoxSizer* itemStaticBoxSizer20 = new
++      wxStaticBoxSizer(itemStaticBoxSizer20Static, wxVERTICAL);
++    itemBoxSizer19->Add(itemStaticBoxSizer20, 0,
++      wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
++
++    m_AutoOverlinePins = new wxCheckBox( itemDialog1, ID_CHECKBOX1,
++      _("Pins"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
++    m_AutoOverlinePins->SetValue(FALSE);
++    itemStaticBoxSizer20->Add(m_AutoOverlinePins, 0,
++      wxALIGN_LEFT | wxALL, 5);
++
++    m_AutoOverlineNetsLabels = new wxCheckBox( itemDialog1, ID_CHECKBOX1,
++      _("Nets and labels"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
++    m_AutoOverlineNetsLabels->SetValue(FALSE);
++    itemStaticBoxSizer20->Add(m_AutoOverlineNetsLabels, 0,
++      wxALIGN_LEFT | wxALL, 5);
++
++    m_AutoOverlineText = new wxCheckBox( itemDialog1, ID_CHECKBOX1,
++      _("Text"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
++    m_AutoOverlineText->SetValue(FALSE);
++    itemStaticBoxSizer20->Add(m_AutoOverlineText, 0,
++      wxALIGN_LEFT | wxALL, 5);
++
++    itemStaticBoxSizer20->Add(new wxStaticText( itemDialog1, wxID_STATIC,
++      _("Prefixes"), wxDefaultPosition, wxDefaultSize, 0 ),
++      0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, 5);
++
++    m_AutoOverlinePrefixes = new wxTextCtrl( itemDialog1, ID_TEXTCTRL,
++      _T("n#"), wxDefaultPosition, wxDefaultSize, 0 );
++    itemStaticBoxSizer20->Add(m_AutoOverlinePrefixes, 0, wxGROW | wxALL, 5);
++
++    itemStaticBoxSizer20->Add(new wxStaticText( itemDialog1, wxID_STATIC,
++      _("Separators"), wxDefaultPosition, wxDefaultSize, 0 ),
++      0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP | wxADJUST_MINSIZE, 5);
++
++    m_AutoOverlineSeparators = new wxTextCtrl( itemDialog1, ID_TEXTCTRL,
++      _T("/,"), wxDefaultPosition, wxDefaultSize, 0 );
++    itemStaticBoxSizer20->Add(m_AutoOverlineSeparators, 0, wxGROW | wxALL, 5);
++
++    m_AutoOverlineKeepPrefix = new wxCheckBox( itemDialog1, ID_CHECKBOX1,
++      _("Keep prefix"), wxDefaultPosition, wxDefaultSize, wxCHK_2STATE );
++    m_AutoOverlineKeepPrefix->SetValue(TRUE);
++    itemStaticBoxSizer20->Add(m_AutoOverlineKeepPrefix, 0,
++      wxALIGN_LEFT | wxALL, 5);
++
++
+     wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxVERTICAL);
+     itemBoxSizer2->Add(itemBoxSizer14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+ 
+@@ -302,6 +367,11 @@
+     m_DeltaLabelCtrl = new wxSpinCtrl( itemDialog1, ID_SPINCTRL, _T("0"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -16, 16, 0 );
+     itemStaticBoxSizer18->Add(m_DeltaLabelCtrl, 0, wxGROW|wxALL, 5);
+ 
++
++    m_DeltaStepXTitle = new wxStaticText( itemDialog1, wxID_STATIC, _("Delta Step X"), wxDefaultPosition, wxDefaultSize, 0 );
++    itemStaticBoxSizer18->Add(m_DeltaStepXTitle, 0, wxALIGN_LEFT|wxLEFT|wxRIGHT|wxTOP|wxADJUST_MINSIZE, 5);
++
++
+ ////@end WinEDA_SetOptionsFrame content construction
+ 
+     m_btClose->SetFocus();
+@@ -474,4 +544,11 @@
+         m_Parent->GetBaseScreen()->SetGrid( grid );
+         m_Parent->GetBaseScreen()->SetRefreshReq();
+     }
++
++    g_AutoOverlinePins = m_AutoOverlinePins->GetValue();
++    g_AutoOverlineNetsLabels = m_AutoOverlineNetsLabels->GetValue();
++    g_AutoOverlineText = m_AutoOverlineText->GetValue();
++    g_AutoOverlinePrefixes = m_AutoOverlinePrefixes->GetValue();
++    g_AutoOverlineSeparators = m_AutoOverlineSeparators->GetValue();
++    g_AutoOverlineKeepPrefix= m_AutoOverlineKeepPrefix->GetValue();
+ }
+Index: kicad/eeschema/dialog_options.h
+===================================================================
+--- kicad.orig/eeschema/dialog_options.h	2009-05-16 19:19:14.000000000 -0300
++++ kicad/eeschema/dialog_options.h	2009-05-19 17:52:42.000000000 -0300
+@@ -129,6 +129,12 @@
+     wxTextCtrl* m_DeltaStepCtrl_Y;
+     wxStaticText* m_DeltaIncTitle;
+     wxSpinCtrl* m_DeltaLabelCtrl;
++    wxCheckBox* m_AutoOverlinePins;
++    wxCheckBox* m_AutoOverlineNetsLabels;
++    wxCheckBox* m_AutoOverlineText;
++    wxTextCtrl* m_AutoOverlinePrefixes;
++    wxTextCtrl* m_AutoOverlineSeparators;
++    wxCheckBox* m_AutoOverlineKeepPrefix;
+ ////@end WinEDA_SetOptionsFrame member variables
+ 
+ 	WinEDA_ValueCtrl * m_DefaultDrawLineWidthCtrl;
+Index: kicad/eeschema/eeconfig.cpp
+===================================================================
+--- kicad.orig/eeschema/eeconfig.cpp	2009-05-16 19:19:14.000000000 -0300
++++ kicad/eeschema/eeconfig.cpp	2009-05-19 17:52:42.000000000 -0300
+@@ -20,6 +20,14 @@
+ #include "hotkeys.h"
+ 
+ 
++bool g_AutoOverlinePins;
++bool g_AutoOverlineNetsLabels;
++bool g_AutoOverlineText;
++wxString g_AutoOverlinePrefixes;
++wxString g_AutoOverlineSeparators;
++bool g_AutoOverlineKeepPrefix;
++
++
+ /* Variables locales */
+ 
+ 
+@@ -219,6 +227,19 @@
+                                                 &g_DefaultTextLabelSize,
+                                                 DEFAULT_SIZE_TEXT, 0, 1000 ) );
+ 
++    m_projectFileParams.Add( new PARAM_CFG_BOOL(
++      wxT( "AutoOverlinePins" ), &g_AutoOverlinePins ) );
++    m_projectFileParams.Add( new PARAM_CFG_BOOL(
++      wxT( "AutoOverlineNetsLabels" ), &g_AutoOverlineNetsLabels ) );
++    m_projectFileParams.Add( new PARAM_CFG_BOOL(
++      wxT( "AutoOverlineText" ), &g_AutoOverlineText ) );
++    m_projectFileParams.Add( new PARAM_CFG_WXSTRING(
++      wxT( "AutoOverlinePrefixes" ), &g_AutoOverlinePrefixes ) );
++    m_projectFileParams.Add( new PARAM_CFG_WXSTRING(
++      wxT( "AutoOverlineSeparators" ), &g_AutoOverlineSeparators) );
++    m_projectFileParams.Add( new PARAM_CFG_BOOL(
++      wxT( "AutoOverlineKeepPrefix" ), &g_AutoOverlineKeepPrefix ) );
++
+     return m_projectFileParams;
+ }
+ 
+Index: kicad/eeschema/general.h
+===================================================================
+--- kicad.orig/eeschema/general.h	2009-05-16 19:19:14.000000000 -0300
++++ kicad/eeschema/general.h	2009-05-19 17:52:42.000000000 -0300
+@@ -120,6 +120,15 @@
+ extern int g_PlotPSColorOpt;    // True = plot postcript color (see plotps.cpp)
+ 
+ 
++// Auto-overline
++
++extern bool g_AutoOverlinePins;
++extern bool g_AutoOverlineNetsLabels;
++extern bool g_AutoOverlineText;
++extern wxString g_AutoOverlinePrefixes;
++extern wxString g_AutoOverlineSeparators;
++extern bool g_AutoOverlineKeepPrefix;
++
+ // Gestion de diverses variables, options... devant etre memorisees mais
+ // Remises a 0 lors d'un rechargement de projetc
+ struct EESchemaVariables

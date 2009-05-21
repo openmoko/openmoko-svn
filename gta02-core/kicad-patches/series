@@ -1,0 +1,19 @@
+# DON'T USE THE FOLLOWING PATCH UNLESS DESPERATE
+old-boost-build-fix.patch
+
+# eeschema --plot extension, pending
+eeschema-plot-only-mode.patch
+
+# pending work, will perhaps be implemented in an entirely different fashion
+##auto-overline-config.patch
+##auto-overline-screen.patch
+
+# pending
+fix-pinbypin-button-type.patch
+
+# under discussion
+fix-pinedit-collision.patch
+
+# Work in progress
+#drag-override.patch
+#gerbview-export-arcs.patch
