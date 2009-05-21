@@ -1,0 +1,17 @@
+Dave Ball <dave@daveball.org.uk>
+
+  components/aat1275.lib
+  components/k4m51323pe.lib
+  components/lis302dl.lib
+  components/pcf50633-04-n3.lib
+  components/s3c2442.lib
+  components/wm8753l.lib
+
+  Compilations:
+  components/gta02-core-expanded.lib
+  components/gta02-core.lib
+
+Werner Almesberger <werner@openmoko.org>
+
+  The scripts under scripts/ and expanded/
+  components/mkloe
