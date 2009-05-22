@@ -10,9 +10,9 @@ http://tech.groups.yahoo.com/group/kicad-devel/message/2574
 
 Index: kicad/cvpcb/cvframe.cpp
 ===================================================================
---- kicad.orig/cvpcb/cvframe.cpp	2009-05-15 15:53:38.000000000 -0300
-+++ kicad/cvpcb/cvframe.cpp	2009-05-15 15:57:30.000000000 -0300
-@@ -369,6 +369,7 @@
+--- kicad.orig/cvpcb/cvframe.cpp	2009-05-21 23:00:00.000000000 -0300
++++ kicad/cvpcb/cvframe.cpp	2009-05-21 23:00:03.000000000 -0300
+@@ -368,6 +368,7 @@
      if( selection < 0 )
          selection = m_ListCmp->GetCount() - 1;
  
@@ -20,7 +20,7 @@ Index: kicad/cvpcb/cvframe.cpp
      BOOST_REVERSE_FOREACH( COMPONENT& component, m_components )
      {
          if( component.m_Module.IsEmpty() && ii < selection )
-@@ -378,6 +379,7 @@
+@@ -377,6 +378,7 @@
          }
          ii--;
      }

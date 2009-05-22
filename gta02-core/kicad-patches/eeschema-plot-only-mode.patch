@@ -17,8 +17,8 @@ This patch is for KiCad SVN revision 1771.
 
 Index: kicad/eeschema/eeschema.cpp
 ===================================================================
---- kicad.orig/eeschema/eeschema.cpp	2009-05-19 17:52:29.000000000 -0300
-+++ kicad/eeschema/eeschema.cpp	2009-05-19 17:52:41.000000000 -0300
+--- kicad.orig/eeschema/eeschema.cpp	2009-05-21 23:00:00.000000000 -0300
++++ kicad/eeschema/eeschema.cpp	2009-05-21 23:00:07.000000000 -0300
 @@ -12,6 +12,7 @@
  #include "general.h"
  #include "bitmaps.h"
@@ -27,7 +27,7 @@ Index: kicad/eeschema/eeschema.cpp
  
  #include "libcmp.h"
  #include "protos.h"
-@@ -122,6 +123,69 @@
+@@ -121,6 +122,69 @@
  int DefaultTransformMatrix[2][2] = { { 1, 0 }, { 0, -1 } };
  
  
@@ -97,7 +97,7 @@ Index: kicad/eeschema/eeschema.cpp
  /************************************/
  /* Called to initialize the program */
  /************************************/
-@@ -142,6 +206,9 @@
+@@ -141,6 +205,9 @@
  
      InitEDA_Appl( wxT( "EESchema" ), APP_TYPE_EESCHEMA );
  

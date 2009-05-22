@@ -12,8 +12,8 @@ can neither occur at the GUI nor in the underlying model.
 
 Index: kicad/eeschema/pinedit.cpp
 ===================================================================
---- kicad.orig/eeschema/pinedit.cpp	2009-05-20 22:30:20.000000000 -0300
-+++ kicad/eeschema/pinedit.cpp	2009-05-20 22:30:58.000000000 -0300
+--- kicad.orig/eeschema/pinedit.cpp	2009-05-21 23:00:00.000000000 -0300
++++ kicad/eeschema/pinedit.cpp	2009-05-21 23:00:12.000000000 -0300
 @@ -193,6 +193,10 @@
              continue;
          if( newpos != Pin->m_Pos )
@@ -24,4 +24,4 @@ Index: kicad/eeschema/pinedit.cpp
 +            continue;
          if( Pin->m_Flags )
              continue;
-         if( ask_for_pin )
+         if( ask_for_pin && !g_EditPinByPinIsOn )
