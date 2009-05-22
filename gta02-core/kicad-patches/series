@@ -8,9 +8,6 @@ eeschema-plot-only-mode.patch
 ##auto-overline-config.patch
 ##auto-overline-screen.patch
 
-# pending
-fix-pinbypin-button-type.patch
-
 # under discussion
 fix-pinedit-collision.patch
 
