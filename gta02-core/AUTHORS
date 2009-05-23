@@ -13,8 +13,10 @@ Dave Ball <dave@daveball.org.uk>
 
 Alvaro Lopes <alvieboy@alvie.com>
 
-  components/sn74aup1g125.lib
   components/74aup1g00.lib
+  components/sn74aup1g125.lib
+  components/ms2v-t1s.lib
+  components/tas4025a.lib
 
 Werner Almesberger <werner@openmoko.org>
 
