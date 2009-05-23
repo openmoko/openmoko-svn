@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat May 23 12:43:36 2009
+EESchema Schematic File Version 2  date Sat May 23 16:06:34 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 7 8
+Sheet 8 8
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,14 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Notes Line
+	10050 1400 10000 950 
+Wire Notes Line
+	9300 1400 9000 950 
+Text Notes 8050 850  0    60   ~ 0
+Not sure why. (Some bug in KiCad, it seems.)
+Text Notes 8050 700  0    60   ~ 0
+These pin numbers disappear when plotting.
 $Comp
 L XTAS4025A X?
 U 1 1 4A1814B6
