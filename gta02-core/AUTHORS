@@ -11,6 +11,11 @@ Dave Ball <dave@daveball.org.uk>
   components/gta02-core-expanded.lib
   components/gta02-core.lib
 
+Alvaro Lopes <alvieboy@alvie.com>
+
+  components/sn74aup1g125.lib
+  components/74aup1g00.lib
+
 Werner Almesberger <werner@openmoko.org>
 
   The scripts under scripts/ and expanded/
