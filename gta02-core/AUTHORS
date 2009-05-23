@@ -15,6 +15,7 @@ Alvaro Lopes <alvieboy@alvie.com>
 
   components/74aup1g00.lib
   components/sn74aup1g125.lib
+  components/sn74lvc2g126.lib
   components/ms2v-t1s.lib
   components/si1040x.lib
   components/tas4025a.lib
