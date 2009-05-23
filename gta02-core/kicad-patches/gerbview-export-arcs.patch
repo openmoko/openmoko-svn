@@ -6,9 +6,9 @@ Add support for exporting arcs in non-copper layers to gerbview.
 
 Index: kicad/gerbview/export_to_pcbnew.cpp
 ===================================================================
---- kicad.orig/gerbview/export_to_pcbnew.cpp	2009-05-21 23:00:00.000000000 -0300
-+++ kicad/gerbview/export_to_pcbnew.cpp	2009-05-22 01:42:40.000000000 -0300
-@@ -165,6 +162,19 @@
+--- kicad.orig/gerbview/export_to_pcbnew.cpp	2009-05-22 01:42:54.000000000 -0300
++++ kicad/gerbview/export_to_pcbnew.cpp	2009-05-22 03:18:00.000000000 -0300
+@@ -165,6 +165,19 @@
              drawitem->m_End   = track->m_End;
              drawitem->m_Width = track->m_Width;
  
@@ -20,7 +20,7 @@ Index: kicad/gerbview/export_to_pcbnew.cpp
 +		double b = atan2( track->m_End.y-cy, track->m_End.x-cx );
 +
 +		drawitem->m_Shape = S_ARC;
-+		drawitem->m_Angle = fmod((a-b)/M_PI*1800.0+3600.0, 3600.0);
++		drawitem->m_Angle = fmod( (a-b)/M_PI*1800.0+3600.0, 3600.0 );
 +		drawitem->m_Start.x = cx;
 +		drawitem->m_Start.y = cy;
 +	    }

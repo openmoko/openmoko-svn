@@ -16,3 +16,4 @@ gerbview-export-arcs.patch
 
 # Work in progress
 #drag-override.patch
+#pcbnew-plot-only-mode.patch
