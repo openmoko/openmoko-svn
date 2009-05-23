@@ -2,6 +2,7 @@
 # Make a Library of Everything
 
 COMPS="aat1275 k4m51323pe lis302dl pcf50633-04-n3 s3c2442 wm8753l"
+COMPS="$COMPS ms2v-t1s si1040x tas4025a"
 LIB=gta02-core.lib
 
 for n in $COMPS; do

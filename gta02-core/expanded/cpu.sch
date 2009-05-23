@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Wed May 20 05:49:38 2009
+EESchema Schematic File Version 2  date Sat May 23 12:43:36 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 7 7
+Sheet 7 8
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XTAS4025A X?
+U 1 1 4A1814B6
+P 9700 1500
+F 0 "X?" H 9700 1850 60  0000 C CNN
+F 1 "XTAS4025A" H 9700 1750 60  0000 C CNN
+	1    9700 1500
+	1    0    0    -1  
+$EndComp
 $Comp
 L XSC32442 U?
 U 12 1 4A11239A
