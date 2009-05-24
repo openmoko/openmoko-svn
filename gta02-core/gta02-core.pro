@@ -116,3 +116,5 @@ LibName8=./components/wm8753l
 LibName9=./components/s3c2442
 LibName10=./components/ms2v-t1s
 LibName11=./components/tas4025a
+LibName12=./components/rt9702a
+LibName13=./components/rt9013

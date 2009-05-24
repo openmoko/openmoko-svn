@@ -19,6 +19,8 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/ms2v-t1s.lib
   components/si1040x.lib
   components/tas4025a.lib
+  components/rt9702a.lib
+  components/rt9013.lib
 
 Werner Almesberger <werner@openmoko.org>
 
