@@ -21,6 +21,7 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/tas4025a.lib
   components/rt9702a.lib
   components/rt9013.lib
+  components/exc240cb102u.lib
 
 Werner Almesberger <werner@openmoko.org>
 
