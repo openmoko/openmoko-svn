@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat May 23 16:06:34 2009
+EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 3 8
+Sheet 5 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XEXC24CB102U B?
+U 1 1 4A195122
+P 3500 5800
+F 0 "B?" H 3500 6150 60  0000 C CNN
+F 1 "XEXC24CB102U" H 3500 5450 60  0000 C CNN
+	1    3500 5800
+	1    0    0    -1  
+$EndComp
 $Comp
 L XSC32442 U?
 U 13 1 4A1121BC

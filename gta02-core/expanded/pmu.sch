@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat May 23 16:06:34 2009
+EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 6 8
+Sheet 8 9
 Title ""
 Date ""
 Rev ""
@@ -14,21 +14,30 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L XMS2V-T1S X?
-U 1 1 4A1814DC
-P 5150 6750
-F 0 "X?" H 5150 7100 60  0000 C CNN
-F 1 "XMS2V-T1S" H 5150 7000 60  0000 C CNN
-	1    5150 6750
+L XRT9013 U?
+U 1 1 4A19546A
+P 7350 4000
+F 0 "U?" H 7350 4350 60  0000 C CNN
+F 1 "XRT9013" H 7350 4100 60  0000 C CNN
+	1    7350 4000
 	1    0    0    -1  
 $EndComp
 $Comp
-L XSC32442 U?
-U 16 1 4A0AE816
-P 7950 3800
-F 0 "U?" H 7950 3700 50  0000 C CNN
-F 1 "XSC32442" H 7950 3900 50  0000 C CNN
-	16   7950 3800
+L XRT9702A U?
+U 1 1 4A1953BF
+P 7250 1900
+F 0 "U?" H 7250 2250 60  0000 C CNN
+F 1 "XRT9702A" H 7250 2000 60  0000 C CNN
+	1    7250 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L XMS2V-T1S X?
+U 1 1 4A1814DC
+P 7200 5700
+F 0 "X?" H 7200 6050 60  0000 C CNN
+F 1 "XMS2V-T1S" H 7200 5950 60  0000 C CNN
+	1    7200 5700
 	1    0    0    -1  
 $EndComp
 $Comp

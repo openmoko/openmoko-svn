@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat May 23 16:06:34 2009
+EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 1 8
+Sheet 1 9
 Title "GTA02-CORE"
 Date "12 may 2009"
 Rev ""
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 4350 1050 1750 1400
+U 4A195323
+F0 "CPU-POWER" 60
+F1 "cpu-power.sch" 60
+$EndSheet
 $Sheet
 S 2050 5400 1850 1250
 U 4A181965
