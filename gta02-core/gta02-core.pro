@@ -119,3 +119,4 @@ LibName11=./components/tas4025a
 LibName12=./components/rt9702a
 LibName13=./components/rt9013
 LibName14=./components/exc24cb102u
+LibName15=./components/varistor
