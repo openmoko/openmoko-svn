@@ -122,4 +122,4 @@ LibName14=./components/exc24cb102u
 LibName15=./components/varistor
 LibName16=./components/fa2012
 LibName17=./components/rt9711_bd_5
-LibName18=./components/dct123
+LibName18=./components/dtc123
