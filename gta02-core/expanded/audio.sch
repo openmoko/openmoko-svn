@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
+EESchema Schematic File Version 2  date Sun May 24 16:11:04 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 5 9
+Sheet 6 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XVARISTOR D?
+U 1 1 4A199BBE
+P 3150 4850
+F 0 "D?" H 3150 5000 60  0000 C CNN
+F 1 "XVARISTOR" H 3150 4700 60  0000 C CNN
+	1    3150 4850
+	1    0    0    -1  
+$EndComp
 $Comp
 L XEXC24CB102U B?
 U 1 1 4A195122

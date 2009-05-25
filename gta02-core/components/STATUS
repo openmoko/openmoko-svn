@@ -11,12 +11,14 @@ rt9702a			U1705	Werner
 s3c2442			U1501	(Werner)
 si1040x			U7609
 tas4025a		X1501
+varistor		D3001	Werner
 wm8753l			U3001	Werner
 
 74aup1g00		U4902
 sn74aup1g125		U4901
 sn74lvc2g126		U4903
 
+KiCad R_PACK4		RP2001	Werner
 
 (name) = partial review
 If a part is used multiple times, put the first reference.
