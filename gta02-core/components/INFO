@@ -13,11 +13,23 @@ A: boost
 M: USxxx
 D: http://www.analogictech.com/products/digitalfiles/AAT1275.pdf
 
+# Vibrator Transisor
+P: dtc123
+A: vib-trans
+D: http://www.rohm.com/products/databook/tr/pdf/dtc123je.pdf
+# is the above misleading ? maybe better use data sheet from NXP
+http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
+
 #@@@ rename to exc24c ?
 # Common-mode choke
 P: exc24cb102u
 A: choke
 D: http://www.panasonic.com/industrial/components/pdf/AEH0000CE12.pdf
+
+# LCM Filter array
+P: fa2012
+A: lcm-filter
+D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 
 # SDRAM (K4M51323PC-DG75)
 P: k4m51323pe
@@ -70,9 +82,7 @@ P: wm8753l
 A: codec
 D: http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
 
-# Switch
-#P: rt9711
-#D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
-
-#http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
-#rp6001	http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
+# USB Switch
+P: rt9711
+A: usb-switch
+D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD

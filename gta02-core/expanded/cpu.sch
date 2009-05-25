@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
-LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
+EESchema Schematic File Version 2  date Mon May 25 20:22:25 2009
+LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 8 9
+Sheet 9 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,24 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XTAS4025A X?
+U 1 1 4A1B2803
+P 9700 1500
+F 0 "X?" H 9700 1850 60  0000 C CNN
+F 1 "XTAS4025A" H 9700 1750 60  0000 C CNN
+	1    9700 1500
+	1    0    0    -1  
+$EndComp
+$Comp
+L XRT9711_BD_5 U?
+U 1 1 4A1B23B8
+P 9650 5550
+F 0 "U?" H 9650 5900 60  0000 C CNN
+F 1 "XRT9711_BD_5" H 9650 5650 60  0000 C CNN
+	1    9650 5550
+	1    0    0    -1  
+$EndComp
 Wire Notes Line
 	10050 1400 10000 950 
 Wire Notes Line
@@ -21,15 +39,6 @@ Text Notes 8050 850  0    60   ~ 0
 Not sure why. (Some bug in KiCad, it seems.)
 Text Notes 8050 700  0    60   ~ 0
 These pin numbers disappear when plotting.
-$Comp
-L XTAS4025A X?
-U 1 1 4A1814B6
-P 9700 1500
-F 0 "X?" H 9700 1850 60  0000 C CNN
-F 1 "XTAS4025A" H 9700 1750 60  0000 C CNN
-	1    9700 1500
-	1    0    0    -1  
-$EndComp
 $Comp
 L XSC32442 U?
 U 12 1 4A11239A

@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
-LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
+EESchema Schematic File Version 2  date Mon May 25 20:21:13 2009
+LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 5 9
+Sheet 7 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XDTC123 Q?
+U 1 1 4A1B27E0
+P 8900 2150
+F 0 "Q?" H 8800 2375 60  0000 C CNN
+F 1 "XDTC123" H 8700 1850 60  0000 C CNN
+	1    8900 2150
+	1    0    0    -1  
+$EndComp
 $Comp
 L XSC32442 U?
 U 2 1 4A11234D

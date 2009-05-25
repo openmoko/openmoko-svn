@@ -1,13 +1,16 @@
 Component		Ref	1st review	2nd review	3rd review
 ----------------------	------	--------------	--------------	--------------
 aat1275			U4904	Werner [1]
+dtc123			Q4601	[2]
 exc24cb102u		B3004	Werner
+fa2012			RP6001	Werner
 k4m51323pe		U2201	(Werner)
 lis302dl		U7801	Werner
 ms2v-t1s		X1701
 pcf50633-04-n3		U1701	Werner
 rt9013			U1702	Werner
 rt9702a			U1705	Werner
+rt9711_bd_5		U4905	Werner
 s3c2442			U1501	(Werner)
 si1040x			U7609
 tas4025a		X1501
@@ -25,3 +28,5 @@ If a part is used multiple times, put the first reference.
 
 [1] Different packages available with different pin numbering.
     Component therefore needs qualifier.
+
+[2] Pin numbering probably wrong. Need to check real device.
