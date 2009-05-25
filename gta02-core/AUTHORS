@@ -5,7 +5,7 @@ Dave Ball <dave@daveball.org.uk>
   components/lis302dl.lib
   components/pcf50633-04-n3.lib
   components/s3c2442.lib
-  components/wm8753l.lib
+  components/wm8753lgefl.lib
 
   Compilations:
   components/gta02-core-expanded.lib
@@ -19,7 +19,7 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/ms2v-t1s.lib
   components/si1040x.lib
   components/tas4025a.lib
-  components/rt9702a.lib
+  components/rt9702.lib
   components/rt9013_b.lib
   components/exc24cb102u.lib
 
