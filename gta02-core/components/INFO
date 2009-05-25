@@ -1,0 +1,78 @@
+#
+# Tags:
+#
+# P  Part number (must be first)
+# A  Alias
+# M  package Marking
+# D  Data sheet URL
+#
+
+# Boost converter
+P: aat1275irn
+A: boost
+M: USxxx
+D: http://www.analogictech.com/products/digitalfiles/AAT1275.pdf
+
+#@@@ rename to exc24c ?
+# Common-mode choke
+P: exc24cb102u
+A: choke
+D: http://www.panasonic.com/industrial/components/pdf/AEH0000CE12.pdf
+
+# SDRAM (K4M51323PC-DG75)
+P: k4m51323pe
+A: sdram
+M: K4M51323PC-DG75
+D: http://www.samsung.com/global/system/business/semiconductor/product/2007/6/11/MobileSDRAM/MobileSDRSDRAM/512Mbit/K4M51323PC/ds_k4m51323pc.pdf
+D: http://www.samsung.com/global/system/business/semiconductor/family/2008/10/30/366832Mobile_SDR_DDR_code.pdf
+
+# Accelerometer
+P: lis302dl
+A: accel
+D: http://www.st.com/stonline/products/literature/ds/12726.pdf
+
+# PMU XTAL (32.768 kHz)
+P: ms2v-t1s
+A: pmu-xtal
+D: http://www.mcrystal.ch/CMSPages/GetFile.aspx?nodeguid=fdbd2648-e362-4783-9812-bde5df5df8c8
+
+# PMU
+P: pcf50633-04-n3
+A: pmu
+D: http://people.openmoko.org/tony_tu/GTA02/datasheet/PMU/PCF50633UM_6.pdf
+
+# GSM switch
+P: rt9013_b
+A: gsm-switch
+D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTAxMyUyRkRTOTAxMy0wNy5wZGYlM0QlM0Ql%0AM0REUzkwMTMtMDdD
+
+# STBY LDO
+P: rt9702
+A: ldo
+D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcwMiUzRFJUOTcwMkElMkZEUzk3MDJBLTEy%0ALnBkZiUzRCUzRCUzRERTOTcwMkEtMTJD
+
+# CPU
+P: s3c2442
+A: cpu
+
+# GPS Switch
+P: si1040x
+A: gps-switch
+D: http://www.vishay.com/doc?71809
+
+# CPU XTAL (12 MHz)
+P: tas4025a
+A: cpu-xtal
+D: http://www.tew.co.jp/e/crystal/02/pdf/TAS-4025A_E.pdf
+
+# Codec
+P: wm8753l
+A: codec
+D: http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
+
+# Switch
+#P: rt9711
+#D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
+
+#http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
+#rp6001	http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
