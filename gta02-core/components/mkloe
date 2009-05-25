@@ -3,7 +3,7 @@
 
 COMPS="aat1275irn k4m51323pe lis302dl pcf50633-04-n3 s3c2442 wm8753l"
 COMPS="$COMPS ms2v-t1s si1040x tas4025a"
-COMPS="$COMPS exc24cb102u rt9013 rt9702a varistor"
+COMPS="$COMPS exc24cb102u rt9013_b rt9702a varistor"
 LIB=gta02-core.lib
 
 for n in $COMPS; do
