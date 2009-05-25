@@ -120,3 +120,4 @@ LibName12=./components/rt9702
 LibName13=./components/rt9013_b
 LibName14=./components/exc24cb102u
 LibName15=./components/varistor
+LibName16=./components/fa2012
