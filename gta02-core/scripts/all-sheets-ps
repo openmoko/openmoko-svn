@@ -3,7 +3,8 @@
 B=${1:-gta02-core}
 
 OUT=$B-all
-SHEETS="$B $B-CPU $B-PMU $B-MEMORY $B-AUDIO $B-USB $B-IO $B-LCM $B-GPS"
+SHEETS="$B $B-CPU $B-PMU $B-MEMORY $B-AUDIO $B-USB $B-IO $B-LCM $B-SD-SIM"
+SHEETS="$SHEETS $B-GPS"
 
 psmerge `for n in $SHEETS; do echo $n.ps; done` |
   sed '1a%%Orientation: Landscape' >$OUT.ps
