@@ -13,7 +13,7 @@ Dave Ball <dave@daveball.org.uk>
 
 Alvaro Lopes <alvieboy@alvie.com>
 
-  components/74x1g00.lib
+  components/74x1g00_5.lib
   components/74x1g125.lib
   components/74x2g126.lib
   components/ms2v-t1s.lib
@@ -22,11 +22,15 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/rt9702.lib
   components/rt9013_b.lib
   components/exc24cb102u.lib
-  components/varistor
-  components/fa2012
-  components/rt9711_bd_5
-  components/dtc123
-  components/vibrator
+  components/varistor.lib
+  components/fa2012.lib
+  components/rt9711_bd_5.lib
+  components/dtc123.lib
+  components/vibrator.lib
+
+  Compilations:
+  components/gta02-core-expanded.lib
+  components/gta02-core.lib
 
 Werner Almesberger <werner@openmoko.org>
 

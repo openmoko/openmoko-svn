@@ -4,7 +4,7 @@
 COMPS="aat1275irn k4m51323pe lis302dl pcf50633-04-n3 s3c2442 wm8753lgefl"
 COMPS="$COMPS ms2v-t1s si1040x tas4025a"
 COMPS="$COMPS exc24cb102u dtc123 fa2012 rt9013_b rt9702 rt9711_bd_5 varistor"
-COMPS="$COMPS 74x1g00 74x1g125 74x2g126"
+COMPS="$COMPS 74x1g00_5 74x1g125 74x2g126"
 LIB=gta02-core.lib
 
 for n in $COMPS; do
