@@ -1,0 +1,70 @@
+EESchema Schematic File Version 2  date Tue May 26 18:16:19 2009
+LIBS:power,device,conn,gta02-core-expanded
+EELAYER 24  0
+EELAYER END
+$Descr A4 11700 8267
+Sheet 2 11
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L XMINI_USB_B CON?
+U 1 1 4A1C54B5
+P 7550 2450
+F 0 "CON?" H 7550 2950 60  0000 C CNN
+F 1 "XMINI_USB_B" H 7550 1950 60  0000 C CNN
+	1    7550 2450
+	1    0    0    -1  
+$EndComp
+$Comp
+L X74X1G00_5 U?
+U 1 1 4A1C4AE2
+P 2250 1800
+F 0 "U?" H 1850 2250 60  0000 C CNN
+F 1 "X74X1G00_5" H 1700 1350 60  0000 C CNN
+	1    2250 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L X74X2G126 U?
+U 1 1 4A1C3BAB
+P 2150 4900
+F 0 "U?" H 1850 5450 60  0000 C CNN
+F 1 "X74X2G126" H 1700 4350 60  0000 C CNN
+	1    2150 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L X74X1G125 U?
+U 1 1 4A1C3BA4
+P 3900 3250
+F 0 "U?" H 3550 3650 60  0000 C CNN
+F 1 "X74X1G125" H 3450 2900 60  0000 C CNN
+	1    3900 3250
+	1    0    0    -1  
+$EndComp
+$Comp
+L XAAT1275IRN U?
+U 1 1 4A1C3B7A
+P 6000 5800
+F 0 "U?" H 6000 5800 60  0000 C CNN
+F 1 "XAAT1275IRN" H 6000 5600 60  0000 C CNN
+	1    6000 5800
+	1    0    0    -1  
+$EndComp
+$Comp
+L XRT9711_BD_5 U?
+U 1 1 4A1C3B70
+P 9000 4700
+F 0 "U?" H 9000 5050 60  0000 C CNN
+F 1 "XRT9711_BD_5" H 9000 4800 60  0000 C CNN
+	1    9000 4700
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC

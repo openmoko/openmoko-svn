@@ -16,8 +16,11 @@ rt9702a			U1705	Werner
 rt9711_bd_5		U4905	Werner
 s3c2442			U1501	(Werner)
 si1040x			U7609
+smsn16			CON7501	Werner
 tas4025a		X1501
+usb_mini_b		CON4901	Werner
 varistor		D3001	Werner
+vibrator		VB4601	Werner
 wm8753l			U3001	Werner
 
 KiCad R_PACK4		RP2001	Werner

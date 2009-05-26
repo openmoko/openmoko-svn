@@ -16,16 +16,18 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/74x1g00_5.lib
   components/74x1g125.lib
   components/74x2g126.lib
-  components/ms2v-t1s.lib
-  components/si1040x.lib
-  components/tas4025a.lib
-  components/rt9702.lib
-  components/rt9013_b.lib
-  components/exc24cb102u.lib
-  components/varistor.lib
-  components/fa2012.lib
-  components/rt9711_bd_5.lib
   components/dtc123.lib
+  components/exc24cb102u.lib
+  components/fa2012.lib
+  components/mini_usb_b.lib
+  components/ms2v-t1s.lib
+  components/rt9013_b.lib
+  components/rt9702.lib
+  components/rt9711_bd_5.lib
+  components/si1040x.lib
+  components/smsn16.lib
+  components/tas4025a.lib
+  components/varistor.lib
   components/vibrator.lib
 
   Compilations:
