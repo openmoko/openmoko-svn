@@ -13,9 +13,9 @@ Dave Ball <dave@daveball.org.uk>
 
 Alvaro Lopes <alvieboy@alvie.com>
 
-  components/74aup1g00.lib
-  components/sn74aup1g125.lib
-  components/sn74lvc2g126.lib
+  components/74x1g00.lib
+  components/74x1g125.lib
+  components/74x2g126.lib
   components/ms2v-t1s.lib
   components/si1040x.lib
   components/tas4025a.lib

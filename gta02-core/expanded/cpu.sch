@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Mon May 25 20:22:25 2009
+EESchema Schematic File Version 2  date Tue May 26 16:27:39 2009
 LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 9 9
+Sheet 10 10
 Title ""
 Date ""
 Rev ""
@@ -20,15 +20,6 @@ P 9700 1500
 F 0 "X?" H 9700 1850 60  0000 C CNN
 F 1 "XTAS4025A" H 9700 1750 60  0000 C CNN
 	1    9700 1500
-	1    0    0    -1  
-$EndComp
-$Comp
-L XRT9711_BD_5 U?
-U 1 1 4A1B23B8
-P 9650 5550
-F 0 "U?" H 9650 5900 60  0000 C CNN
-F 1 "XRT9711_BD_5" H 9650 5650 60  0000 C CNN
-	1    9650 5550
 	1    0    0    -1  
 $EndComp
 Wire Notes Line
@@ -91,15 +82,6 @@ P 2300 4700
 F 0 "U?" H 2300 4600 50  0000 C CNN
 F 1 "XSC32442" H 2300 4800 50  0000 C CNN
 	4    2300 4700
-	1    0    0    -1  
-$EndComp
-$Comp
-L XAAT1275IRN U?
-U 1 1 4A0AE7FA
-P 6750 6250
-F 0 "U?" H 6750 6250 60  0000 C CNN
-F 1 "XAAT1275IRN" H 6750 6050 60  0000 C CNN
-	1    6750 6250
 	1    0    0    -1  
 $EndComp
 $Comp

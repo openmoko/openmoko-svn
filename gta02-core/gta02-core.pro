@@ -126,3 +126,6 @@ LibName18=./components/dtc123
 LibName19=./components/vibrator
 LibName20=./components/mini_usb_b
 LibName21=./components/smsn16-02-c.lib
+LibName21=./components/74x1g00.lib
+LibName21=./components/74x1g125.lib
+LibName21=./components/74x2g126.lib

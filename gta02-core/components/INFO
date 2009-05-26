@@ -7,6 +7,21 @@
 # D  Data sheet URL
 #
 
+# NAND, single gate (SN74AUP1G00DCK)
+P: 74x1g00
+A: nand-1g
+D: http://focus.ti.com/lit/ds/symlink/sn74aup1g00.pdf
+
+# Tri-state buffer, inverted enable, single gate (SN74AHC1G125DCKR)
+P: 74x1g125
+A: buf-1g
+D: http://focus.ti.com/lit/ds/symlink/sn74ahc1g125.pdf
+
+# Tri-state buffer, non-inverted enable, dual gate (SN74LVC2G126DCUR)
+P: 74x2g126
+A: buf-2g
+D: http://focus.ti.com/lit/ds/symlink/sn74lvc2g126.pdf
+
 # Boost converter
 P: aat1275irn
 A: boost

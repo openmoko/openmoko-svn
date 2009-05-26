@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
-LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
+EESchema Schematic File Version 2  date Tue May 26 16:27:39 2009
+LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 1 9
+Sheet 1 10
 Title "GTA02-CORE"
 Date "12 may 2009"
 Rev ""
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 4350 2900 1950 1500
+U 4A1C3B06
+F0 "USB" 60
+F1 "usb.sch" 60
+$EndSheet
 $Sheet
 S 4350 1050 1750 1400
 U 4A195323
@@ -26,7 +32,7 @@ F0 "GPS" 60
 F1 "gps.sch" 60
 $EndSheet
 $Sheet
-S 6750 2950 1950 1400
+S 9000 2950 1950 1400
 U 4A11226B
 F0 "LCM" 60
 F1 "lcm.sch" 60
@@ -44,7 +50,7 @@ F0 "AUDIO" 60
 F1 "audio.sch" 60
 $EndSheet
 $Sheet
-S 4300 2850 2150 1550
+S 6600 2900 2150 1550
 U 4A0AE5F3
 F0 "IO" 60
 F1 "io.sch" 60

@@ -1,5 +1,8 @@
 Component		Ref	1st review	2nd review	3rd review
 ----------------------	------	--------------	--------------	--------------
+74x1g00			U4902	Werner
+74x1g125		U4901	Werner
+74x2g126		U4903	Werner
 aat1275			U4904	Werner [1]
 dtc123			Q4601	[2]
 exc24cb102u		B3004	Werner
@@ -16,10 +19,6 @@ si1040x			U7609
 tas4025a		X1501
 varistor		D3001	Werner
 wm8753l			U3001	Werner
-
-74aup1g00		U4902
-sn74aup1g125		U4901
-sn74lvc2g126		U4903
 
 KiCad R_PACK4		RP2001	Werner
 

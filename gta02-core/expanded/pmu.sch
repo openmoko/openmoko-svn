@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun May 24 11:06:48 2009
-LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
+EESchema Schematic File Version 2  date Tue May 26 16:27:39 2009
+LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 8 9
+Sheet 8 10
 Title ""
 Date ""
 Rev ""
