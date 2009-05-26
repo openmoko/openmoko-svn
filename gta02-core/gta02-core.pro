@@ -124,3 +124,4 @@ LibName16=./components/fa2012
 LibName17=./components/rt9711_bd_5
 LibName18=./components/dtc123
 LibName19=./components/vibrator
+LibName20=./components/mini_usb_b
