@@ -11,8 +11,8 @@ eeschema-plot-only-mode.patch
 # under discussion
 fix-pinedit-collision.patch
 
-# pending
-gerbview-export-arcs.patch
+# accepted as of r1783
+##gerbview-export-arcs.patch
 
 # Work in progress
 #drag-override.patch
