@@ -129,3 +129,4 @@ LibName21=./components/smsn16.lib
 LibName22=./components/74x1g00_5.lib
 LibName23=./components/74x1g125.lib
 LibName24=./components/74x2g126.lib
+LibName25=./components/emh4.lib
