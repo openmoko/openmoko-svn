@@ -33,7 +33,11 @@ P: dtc123
 A: vib-trans
 D: http://www.rohm.com/products/databook/tr/pdf/dtc123je.pdf
 # is the above misleading ? maybe better use data sheet from NXP
-http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
+D: http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
+
+# Dual transistor with base resistor
+P: emh4
+D: http://www.rohm.com/products/databook/tr/pdf/emh4.pdf
 
 #@@@ rename to exc24c ?
 # Common-mode choke
@@ -45,6 +49,11 @@ D: http://www.panasonic.com/industrial/components/pdf/AEH0000CE12.pdf
 P: fa2012
 A: lcm-filter
 D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
+
+# Bi-color LED
+P: ???
+A: dual-led
+D: http://www.harvatek-intl.com/web/content/download.asp?fx=73
 
 # SDRAM (K4M51323PC-DG75)
 P: k4m51323pe
@@ -90,9 +99,10 @@ P: rt9711
 A: usb-switch
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
 
-# CPU
+# CPU (Samsung S3C2442B54)
 P: s3c2442
 A: cpu
+D: http://www.opatnet.cz/elektronika/datasheet/U/um_s3c2442b_rev12.pdf
 
 # GPS Switch
 P: si1040x
