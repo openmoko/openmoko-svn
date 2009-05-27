@@ -1,0 +1,82 @@
+#!/usr/bin/perl
+#
+# Add $DSV_HOME/bin to your PATH.
+#
+
+$DSV_HOME = $ENV{"DSV_HOME"};
+$DSV_HOME = "/home/moko/dsv" unless defined $DSV_HOME;
+
+
+sub mkdir
+{
+    mkdir($_[0]) && return;
+    return if $!{EEXIST};
+    die "$_[0]: $!";
+}
+
+
+sub mkbin
+{
+    local ($pgm, $file) = @_;
+
+    open(F, ">$pgm") || die "$pgm: $!";
+    print F "#!/bin/sh\n# MACHINE-GENERATED. DO NOT EDIT !\nxpdf \"$file\"\n"
+	|| die "$pgm: $!";
+    close(F) || die "$pgm: $!";
+    chmod(0777 & ~umask, $pgm) || die "chmod $pgm: $!";
+}
+
+
+sub dl
+{
+    $bin_dir = "$DSV_HOME/bin";
+    $ds_dir = "$DSV_HOME/ds/$part";
+    $url =~ /[^\/?&]*$/;
+    $name = $&;
+    if (-r "$ds_dir/$name" && -x "$bin_dir/dsv-$part") {
+	return unless defined $alias;
+	return if -x "$bin_dir/dsv-$alias";
+    }
+    &mkdir($ds_dir);
+
+    local ($p) = "$ds_dir/$name";
+    if (system("wget -nv -O \"$p-tmp\" \"$url\"")) {
+	print STDERR "FAILED: $part -> $url\n";
+    } else {
+	rename("$p-tmp", $p) || die "rename: $!\n";
+    }
+    &mkbin("$bin_dir/dsv-$part", $p);
+    &mkbin("$bin_dir/dsv-$alias", $p) if defined $alias;
+}
+
+
+sub flush
+{
+    &dl if defined($part) && defined($url);
+    undef $part;
+    undef $alias;
+    undef $url;
+}
+
+
+&mkdir("$DSV_HOME");
+&mkdir("$DSV_HOME/ds");
+&mkdir("$DSV_HOME/bin");
+
+while (<>) {
+    s/#.*//;
+    next if /^\s*$/;
+    if (/^P:\s+(\S+)\s*$/) {
+	&flush if defined $part;
+	$part = $1;
+    } elsif (/^A:\s+(\S+)\s*$/) {
+	$alias = $1;
+    } elsif (/^D:\s+(.*?)\s*$/) {
+	$url = $1;
+    } elsif (/^M:\s+(.*?)\s*$/) {
+	# ignore
+    } else {
+	die "bad syntax: \"$_\"";
+    }
+}
+&flush if defined $part;
