@@ -1,5 +1,6 @@
-# DON'T USE THE FOLLOWING PATCH UNLESS DESPERATE
-old-boost-build-fix.patch
+# this patch worked around incompatibilities with older libboost in a dirty
+# way. better to just upgrade libboost.
+#old-boost-build-fix.patch
 
 # eeschema --plot extension, pending
 eeschema-plot-only-mode.patch
