@@ -2,7 +2,7 @@
 # Tags:
 #
 # P  Part number (must be first)
-# A  Alias
+# A  Alias (can be project-specific)
 # M  package Marking
 # D  Data sheet URL
 #
@@ -37,6 +37,7 @@ D: http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
 
 # Dual transistor with base resistor
 P: emh4
+A: led-trans
 D: http://www.rohm.com/products/databook/tr/pdf/emh4.pdf
 
 #@@@ rename to exc24c ?
@@ -51,7 +52,7 @@ A: lcm-filter
 D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 
 # Bi-color LED
-P: ???
+P: ht210
 A: dual-led
 D: http://www.harvatek-intl.com/web/content/download.asp?fx=73
 
@@ -113,6 +114,11 @@ D: http://www.vishay.com/doc?71809
 P: smsn16
 A: simsd
 D: http://www.proconn-tech.com.tw/pdf/new/COMBO/SMSN16-02-C(SMSN16-X0-2X00)2%20IN%20Hinge%20Type%20.pdf
+
+# SMD Switch
+P: sw_push_4
+A: button
+D: http://industrial.panasonic.com/www-data/pdf/ATK0000/ATK0000PE38.pdf
 
 # CPU XTAL (12 MHz)
 P: tas4025a

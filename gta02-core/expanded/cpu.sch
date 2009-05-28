@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue May 26 18:16:19 2009
-LIBS:power,device,conn,gta02-core-expanded
+EESchema Schematic File Version 2  date Wed May 27 23:16:10 2009
+LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 10 11
+Sheet 11 11
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,33 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XEMH4 Q?
+U 1 1 4A1DF3BA
+P 9550 6050
+F 0 "Q?" H 9550 6550 60  0000 C CNN
+F 1 "XEMH4" H 9550 5550 60  0000 C CNN
+	1    9550 6050
+	1    0    0    -1  
+$EndComp
+$Comp
+L XHT210 D?
+U 1 1 4A1DF3A4
+P 9950 4550
+F 0 "D?" H 9950 4850 60  0000 C CNN
+F 1 "XHT210" H 9950 4200 60  0000 C CNN
+	1    9950 4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L XSW_PUSH_4 SW?
+U 1 1 4A1DF38A
+P 10000 3000
+F 0 "SW?" H 10000 3200 60  0000 C CNN
+F 1 "XSW_PUSH_4" H 9550 2900 60  0000 C CNN
+	1    10000 3000
+	1    0    0    -1  
+$EndComp
 $Comp
 L XTAS4025A X?
 U 1 1 4A1B2803
