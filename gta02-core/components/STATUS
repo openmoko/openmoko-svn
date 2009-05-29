@@ -28,6 +28,7 @@ vibrator		VB4601	Werner
 wm8753l			U3001	Werner
 
 KiCad R_PACK4		RP2001	Werner
+KiCad CRYSTAL		X7602	Werner
 
 (name) = partial review
 If a part is used multiple times, put the first reference.
