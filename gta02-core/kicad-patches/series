@@ -1,3 +1,5 @@
+# Based on SVN revision 1786
+
 # this patch worked around incompatibilities with older libboost in a dirty
 # way. better to just upgrade libboost.
 #old-boost-build-fix.patch
