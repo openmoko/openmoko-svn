@@ -28,6 +28,11 @@ A: boost
 M: USxxx
 D: http://www.analogictech.com/products/digitalfiles/AAT1275.pdf
 
+# GPS Low Noise Amplifier (ATR0610-PQQ)
+S: atr0610
+A: gps-amp
+D: http://www.atmel.com/dyn/resources/prod_documents/doc4573.pdf
+
 # Low-Loss Filter 1575.42 MHz
 S: B7840
 A: gps-filter

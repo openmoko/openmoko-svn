@@ -134,3 +134,4 @@ LibName26=./components/ht210.lib
 LibName27=./components/sw_push_4.lib
 LibName28=./components/r3113d.lib
 LibName29=./components/b7840.lib
+LibName30=./components/atr0610.lib

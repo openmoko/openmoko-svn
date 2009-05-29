@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri May 29 18:43:24 2009
+EESchema Schematic File Version 2  date Fri May 29 18:59:19 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XATR0610 U?
+U 1 1 4A205AA9
+P 4500 5400
+F 0 "U?" H 4500 5900 60  0000 C CNN
+F 1 "XATR0610" H 4500 5800 60  0000 C CNN
+	1    4500 5400
+	1    0    0    -1  
+$EndComp
 $Comp
 L XB7840 U?
 U 1 1 4A2056FE
