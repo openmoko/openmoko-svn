@@ -34,6 +34,10 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/gta02-core-expanded.lib
   components/gta02-core.lib
 
+Rene Harder <rehar@saweb.de>
+
+  components/r3113d.lib
+
 Werner Almesberger <werner@openmoko.org>
 
   The scripts under scripts/ and expanded/

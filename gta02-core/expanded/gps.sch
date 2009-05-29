@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue May 26 18:16:19 2009
-LIBS:power,device,conn,gta02-core-expanded
+EESchema Schematic File Version 2  date Fri May 29 18:16:02 2009
+LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 2 11
+Sheet 5 11
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XR3113D U?
+U 1 1 4A205092
+P 5650 1350
+F 0 "U?" H 5650 1750 60  0000 C CNN
+F 1 "XR3113D" H 5650 1650 60  0000 C CNN
+	1    5650 1350
+	1    0    0    -1  
+$EndComp
 $Comp
 L XSI1040X U?
 U 1 1 4A181987

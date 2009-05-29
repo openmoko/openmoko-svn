@@ -132,3 +132,4 @@ LibName24=./components/74x2g126.lib
 LibName25=./components/emh4.lib
 LibName26=./components/ht210.lib
 LibName27=./components/sw_push_4.lib
+LibName28=./components/r3113d.lib

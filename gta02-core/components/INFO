@@ -85,6 +85,11 @@ S: pcf50633-04-n3
 A: pmu
 D: http://people.openmoko.org/tony_tu/GTA02/datasheet/PMU/PCF50633UM_6.pdf
 
+# Low Voltage Detector (R3113D241A)
+S: r3113d
+A: reset
+D: http://www.ricoh.com/LSI/product_power/vd/r3113d/r3113d-e.pdf
+
 # GSM switch
 S: rt9013_b
 A: gsm-switch
