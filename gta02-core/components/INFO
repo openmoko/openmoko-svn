@@ -28,6 +28,11 @@ A: boost
 M: USxxx
 D: http://www.analogictech.com/products/digitalfiles/AAT1275.pdf
 
+# Low-Loss Filter 1575.42 MHz
+S: B7840
+A: gps-filter
+D: http://www.epcos.com/inf/40/ds/mc/B7840.pdf
+
 # Vibrator Transisor
 S: dtc123
 A: vib-trans
