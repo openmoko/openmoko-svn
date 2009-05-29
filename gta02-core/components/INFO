@@ -34,7 +34,7 @@ A: gps-amp
 D: http://www.atmel.com/dyn/resources/prod_documents/doc4573.pdf
 
 # Low-Loss Filter 1575.42 MHz
-S: B7840
+S: b7840
 A: gps-filter
 D: http://www.epcos.com/inf/40/ds/mc/B7840.pdf
 
@@ -65,6 +65,13 @@ D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 S: ht210
 A: dual-led
 D: http://www.harvatek-intl.com/web/content/download.asp?fx=73
+
+# GPS Oscillator (Rakon IT3205BE)
+S: it3205be
+A: gps-osc
+# this data sheet has the right pins (if ignoring the middle), but wrong
+# footprint !
+# D: http://www.rakon.com/Products/Public%20Documents/Specifications/IT3200C-E.pdf
 
 # SDRAM (K4M51323PC-DG75)
 S: k4m51323pe

@@ -38,7 +38,12 @@ Rene Harder <rehar@saweb.de>
 
   components/atr0610.lib
   components/b7840.lib
+  components/it3205be.lib
   components/r3113d.lib
+
+  Compilations:
+  components/gta02-core-expanded.lib
+  components/gta02-core.lib
 
 Werner Almesberger <werner@openmoko.org>
 
