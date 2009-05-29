@@ -1,134 +1,135 @@
 #
 # Tags:
 #
-# P  Part number (must be first)
+# S  Symbol name (must be first)
 # A  Alias (can be project-specific)
 # M  package Marking
 # D  Data sheet URL
 #
 
 # NAND, single gate (SN74AUP1G00DCK)
-P: 74x1g00
+S: 74x1g00
 A: nand-1g
 D: http://focus.ti.com/lit/ds/symlink/sn74aup1g00.pdf
 
 # Tri-state buffer, inverted enable, single gate (SN74AHC1G125DCKR)
-P: 74x1g125
+S: 74x1g125
 A: buf-1g
 D: http://focus.ti.com/lit/ds/symlink/sn74ahc1g125.pdf
 
 # Tri-state buffer, non-inverted enable, dual gate (SN74LVC2G126DCUR)
-P: 74x2g126
+S: 74x2g126
 A: buf-2g
 D: http://focus.ti.com/lit/ds/symlink/sn74lvc2g126.pdf
 
 # Boost converter
-P: aat1275irn
+S: aat1275irn
 A: boost
 M: USxxx
 D: http://www.analogictech.com/products/digitalfiles/AAT1275.pdf
 
 # Vibrator Transisor
-P: dtc123
+S: dtc123
 A: vib-trans
 D: http://www.rohm.com/products/databook/tr/pdf/dtc123je.pdf
-# is the above misleading ? maybe better use data sheet from NXP
+# is the above misleading ? maybe better use the data sheet from NXP
 D: http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
 
 # Dual transistor with base resistor
-P: emh4
+S: emh4
 A: led-trans
 D: http://www.rohm.com/products/databook/tr/pdf/emh4.pdf
 
 #@@@ rename to exc24c ?
 # Common-mode choke
-P: exc24cb102u
+S: exc24cb102u
 A: choke
 D: http://www.panasonic.com/industrial/components/pdf/AEH0000CE12.pdf
 
 # LCM Filter array
-P: fa2012
+S: fa2012
 A: lcm-filter
 D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 
 # Bi-color LED
-P: ht210
+S: ht210
 A: dual-led
 D: http://www.harvatek-intl.com/web/content/download.asp?fx=73
 
 # SDRAM (K4M51323PC-DG75)
-P: k4m51323pe
+S: k4m51323pe
 A: sdram
 M: K4M51323PC-DG75
 D: http://www.samsung.com/global/system/business/semiconductor/product/2007/6/11/MobileSDRAM/MobileSDRSDRAM/512Mbit/K4M51323PC/ds_k4m51323pc.pdf
 D: http://www.samsung.com/global/system/business/semiconductor/family/2008/10/30/366832Mobile_SDR_DDR_code.pdf
 
 # Accelerometer
-P: lis302dl
+S: lis302dl
 A: accel
 D: http://www.st.com/stonline/products/literature/ds/12726.pdf
 
 # Mini-USB B (CMK A425-206162-001)
-P: mini_usb_b
+S: mini_usb_b
 # search for a425-206 find this:
 D: http://www.comtek-elec.com/_Upload/8162-11021001-200.pdf
 # compatible:
 D: http://www.reichelt.de/?;ACTION=7;LA=6;OPEN=0;INDEX=0;FILENAME=C120%252FUSBBWMSMD%2523ASS.pdf
 
 # PMU XTAL (32.768 kHz)
-P: ms2v-t1s
+S: ms2v-t1s
 A: pmu-xtal
 D: http://www.mcrystal.ch/CMSPages/GetFile.aspx?nodeguid=fdbd2648-e362-4783-9812-bde5df5df8c8
 
 # PMU
-P: pcf50633-04-n3
+S: pcf50633-04-n3
 A: pmu
 D: http://people.openmoko.org/tony_tu/GTA02/datasheet/PMU/PCF50633UM_6.pdf
 
 # GSM switch
-P: rt9013_b
+S: rt9013_b
 A: gsm-switch
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTAxMyUyRkRTOTAxMy0wNy5wZGYlM0QlM0Ql%0AM0REUzkwMTMtMDdD
 
 # STBY LDO
-P: rt9702
+S: rt9702
 A: ldo
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcwMiUzRFJUOTcwMkElMkZEUzk3MDJBLTEy%0ALnBkZiUzRCUzRCUzRERTOTcwMkEtMTJD
 
 # USB Switch
-P: rt9711
+S: rt9711
 A: usb-switch
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
 
 # CPU (Samsung S3C2442B54)
-P: s3c2442
+S: s3c2442
 A: cpu
 D: http://www.opatnet.cz/elektronika/datasheet/U/um_s3c2442b_rev12.pdf
 
 # GPS Switch
-P: si1040x
+S: si1040x
 A: gps-switch
 D: http://www.vishay.com/doc?71809
 
 # SIM/SD combo (SMSN16-J0-2214)
-P: smsn16
+S: smsn16
 A: simsd
 D: http://www.proconn-tech.com.tw/pdf/new/COMBO/SMSN16-02-C(SMSN16-X0-2X00)2%20IN%20Hinge%20Type%20.pdf
 
 # SMD Switch
-P: sw_push_4
+S: sw_push_4
 A: button
 D: http://industrial.panasonic.com/www-data/pdf/ATK0000/ATK0000PE38.pdf
 
 # CPU XTAL (12 MHz)
-P: tas4025a
+S: tas4025a
 A: cpu-xtal
 D: http://www.tew.co.jp/e/crystal/02/pdf/TAS-4025A_E.pdf
 
 # Vibrator (TA&MI P0408B-13-P2H)
-P: vibrator
+S: vibrator
+#D: http://www.di-motor.com.tw/html/page.html
 
 # Codec
-P: wm8753l
+S: wm8753l
 A: codec
 D: http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf

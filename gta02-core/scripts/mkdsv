@@ -30,10 +30,10 @@ sub mkbin
 sub dl
 {
     $bin_dir = "$DSV_HOME/bin";
-    $ds_dir = "$DSV_HOME/ds/$part";
+    $ds_dir = "$DSV_HOME/ds/$sym";
     $url =~ /[^\/?&]*$/;
     $name = $&;
-    if (-r "$ds_dir/$name" && -x "$bin_dir/dsv-$part") {
+    if (-r "$ds_dir/$name" && -x "$bin_dir/dsv-$sym") {
 	return unless defined $alias;
 	return if -x "$bin_dir/dsv-$alias";
     }
@@ -41,19 +41,19 @@ sub dl
 
     local ($p) = "$ds_dir/$name";
     if (system("wget -nv -O \"$p-tmp\" \"$url\"")) {
-	print STDERR "FAILED: $part -> $url\n";
+	print STDERR "FAILED: $sym -> $url\n";
     } else {
 	rename("$p-tmp", $p) || die "rename: $!\n";
     }
-    &mkbin("$bin_dir/dsv-$part", $p);
+    &mkbin("$bin_dir/dsv-$sym", $p);
     &mkbin("$bin_dir/dsv-$alias", $p) if defined $alias;
 }
 
 
 sub flush
 {
-    &dl if defined($part) && defined($url);
-    undef $part;
+    &dl if defined($sym) && defined($url);
+    undef $sym;
     undef $alias;
     undef $url;
 }
@@ -66,17 +66,17 @@ sub flush
 while (<>) {
     s/#.*//;
     next if /^\s*$/;
-    if (/^P:\s+(\S+)\s*$/) {
-	&flush if defined $part;
-	$part = $1;
+    if (/^S:\s+(\S+)\s*$/) {
+	&flush if defined $sym;
+	$sym = $1;
     } elsif (/^A:\s+(\S+)\s*$/) {
 	$alias = $1;
     } elsif (/^D:\s+(.*?)\s*$/) {
-	$url = $1;
+	$url = $1 unless defined $url;
     } elsif (/^M:\s+(.*?)\s*$/) {
 	# ignore
     } else {
 	die "bad syntax: \"$_\"";
     }
 }
-&flush if defined $part;
+&flush if defined $sym;
