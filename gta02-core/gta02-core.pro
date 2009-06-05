@@ -139,3 +139,4 @@ LibName31=./components/it3205be.lib
 LibName32=./components/dfbm-cs320.lib
 LibName33=./components/gta02_wlan_s.lib
 LibName34=./components/gta02_wlan_h.lib
+LibName35=./components/td028ttec1.lib
