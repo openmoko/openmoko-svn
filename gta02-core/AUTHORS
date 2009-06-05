@@ -41,6 +41,8 @@ Rene Harder <rehar@saweb.de>
   components/it3205be.lib
   components/r3113d.lib
   components/dfbm-cs320.lib
+  components/gta02_wlan_s.lib
+  components/gta02_wlan_h.lib
 
   Compilations:
   components/gta02-core-expanded.lib

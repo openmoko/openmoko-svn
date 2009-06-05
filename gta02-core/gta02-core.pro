@@ -137,3 +137,5 @@ LibName29=./components/b7840.lib
 LibName30=./components/atr0610.lib
 LibName31=./components/it3205be.lib
 LibName32=./components/dfbm-cs320.lib
+LibName33=./components/gta02_wlan_s.lib
+LibName34=./components/gta02_wlan_h.lib
