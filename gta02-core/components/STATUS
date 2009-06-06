@@ -17,7 +17,7 @@ ht210			LED1501		Werner	Dave
 it3205be		X7601	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro		<1>
 lis302dl		U7801	Dave	Werner	Alvaro
-mini_usb_b		CON4901	Alvaro	Werner
+mini_usb_b		CON4901	Alvaro	Werner	Dave
 ms2v-t1s		X1701	Alvaro				[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro
 r3113d			U7604	Rene	Werner	Dave
