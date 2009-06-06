@@ -122,8 +122,8 @@ S: rt9711
 A: usb-switch
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
 
-# CPU (Samsung S3C2442B54)
-S: s3c2442
+# CPU (Samsung SC32442B54)
+S: sc32442
 A: cpu
 D: http://www.opatnet.cz/elektronika/datasheet/U/um_s3c2442b_rev12.pdf
 

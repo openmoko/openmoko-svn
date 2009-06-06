@@ -1,5 +1,5 @@
 EESchema Schematic File Version 2  date Thu May 14 20:34:54 2009
-LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,s3c2442,gta02-core-cache
+LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,sc32442,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
