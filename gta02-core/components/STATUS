@@ -5,32 +5,32 @@ Component		Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 74x2g126		U4903	Alvaro	Werner	Andre
 aat1275			U4904	Dave	Werner	Alvaro		[1]
 atr0610			U7601	Rene	Werner	Alvaro
-b7840			U7603	Rene	Werner
+b7840			U7603	Rene	Werner	Dave
 dfbm-cs320		U2	Rene
 dtc123			Q4601	Alvaro				[2]
-emh4			Q1501		Werner
-exc24cb102u		B3004	Alvaro	Werner
-fa2012			RP6001	Alvaro	Werner
+emh4			Q1501		Werner	Dave
+exc24cb102u		B3004	Alvaro	Werner	Dave
+fa2012			RP6001	Alvaro	Werner	Dave
 gta02_wlan_h		CON7802	Rene
 gta02_wlan_s		CON7901	Rene
-ht210			LED1501		Werner
+ht210			LED1501		Werner	Dave
 it3205be		X7601	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro		<1>
 lis302dl		U7801	Dave	Werner	Alvaro
 mini_usb_b		CON4901	Alvaro	Werner
 ms2v-t1s		X1701	Alvaro				[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro
-r3113d			U7604	Rene	Werner
-rt9013			U1702	Alvaro	Werner
-rt9702a			U1705	Alvaro	Werner
-rt9711_bd_5		U4905	Alvaro	Werner
+r3113d			U7604	Rene	Werner	Dave
+rt9013			U1702	Alvaro	Werner	Dave
+rt9702a			U1705	Alvaro	Werner	Dave
+rt9711_bd_5		U4905	Alvaro	Werner	Dave
 sc32442			U1501	Dave	Werner	Andre		<1>
 si1040x			U7609	Alvaro	Andre
 smsn16			CON7501	Alvaro	Werner
 sw_push_4		SW1501		Werner
 tas4025a		X1501	Alvaro				[3]
 td028ttec1		CON6001	Rene
-varistor		D3001	Alvaro	Werner
+varistor		D3001	Alvaro	Werner	Dave
 vibrator		VB4601	Alvaro	Werner
 wm8753l			U3001	Dave	Werner
 
