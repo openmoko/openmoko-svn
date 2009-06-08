@@ -33,6 +33,11 @@ S: atr0610
 A: gps-amp
 D: http://www.atmel.com/dyn/resources/prod_documents/doc4573.pdf
 
+# GPS Chipset
+S: atr0635
+A: gps
+D: http://atmel.com/dyn/resources/prod_documents/doc4928.pdf
+
 # Low-Loss Filter 1575.42 MHz
 S: b7840
 A: gps-filter
@@ -146,6 +151,11 @@ D: http://industrial.panasonic.com/www-data/pdf/ATK0000/ATK0000PE38.pdf
 S: tas4025a
 A: cpu-xtal
 D: http://www.tew.co.jp/e/crystal/02/pdf/TAS-4025A_E.pdf
+
+# GPS Coaxial Connector
+S: U.FL-R-SMT-1
+A: gps-coax
+D: http://www.hirose.co.jp/cataloge_hp/e32119372.pdf 
 
 # Vibrator (TA&MI P0408B-13-P2H)
 S: vibrator
