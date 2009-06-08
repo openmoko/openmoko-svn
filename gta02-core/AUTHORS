@@ -37,6 +37,7 @@ Alvaro Lopes <alvieboy@alvie.com>
 Rene Harder <rehar@saweb.de>
 
   components/atr0610.lib
+  components/atr0635.lib
   components/b7840.lib
   components/it3205be.lib
   components/r3113d.lib
