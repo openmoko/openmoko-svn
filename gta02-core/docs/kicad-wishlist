@@ -1,0 +1,223 @@
+KiCad wishlish (DRAFT)
+==============
+
+This is a list of enhancements and fixes to KiCad that would benefit
+the gta02-core project. They're roughly in the order of importance.
+
+Before starting to work on any of these items, please make sure to
+synchronize with the KiCad developer community to make sure that they
+actually like the feature and that this doesn't duplicate ongoing
+work. The kicad-devel list can be found here:
+
+http://tech.groups.yahoo.com/group/kicad-devel/
+
+
+- Clean up eeschema --plot hack and get it accepted into KiCad mainline
+
+  Problem: eeschema in KiCad mainline doesn't have a non-interactive way
+  to print or plot schematics. Such a capability would be extremely useful
+  for automated generation of project summaries and similar.
+
+  Status: here's a patch that implements an option --plot that does
+  roughly what we need. This is used to generate the .ps.gz with the
+  gta02-core exploded view:
+
+  http://svn.openmoko.org/trunk/gta02-core/kicad-patches/eeschema-plot-only-mode.patch
+
+  The problem with this patch is that it's not quite what the KiCad
+  maintainers want. See here for the discussion:
+
+  http://tech.groups.yahoo.com/group/kicad-devel/message/2579
+
+  Known issues: the above hack creates an eeschema session that doesn't
+  get properly terminated. So the next time eeschema is started, either
+  interactively or with --plot, it will complain that it's already
+  running and ask for confirmation.
+
+
+- Implement a non-interactive plot mode for pcbnew 
+
+  Problem: like the above "eeschema --plot", it would be good to have a
+  "pcbnew --plot". Even better would be the ability to adjust some of the
+  settings, such as mirroring and the output format, e.g., Postscript or
+  Gerber.
+
+  Status: dabbled a bit with it, but don't really have anything to show.
+
+
+- Text aligment in eeschema symbols
+
+  Background: we use right-aligned text in symbols for a number of
+  purposes, e.g., as a band-aid in "Pin name inside and on top" and as
+  a manual solution for "Multi-purpose pins".
+  
+  Problem: text in symbols ("components") can only be centered, so if
+  any other alignment is desired, it has to be done manually. This is
+  not very elegant and causes the aligments to be lost when the font
+  geometry changes (which just happened recently).
+
+
+- Make relative paths work when passing a file to eeschema and pcbnew
+
+  Background: eeschema and pcbnew can be invoked with the name of the
+  file to open. This works very well as long as the path name is
+  absolute. However, if it is relative ...
+
+  Problem: eeschema and pcbnew change the working directory which
+  yields weird results if the path is relative to the current directory,
+  usually resulting in eeschema finding neither the profile (project
+  settings) nor the file passed on the command line. (As can be guessed
+  from this description, I haven't quite figured out how exactly all
+  this goes wrong.)
+
+  The work-around is to simply prefix the relative path with `pwd`/,
+  but this upsets the usual  command prefix[Tab][Enter]  workflow.
+
+
+- Pin name inside and on top
+
+  Background: eeschema currently supports two types if pin labeling,
+  pin name inside or outside:
+
+      "Pin name inside"              "Pin name outside"
+
+    inside   |   outside           inside   |   outside
+             |                              |
+             |  2                           | FOOBAR
+     FOOBAR  |------                   -----|---------
+             |                              |  2
+
+  For symbols that contain a drawing of the internal structure, "pin
+  name outside" allows the signal to be graphically continued, as
+  shown in the example above.
+
+  Problem: if pin names are long, it can be difficult to accommodate
+  them on top of the pins in "pin name outside" mode. Furthermore,
+  this often differs from the style chosen in the reference drawings
+  in the data sheets.
+
+  It would therefore be nice to have a third option, namely "pin
+  name inside and above":
+
+    inside   |   outside
+             |
+     FOOBAR  |  2
+    ---------|------
+             |
+
+  When implementing this, perhaps the properties/options dialog in
+  the component editor could be streamlined from having checkboxes
+  for "show pin name" and "pin name inside" to having radio buttons
+  for no name/outside/inside centered/inside raised.
+
+  Status: needs discussion with the KiCad developer community. Maybe
+  they don't like it. As a work-around, we can hide the pin names
+  and add them as text fields.
+
+
+- Fix wx plot and print
+
+  [ Add more description. Not sure if any actual coding is needed,
+    or just integration. ]
+
+  http://tech.groups.yahoo.com/group/kicad-devel/message/2649
+  http://tech.groups.yahoo.com/group/kicad-devel/message/2653
+  http://tech.groups.yahoo.com/group/kicad-devel/message/2656
+
+
+- Consider: multi-connect pins
+
+  Background: in some devices, one pin can have multiple functions,
+  e.g., EINT19/TCLK1/GPG11 can be an external interrupt, a clock signal,
+  or a GPIO. If the chip is complex enough, it may be broken down into
+  functional blocks, and pins may be associated with the respective
+  block.
+
+  In the above example, this pin could be in the EINT block, the TIMER
+  block, or a GPIO block (if such exists). It is generally perceived as
+  desirable to have a pin appear in the vicinity of pins with related
+  functions.
+
+  Problem: the preferred placement of the pin would depend on the
+  application, thus requiring an application-specific variant of the
+  symbol.
+
+  In gta02-core, we place a pin in the block with its primary function
+  and add a text repeating the full signal name at the location of the
+  secondary function. This provides the desired reference, but it still
+  means that one has to look up the pin manually when using a secondary
+  function.
+
+  Possible enhancements: it would be nice if one could have a "real"
+  pin at each location, and connect the signal at the place
+  corresponding to the actual use. There could be the following
+  possibilities:
+
+  - just create pins with the same pin number, ignore the complaints
+    from the component editor's consistency check, and connect only to
+    one of the pins. Problem: KiCad gets confused when this happens and
+    produces an invalid netlist. Also, having to ignore ERC is rarely a
+    good idea.
+
+  - add a mechanism that allows one to have multiple copies of a pin,
+    but check that all but one are marked as "no connect", and enhance
+    the netlist generator such that it skips these "unconnected" pins.
+
+  - similarly, automatically mark all pins with the same name as
+    inaccessible if one of them is connected.
+
+  There's also the question whether such multi-use pins should have to
+  be flagged in the component editor to avoid false warnings. Such a
+  flag would require an extension of the component file format, which
+  is probably undesirable. ERC should be able to detect problems
+  without explicit flagging.
+
+
+- "Live" inclusion of sub-boards in the layout, similar to hierarchical
+  sheets in eeschema
+
+  [ Add summary. Link to discussion. ]
+
+
+- Move nodes while maintaining the slope
+
+  Problem: when moving a node (a corner in a trace), the slopes of the
+  adjacent segments no longer maintain 45 deg alignment.
+
+  Proposed improvement: Alignment could be treating this as move
+  involving four connected segments, the two adjacent to the node, and
+  the segments leading to them. The "far" segments would only be allowed
+  to grow and shrink while the "near" segments would move according to
+  the length of the respective "far" segment, and would grow or shrink
+  according to the position of the node. If all segments maintain their
+  angle, the four lengths are completely determined by the position of
+  the node.
+
+  Where no "far" segment exists, one could be introduced with an
+  orientation such that no angles below 90 degrees are created.
+
+
+- Drag nodes or traces in pcbnew without going through menus
+
+  Background: pcbnew supports drag operations in nodes and on traces.
+  E.g., to drag a node, one right-clicks on the node, selects any of
+  the two tracks shown, selects "Mode node", moves the mouse to pull
+  the node to the desired location, and clicks to move the node.
+
+  Problem: a lot of selections are necessary for such an operation
+  that can be quite common when doing manual routing.
+
+  Proposed improvement: the drag action (press and hold mouse button,
+  then move mouse) is currently only used to mark blocks. Block usually
+  surround the selected items. Thus, a drag starting on a node could be
+  used to directly initiate a movement, without requiring further
+  interaction.
+
+  This enhancement would be particularly useful after the previous one
+  has been implemented.
+
+
+- Add a push-router
+
+  [ Add description. Also note that some of the checks that are done
+    while drawing new traces are missing while moving existing ones. ] 
