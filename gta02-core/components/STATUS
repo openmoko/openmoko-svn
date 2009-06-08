@@ -6,7 +6,7 @@ Component		Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 aat1275			U4904	Dave	Werner	Alvaro		[1]
 atr0610			U7601	Rene	Werner	Alvaro
 atr0635			U7608   Rene	Dave			<1>
-b7840			U7603	Rene	Werner	Dave
+b7840			U7603	Rene	Werner	Dave    Alvaro
 U.FL-R-SMT		CON7601 Rene
 dfbm-cs320		U2	Rene
 dtc123			Q4601	Alvaro				[2]
@@ -22,7 +22,7 @@ lis302dl		U7801	Dave	Werner	Alvaro
 mini_usb_b		CON4901	Alvaro	Werner	Dave
 ms2v-t1s		X1701	Alvaro				[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro
-r3113d			U7604	Rene	Werner	Dave
+r3113d			U7604	Rene	Werner	Dave    Alvaro
 rt9013			U1702	Alvaro	Werner	Dave
 rt9702a			U1705	Alvaro	Werner	Dave
 rt9711_bd_5		U4905	Alvaro	Werner	Dave
