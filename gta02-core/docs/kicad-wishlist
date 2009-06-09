@@ -12,6 +12,18 @@ work. The kicad-devel list can be found here:
 http://tech.groups.yahoo.com/group/kicad-devel/
 
 
+- Text aligment in eeschema symbols
+
+  Background: we use right-aligned text in symbols for a number of
+  purposes, e.g., as a band-aid in "Pin name inside and on top" and as
+  a manual solution for "Multi-purpose pins".
+  
+  Problem: text in symbols ("components") can only be centered, so if
+  any other alignment is desired, it has to be done manually. This is
+  not very elegant and causes the aligments to be lost when the font
+  geometry changes (which just happened recently).
+
+
 - Clean up eeschema --plot hack and get it accepted into KiCad mainline
 
   Problem: eeschema in KiCad mainline doesn't have a non-interactive way
@@ -43,18 +55,6 @@ http://tech.groups.yahoo.com/group/kicad-devel/
   Gerber.
 
   Status: dabbled a bit with it, but don't really have anything to show.
-
-
-- Text aligment in eeschema symbols
-
-  Background: we use right-aligned text in symbols for a number of
-  purposes, e.g., as a band-aid in "Pin name inside and on top" and as
-  a manual solution for "Multi-purpose pins".
-  
-  Problem: text in symbols ("components") can only be centered, so if
-  any other alignment is desired, it has to be done manually. This is
-  not very elegant and causes the aligments to be lost when the font
-  geometry changes (which just happened recently).
 
 
 - Make relative paths work when passing a file to eeschema and pcbnew
@@ -219,5 +219,6 @@ http://tech.groups.yahoo.com/group/kicad-devel/
 
 - Add a push-router
 
-  [ Add description. Also note that some of the checks that are done
-    while drawing new traces are missing while moving existing ones. ] 
+  [ Add description. Also note that some of the checks and adjustments
+    that are done while drawing new traces are only done when trying to
+    place existing ones but not while moving them. ] 
