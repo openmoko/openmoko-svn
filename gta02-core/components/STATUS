@@ -1,4 +1,4 @@
-Component		Ref	Author	Review	2nd rv.	3rd rv.	Remarks
+Component (file name)	Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 ----------------------	------	-------	-------	-------	-------	-------------
 74x1g00_5		U4902	Alvaro	Werner	Andre
 74x1g125		U4901	Alvaro	Werner	Andre
@@ -7,7 +7,7 @@ aat1275			U4904	Dave	Werner	Alvaro		[1]
 atr0610			U7601	Rene	Werner	Alvaro
 atr0635			U7608   Rene	Dave			<1>
 b7840			U7603	Rene	Werner	Dave    Alvaro
-U.FL-R-SMT		CON7601 Rene
+coax			CON7601 Rene
 dfbm-cs320		U2	Rene
 dtc123			Q4601	Alvaro				[2]
 emh4			Q1501	Alvaro	Werner	Dave
