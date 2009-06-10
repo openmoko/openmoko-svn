@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Wed Jun 10 10:21:03 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 5500 6000 0    60   ~ 0
+Note: GND 09 and 18 through 21 are all called Common_GND in the data sheet.
 Text Notes 1250 1150 0    120  ~ 24
 SD/SIM
 $Comp
