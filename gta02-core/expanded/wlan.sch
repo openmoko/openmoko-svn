@@ -3,7 +3,7 @@ LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 6 13
+Sheet 2 13
 Title ""
 Date ""
 Rev ""
@@ -13,15 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 1100 1050 0    120  ~ 24
-CPU-POWER
+Text Notes 1100 1100 0    120  ~ 24
+WLAN
 $Comp
-L XSC32442 U?
-U 16 1 4A195396
-P 5800 3700
-F 0 "U?" H 5800 3600 50  0000 C CNN
-F 1 "XSC32442" H 5800 3800 50  0000 C CNN
-	16   5800 3700
+L XGTA02_WLAN_S CON?
+U 1 1 4A2ED533
+P 6100 3850
+F 0 "CON?" H 6100 4450 60  0000 C CNN
+F 1 "XGTA02_WLAN_S" H 6100 3250 60  0000 C CNN
+	1    6100 3850
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC

@@ -13,7 +13,6 @@ dtc123			Q4601	Alvaro				[2]
 emh4			Q1501	Alvaro	Werner	Dave
 exc24cb102u		B3004	Alvaro	Werner	Dave
 fa2012			RP6001	Alvaro	Werner	Dave
-gta02_wlan_h		CON7802	Rene
 gta02_wlan_s		CON7901	Rene
 ht210			LED1501	Alvaro	Werner	Dave
 it3205be		X7601	Rene	Werner
@@ -39,6 +38,10 @@ wm8753l			U3001	Dave	Werner
 KiCad R_PACK4		RP2001	-	Werner
 KiCad CRYSTAL		X7602	-	Werner
 
+Not currently used:
+
+gta02_wlan_h		CON7802	Rene
+
 <N> = Nth review is only partial
 If a part is used multiple times, put the first reference.
 
@@ -50,3 +53,10 @@ If a part is used multiple times, put the first reference.
 [3] These symbols are not very component-specific. Consider using
     names like XTAL_4_12 for a crystal with four pins/pads, of
     which 1 and 2 connect to the crystal and the rest is ground.
+
+Alvaro	= Alvaro Lopes
+Andre	= Andre Knispel
+Dave	= Dave Ball
+Rene	= Rene Harder
+Tobias	= Tobias ?
+Werner	= Werner Almesberger

@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Fri May 29 13:30:42 2009
-LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
+EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 1 11
+Sheet 1 13
 Title "GTA02-CORE"
 Date "12 may 2009"
 Rev ""
@@ -13,6 +13,18 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 9050 5450 1850 1050
+U 4A2ED3B1
+F0 "WLAN" 60
+F1 "wlan.sch" 60
+$EndSheet
+$Sheet
+S 6650 5350 1850 1150
+U 4A2ED395
+F0 "BT" 60
+F1 "bt.sch" 60
+$EndSheet
 $Sheet
 S 1800 5200 2100 1350
 U 4A1C5BE7

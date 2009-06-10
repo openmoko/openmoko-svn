@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue May 26 18:16:19 2009
-LIBS:power,device,conn,gta02-core-expanded
+EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 7 11
+Sheet 11 13
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,17 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1050 1050 0    120  ~ 24
+IO
+$Comp
+L XVIBRATOR VB?
+U 1 1 4A2ED880
+P 9900 3350
+F 0 "VB?" H 9900 3600 60  0000 C CNN
+F 1 "XVIBRATOR" H 9900 3100 60  0000 C CNN
+	1    9900 3350
+	1    0    0    -1  
+$EndComp
 $Comp
 L XDTC123 Q?
 U 1 1 4A1B27E0

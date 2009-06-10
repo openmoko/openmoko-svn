@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2
-LIBS:power,device,conn,../components/gta02-core-expanded
+EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 5 11
+Sheet 7 13
 Title ""
 Date ""
 Rev ""
@@ -13,12 +13,23 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1100 1100 0    120  ~ 24
+GPS
+$Comp
+L XCOAX CON?
+U 1 1 4A2ED4CD
+P 7450 2650
+F 0 "CON?" H 7050 2900 60  0000 C CNN
+F 1 "XCOAX" H 7950 2400 60  0000 C CNN
+	1    7450 2650
+	1    0    0    -1  
+$EndComp
 $Comp
 L XATR0635 U?
 U 1 1 4A2D1372
 P 4100 3900
-F 0 "U?" H 4100 4000 60  0000 C C
-F 1 "XATR0635" H 4100 3800 60  0000 C C
+F 0 "U?" H 4100 4000 60  0000 C CNN
+F 1 "XATR0635" H 4100 3800 60  0000 C CNN
 	1    4100 3900
 	1    0    0    -1  
 $EndComp
@@ -26,8 +37,8 @@ $Comp
 L XIT3205BE X?
 U 1 1 4A2062F7
 P 9150 1050
-F 0 "X?" H 9150 1500 60  0000 C C
-F 1 "XIT3205BE" H 9150 1400 60  0000 C C
+F 0 "X?" H 9150 1500 60  0000 C CNN
+F 1 "XIT3205BE" H 9150 1400 60  0000 C CNN
 	1    9150 1050
 	1    0    0    -1  
 $EndComp
@@ -35,8 +46,8 @@ $Comp
 L XATR0610 U?
 U 1 1 4A205AA9
 P 9300 6600
-F 0 "U?" H 9300 7100 60  0000 C C
-F 1 "XATR0610" H 9300 7000 60  0000 C C
+F 0 "U?" H 9300 7100 60  0000 C CNN
+F 1 "XATR0610" H 9300 7000 60  0000 C CNN
 	1    9300 6600
 	1    0    0    -1  
 $EndComp
@@ -44,8 +55,8 @@ $Comp
 L XB7840 U?
 U 1 1 4A2056FE
 P 9300 3350
-F 0 "U?" H 9300 3750 60  0000 C C
-F 1 "XB7840" H 9300 3650 60  0000 C C
+F 0 "U?" H 9300 3750 60  0000 C CNN
+F 1 "XB7840" H 9300 3650 60  0000 C CNN
 	1    9300 3350
 	1    0    0    -1  
 $EndComp
@@ -53,8 +64,8 @@ $Comp
 L XR3113D U?
 U 1 1 4A205092
 P 9300 2050
-F 0 "U?" H 9300 2450 60  0000 C C
-F 1 "XR3113D" H 9300 2350 60  0000 C C
+F 0 "U?" H 9300 2450 60  0000 C CNN
+F 1 "XR3113D" H 9300 2350 60  0000 C CNN
 	1    9300 2050
 	1    0    0    -1  
 $EndComp
@@ -62,8 +73,8 @@ $Comp
 L XSI1040X U?
 U 1 1 4A181987
 P 9300 4750
-F 0 "U?" H 8850 5300 60  0000 C C
-F 1 "XSI1040X" H 8950 4200 60  0000 C C
+F 0 "U?" H 8850 5300 60  0000 C CNN
+F 1 "XSI1040X" H 8950 4200 60  0000 C CNN
 	1    9300 4750
 	1    0    0    -1  
 $EndComp

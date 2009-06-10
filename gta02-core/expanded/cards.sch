@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue May 26 18:16:19 2009
-LIBS:power,device,conn,gta02-core-expanded
+EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 2 11
+Sheet 4 13
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1250 1150 0    120  ~ 24
+SD/SIM
 $Comp
 L XSMSN16 CON?
 U 1 1 4A1C5C18
