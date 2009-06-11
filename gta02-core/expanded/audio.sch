@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Thu Jun 11 10:38:26 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,33 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XMICROPHONE MIC?
+U 1 1 4A3108C4
+P 4400 1650
+F 0 "MIC?" H 4400 1950 60  0000 C CNN
+F 1 "XMICROPHONE" H 4400 1350 60  0000 C CNN
+	1    4400 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L XJACK_4P CON?
+U 1 1 4A3107F0
+P 5700 6500
+F 0 "CON?" H 5700 6950 60  0000 C CNN
+F 1 "XJACK_4P" H 5700 6150 60  0000 C CNN
+	1    5700 6500
+	1    0    0    -1  
+$EndComp
+$Comp
+L SPEAKER SP?
+U 1 1 4A31070C
+P 3650 2500
+F 0 "SP?" H 3550 2750 70  0000 C CNN
+F 1 "SPEAKER" H 3550 2250 70  0000 C CNN
+	1    3650 2500
+	1    0    0    -1  
+$EndComp
 Text Notes 1300 1250 0    120  ~ 24
 AUDIO
 $Comp

@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Thu Jun 11 11:02:04 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XANTENNA ANT?
+U 1 1 4A310E59
+P 2250 2000
+F 0 "ANT?" H 2250 2250 60  0000 C CNN
+F 1 "XANTENNA" H 2250 1750 60  0000 C CNN
+	1    2250 2000
+	1    0    0    -1  
+$EndComp
 Text Notes 1250 1200 0    120  ~ 24
 BT
 $Comp

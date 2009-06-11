@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Thu Jun 11 10:29:44 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L R_PACK4 RP?
+U 1 1 4A3106BD
+P 5900 3900
+F 0 "RP?" H 5900 4350 40  0000 C CNN
+F 1 "R_PACK4" H 5900 3850 40  0000 C CNN
+	1    5900 3900
+	1    0    0    -1  
+$EndComp
 Text Notes 5750 1000 0    120  ~ 24
 MEMORY
 $Comp

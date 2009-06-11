@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Thu Jun 11 10:59:58 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XBTP-03JA4G CON?
+U 1 1 4A310DD9
+P 9600 2850
+F 0 "CON?" H 9600 3150 60  0000 C CNN
+F 1 "XBTP-03JA4G" H 9600 2550 60  0000 C CNN
+	1    9600 2850
+	1    0    0    -1  
+$EndComp
 Text Notes 950  900  0    120  ~ 24
 PMU
 $Comp

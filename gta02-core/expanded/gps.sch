@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Thu Jun 11 10:30:12 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L CRYSTAL X?
+U 1 1 4A3106EE
+P 7550 4150
+F 0 "X?" H 7550 4300 60  0000 C CNN
+F 1 "CRYSTAL" H 7550 4000 60  0000 C CNN
+	1    7550 4150
+	1    0    0    -1  
+$EndComp
 Text Notes 1100 1100 0    120  ~ 24
 GPS
 $Comp

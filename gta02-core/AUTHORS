@@ -36,10 +36,14 @@ Alvaro Lopes <alvieboy@alvie.com>
 
 Rene Harder <rehar@saweb.de>
 
+  components/antenna.lib
   components/atr0610.lib
   components/atr0635.lib
   components/b7840.lib
+  components/btp-03ja4g.lib
   components/it3205be.lib
+  components/jack_4p.lib
+  components/microphone.lib
   components/r3113d.lib
   components/dfbm-cs320.lib
   components/gta02_wlan_s.lib
