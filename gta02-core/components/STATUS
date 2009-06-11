@@ -1,12 +1,14 @@
 Component (file name)	Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 ----------------------	------	-------	-------	-------	-------	-------------
-74x1g00_5		U4902	Alvaro	Werner	Andre	Rene	[1]
+74x1g00_5		U4902	Alvaro	Werner	Andre	Rene
 74x1g125		U4901	Alvaro	Werner	Andre
 74x2g126		U4903	Alvaro	Werner	Andre
 aat1275			U4904	Dave	Werner	Alvaro		[1]
+antenna			U1	Rene				[4]
 atr0610			U7601	Rene	Werner	Alvaro	Andre
 atr0635			U7608   Rene	Dave			<1>
 b7840			U7603	Rene	Werner	Dave    Alvaro
+btp-03ja4g		CON1701	Rene	Werner
 coax			CON7601 Rene
 dfbm-cs320		U2	Rene
 dtc123			Q4601	Alvaro				[2]
@@ -16,8 +18,10 @@ fa2012			RP6001	Alvaro	Werner	Dave	Rene
 gta02_wlan_s		CON7901	Rene
 ht210			LED1501	Alvaro	Werner	Dave
 it3205be		X7601	Rene	Werner
+jack_4p			JK4401	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro		<1>
 lis302dl		U7801	Dave	Werner	Alvaro
+microphone		MIC4301	Rene	Werner
 mini_usb_b		CON4901	Alvaro	Werner	Dave
 ms2v-t1s		X1701	Alvaro				[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro
@@ -35,8 +39,9 @@ varistor		D3001	Alvaro	Werner	Dave
 vibrator		VB4601	Alvaro	Werner
 wm8753l			U3001	Dave	Werner	Rene
 
-KiCad R_PACK4		RP2001	-	Werner
+KiCad R_PACK4		RP2201	-	Werner
 KiCad CRYSTAL		X7602	-	Werner
+KiCad SPEAKER		REC4301	-	Rene	Werner
 
 Not currently used:
 
@@ -53,6 +58,9 @@ If a part is used multiple times, put the first reference.
 [3] These symbols are not very component-specific. Consider using
     names like XTAL_4_12 for a crystal with four pins/pads, of
     which 1 and 2 connect to the crystal and the rest is ground.
+
+[4] Use 3/4 pin numbering of the Wavefar WTE0616 (or is it a
+    WTE78012 ?) ?
 
 Alvaro	= Alvaro Lopes
 Andre	= Andre Knispel

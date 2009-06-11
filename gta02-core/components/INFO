@@ -22,6 +22,9 @@ S: 74x2g126
 A: buf-2g
 D: http://focus.ti.com/lit/ds/symlink/sn74lvc2g126.pdf
 
+# Antenna (Wavefar WTE0616 or WTE78012)
+S: antenna
+
 # Boost converter
 S: aat1275irn
 A: boost
@@ -42,6 +45,16 @@ D: http://atmel.com/dyn/resources/prod_documents/doc4928.pdf
 S: b7840
 A: gps-filter
 D: http://www.epcos.com/inf/40/ds/mc/B7840.pdf
+
+# Battery connctor (OCTEC BTP-03JA4G)
+S: btp-03ja4g
+A: bat-conn
+D: http://www.octekconn.com/uploads/file/file_path_62.pdf
+
+# Bluetooth module
+S: dfbm-cs320
+A: bt
+D: http://www.china-jtty.com/pdf/lymz/DFBM-CS320-060301.pdf
 
 # Vibrator Transisor
 S: dtc123
@@ -66,6 +79,10 @@ S: fa2012
 A: lcm-filter
 D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 
+# WLAN Socket
+S: gta02_wlan_s
+D: http://www.panasonic-electric-works.it/catalogues/downloads/connectors/ds_65306_0000_en_axk5_6f.pdf
+
 # Bi-color LED
 S: ht210
 A: dual-led
@@ -78,6 +95,9 @@ A: gps-osc
 # footprint !
 # D: http://www.rakon.com/Products/Public%20Documents/Specifications/IT3200C-E.pdf
 
+# JACK (Nuconn JAR02-062101)
+S: jack_4p
+
 # SDRAM (K4M51323PC-DG75)
 S: k4m51323pe
 A: sdram
@@ -89,6 +109,10 @@ D: http://www.samsung.com/global/system/business/semiconductor/family/2008/10/30
 S: lis302dl
 A: accel
 D: http://www.st.com/stonline/products/literature/ds/12726.pdf
+
+# Microphone (Imperial Electronics IMP-413TN)
+S: microphone
+# D: http://www.imp.com.tw
 
 # Mini-USB B (CMK A425-206162-001)
 S: mini_usb_b
@@ -142,6 +166,9 @@ S: smsn16
 A: simsd
 D: http://www.proconn-tech.com.tw/pdf/new/COMBO/SMSN16-02-C(SMSN16-X0-2X00)2%20IN%20Hinge%20Type%20.pdf
 
+# Speaker (Philips 2403 252 28828)
+S: speaker
+
 # SMD Switch
 S: sw_push_4
 A: button
@@ -151,6 +178,13 @@ D: http://industrial.panasonic.com/www-data/pdf/ATK0000/ATK0000PE38.pdf
 S: tas4025a
 A: cpu-xtal
 D: http://www.tew.co.jp/e/crystal/02/pdf/TAS-4025A_E.pdf
+
+# LCM and its connector
+S: td028ttec1
+A: lcm-conn
+D: http://www.hirose.co.jp/cataloge_hp/e58613007.pdf
+#A: lcm
+D: http://www.cip.physik.uni-muenchen.de/~Wolfgang.Draxinger/stuff/openmoko/TD028TTEC1.pdf
 
 # GPS Coaxial Connector
 S: U.FL-R-SMT-1
