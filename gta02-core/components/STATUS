@@ -1,8 +1,8 @@
 Component (file name)	Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 ----------------------	------	-------	-------	-------	-------	-------------
 74x1g00_5		U4902	Alvaro	Werner	Andre	Rene
-74x1g125		U4901	Alvaro	Werner	Andre
-74x2g126		U4903	Alvaro	Werner	Andre
+74x1g125		U4901	Alvaro	Werner	Andre	Rene
+74x2g126		U4903	Alvaro	Werner	Andre	Rene
 aat1275			U4904	Dave	Werner	Alvaro		[1]
 antenna			U1	Rene				[4]
 atr0610			U7601	Rene	Werner	Alvaro	Andre
@@ -12,8 +12,8 @@ btp-03ja4g		CON1701	Rene	Werner
 coax			CON7601 Rene	Werner
 dfbm-cs320		U2	Rene	Werner
 dtc123			Q4601	Alvaro				[2]
-emh4			Q1501	Alvaro	Werner	Dave
-exc24cb102u		B3004	Alvaro	Werner	Dave
+emh4			Q1501	Alvaro	Werner	Dave	Rene
+exc24cb102u		B3004	Alvaro	Werner	Dave	Rene
 fa2012			RP6001	Alvaro	Werner	Dave	Rene
 gta02_wlan_s		CON7901	Rene
 ht210			LED1501	Alvaro	Werner	Dave
@@ -35,7 +35,7 @@ smsn16			CON7501	Alvaro	Werner	Tobias	Andre
 sw_push_4		SW1501	Alvaro	Werner	Tobias
 tas4025a		X1501	Alvaro	Tobias			[3]
 td028ttec1		CON6001	Rene
-varistor		D3001	Alvaro	Werner	Dave
+varistor		D3001	Alvaro	Werner	Dave	Rene
 vibrator		VB4601	Alvaro	Werner
 wm8753l			U3001	Dave	Werner	Rene
 
