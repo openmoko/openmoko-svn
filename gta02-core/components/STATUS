@@ -3,7 +3,7 @@ Component (file name)	Ref	Author	Review	2nd rv.	3rd rv.	Remarks
 74x1g00_5		U4902	Alvaro	Werner	Andre	Rene
 74x1g125		U4901	Alvaro	Werner	Andre	Rene
 74x2g126		U4903	Alvaro	Werner	Andre	Rene
-aat1275			U4904	Dave	Werner	Alvaro		[1]
+aat1275			U4904	Dave	Werner	Alvaro	Rene	[1]
 antenna			U1	Rene				[4]
 atr0610			U7601	Rene	Werner	Alvaro	Andre
 atr0635			U7608   Rene	Dave			<1>
@@ -16,11 +16,11 @@ emh4			Q1501	Alvaro	Werner	Dave	Rene
 exc24cb102u		B3004	Alvaro	Werner	Dave	Rene
 fa2012			RP6001	Alvaro	Werner	Dave	Rene
 gta02_wlan_s		CON7901	Rene
-ht210			LED1501	Alvaro	Werner	Dave
+ht210			LED1501	Alvaro	Werner	Dave	Rene
 it3205be		X7601	Rene	Werner
 jack_4p			JK4401	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro		<1>
-lis302dl		U7801	Dave	Werner	Alvaro
+lis302dl		U7801	Dave	Werner	Alvaro	Rene
 microphone		MIC4301	Rene	Werner
 mini_usb_b		CON4901	Alvaro	Werner	Dave
 ms2v-t1s		X1701	Alvaro				[3]
