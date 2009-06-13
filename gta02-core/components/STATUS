@@ -11,7 +11,7 @@ b7840			U7603	Rene	Werner	Dave    Alvaro
 btp-03ja4g		CON1701	Rene	Werner
 coax			CON7601 Rene	Werner
 dfbm-cs320		U2	Rene	Werner
-dtc123			Q4601	Alvaro				[2]
+dtc123			Q4601	Alvaro	Rene			[2]
 emh4			Q1501	Alvaro	Werner	Dave	Rene
 exc24cb102u		B3004	Alvaro	Werner	Dave	Rene
 fa2012			RP6001	Alvaro	Werner	Dave	Rene
@@ -53,7 +53,8 @@ If a part is used multiple times, put the first reference.
 [1] Different packages available with different pin numbering.
     Component therefore needs qualifier.
 
-[2] Pin numbering probably wrong. Need to check real device.
+[2] Didn't use ROHM's pin numbering, use the NXP and ON numbering style.
+    see http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf for more detail.
 
 [3] These symbols are not very component-specific. Consider using
     names like XTAL_4_12 for a crystal with four pins/pads, of
