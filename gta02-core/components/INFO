@@ -199,3 +199,8 @@ S: vibrator
 S: wm8753l
 A: codec
 D: http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
+
+# Chip Resistors Array RTA02-4Dxxx
+S: R_PACK4
+D: http://www.ralec.com/download/products/5_Array-convex.pdf
+

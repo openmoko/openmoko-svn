@@ -22,25 +22,25 @@ jack_4p			JK4401	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro	Rene	<1>
 lis302dl		U7801	Dave	Werner	Alvaro	Rene
 microphone		MIC4301	Rene	Werner
-mini_usb_b		CON4901	Alvaro	Werner	Dave
-ms2v-t1s		X1701	Alvaro				[3]
+mini_usb_b		CON4901	Alvaro	Werner	Dave	Rene
+ms2v-t1s		X1701	Alvaro	Rene			[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro	Rene
 r3113d			U7604	Rene	Werner	Dave    Alvaro
-rt9013			U1702	Alvaro	Werner	Dave
-rt9702a			U1705	Alvaro	Werner	Dave
-rt9711_bd_5		U4905	Alvaro	Werner	Dave
+rt9013			U1702	Alvaro	Werner	Dave	Rene
+rt9702a			U1705	Alvaro	Werner	Dave	Rene
+rt9711_bd_5		U4905	Alvaro	Werner	Dave	Rene
 sc32442			U1501	Dave	Werner	Andre	Tobias	<1>
-si1040x			U7609	Alvaro	Andre	Tobias
+si1040x			U7609	Alvaro	Andre	Tobias	Rene
 smsn16			CON7501	Alvaro	Werner	Tobias	Andre
-sw_push_4		SW1501	Alvaro	Werner	Tobias
-tas4025a		X1501	Alvaro	Tobias			[3]
+sw_push_4		SW1501	Alvaro	Werner	Tobias	Rene
+tas4025a		X1501	Alvaro	Tobias	Rene		[3]
 td028ttec1		CON6001	Rene
 varistor		D3001	Alvaro	Werner	Dave	Rene
-vibrator		VB4601	Alvaro	Werner
+vibrator		VB4601	Alvaro	Werner	Rene
 wm8753l			U3001	Dave	Werner	Rene
 
-KiCad R_PACK4		RP2201	-	Werner
-KiCad CRYSTAL		X7602	-	Werner
+KiCad R_PACK4		RP2201	-	Werner	Rene
+KiCad CRYSTAL		X7602	-	Werner	Rene
 KiCad SPEAKER		REC4301	-	Rene	Werner
 
 Not currently used:
