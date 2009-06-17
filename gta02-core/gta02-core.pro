@@ -1,4 +1,4 @@
-update=8/6/2009-13:11:28
+update=Wed 17 Jun 2009 19:27:52 WEST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -141,3 +141,4 @@ LibName33=./components/dfbm-cs320.lib
 LibName34=./components/gta02_wlan_s.lib
 LibName35=./components/gta02_wlan_h.lib
 LibName36=./components/td028ttec1.lib
+LibName37=./components/r_us.lib
