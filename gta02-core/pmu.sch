@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Thu May 14 20:34:54 2009
-LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,sc32442,gta02-core-cache
+EESchema Schematic File Version 2  date Wed 17 Jun 2009 20:32:32 WEST
+LIBS:,poweratr0635deviceconnaat1275irnk4m51323pelis302dlpcf50633-04-n3wm8753lgeflsc32442ms2v-t1stas4025art9702rt9013_bexc24cb102uvaristorfa2012rt9711_bd_5dtc123vibratormini_usb_bsmsn1674x1g00_574x1g12574x2g126emh4ht210sw_push_4r3113db7840atr0610it3205bedfbm-cs320gta02_wlan_sgta02_wlan_htd028ttec1r_usgta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
@@ -13,6 +13,269 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	6200 5300 6200 5200
+Wire Wire Line
+	6700 5300 6200 5300
+Wire Wire Line
+	6400 5400 6400 5200
+Wire Wire Line
+	6400 5400 6700 5400
+Wire Wire Line
+	7400 5400 7200 5400
+Wire Wire Line
+	7400 5200 7200 5200
+Connection ~ 10550 1650
+Wire Wire Line
+	10350 1650 10750 1650
+Wire Wire Line
+	10550 2000 10550 1900
+Wire Wire Line
+	10550 1900 10350 1900
+Wire Wire Line
+	10350 1500 10550 1500
+Wire Wire Line
+	10550 1500 10550 1400
+Wire Wire Line
+	10550 1400 10350 1400
+Wire Wire Line
+	7400 2150 6000 2150
+Wire Wire Line
+	7200 3200 7200 3100
+Wire Wire Line
+	7200 3100 7400 3100
+Wire Wire Line
+	7200 2950 7200 2850
+Wire Wire Line
+	7200 2850 7400 2850
+Connection ~ 7200 2150
+Wire Wire Line
+	5500 1700 5300 1700
+Wire Wire Line
+	5500 1250 5300 1250
+Wire Wire Line
+	6900 1250 7100 1250
+Wire Wire Line
+	7100 1250 7100 1500
+Wire Wire Line
+	7100 1500 7400 1500
+Wire Wire Line
+	6400 1250 6000 1250
+Connection ~ 6200 1700
+Wire Wire Line
+	6200 1700 6200 1900
+Wire Wire Line
+	6200 1900 7400 1900
+Wire Wire Line
+	7400 1700 6900 1700
+Connection ~ 6200 900 
+Wire Wire Line
+	7200 1400 7200 900 
+Wire Wire Line
+	7200 1400 7400 1400
+Wire Wire Line
+	6400 1700 6000 1700
+Wire Wire Line
+	7200 2150 7200 2250
+Wire Wire Line
+	7200 2250 7400 2250
+Wire Wire Line
+	7000 2700 7400 2700
+Connection ~ 6200 1250
+Wire Wire Line
+	6200 900  6200 1250
+Wire Wire Line
+	7200 900  5300 900 
+Wire Wire Line
+	6600 2500 7400 2500
+Wire Wire Line
+	6500 2700 6300 2700
+Wire Wire Line
+	6300 2700 6300 2800
+Wire Wire Line
+	6100 2500 5900 2500
+Wire Wire Line
+	5900 2500 5900 2800
+Wire Wire Line
+	7000 2950 7400 2950
+Connection ~ 7200 2950
+Wire Wire Line
+	7400 3200 6500 3200
+Wire Wire Line
+	6500 3200 6500 3100
+Connection ~ 7200 3200
+Wire Wire Line
+	6000 2150 6000 2050
+Wire Wire Line
+	10550 1650 10550 1750
+Wire Wire Line
+	10550 1750 10350 1750
+Wire Wire Line
+	10350 2150 10550 2150
+Wire Wire Line
+	10550 2150 10550 2250
+Wire Wire Line
+	10550 2250 10350 2250
+Wire Wire Line
+	10350 2000 10750 2000
+Connection ~ 10550 2000
+Wire Wire Line
+	7400 5300 7200 5300
+Wire Wire Line
+	6400 5200 6700 5200
+Connection ~ 6400 5300
+$Comp
+L VAA #PWR?
+U 1 1 4A3944A0
+P 6200 5200
+F 0 "#PWR?" H 6200 5260 30  0001 C CNN
+F 1 "VB_SYS" H 6200 5310 50  0000 C CNN
+	1    6200 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A3943B4
+P 6950 5400
+F 0 "R?" H 6700 5450 50  0000 C CNN
+F 1 "10K" H 7200 5450 50  0000 C CNN
+	1    6950 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A3943B2
+P 6950 5300
+F 0 "R?" H 6700 5350 50  0000 C CNN
+F 1 "10K" H 7200 5350 50  0000 C CNN
+	1    6950 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A3943AF
+P 6950 5200
+F 0 "R?" H 6700 5250 50  0000 C CNN
+F 1 "10K" H 7200 5250 50  0000 C CNN
+	1    6950 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L VAA #PWR?
+U 1 1 4A3942C0
+P 6000 2050
+F 0 "#PWR?" H 6000 2110 30  0001 C CNN
+F 1 "VBUS" H 6000 2160 50  0000 C CNN
+	1    6000 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L VAA #PWR?
+U 1 1 4A3941C8
+P 6500 3100
+F 0 "#PWR?" H 6500 3160 30  0001 C CNN
+F 1 "VB_SYS" H 6500 3210 50  0000 C CNN
+	1    6500 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L VAA #PWR?
+U 1 1 4A394151
+P 7000 2950
+F 0 "#PWR?" H 7000 3010 30  0001 C CNN
+F 1 "VB" V 7050 3000 50  0000 C CNN
+	1    7000 2950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A3940A8
+P 5900 2800
+F 0 "#PWR?" H 5900 2800 30  0001 C CNN
+F 1 "GND" H 5900 2730 30  0001 C CNN
+	1    5900 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A394062
+P 6300 2800
+F 0 "#PWR?" H 6300 2800 30  0001 C CNN
+F 1 "GND" H 6300 2730 30  0001 C CNN
+	1    6300 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A393F2C
+P 6750 2700
+F 0 "R?" H 6750 2800 50  0000 C CNN
+F 1 "12K4" H 6650 2600 50  0000 C CNN
+F 4 "1%" H 6850 2600 50  0000 C CNN "Tolerance"
+	1    6750 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A393F24
+P 6350 2500
+F 0 "R?" H 6350 2600 50  0000 C CNN
+F 1 "NC" H 6350 2400 50  0000 C CNN
+	1    6350 2500
+	1    0    0    -1  
+$EndComp
+Text GLabel 5300 1700 0    60   Input ~ 0
+BAT_ID
+$Comp
+L R_US R?
+U 1 1 4A393BD2
+P 5750 1700
+F 0 "R?" H 5750 1800 50  0000 C CNN
+F 1 "NC" H 5750 1600 50  0000 C CNN
+	1    5750 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A393BCA
+P 5750 1250
+F 0 "R?" H 5750 1350 50  0000 C CNN
+F 1 "100K" H 5650 1150 50  0000 C CNN
+F 4 "1%" H 5850 1150 50  0000 C CNN "Tolerance"
+	1    5750 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A393BC6
+P 6650 1700
+F 0 "R?" H 6650 1800 50  0000 C CNN
+F 1 "5K36" H 6550 1600 50  0000 C CNN
+F 4 "1%" H 6750 1600 50  0000 C CNN "Tolerance"
+	1    6650 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A3937A7
+P 6650 1250
+F 0 "R?" H 6650 1350 50  0000 C CNN
+F 1 "39K" H 6600 1150 50  0000 C CNN
+F 4 "1%" H 6750 1150 50  0000 C CNN "Tolerance"
+	1    6650 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A392F75
+P 5300 1250
+F 0 "#PWR?" H 5300 1250 30  0001 C CNN
+F 1 "GND" H 5300 1180 30  0001 C CNN
+	1    5300 1250
+	0    1    1    0   
+$EndComp
+Text GLabel 5300 900  0    60   Input ~ 0
+USB_ID
 $Comp
 L PCF50633/04/N3 U?
 U 1 1 4A0CA9CE
@@ -25,10 +288,10 @@ $EndComp
 $Comp
 L SC32442 U?
 U 4 1 4A0CA9C6
-P 3500 3800
-F 0 "U?" H 3500 3700 50  0000 C CNN
-F 1 "SC32442" H 3500 3900 50  0000 C CNN
-	4    3500 3800
+P 900 3800
+F 0 "U?" H 900 3700 50  0000 C CNN
+F 1 "SC32442" H 900 3900 50  0000 C CNN
+	4    900  3800
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
