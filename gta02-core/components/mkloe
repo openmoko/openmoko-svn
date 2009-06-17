@@ -8,7 +8,7 @@ COMPS="$COMPS 74x1g00_5 74x1g125 74x2g126 vibrator mini_usb_b smsn16"
 COMPS="$COMPS sw_push_4 emh4 ht210 r3113d b7840 atr0610 it3205be"
 COMPS="$COMPS coax dfbm-cs320 exc24cb102u gta02_wlan_h gta02_wlan_s"
 COMPS="$COMPS td028ttec1 varistor vibrator jack_4p microphone"
-COMPS="$COMPS btp-03ja4g antenna"
+COMPS="$COMPS btp-03ja4g antenna r_us"
 LIB=gta02-core.lib
 
 for n in $COMPS; do

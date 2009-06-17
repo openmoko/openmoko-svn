@@ -26,6 +26,7 @@ mini_usb_b		CON4901	Alvaro	Werner	Dave	Rene
 ms2v-t1s		X1701	Alvaro	Rene			[3]
 pcf50633-04-n3		U1701	Dave	Werner	Alvaro	Rene
 r3113d			U7604	Rene	Werner	Dave    Alvaro
+r_us			R1502	Alvaro	Werner
 rt9013			U1702	Alvaro	Werner	Dave	Rene
 rt9702a			U1705	Alvaro	Werner	Dave	Rene
 rt9711_bd_5		U4905	Alvaro	Werner	Dave	Rene
@@ -54,7 +55,8 @@ If a part is used multiple times, put the first reference.
     Component therefore needs qualifier.
 
 [2] Didn't use ROHM's pin numbering, use the NXP and ON numbering style.
-    see http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf for more detail.
+    see http://www.nxp.com/acrobat_download/datasheets/PDTC123J_SERIES_5.pdf
+    for more detail.
 
 [3] These symbols are not very component-specific. Consider using
     names like XTAL_4_12 for a crystal with four pins/pads, of

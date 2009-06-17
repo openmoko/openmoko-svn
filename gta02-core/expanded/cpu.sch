@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
+EESchema Schematic File Version 2  date Wed Jun 17 20:42:33 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XR_US R?
+U 1 1 4A397F6F
+P 6800 5700
+F 0 "R?" H 6800 5800 50  0000 C CNN
+F 1 "XR_US" H 6800 5600 50  0000 C CNN
+	1    6800 5700
+	1    0    0    -1  
+$EndComp
 Text Notes 750  850  0    120  ~ 24
 CPU
 $Comp
