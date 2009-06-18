@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 18 Jun 2009 19:34:56 WEST
+EESchema Schematic File Version 2  date Thu 18 Jun 2009 19:46:07 WEST
 LIBS:,poweratr0635deviceconnaat1275irnk4m51323pelis302dlpcf50633-04-n3wm8753lgeflsc32442ms2v-t1stas4025art9702rt9013_bexc24cb102uvaristorfa2012rt9711_bd_5dtc123vibratormini_usb_bsmsn1674x1g00_574x1g12574x2g126emh4ht210sw_push_4r3113db7840atr0610it3205bedfbm-cs320gta02_wlan_sgta02_wlan_htd028ttec1r_usgta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -491,7 +491,7 @@ L C C?
 U 1 1 4A3A8844
 P 2350 5000
 F 0 "C?" H 2400 5100 50  0000 L CNN
-F 1 "100N" H 2400 4900 50  0000 L CNN
+F 1 "10N" H 2400 4900 50  0000 L CNN
 F 2 "C0402-H" H 2350 5000 60  0001 C CNN
 	1    2350 5000
 	1    0    0    -1  
