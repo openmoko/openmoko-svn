@@ -142,3 +142,5 @@ LibName34=./components/gta02_wlan_s.lib
 LibName35=./components/gta02_wlan_h.lib
 LibName36=./components/td028ttec1.lib
 LibName37=./components/r_us.lib
+LibName38=./components/btp-03ja4g.lib
+
