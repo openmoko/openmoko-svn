@@ -16,3 +16,5 @@ fix-pinedit-collision.patch
 # Work in progress
 #drag-override.patch
 #pcbnew-plot-only-mode.patch
+
+make-junctions-larger-on-plotps.patch
