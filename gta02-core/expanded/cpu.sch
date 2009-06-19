@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed Jun 17 20:42:33 2009
+EESchema Schematic File Version 2  date Fri Jun 19 07:21:46 2009
 LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END

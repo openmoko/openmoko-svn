@@ -13,12 +13,14 @@ Dave Ball <openmoko@daveball.org.uk>
 
 Alvaro Lopes <alvieboy@alvie.com>
 
+  pmu.sch
   components/74x1g00_5.lib
   components/74x1g125.lib
   components/74x2g126.lib
   components/dtc123.lib
   components/exc24cb102u.lib
   components/fa2012.lib
+  components/gta02_power.lib
   components/mini_usb_b.lib
   components/ms2v-t1s.lib
   components/rt9013_b.lib
@@ -49,6 +51,14 @@ Rene Harder <rehar@saweb.de>
   components/gta02_wlan_s.lib
   components/gta02_wlan_h.lib
   components/td028ttec1.lib
+
+  Compilations:
+  components/gta02-core-expanded.lib
+  components/gta02-core.lib
+
+Luke Duncan <duncan72187@gmail.com>
+
+  memory.sch
 
   Compilations:
   components/gta02-core-expanded.lib
