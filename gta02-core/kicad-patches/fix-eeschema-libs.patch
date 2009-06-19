@@ -1,0 +1,20 @@
+The comma-placing logic is reversed. Luckily, the LIBS line is never
+read back, so this didn't cause any real damage.
+
+- Werner
+
+---
+
+Index: kicad/eeschema/save_schemas.cpp
+===================================================================
+--- kicad.orig/eeschema/save_schemas.cpp	2009-06-19 17:48:39.000000000 -0300
++++ kicad/eeschema/save_schemas.cpp	2009-06-19 17:48:46.000000000 -0300
+@@ -121,7 +121,7 @@
+     bool first = true;
+     for( LibraryStruct* Lib = g_LibraryList; Lib != NULL; Lib = Lib->m_Pnext )
+     {
+-        if( first )
++        if( !first )
+             Name += wxT( "," );
+         Name += Lib->m_Name;
+         first = false;

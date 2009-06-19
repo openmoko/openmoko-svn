@@ -18,3 +18,4 @@ fix-pinedit-collision.patch
 #pcbnew-plot-only-mode.patch
 
 make-junctions-larger-on-plotps.patch
+fix-eeschema-libs.patch
