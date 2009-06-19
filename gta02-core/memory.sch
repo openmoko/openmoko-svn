@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri Jun 19 07:20:35 2009
+EESchema Schematic File Version 2  date Fri Jun 19 07:36:43 2009
 LIBS:,poweratr0635deviceconnaat1275irnk4m51323pelis302dlpcf50633-04-n3wm8753lgeflsc32442ms2v-t1stas4025art9702rt9013_bexc24cb102uvaristorfa2012rt9711_bd_5dtc123vibratormini_usb_bsmsn1674x1g00_574x1g12574x2g126emh4ht210sw_push_4r3113db7840atr0610it3205bedfbm-cs320gta02_wlan_sgta02_wlan_htd028ttec1r_usbtp-03ja4ggta02_powergta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A3B6A2E
+P 12600 2200
+F 0 "#PWR?" H 12600 2100 50  0001 C CNN
+F 1 "SDRAM_1V8" H 12600 2350 50  0000 C CNN
+	1    12600 2200
+	1    0    0    -1  
+$EndComp
 $Comp
 L IO_1V8 #PWR?
 U 1 1 4A3B666A
@@ -749,15 +758,6 @@ P 14450 6900
 F 0 "RP?" H 14450 7350 40  0000 C CNN
 F 1 "R_PACK4" H 14450 6850 40  0000 C CNN
 	1    14450 6900
-	1    0    0    -1  
-$EndComp
-$Comp
-L SDRAM_1V8 #PWR?
-U 1 1 4A3B0B5A
-P 12600 2200
-F 0 "#PWR?" H 12600 2400 40  0001 C CNN
-F 1 "SDRAM_1V8" H 12600 2350 40  0000 C CNN
-	1    12600 2200
 	1    0    0    -1  
 $EndComp
 $Comp
