@@ -1,4 +1,4 @@
-update=Wed 17 Jun 2009 19:27:52 WEST
+update=Fri 19 Jun 2009 08:59:50 WEST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -143,4 +143,5 @@ LibName35=./components/gta02_wlan_h.lib
 LibName36=./components/td028ttec1.lib
 LibName37=./components/r_us.lib
 LibName38=./components/btp-03ja4g.lib
+LibName39=./components/gta02_power.lib
 
