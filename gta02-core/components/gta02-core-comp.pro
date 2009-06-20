@@ -144,3 +144,5 @@ LibName36=./td028ttec1.lib
 LibName37=./r_us.lib
 LibName38=./btp-03ja4g.lib
 LibName39=./gta02_power.lib
+LibName40=./upg2012tb.lib
+LibName41=./zxct1009.lib
