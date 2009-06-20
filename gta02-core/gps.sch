@@ -1,0 +1,72 @@
+EESchema Schematic File Version 2  date Sat 20 Jun 2009 17:06:05 WEST
+LIBS:,powerdeviceconngta02-coregta02-core-cache
+EELAYER 24  0
+EELAYER END
+$Descr A3 16535 11700
+Sheet 2 8
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Wire Wire Line
+	6250 5900 6550 5900
+$Comp
+L R_US R?
+U 1 1 4A3D02CD
+P 4550 6500
+F 0 "R?" H 4550 6600 50  0000 C CNN
+F 1 "R_US" H 4550 6400 50  0000 C CNN
+	1    4550 6500
+	0    1    1    0   
+$EndComp
+$Comp
+L ZXCT1009 U?
+U 1 1 4A3D02C4
+P 5250 6500
+F 0 "U?" H 5250 7200 60  0000 C CNN
+F 1 "ZXCT1009" H 5250 5800 60  0000 C CNN
+	1    5250 6500
+	1    0    0    -1  
+$EndComp
+$Comp
+L UPG2012TB U?
+U 1 1 4A3D02BD
+P 3800 5050
+F 0 "U?" H 3800 5500 60  0000 C CNN
+F 1 "UPG2012TB" H 3800 4600 60  0000 C CNN
+	1    3800 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L ATR0610 U?
+U 1 1 4A3CFB77
+P 4750 4050
+F 0 "U?" H 4750 4550 60  0000 C CNN
+F 1 "ATR0610" H 4750 4450 60  0000 C CNN
+	1    4750 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L B7840 U?
+U 1 1 4A3CFADC
+P 6900 4050
+F 0 "U?" H 6900 4450 60  0000 C CNN
+F 1 "B7840" H 6900 4350 60  0000 C CNN
+	1    6900 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L ATR0635 U?
+U 1 1 4A3CFA5B
+P 9900 5150
+F 0 "U?" H 9900 5250 60  0000 C CNN
+F 1 "ATR0635" H 9900 5050 60  0000 C CNN
+	1    9900 5150
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
