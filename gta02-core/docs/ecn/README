@@ -1,0 +1,95 @@
+ECN (Engineering Change Notice) Format
+--------------------------------------
+
+ECNs are ASCII descriptions stored in files with the name ecnNNNN.txt
+where NNNN is a sequence number counting from 0000.
+
+An ECN describes a change to the overall design, schematics, symbols,
+footprints, or layout. The process described here aims to capture the
+most important information about a change without creating a lot of
+bureaucracy.
+
+
+The ECN contains the following information:
+
+- motivation for the change
+
+- description of the change
+
+- impact on other parts of the system (if any)
+
+- history of the change
+
+
+The ecnNNNN.txt file is formatted as follows:
+
+- a title/summary, usually one line. When referring to components,
+  this summary should use both descriptive terms and the references
+  of key components. E.g., "Removal of the Glamo (U1801)"
+
+- two blank lines
+
+- main text, containing motivation, description of the change, and
+  impact. Free-format. Paragraphs are separated by a single blank
+  line.
+
+- any references (URLs, other ECNs, etc.), follow the main text,
+  separated by one blank line
+
+- two blank lines
+
+- history, including the following tags (multiple tags are possible):
+  Author: real name <email>
+  Review: real name <email>, revision, comment (optional)
+  Commit: revision, summary
+
+  E.g.,
+  Author: John Smith <john@smith.net>
+  Commit: SVN 6789, deleted the Glamo
+  Commit: SVN 6791, removed *IVDD as well
+  Review: Hans Meier <hm542@yahoo.com>, SVN 6791
+  Review: Carl Ritic <critic@nih.il>, SVN 6791, kill B1801 as well
+  Commit: SVN 6794, killed B1801
+
+  Commit entries just need to make it possible to understand the
+  sequence of events and to locate the commit in SVN. Further
+  details can be put in the commit message.
+
+  Long entries can be wrapped. The continuation lines are then
+  indented. E.g.,
+
+  Review: Eleftherios Panathinaikos
+    <eleftherios.panathinaiko@glamoctology.university-hannover.de>,
+    SVN 6791
+
+If an ECN is accompanied by further material, pictures, drawings,
+simulations, etc., a subdirectory called ecnNNNN/ should be
+created for them.
+
+
+ECN lifecycle:
+
+- to allocate an ECN number, create the file ecnNNNN.txt, with NNNN
+  one above the previously highest-numbered ECN, add the summary,
+  then commit it in this directory
+
+- fill in the remaining details, commit, and discuss on the list or
+  on IRC. Changes made during discussion don't need to be recorded
+  in the ECN's history section.
+
+- once agreement has been reached, implement the change and let the
+  reviews begin
+
+If executing a change has to be deferred, e.g., because there is
+disagreement or because further research is needed, that status
+should be recorded at the end of the main text.
+
+If an ECN is withdrawn, its number should not be reused.
+
+ECNs can be edited any time, but if major changes are made to an ECN
+after it has been implemented and reviewed, a new ECN should be
+considered, and a pointer might be added to the main text of the old
+ECN.
+
+There should be a STATUS file similar to the one used for components.
+Details to be defined.
