@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu May 14 20:34:54 2009
-LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,sc32442,gta02-core-cache
+EESchema Schematic File Version 2  date Sat 20 Jun 2009 01:14:20 CDT
+LIBS:,powerdeviceconngta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
-Sheet 1 6
+Sheet 1 7
 Title "GTA02-CORE"
 Date "12 may 2009"
 Rev ""
@@ -14,7 +14,13 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Sheet
-S 8800 3450 2000 1150
+S 8800 4400 2000 1550
+U 4A3C2B62
+F0 "USB" 60
+F1 "usb.sch" 60
+$EndSheet
+$Sheet
+S 8800 2050 2000 1150
 U 4A0AE69D
 F0 "MEMORY" 60
 F1 "memory.sch" 60
