@@ -7,5 +7,9 @@ SHEETS="$B $B-CPU $B-CPU-POWER $B-PMU $B-MEMORY"
 SHEETS="$SHEETS $B-AUDIO $B-USB $B-IO $B-LCM $B-SD-SIM"
 SHEETS="$SHEETS $B-GPS $B-BT $B-WLAN"
 
-psmerge `for n in $SHEETS; do echo $n.ps; done` |
-  sed '1a%%Orientation: Landscape' >$OUT.ps
+{
+    sed 1q $B.ps
+    sed '/^%%Orientation: /q;d' $B.ps
+    sed '/^%%DocumentMedia: /q;d' $B.ps
+    psmerge `for n in $SHEETS; do [ -f $n.ps ] && echo $n.ps; done` | sed 1d
+} >$OUT.ps

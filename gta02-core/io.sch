@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu May 14 20:34:54 2009
-LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,sc32442,gta02-core-cache
+EESchema Schematic File Version 2  date Sun Jun 21 13:20:10 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
-$Descr A4 11700 8267
-Sheet 4 6
+$Descr A3 16535 11700
+Sheet 4 8
 Title ""
 Date ""
 Rev ""

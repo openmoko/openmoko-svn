@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu May 14 20:34:54 2009
-LIBS:power,device,conn,aat1275,k4m51323pe,lis302dl,pcf50633-04-n3,wm8753l,sc32442,gta02-core-cache
+EESchema Schematic File Version 2  date Sun Jun 21 13:20:16 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
-$Descr A4 11700 8267
-Sheet 3 6
+$Descr A3 16535 11700
+Sheet 6 8
 Title ""
 Date ""
 Rev ""
@@ -14,12 +14,12 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L WM8753L U?
-U 1 1 4A0CA9FA
-P 5000 3800
-F 0 "U?" H 4600 3800 60  0000 C CNN
-F 1 "WM8753L" H 5400 3800 60  0000 C CNN
-	1    5000 3800
+L WM8753LGEFL U?
+U 1 1 4A3E5D6A
+P 5300 3650
+F 0 "U?" H 4900 3650 60  0000 C CNN
+F 1 "WM8753LGEFL" H 5700 3650 60  0000 C CNN
+	1    5300 3650
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC

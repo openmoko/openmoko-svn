@@ -1,8 +1,8 @@
-EESchema Schematic File Version 2  date Sat 20 Jun 2009 17:06:05 WEST
-LIBS:,power,device,conn,gta02-core,cgta02-core-cache
+EESchema Schematic File Version 2  date Sun Jun 21 13:20:39 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
-$Descr A4 11700 8267
+$Descr A3 16535 11700
 Sheet 1 8
 Title "GTA02-CORE"
 Date "20 jun 2009"
