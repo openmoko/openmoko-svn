@@ -1,4 +1,4 @@
-.PHONY:	gen generate upload
+.PHONY:	gen generate upload sch
 
 gen generate:
 	cd ../components && ./mkloe
@@ -11,3 +11,6 @@ gen generate:
 upload:	generate
 	scp gta02-core-expanded-all.ps.gz \
 	  werner@sita.openmoko.org:public_html/gta02-core/
+
+sch:
+	eeschema `pwd`/gta02-core-expanded.sch
