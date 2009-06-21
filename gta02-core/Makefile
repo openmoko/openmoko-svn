@@ -6,11 +6,14 @@ all:
 
 gen generate:
 		eeschema --plot `pwd`/gta02-core.sch
-		GS_OPTIONS=-sPAPERSIZE=a3 scripts/all-sheets-ps gta02-core
+		# For A3, remove the --shrink and prepend
+		# GS_OPTIONS=-sPAPERSIZE=a3
+		scripts/all-sheets-ps --shrink gta02-core
 		gzip -f -9 gta02-core-all.ps
+		scripts/all-sheets-ps --shrink --pdf gta02-core
 
 upload:		generate
-		scp gta02-core-all.ps.gz \
+		scp gta02-core-all.ps.gz gta02-core-all.pdf \
 		  werner@sita.openmoko.org:public_html/gta02-core/
 
 sch:

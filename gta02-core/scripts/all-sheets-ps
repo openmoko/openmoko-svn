@@ -1,4 +1,21 @@
-#!/bin/sh
+#!/bin/bash
+
+ps=true
+pdf=false
+shrink=false
+cmd=cat
+
+while [ "${1#-}" != "$1" ]; do
+    case "$1" in
+    --pdf)
+	ps=false
+	pdf=true;;
+    --shrink)
+	cmd="psresize -Pa3 -pa4"
+	shrink=true;;
+    esac
+    shift
+done
 
 B=${1:-gta02-core}
 
@@ -7,9 +24,17 @@ SHEETS="$B $B-CPU $B-CPU-POWER $B-PMU $B-MEMORY"
 SHEETS="$SHEETS $B-AUDIO $B-USB $B-IO $B-LCM $B-SD-SIM"
 SHEETS="$SHEETS $B-GPS $B-BT $B-WLAN"
 
-{
-    sed 1q $B.ps
-    sed '/^%%Orientation: /q;d' $B.ps
-    sed '/^%%DocumentMedia: /q;d' $B.ps
-    psmerge `for n in $SHEETS; do [ -f $n.ps ] && echo $n.ps; done` | sed 1d
-} >$OUT.ps
+if $ps; then
+    {
+	sed 1q $B.ps
+	sed '/^%%Orientation: /q;d' $B.ps
+	$shrink || sed '/^%%DocumentMedia: /q;d' $B.ps
+	eval psmerge `for n in $SHEETS; do [ -f $n.ps ] && \
+	  echo "<($cmd $n.ps)"; done` | sed 1d
+    } >$OUT.ps
+fi
+
+if $pdf; then
+    eval gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=$OUT.pdf -f \
+      `for n in $SHEETS; do [ -f $n.ps ] && echo "<($cmd $n.ps)"; done`
+fi

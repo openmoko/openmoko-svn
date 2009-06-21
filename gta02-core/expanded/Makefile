@@ -7,9 +7,10 @@ gen generate:
 	eeschema --plot `pwd`/gta02-core-expanded.sch
 	../scripts/all-sheets-ps gta02-core-expanded
 	gzip -f -9 gta02-core-expanded-all.ps
+	../scripts/all-sheets-ps --pdf gta02-core-expanded
 
 upload:	generate
-	scp gta02-core-expanded-all.ps.gz \
+	scp gta02-core-expanded-all.ps.gz gta02-core-expanded-all.pdf \
 	  werner@sita.openmoko.org:public_html/gta02-core/
 
 sch:
