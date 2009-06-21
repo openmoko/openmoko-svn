@@ -1,4 +1,4 @@
-.PHONY:	gen generate upload sch
+.PHONY:	gen generate gv sch upload xpdf
 
 gen generate:
 	cd ../components && ./mkloe
@@ -8,6 +8,12 @@ gen generate:
 	../scripts/all-sheets gta02-core-expanded
 	gzip -f -9 gta02-core-expanded-all.ps
 	../scripts/all-sheets --pdf gta02-core-expanded
+
+gv:
+	gv gta02-core-all.ps.gz
+
+xpdf:
+	xpdf gta02-core-all.pdf
 
 upload:	generate
 	scp gta02-core-expanded-all.ps.gz gta02-core-expanded-all.pdf \

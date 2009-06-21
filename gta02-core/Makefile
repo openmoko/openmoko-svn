@@ -1,4 +1,4 @@
-.PHONY:		all gen generate sch upload
+.PHONY:		all gen generate gv sch upload xpdf
 
 all:
 		@echo "make what ? target: gen generate sch upload"
@@ -11,6 +11,12 @@ gen generate:
 		scripts/all-sheets --shrink gta02-core
 		gzip -f -9 gta02-core-all.ps
 		scripts/all-sheets --shrink --pdf gta02-core
+
+gv:
+		gv gta02-core-all.ps.gz
+
+xpdf:
+		xpdf gta02-core-all.pdf
 
 upload:		generate
 		scp gta02-core-all.ps.gz gta02-core-all.pdf \
