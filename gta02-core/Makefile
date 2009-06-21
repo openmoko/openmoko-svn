@@ -8,9 +8,9 @@ gen generate:
 		eeschema --plot `pwd`/gta02-core.sch
 		# For A3, remove the --shrink and prepend
 		# GS_OPTIONS=-sPAPERSIZE=a3
-		scripts/all-sheets-ps --shrink gta02-core
+		scripts/all-sheets --shrink gta02-core
 		gzip -f -9 gta02-core-all.ps
-		scripts/all-sheets-ps --shrink --pdf gta02-core
+		scripts/all-sheets --shrink --pdf gta02-core
 
 upload:		generate
 		scp gta02-core-all.ps.gz gta02-core-all.pdf \
