@@ -48,6 +48,9 @@ KiCad SPEAKER		REC4301	-	Rene	Werner
 Not currently used:
 
 gta02_wlan_h		CON7802	Rene
+zxct1009		U7605	Alvaro
+upg2012tb		U7606	Alvaro
+
 
 <N> = Nth review is only partial
 If a part is used multiple times, put the first reference.

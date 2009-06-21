@@ -29,8 +29,10 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/si1040x.lib
   components/smsn16.lib
   components/tas4025a.lib
+  components/upg2012tb.lib
   components/varistor.lib
   components/vibrator.lib
+  components/zxct1009.lib
 
   Compilations:
   components/gta02-core-expanded.lib
