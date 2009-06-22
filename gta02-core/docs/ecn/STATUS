@@ -5,3 +5,4 @@ Number	Status	Description
 0003	Editing	Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
 0004	Editing	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
 0005	Editing	Simplify/remove BAT_ID/BATTEMP circuit (R1769)
+0006	Editing	Either remove or populate R1701 (PMU.ADAPTSNS pull-down)

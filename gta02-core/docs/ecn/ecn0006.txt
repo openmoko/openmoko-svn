@@ -1,0 +1,11 @@
+Either remove or populate R1701 (PMU.ADAPTSNS pull-down)
+
+
+ADAPTSNS is an input without internal pull-up or pull-down resistor.
+We should therefore not let it float. However, it's also debounced,
+so letting it float may have no detrimental effect.
+
+GTA02 provides a footprint for a pull-down resistor (R1701) but
+doesn't populate it. So there are no known issues in GTA02 with
+letting ADAPTSNS float and we could therefore remove the R1701
+footprint.
