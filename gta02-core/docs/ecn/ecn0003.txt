@@ -1,0 +1,1 @@
+Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND

@@ -2,3 +2,6 @@ Number	Status	Description
 -------	-------	---------------------------------------------------------------
 0001	Editing	Remove Glamo (U1801)
 0002	Editing	Remove NOR (U2501)
+0003	Editing	Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
+0004	Editing	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
+0005	Editing	Simplify/remove BAT_ID/BATTEMP circuit (R1769)

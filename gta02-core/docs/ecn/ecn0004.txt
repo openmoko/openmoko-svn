@@ -1,0 +1,1 @@
+Remove R1767 and R1768 and connect all PMU.EXTONx to R1766

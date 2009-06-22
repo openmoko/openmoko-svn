@@ -1,0 +1,6 @@
+Simplify/remove BAT_ID/BATTEMP circuit (R1769)
+
+
+Since BAT_ID is used for HDQ in GTA02, the analog battery temperature
+monitor is no longer used. We can therefore remove R1769, which is NC.
+Perhaps we can also remove R1705, which is a unique component.
