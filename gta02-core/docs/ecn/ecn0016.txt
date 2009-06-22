@@ -1,0 +1,12 @@
+Remove upper acceleration sensor (U7801)
+
+
+Despite many claims that two acceleration sensors provide enhanced
+sensing capabilities, one year after the introduction of GTA02, no
+application seems to make use of both sensors. We can therefore
+conclude that the second sensor is of little or no practical use.
+
+To do:
+- why the upper ?
+- items to remove
+- connect both interrupts (motivation)

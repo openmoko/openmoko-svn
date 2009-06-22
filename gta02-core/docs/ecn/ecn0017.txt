@@ -1,0 +1,7 @@
+Move Bluetooth module (U2) to main PCB
+
+
+To do:
+- explain FPC issues
+- good old times of GTA01Bv2:
+  http://people.openmoko.org/werner/retro/gta01-bt.jpg

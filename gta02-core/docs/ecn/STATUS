@@ -15,3 +15,5 @@ Number	Status	Description
 0013	Defer	Increase rated current of B4902
 0014	Defer	Limit non-ESD overvoltage on USB_VBUS
 0015	Edit	Remove Calypso serial interface on headset (U4401)
+0016	Edit	Remove upper acceleration sensor (U7801)
+0017	Edit	Move Bluetooth module (U2) to main PCB
