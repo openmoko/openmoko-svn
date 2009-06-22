@@ -1,0 +1,9 @@
+Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
+
+
+The PMU's KEEPACT input is not used in GTA02. We could therefore
+remove R1546 (NC) and replace the 33 kOhm pull-up R1710 with a
+direct connection to IO_3V3.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

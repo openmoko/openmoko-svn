@@ -3,4 +3,11 @@ Simplify/remove BAT_ID/BATTEMP circuit (R1769)
 
 Since BAT_ID is used for HDQ in GTA02, the analog battery temperature
 monitor is no longer used. We can therefore remove R1769, which is NC.
-Perhaps we can also remove R1705, which is a unique component.
+
+Perhaps we can also remove R1705, which is a unique component. Neither
+Qi, u-boot, nor the kernel set MBCC7.battempena, so no attempt is made
+to measure the battery temperature or let it affect the charger state.
+It should therefore be safe to remove R1705 as well.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

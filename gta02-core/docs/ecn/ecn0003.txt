@@ -1,1 +1,9 @@
 Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
+
+
+The PMU's SHUTDOWN input is not used in GTA02. We could therefore
+remove R1545 (NC) and replace the 10 kOhm pull-down R1765 with a
+direct connection to ground.
+
+
+Author: Werner Almesberger <werner@openmoko.org>
