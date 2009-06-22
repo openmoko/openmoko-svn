@@ -98,9 +98,9 @@ The current STATUS file can use the following states:
 - Edit: ECN is in the process of being written and not yet suitable for
   detailed review.
 
-- Review: ECN is "finished" and open for review and/or research.
+- Discuss: ECN is "finished" and open for review and/or research.
 
-- Execute: ECN is being implemented.
+- Execute: ECN is being implemented and reviewed.
 
 - Defer: ECN will not be implemented in the current hardware revision
   but may be considered for future revisions.

@@ -2,11 +2,11 @@ Number	Status	Description
 -------	-------	---------------------------------------------------------------
 0001	Edit	Remove Glamo (U1801)
 0002	Edit	Remove NOR (U2501)
-0003	Review	Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
-0004	Review	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
-0005	Review	Simplify/remove BAT_ID/BATTEMP circuit (R1769)
-0006	Review	Either remove or populate R1701 (PMU.ADAPTSNS pull-down)
-0007	Review	Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
+0003	Discuss	Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
+0004	Discuss	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
+0005	Discuss	Simplify/remove BAT_ID/BATTEMP circuit (R1769)
+0006	Discuss	Either remove or populate R1701 (PMU.ADAPTSNS pull-down)
+0007	Discuss	Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
 0008	Edit	Remove external GPS antenna connector and circuit (CON7602)
 0009	Edit	Remove LED transistors (Q1501 and Q1502)
 0010	Edit	Remove audio amplifier (U4101)
@@ -17,3 +17,9 @@ Number	Status	Description
 0015	Edit	Remove Calypso serial interface on headset (U4401)
 0016	Edit	Remove upper acceleration sensor (U7801)
 0017	Edit	Move Bluetooth module (U2) to main PCB
+0018	Edit	Add beads/filters to audio signals leaving/entering can
+0019	Edit	Consider applying buzz fix
+0020	Discuss	No common mode choke on stereo signals (B4102)
+0021	Defer	Use EMI-hardened microphone (MC4301)
+0022	Edit	Apply bass fix
+0023	Edit	Fix #1024 (C1009)

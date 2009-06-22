@@ -1,0 +1,7 @@
+Add beads/filters to audio signals leaving/entering can
+
+
+To do:
+- microphone and headset jack path
+- bead or EMI filter ?
+- location: at can edge

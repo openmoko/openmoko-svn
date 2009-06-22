@@ -1,0 +1,12 @@
+Use EMI-hardened microphone (MC4301)
+
+
+For GTA02v8, an EMI-hardened version of the microphone was specified.
+
+The new microphone has a different form factor and needs some of the
+plastic to be cut. We also don't know about component availability.
+While this change is probably too intrusive for gta02-core, it may be
+considered for future versions.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

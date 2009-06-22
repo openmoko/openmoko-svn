@@ -1,0 +1,8 @@
+Consider applying buzz fix
+
+
+To do:
+- Q: do we still need it after adding beads/filters ? (ECN0018)
+- add 100 uF cap
+- change R4303 from 0R to 2k2
+- reference http://wiki.openmoko.org/wiki/Buzz_Fix

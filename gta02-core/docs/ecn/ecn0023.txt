@@ -1,0 +1,7 @@
+Fix #1024 (C1009)
+
+
+To do:
+- change C1009 from Y5V to X5R
+- increase C1009 from 10 uF to 22 uF
+- improve routing

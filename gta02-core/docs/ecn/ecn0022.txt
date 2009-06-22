@@ -1,0 +1,6 @@
+Apply bass fix
+
+
+To do:
+- more details - what is actually involved ?
+- is this part of the switch to a "capless" design ?

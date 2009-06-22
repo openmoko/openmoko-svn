@@ -1,0 +1,11 @@
+No common mode choke on stereo signals (B4102)
+
+
+A common mode choke on a stereo signal reduces channel separation,
+which is undesirable. If the common-mode choke is still in place
+after all the other audio changes, consider changing it.
+
+Problem pointed out by Joerg Reisenweber <joerg@openmoko.org>
+
+
+Author: Werner Almesberger <werner@openmoko.org>
