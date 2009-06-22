@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Mon 22 Jun 2009 09:10:24 WEST
+EESchema Schematic File Version 2  date Mon 22 Jun 2009 09:12:07 WEST
 LIBS:,powerdeviceconngta02-coregta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -990,7 +990,7 @@ L R_US R1741
 U 1 1 4A3CEA3E
 P 2050 7000
 F 0 "R1741" V 2000 7200 50  0000 C CNN
-F 1 "10K" V 2100 7150 50  0000 C CNN
+F 1 "NC" V 2100 7150 50  0000 C CNN
 F 2 "R0402-H" H 2050 7000 60  0001 C CNN
 	1    2050 7000
 	0    1    1    0   
