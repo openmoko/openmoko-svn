@@ -7,3 +7,4 @@ Number	Status	Description
 0005	Review	Simplify/remove BAT_ID/BATTEMP circuit (R1769)
 0006	Review	Either remove or populate R1701 (PMU.ADAPTSNS pull-down)
 0007	Review	Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
+0008	Editing	Remove external GPS antenna connector and circuit (CON7602)

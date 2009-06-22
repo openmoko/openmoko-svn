@@ -1,0 +1,1 @@
+Remove external GPS antenna connector and circuit (CON7602)
