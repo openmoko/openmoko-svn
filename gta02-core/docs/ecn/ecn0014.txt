@@ -1,0 +1,7 @@
+Limit non-ESD overvoltage on USB_VBUS
+
+
+To do:
+- issue: broken power supply and such, PMU not very tolerant
+- change U4905 to better part
+- defer since it's not an emergency

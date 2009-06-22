@@ -1,1 +1,7 @@
 Remove external GPS antenna connector and circuit (CON7602)
+
+
+To do:
+- components to remove (includes antenna switch)
+- simplification of supply voltage circuit
+- readjust antenna-side components of RF filter

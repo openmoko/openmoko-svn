@@ -1,10 +1,17 @@
 Number	Status	Description
 -------	-------	---------------------------------------------------------------
-0001	Editing	Remove Glamo (U1801)
-0002	Editing	Remove NOR (U2501)
+0001	Edit	Remove Glamo (U1801)
+0002	Edit	Remove NOR (U2501)
 0003	Review	Remove SHUTDOWN net and connect PMU.SHUTDOWN directly to GND
-0004	Editing	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
+0004	Review	Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
 0005	Review	Simplify/remove BAT_ID/BATTEMP circuit (R1769)
 0006	Review	Either remove or populate R1701 (PMU.ADAPTSNS pull-down)
 0007	Review	Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
-0008	Editing	Remove external GPS antenna connector and circuit (CON7602)
+0008	Edit	Remove external GPS antenna connector and circuit (CON7602)
+0009	Edit	Remove LED transistors (Q1501 and Q1502)
+0010	Edit	Remove audio amplifier (U4101)
+0011	Edit	Reduce number of varistors on USB_VBUS (C4902, C4909)
+0012	Defer	Add fuse to USB_VBUS
+0013	Defer	Increase rated current of B4902
+0014	Defer	Limit non-ESD overvoltage on USB_VBUS
+0015	Edit	Remove Calypso serial interface on headset (U4401)

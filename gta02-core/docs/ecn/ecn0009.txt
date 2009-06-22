@@ -1,0 +1,1 @@
+Remove LED transistors (Q1501 and Q1502)

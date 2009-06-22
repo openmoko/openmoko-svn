@@ -1,0 +1,25 @@
+Increase rated current of B4902
+
+
+B4902 is a KarMax KLB0603K601SA that is only rated at 800 mA (if the
+"K" is to be believed. The table on the second page of [1] suggests
+even a value as low as 200 mA.)
+
+When using the wall charger, the PMU may draw up to 1000 mA. The
+effect of B4902 overheating can be dramatic, as shown in [2].
+
+Beads with a higher current rating but otherwise similar
+characteristics - including the same form factor - are readily
+available, e.g., the Murata BLM18KG601SN1D [3], which is rated at
+1.3 A.
+
+Despite the obviously incorrect dimensioning, there appears to be
+only one case where B4902 did indeed fail. To keep sourcing for
+gta02-core simple, we should therefore defer this change.
+
+[1] http://www.kmax.com.tw/doc/05_KLB_S.pdf
+[2] http://people.openmoko.org/werner/burntmoko-inside.jpg
+[3] http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0110S0100BLM18K.pdf
+
+
+Author: Werner Almesberger <werner@openmoko.org>

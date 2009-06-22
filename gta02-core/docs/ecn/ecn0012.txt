@@ -1,0 +1,6 @@
+Add fuse to USB_VBUS
+
+
+The GTA03-6410 design added a small fuse of USB_VBUS.
+
+To keep sourcing for gta02-core simple, we should defer this change.

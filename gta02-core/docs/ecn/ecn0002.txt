@@ -1,1 +1,6 @@
 Remove NOR (U2501)
+
+
+To do:
+- chips to remove
+- software impact of not having NOR on Qi and kernel

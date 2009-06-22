@@ -1,0 +1,5 @@
+Remove Calypso serial interface on headset (U4401)
+
+To do:
+- mixing digital and analog ain't no good
+- we don't really need it - factory could just use test points

@@ -1,1 +1,12 @@
 Remove R1767 and R1768 and connect all PMU.EXTONx to R1766
+
+
+The PMU's inputs EXTON1, EXTON2, and EXTON3 are not used in GTA02. Each
+of them has an individual pull-up to VB_SYS. Even if EXTONx were used
+in some embedded application, one such input should be sufficient.
+
+We can therefore reduce the number of components by connecting all
+EXTONx pins to each other and letting them share a single pull-up.
+
+
+Author: Werner Almesberger <werner@openmoko.org>
