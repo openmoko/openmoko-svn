@@ -1,1 +1,49 @@
 Remove LED transistors (Q1501 and Q1502)
+
+
+LED1501 is a Harvatek HT-210UD/NB [1]. To determine the forward current
+If through each LED, we need to calculate If = (IO_3V3-Vf)/220R, where
+Vf is a function of If as specified by the data sheet.
+
+Graphical approximation suggests that If(amber) = 7 mA and
+If(blue) = 2 mA.
+
+LED1502 is a Harvatek HT-110USD5 [2]. Using the same approximation, we
+obtain also If(red) = 7 mA.
+
+The I/O pads GPB0 through GPB2 are all of type t8, capable of sinking
+or sourcing at least 8 mA, with Ron <= 50 Ohm. The GPIOs are known to
+withstand permanent shorting to ground with a current well in excess
+of 50 mA.
+
+We could therefore drive the LEDs directly from the CPU, with the
+following component changes:
+
+- change R1562 and R1563 to 150 Ohm (requires a new component). With a
+  total series resistance of Ron+150 Ohm, we still don't exceed 8 mA.
+
+- change R1561 to 0 Ohm or small nominal value (e.g., 33 Ohm, like the
+  now obsolete R1812). Even with just Ron, Vf should still be around
+  3.0 V and the current should thus not exceed 6 mA.
+
+- remove Q1501, Q1502, and R1564
+
+- connect R1561 directly to GPB1, R1562 to GPB2, and R1562 to GPB2
+
+Note that this change reverses the logic of the LEDs: to activate
+them, they have to be driven low. To deactivate, they have to be
+driven high or Z. This also means that the LEDs will be dimly lit
+immediately after reset, when the weak pull-downs are enabled.
+
+Software changes are required in Qi and the kernel to accommodate
+this change.
+
+The original GTA02 logic could be preserved for LED1502 by reversing
+it and connecting it to GND instead of IO_3V#, and for LED1501 by
+replacing it with a common-cathode type (if such a component exists).
+
+[1] http://www.harvatek-intl.com/web/content/download.asp?fx=73
+[2] http://www.harvatek-intl.com/web/content/download.asp?fx=54
+
+
+Author: Werner Almesberger <werner@openmoko.org>
