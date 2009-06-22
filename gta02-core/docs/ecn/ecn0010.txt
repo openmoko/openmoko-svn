@@ -1,1 +1,30 @@
 Remove audio amplifier (U4101)
+
+
+The Wolfson codec is able to drive a mono 8 OHM speaker so there is no need for
+a separate power amplifier. Therefore the output section of the audio subsystem
+gets heavily reconstructed.
+
+Removing the external amplifier (U4101) as well as the amplifier specific
+components R4114, R4112, R4109, R4108, R4110, R4113, C4117, C4111, C4110, C4110
+and C4115. Also there is no need for the AMP_SHUTDOWN and HP_IN signals anymore, the external
+speaker and headphone can be fully controlled by the corresponding register settings of the
+codec. (see [1])
+
+The GTA02 earpiece will be connected between OUT3 and ROUT1 of the codec, there will be
+no change on the filter and bypass capacitors.
+
+The external speaker will be connected directly between ROUT2 and LOUT2.
+Filter and capacitors will be the same.
+
+
+
+[1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
+
+TODO:
+- Headphone switch to GPIO4
+- massive change of components (C4405,R4405 etc) headphone jack,
+  improve audio quality for low impedance headsets at low frequencies
+- reason for varistor on EP_L line
+- maybe increase the pull down resistors (R4117 and R4116) for high 
+  impedance headphones (Z >= 2k OHM).
