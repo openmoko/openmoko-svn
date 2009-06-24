@@ -3,7 +3,7 @@ LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 8 8
+Sheet 8 9
 Title ""
 Date ""
 Rev ""

@@ -3,7 +3,7 @@ LIBS:power,device,conn,./components/gta02-core.lib,./memory.cache
 EELAYER 23  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 2 6
+Sheet 3 9
 Title ""
 Date ""
 Rev ""
