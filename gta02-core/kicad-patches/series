@@ -21,3 +21,6 @@ make-junctions-larger-on-plotps.patch
 
 # applied as of r1836
 ##fix-eeschema-libs.patch
+
+# r1837 has a bewildering number of build issues. tentative fix.
+fix-r1837-build.patch
