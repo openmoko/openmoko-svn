@@ -1,4 +1,4 @@
-# Based on SVN revision 1786
+# Based on SVN revision 1837
 
 # this patch worked around incompatibilities with older libboost in a dirty
 # way. better to just upgrade libboost.
@@ -18,4 +18,6 @@ fix-pinedit-collision.patch
 #pcbnew-plot-only-mode.patch
 
 make-junctions-larger-on-plotps.patch
-fix-eeschema-libs.patch
+
+# applied as of r1836
+##fix-eeschema-libs.patch
