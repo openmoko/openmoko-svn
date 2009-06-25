@@ -6,7 +6,13 @@ sensing capabilities, one year after the introduction of GTA02, no
 application seems to make use of both sensors. We can therefore
 conclude that the second sensor is of little or no practical use.
 
+Items to remove:
+- Upper Acceleration Sensor (U7801)
+- Other related passives (R7802, R7809, R7809, C7801, C7802)
+
+Items to add:
+- NC pullup resistor to second interrupt (INT2) of remaining sensor
+
 To do:
 - why the upper ?
-- items to remove
 - connect both interrupts (motivation)
