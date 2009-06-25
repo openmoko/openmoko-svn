@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu Jun 25 06:57:25 2009
+EESchema Schematic File Version 2  date Thu 25 Jun 2009 11:31:02 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 2 9
+Sheet 3 10
 Title ""
 Date ""
 Rev ""
@@ -281,9 +281,9 @@ WLAN_GPIO0
 Text GLabel 8900 9550 2    60   Input ~ 0
 WLAN_nRESET
 Text GLabel 8900 8900 2    60   Output ~ 0
-PIO9
+BT_ACTIVE
 Text GLabel 8900 8700 2    60   Input ~ 0
-PIO10
+WL_ACTIVE
 $Comp
 L IO_3V3 #PWR?
 U 1 1 4A42BCF7
@@ -496,7 +496,7 @@ F 1 "GTA02_WLAN_S" H 6300 8500 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 8300 3750 0    60   Output ~ 0
-PIO10
+WL_ACTIVE
 $Comp
 L R_US R7703
 U 1 1 4A42A8EB
@@ -516,7 +516,7 @@ F 1 "0R" H 8750 3350 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 8300 3450 0    60   Input ~ 0
-PIO9
+BT_ACTIVE
 Text GLabel 8300 3200 0    60   Input ~ 0
 PIO_5
 Text GLabel 8300 3050 0    60   Input ~ 0
