@@ -1,9 +1,9 @@
-EESchema Schematic File Version 1
-LIBS:power,device,conn,./components/gta02-core.lib,./memory.cache
-EELAYER 23  0
+EESchema Schematic File Version 2  date Thu Jun 25 06:57:53 2009
+LIBS:power,device,conn,gta02-core
+EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 3 9
+Sheet 4 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1550 1400 0    200  ~ 40
+MEMORY
 Connection ~ 13850 2750
 Connection ~ 13400 3900
 Wire Wire Line
@@ -468,8 +470,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A3F0438
 P 11450 3750
-F 0 "#PWR?" H 11450 3750 30  0001 C C
-F 1 "GND" H 11450 3680 30  0001 C C
+F 0 "#PWR?" H 11450 3750 30  0001 C CNN
+F 1 "GND" H 11450 3680 30  0001 C CNN
 	1    11450 3750
 	1    0    0    -1  
 $EndComp
@@ -477,8 +479,8 @@ $Comp
 L SDRAM_1V8 #PWR?
 U 1 1 4A3F040B
 P 11450 2550
-F 0 "#PWR?" H 11450 2450 50  0001 C C
-F 1 "SDRAM_1V8" H 11450 2700 50  0000 C C
+F 0 "#PWR?" H 11450 2450 50  0001 C CNN
+F 1 "SDRAM_1V8" H 11450 2700 50  0000 C CNN
 	1    11450 2550
 	1    0    0    -1  
 $EndComp
@@ -486,8 +488,8 @@ $Comp
 L SDRAM_1V8 #PWR?
 U 1 1 4A3F03AA
 P 14050 2550
-F 0 "#PWR?" H 14050 2450 50  0001 C C
-F 1 "SDRAM_1V8" H 14050 2700 50  0000 C C
+F 0 "#PWR?" H 14050 2450 50  0001 C CNN
+F 1 "SDRAM_1V8" H 14050 2700 50  0000 C CNN
 	1    14050 2550
 	1    0    0    -1  
 $EndComp
@@ -495,8 +497,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A3F037F
 P 14050 3750
-F 0 "#PWR?" H 14050 3750 30  0001 C C
-F 1 "GND" H 14050 3680 30  0001 C C
+F 0 "#PWR?" H 14050 3750 30  0001 C CNN
+F 1 "GND" H 14050 3680 30  0001 C CNN
 	1    14050 3750
 	1    0    0    -1  
 $EndComp
@@ -531,11 +533,11 @@ $Comp
 L FILTER B2201
 U 1 1 4A3EB650
 P 12100 1150
-F 0 "B2201" H 12100 1300 60  0000 C C
-F 1 "600R" H 12100 1050 60  0000 C C
-F 4 "100M" H 12200 1400 60  0001 C C "Freq"
-F 5 "800mA" H 12100 950 70  0000 C C "Current"
-F 6 "0.45R" H 12200 1400 60  0001 C C "DCR"
+F 0 "B2201" H 12100 1300 60  0000 C CNN
+F 1 "600R" H 12100 1050 60  0000 C CNN
+F 4 "100M" H 12200 1400 60  0001 C CNN "Freq"
+F 5 "800mA" H 12100 950 70  0000 C CNN "Current"
+F 6 "0.45R" H 12200 1400 60  0001 C CNN "DCR"
 	1    12100 1150
 	1    0    0    -1  
 $EndComp
@@ -543,8 +545,8 @@ $Comp
 L SC32442 U1501
 U 9 1 4A0CAA40
 P 6850 8800
-F 0 "U1501" H 6850 8700 50  0000 C C
-F 1 "SC32442" H 6850 8900 50  0000 C C
+F 0 "U1501" H 6850 8700 50  0000 C CNN
+F 1 "SC32442" H 6850 8900 50  0000 C CNN
 	9    6850 8800
 	1    0    0    -1  
 $EndComp
@@ -552,8 +554,8 @@ $Comp
 L IO_1V8 #PWR?
 U 1 1 4A3B666A
 P 11550 950
-F 0 "#PWR?" H 11550 850 50  0001 C C
-F 1 "IO_1V8" H 11550 1100 50  0000 C C
+F 0 "#PWR?" H 11550 850 50  0001 C CNN
+F 1 "IO_1V8" H 11550 1100 50  0000 C CNN
 	1    11550 950 
 	1    0    0    -1  
 $EndComp
@@ -561,8 +563,8 @@ $Comp
 L SDRAM_1V8 #PWR?
 U 1 1 4A3B665C
 P 12850 950
-F 0 "#PWR?" H 12850 850 50  0001 C C
-F 1 "SDRAM_1V8" H 12850 1100 50  0000 C C
+F 0 "#PWR?" H 12850 850 50  0001 C CNN
+F 1 "SDRAM_1V8" H 12850 1100 50  0000 C CNN
 	1    12850 950 
 	1    0    0    -1  
 $EndComp
@@ -570,8 +572,8 @@ $Comp
 L R_PACK4 RP2201
 U 1 1 4A3B14D6
 P 14600 8000
-F 0 "RP2201" H 14600 8450 50  0000 C C
-F 1 "33R" H 14600 7950 50  0000 C C
+F 0 "RP2201" H 14600 8450 50  0000 C CNN
+F 1 "33R" H 14600 7950 50  0000 C CNN
 	1    14600 8000
 	-1   0    0    1   
 $EndComp
@@ -579,8 +581,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A3B0837
 P 12850 2200
-F 0 "#PWR?" H 12850 2200 30  0001 C C
-F 1 "GND" H 12850 2130 30  0001 C C
+F 0 "#PWR?" H 12850 2200 30  0001 C CNN
+F 1 "GND" H 12850 2130 30  0001 C CNN
 	1    12850 2200
 	1    0    0    -1  
 $EndComp
@@ -588,8 +590,8 @@ $Comp
 L C C2211
 U 1 1 4A3B055C
 P 13050 1550
-F 0 "C2211" H 13100 1650 50  0000 L C
-F 1 "10n" H 13100 1450 50  0000 L C
+F 0 "C2211" H 13100 1650 50  0000 L CNN
+F 1 "10n" H 13100 1450 50  0000 L CNN
 	1    13050 1550
 	1    0    0    -1  
 $EndComp
@@ -597,8 +599,8 @@ $Comp
 L C C2210
 U 1 1 4A3B0559
 P 14250 3150
-F 0 "C2210" H 14300 3250 50  0000 L C
-F 1 "10n" H 14300 3050 50  0000 L C
+F 0 "C2210" H 14300 3250 50  0000 L CNN
+F 1 "10n" H 14300 3050 50  0000 L CNN
 	1    14250 3150
 	1    0    0    -1  
 $EndComp
@@ -606,8 +608,8 @@ $Comp
 L C C2209
 U 1 1 4A3B0529
 P 11650 3150
-F 0 "C2209" H 11700 3250 50  0000 L C
-F 1 "10n" H 11700 3050 50  0000 L C
+F 0 "C2209" H 11700 3250 50  0000 L CNN
+F 1 "10n" H 11700 3050 50  0000 L CNN
 	1    11650 3150
 	1    0    0    -1  
 $EndComp
@@ -615,8 +617,8 @@ $Comp
 L C C2208
 U 1 1 4A3B0526
 P 13850 3150
-F 0 "C2208" H 13900 3250 50  0000 L C
-F 1 "10n" H 13900 3050 50  0000 L C
+F 0 "C2208" H 13900 3250 50  0000 L CNN
+F 1 "10n" H 13900 3050 50  0000 L CNN
 	1    13850 3150
 	1    0    0    -1  
 $EndComp
@@ -624,8 +626,8 @@ $Comp
 L C C2207
 U 1 1 4A3B0524
 P 11250 3150
-F 0 "C2207" H 11300 3250 50  0000 L C
-F 1 "10n" H 11300 3050 50  0000 L C
+F 0 "C2207" H 11300 3250 50  0000 L CNN
+F 1 "10n" H 11300 3050 50  0000 L CNN
 	1    11250 3150
 	1    0    0    -1  
 $EndComp
@@ -633,18 +635,18 @@ $Comp
 L C C2206
 U 1 1 4A3B051B
 P 12650 1550
-F 0 "C2206" H 12700 1650 50  0000 L C
-F 1 "10u" H 12700 1450 50  0000 L C
+F 0 "C2206" H 12700 1650 50  0000 L CNN
+F 1 "10u" H 12700 1450 50  0000 L CNN
 	1    12650 1550
 	1    0    0    -1  
 $EndComp
-Text Label 15000 8350 0    60   ~
+Text Label 15000 8350 0    60   ~ 0
 DQM3
-Text Label 15000 8250 0    60   ~
+Text Label 15000 8250 0    60   ~ 0
 DQM2
-Text Label 15000 8150 0    60   ~
+Text Label 15000 8150 0    60   ~ 0
 DQM1
-Text Label 15000 8050 0    60   ~
+Text Label 15000 8050 0    60   ~ 0
 DQM0
 Entry Wire Line
 	15300 8350 15400 8450
@@ -654,13 +656,13 @@ Entry Wire Line
 	15300 8150 15400 8250
 Entry Wire Line
 	15300 8050 15400 8150
-Text Label 10100 9500 0    60   ~
+Text Label 10100 9500 0    60   ~ 0
 DQM3
-Text Label 10100 9400 0    60   ~
+Text Label 10100 9400 0    60   ~ 0
 DQM2
-Text Label 10100 9300 0    60   ~
+Text Label 10100 9300 0    60   ~ 0
 DQM1
-Text Label 10100 9200 0    60   ~
+Text Label 10100 9200 0    60   ~ 0
 DQM0
 Entry Wire Line
 	10400 9500 10500 9600
@@ -674,22 +676,22 @@ $Comp
 L R_PACK4 RP2203
 U 1 1 4A39CAAA
 P 10750 8000
-F 0 "RP2203" H 10750 8450 50  0000 C C
-F 1 "33R" H 10750 7950 50  0000 C C
+F 0 "RP2203" H 10750 8450 50  0000 C CNN
+F 1 "33R" H 10750 7950 50  0000 C CNN
 	1    10750 8000
 	1    0    0    -1  
 $EndComp
-Text Label 10000 6350 0    60   ~
+Text Label 10000 6350 0    60   ~ 0
 ADD25
-Text Label 10000 6250 0    60   ~
+Text Label 10000 6250 0    60   ~ 0
 ADD24
 Entry Wire Line
 	9900 6250 10000 6350
 Entry Wire Line
 	9900 6150 10000 6250
-Text Label 1150 7500 0    60   ~
+Text Label 1150 7500 0    60   ~ 0
 ADD25
-Text Label 1150 7400 0    60   ~
+Text Label 1150 7400 0    60   ~ 0
 ADD24
 Entry Wire Line
 	1050 7400 1150 7500
@@ -699,36 +701,36 @@ $Comp
 L R_PACK4 33R
 U 1 1 4A39C7C0
 P 10750 6500
-F 0 "33R" H 10750 6950 50  0000 C C
-F 1 "33R" H 10750 6450 50  0000 C C
+F 0 "33R" H 10750 6950 50  0000 C CNN
+F 1 "33R" H 10750 6450 50  0000 C CNN
 	1    10750 6500
 	1    0    0    -1  
 $EndComp
-Text Label 10000 5900 0    60   ~
+Text Label 10000 5900 0    60   ~ 0
 ADD14
-Text Label 10000 5800 0    60   ~
+Text Label 10000 5800 0    60   ~ 0
 ADD13
-Text Label 10000 5700 0    60   ~
+Text Label 10000 5700 0    60   ~ 0
 ADD12
-Text Label 10000 5600 0    60   ~
+Text Label 10000 5600 0    60   ~ 0
 ADD11
-Text Label 10000 5500 0    60   ~
+Text Label 10000 5500 0    60   ~ 0
 ADD10
-Text Label 10000 5400 0    60   ~
+Text Label 10000 5400 0    60   ~ 0
 ADD9
-Text Label 10000 5300 0    60   ~
+Text Label 10000 5300 0    60   ~ 0
 ADD8
-Text Label 10000 5200 0    60   ~
+Text Label 10000 5200 0    60   ~ 0
 ADD7
-Text Label 10000 5100 0    60   ~
+Text Label 10000 5100 0    60   ~ 0
 ADD6
-Text Label 10000 5000 0    60   ~
+Text Label 10000 5000 0    60   ~ 0
 ADD5
-Text Label 10000 4900 0    60   ~
+Text Label 10000 4900 0    60   ~ 0
 ADD4
-Text Label 10000 4800 0    60   ~
+Text Label 10000 4800 0    60   ~ 0
 ADD3
-Text Label 10000 4700 0    60   ~
+Text Label 10000 4700 0    60   ~ 0
 ADD2
 Entry Wire Line
 	9900 5800 10000 5900
@@ -756,69 +758,69 @@ Entry Wire Line
 	9900 4700 10000 4800
 Entry Wire Line
 	9900 4600 10000 4700
-Text Label 15050 7650 0    60   ~
+Text Label 15050 7650 0    60   ~ 0
 DATA31
-Text Label 15050 7550 0    60   ~
+Text Label 15050 7550 0    60   ~ 0
 DATA30
-Text Label 15050 7450 0    60   ~
+Text Label 15050 7450 0    60   ~ 0
 DATA29
-Text Label 15050 7350 0    60   ~
+Text Label 15050 7350 0    60   ~ 0
 DATA28
-Text Label 15050 7250 0    60   ~
+Text Label 15050 7250 0    60   ~ 0
 DATA27
-Text Label 15050 7150 0    60   ~
+Text Label 15050 7150 0    60   ~ 0
 DATA26
-Text Label 15050 7050 0    60   ~
+Text Label 15050 7050 0    60   ~ 0
 DATA25
-Text Label 15050 6950 0    60   ~
+Text Label 15050 6950 0    60   ~ 0
 DATA24
-Text Label 15050 6850 0    60   ~
+Text Label 15050 6850 0    60   ~ 0
 DATA23
-Text Label 15050 6750 0    60   ~
+Text Label 15050 6750 0    60   ~ 0
 DATA22
-Text Label 15050 6650 0    60   ~
+Text Label 15050 6650 0    60   ~ 0
 DATA21
-Text Label 15050 6550 0    60   ~
+Text Label 15050 6550 0    60   ~ 0
 DATA20
-Text Label 15050 6450 0    60   ~
+Text Label 15050 6450 0    60   ~ 0
 DATA19
-Text Label 15050 6350 0    60   ~
+Text Label 15050 6350 0    60   ~ 0
 DATA18
-Text Label 15050 6250 0    60   ~
+Text Label 15050 6250 0    60   ~ 0
 DATA17
-Text Label 15050 6150 0    60   ~
+Text Label 15050 6150 0    60   ~ 0
 DATA16
-Text Label 15050 6050 0    60   ~
+Text Label 15050 6050 0    60   ~ 0
 DATA15
-Text Label 15050 5950 0    60   ~
+Text Label 15050 5950 0    60   ~ 0
 DATA14
-Text Label 15050 5850 0    60   ~
+Text Label 15050 5850 0    60   ~ 0
 DATA13
-Text Label 15050 5750 0    60   ~
+Text Label 15050 5750 0    60   ~ 0
 DATA12
-Text Label 15050 5650 0    60   ~
+Text Label 15050 5650 0    60   ~ 0
 DATA11
-Text Label 15050 5550 0    60   ~
+Text Label 15050 5550 0    60   ~ 0
 DATA10
-Text Label 15050 5450 0    60   ~
+Text Label 15050 5450 0    60   ~ 0
 DATA9
-Text Label 15050 5350 0    60   ~
+Text Label 15050 5350 0    60   ~ 0
 DATA8
-Text Label 15050 5250 0    60   ~
+Text Label 15050 5250 0    60   ~ 0
 DATA7
-Text Label 15050 5150 0    60   ~
+Text Label 15050 5150 0    60   ~ 0
 DATA6
-Text Label 15050 5050 0    60   ~
+Text Label 15050 5050 0    60   ~ 0
 DATA5
-Text Label 15050 4950 0    60   ~
+Text Label 15050 4950 0    60   ~ 0
 DATA4
-Text Label 15050 4850 0    60   ~
+Text Label 15050 4850 0    60   ~ 0
 DATA3
-Text Label 15050 4750 0    60   ~
+Text Label 15050 4750 0    60   ~ 0
 DATA2
-Text Label 15050 4650 0    60   ~
+Text Label 15050 4650 0    60   ~ 0
 DATA1
-Text Label 15050 4550 0    60   ~
+Text Label 15050 4550 0    60   ~ 0
 DATA0
 Entry Wire Line
 	15400 7650 15500 7750
@@ -888,36 +890,36 @@ $Comp
 L GND #PWR?
 U 1 1 4A39C2C7
 P 12750 9300
-F 0 "#PWR?" H 12750 9300 30  0001 C C
-F 1 "GND" H 12750 9230 30  0001 C C
+F 0 "#PWR?" H 12750 9300 30  0001 C CNN
+F 1 "GND" H 12750 9230 30  0001 C CNN
 	1    12750 9300
 	1    0    0    -1  
 $EndComp
-Text Label 1150 6200 0    60   ~
+Text Label 1150 6200 0    60   ~ 0
 ADD14
-Text Label 1150 6100 0    60   ~
+Text Label 1150 6100 0    60   ~ 0
 ADD13
-Text Label 1150 6000 0    60   ~
+Text Label 1150 6000 0    60   ~ 0
 ADD12
-Text Label 1150 5900 0    60   ~
+Text Label 1150 5900 0    60   ~ 0
 ADD11
-Text Label 1150 5800 0    60   ~
+Text Label 1150 5800 0    60   ~ 0
 ADD10
-Text Label 1150 5700 0    60   ~
+Text Label 1150 5700 0    60   ~ 0
 ADD9
-Text Label 1150 5600 0    60   ~
+Text Label 1150 5600 0    60   ~ 0
 ADD8
-Text Label 1150 5400 0    60   ~
+Text Label 1150 5400 0    60   ~ 0
 ADD7
-Text Label 1150 5300 0    60   ~
+Text Label 1150 5300 0    60   ~ 0
 ADD6
-Text Label 1150 5200 0    60   ~
+Text Label 1150 5200 0    60   ~ 0
 ADD5
-Text Label 1150 5100 0    60   ~
+Text Label 1150 5100 0    60   ~ 0
 ADD4
-Text Label 1150 5000 0    60   ~
+Text Label 1150 5000 0    60   ~ 0
 ADD3
-Text Label 1150 4900 0    60   ~
+Text Label 1150 4900 0    60   ~ 0
 ADD2
 Entry Wire Line
 	1050 6100 1150 6200
@@ -945,69 +947,69 @@ Entry Wire Line
 	1050 4900 1150 5000
 Entry Wire Line
 	1050 4800 1150 4900
-Text Label 5550 7850 0    60   ~
+Text Label 5550 7850 0    60   ~ 0
 DATA31
-Text Label 5550 7750 0    60   ~
+Text Label 5550 7750 0    60   ~ 0
 DATA30
-Text Label 5550 7650 0    60   ~
+Text Label 5550 7650 0    60   ~ 0
 DATA29
-Text Label 5550 7550 0    60   ~
+Text Label 5550 7550 0    60   ~ 0
 DATA28
-Text Label 5550 7450 0    60   ~
+Text Label 5550 7450 0    60   ~ 0
 DATA27
-Text Label 5550 7350 0    60   ~
+Text Label 5550 7350 0    60   ~ 0
 DATA26
-Text Label 5550 7250 0    60   ~
+Text Label 5550 7250 0    60   ~ 0
 DATA25
-Text Label 5550 7150 0    60   ~
+Text Label 5550 7150 0    60   ~ 0
 DATA24
-Text Label 5550 6950 0    60   ~
+Text Label 5550 6950 0    60   ~ 0
 DATA23
-Text Label 5550 6850 0    60   ~
+Text Label 5550 6850 0    60   ~ 0
 DATA22
-Text Label 5550 6750 0    60   ~
+Text Label 5550 6750 0    60   ~ 0
 DATA21
-Text Label 5550 6650 0    60   ~
+Text Label 5550 6650 0    60   ~ 0
 DATA20
-Text Label 5550 6550 0    60   ~
+Text Label 5550 6550 0    60   ~ 0
 DATA19
-Text Label 5550 6450 0    60   ~
+Text Label 5550 6450 0    60   ~ 0
 DATA18
-Text Label 5550 6350 0    60   ~
+Text Label 5550 6350 0    60   ~ 0
 DATA17
-Text Label 5550 6250 0    60   ~
+Text Label 5550 6250 0    60   ~ 0
 DATA16
-Text Label 5550 5950 0    60   ~
+Text Label 5550 5950 0    60   ~ 0
 DATA14
-Text Label 5550 6050 0    60   ~
+Text Label 5550 6050 0    60   ~ 0
 DATA15
-Text Label 5550 5850 0    60   ~
+Text Label 5550 5850 0    60   ~ 0
 DATA13
-Text Label 5550 5750 0    60   ~
+Text Label 5550 5750 0    60   ~ 0
 DATA12
-Text Label 5550 5650 0    60   ~
+Text Label 5550 5650 0    60   ~ 0
 DATA11
-Text Label 5550 5550 0    60   ~
+Text Label 5550 5550 0    60   ~ 0
 DATA10
-Text Label 5550 5450 0    60   ~
+Text Label 5550 5450 0    60   ~ 0
 DATA9
-Text Label 5550 5350 0    60   ~
+Text Label 5550 5350 0    60   ~ 0
 DATA8
-Text Label 5550 5100 0    60   ~
+Text Label 5550 5100 0    60   ~ 0
 DATA7
-Text Label 5550 5000 0    60   ~
+Text Label 5550 5000 0    60   ~ 0
 DATA6
-Text Label 5550 4900 0    60   ~
+Text Label 5550 4900 0    60   ~ 0
 DATA5
-Text Label 5550 4800 0    60   ~
+Text Label 5550 4800 0    60   ~ 0
 DATA4
-Text Label 5550 4700 0    60   ~
+Text Label 5550 4700 0    60   ~ 0
 DATA3
-Text Label 5550 4600 0    60   ~
+Text Label 5550 4600 0    60   ~ 0
 DATA2
-Text Label 5550 4500 0    60   ~
+Text Label 5550 4500 0    60   ~ 0
 DATA1
-Text Label 5550 4400 0    60   ~
+Text Label 5550 4400 0    60   ~ 0
 DATA0
 Entry Wire Line
 	5900 7850 6000 7950
@@ -1077,8 +1079,8 @@ $Comp
 L SC32442 U1501
 U 1 1 4A39BD57
 P 3500 5950
-F 0 "U1501" H 3500 5850 50  0000 C C
-F 1 "SC32442" H 3500 6050 50  0000 C C
+F 0 "U1501" H 3500 5850 50  0000 C CNN
+F 1 "SC32442" H 3500 6050 50  0000 C CNN
 	1    3500 5950
 	1    0    0    -1  
 $EndComp
@@ -1086,8 +1088,8 @@ $Comp
 L K4M51323PE U2201
 U 1 1 4A0CAA3A
 P 12750 6550
-F 0 "U2201" H 12750 6600 60  0000 C C
-F 1 "K4M51323PE" H 12800 5600 60  0000 C C
+F 0 "U2201" H 12750 6600 60  0000 C CNN
+F 1 "K4M51323PE" H 12800 5600 60  0000 C CNN
 	1    12750 6550
 	1    0    0    -1  
 $EndComp

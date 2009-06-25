@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun 21 Jun 2009 21:29:30 CDT
+EESchema Schematic File Version 2  date Thu Jun 25 07:00:01 2009
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 8 9
+Sheet 9 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1400 1450 0    200  ~ 40
+USB
 Connection ~ 10250 3550
 Wire Wire Line
 	10250 4550 10250 3550

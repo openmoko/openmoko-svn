@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Wed 24 Jun 2009 00:03:10 CDT
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu Jun 25 06:59:08 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 6 9
+Sheet 7 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1250 1250 0    200  ~ 40
+AUDIO
 Connection ~ 15000 5350
 Wire Wire Line
 	15000 5150 15000 5350

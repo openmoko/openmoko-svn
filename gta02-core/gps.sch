@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Mon 22 Jun 2009 20:23:06 WEST
-LIBS:,powerdeviceconngta02-coregta02-core-cache
+EESchema Schematic File Version 2  date Thu Jun 25 06:59:27 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 7 9
+Sheet 8 9
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1250 1450 0    200  ~ 40
+GPS
 Wire Wire Line
 	9200 5850 8600 5850
 Wire Wire Line
@@ -1400,7 +1402,7 @@ F 1 "COAX" H 15050 3450 60  0000 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L INDUCTOR L?
+L INDUCTOR L7601
 U 1 1 4A3D0EC4
 P 14650 3200
 F 0 "L7601" H 14850 3250 50  0000 C CNN

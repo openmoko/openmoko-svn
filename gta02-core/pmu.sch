@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Mon 22 Jun 2009 09:12:07 WEST
-LIBS:,powerdeviceconngta02-coregta02-core-cache
+EESchema Schematic File Version 2  date Thu Jun 25 06:58:40 2009
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 5 9
+Sheet 6 9
 Title ""
 Date "20 jun 2009"
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1450 1450 0    200  ~ 40
+PMU
 NoConn ~ 9200 7350
 NoConn ~ 9200 5200
 NoConn ~ 9200 4100
@@ -914,7 +916,7 @@ $EndComp
 Text GLabel 1850 4350 0    60   Input ~ 0
 BAT_ID
 $Comp
-L TST H-TP1704
+L TST TP1704
 U 1 1 4A3CEC74
 P 6550 7950
 F 0 "TP1704" V 6650 8100 50  0000 C CNN
@@ -1374,7 +1376,7 @@ $EndComp
 Text GLabel 10900 2750 0    60   Input ~ 0
 GSM_ON
 $Comp
-L TST H-TP1706
+L TST TP1706
 U 1 1 4A3B4F46
 P 10900 2350
 F 0 "TP1706" V 11000 2500 50  0000 C CNN
@@ -1411,7 +1413,7 @@ F 1 "RT9702APB" H 11950 2350 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L TST H-TP1701
+L TST TP1701
 U 1 1 4A3B4E04
 P 9900 1000
 F 0 "TP1701" V 10000 1150 50  0000 C CNN
@@ -1715,7 +1717,7 @@ F 1 "100U" V 7950 5950 50  0000 L CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L TST H-TP1705
+L TST TP1705
 U 1 1 4A3A851A
 P 12350 8600
 F 0 "TP1705" V 12450 8750 50  0000 C CNN
@@ -2042,7 +2044,7 @@ F 2 "C1206-H" H 14750 3800 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L TST H-TP1702
+L TST TP1702
 U 1 1 4A39FAD1
 P 12800 7700
 F 0 "TP1702" V 12750 8050 50  0000 C CNN

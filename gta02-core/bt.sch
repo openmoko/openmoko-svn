@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 25 Jun 2009 01:08:21 BST
+EESchema Schematic File Version 2  date Thu Jun 25 06:57:25 2009
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -270,9 +270,9 @@ Wire Wire Line
 Wire Wire Line
 	8100 9750 8900 9750
 NoConn ~ 4900 9400
-Text Notes 1400 6500 0    60   ~ 0
+Text Notes 1400 6500 0    200  ~ 40
 WLAN\n
-Text Notes 12750 1000 0    60   ~ 0
+Text Notes 12750 1150 0    200  ~ 40
 BLUETOOTH
 Text GLabel 8900 9950 2    60   Input ~ 0
 CHIP_PWD
@@ -330,7 +330,7 @@ F 1 "10nF" H 10250 9650 50  0000 L CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L R_US R?
+L R_US R7903
 U 1 1 4A42BC6F
 P 10200 8850
 F 0 "R7903" H 10050 8950 50  0000 C CNN
@@ -366,7 +366,7 @@ F 1 "IO_1V8" H 8100 7400 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L R_US R?
+L R_US R7902
 U 1 1 4A42B9FA
 P 8100 7700
 F 0 "R7902" H 7950 7800 50  0000 C CNN
@@ -415,7 +415,7 @@ F 1 "IO_3V3" H 4700 6450 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L INDUCTOR L?
+L INDUCTOR R7901
 U 1 1 4A42B1E4
 P 4700 6800
 F 0 "R7901" V 4650 6800 40  0000 C CNN
@@ -581,7 +581,7 @@ F 1 "GND" H 10100 2030 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C3
 U 1 1 4A42A061
 P 10100 1700
 F 0 "C3" H 10150 1800 50  0000 L CNN
@@ -599,7 +599,7 @@ F 1 "GND" H 10450 2030 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C4
 U 1 1 4A42A04C
 P 10450 1700
 F 0 "C4" H 10500 1800 50  0000 L CNN
@@ -662,7 +662,7 @@ F 1 "GND" H 12500 5280 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C1
 U 1 1 4A429C45
 P 13500 4950
 F 0 "C1" H 13550 5050 50  0000 L CNN
@@ -671,7 +671,7 @@ F 1 "22pF" H 13550 4850 50  0000 L CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C2
 U 1 1 4A429C3C
 P 12500 4950
 F 0 "C2" H 12550 5050 50  0000 L CNN
