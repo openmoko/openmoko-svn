@@ -1,6 +1,25 @@
 Apply bass fix
 
 
-To do:
-- more details - what is actually involved ?
-- is this part of the switch to a "capless" design ?
+The GTA02 has a 1uF cap in the left and right audio path of the
+headphone, these caps act in combination with the headphone as high-pass
+filter, so they will attenuate the lower frequencies. For a headphone with
+32 Ohm impedance the resulting cutoff frequency will be 2.45kHz (incl. 33 Ohm
+internal R). This result in a poor audio quality if listening to music.
+
+Unfortunately we cannot switch to the dc coupled (capless) design because we
+share a common ground with the microphone. In capless mode we would be unable
+to bias the microphone properly. To solve this issue we would need a headset
+with a separate ground for microphone and headphone as well as a different
+headset jack.
+
+To improve the audio quality we need to replace C4111 and C4110 with a 100uF
+capacitor so the lower cutoff frequency with a 32 Ohm headphone will be at 50Hz
+(assumes R4407 & R4405 = 0R, see "Removal of Calypso serial interface on the
+headset jack")
+
+
+Author: Rene Harder <rehar@saweb.de>
+
+
+
