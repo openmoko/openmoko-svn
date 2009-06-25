@@ -1,5 +1,6 @@
 Dave Ball <openmoko@daveball.org.uk>
 
+  bt.sch
   components/aat1275irn.lib
   components/k4m51323pe.lib
   components/lis302dl.lib
@@ -13,6 +14,7 @@ Dave Ball <openmoko@daveball.org.uk>
 
 Alvaro Lopes <alvieboy@alvie.com>
 
+  gps.sch
   pmu.sch
   components/74x1g00_5.lib
   components/74x1g125.lib
@@ -40,6 +42,8 @@ Alvaro Lopes <alvieboy@alvie.com>
 
 Rene Harder <rehar@saweb.de>
 
+  audio.sch
+  usb.sch
   components/antenna.lib
   components/atr0610.lib
   components/atr0635.lib
@@ -60,8 +64,9 @@ Rene Harder <rehar@saweb.de>
 
 Luke Duncan <duncan72187@gmail.com>
 
+  io.sch
+  lcm.sch
   memory.sch
-
   Compilations:
   components/gta02-core-expanded.lib
   components/gta02-core.lib

@@ -200,15 +200,21 @@ S: wm8753l
 A: codec
 D: http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
 
+
 # Chip Resistors Array RTA02-4Dxxx
 S: R_PACK4
 D: http://www.ralec.com/download/products/5_Array-convex.pdf
 
 # need to find a better way for data sheets of components that don't have a
 # unique symbol
-#
+
 # Ferrite Bead (KLB0603K601SA)
 #S: FILTER
 #A: bead
-#A: bead-klb
+#A: klb
 #D: http://www.kmax.com.tw/doc/05_KLB_S.pdf
+
+# Varistor (KarMax KEV series)
+S: varistor
+A: kev
+D: http://www.kmax.com.tw/doc/02_KEV_Series.pdf

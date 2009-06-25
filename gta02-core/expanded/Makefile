@@ -10,10 +10,10 @@ gen generate:
 	../scripts/all-sheets --pdf gta02-core-expanded
 
 gv:
-	gv gta02-core-all.ps.gz
+	gv gta02-core-expanded-all.ps.gz
 
 xpdf:
-	xpdf gta02-core-all.pdf
+	xpdf gta02-core-expanded-all.pdf
 
 upload:	generate
 	scp gta02-core-expanded-all.ps.gz gta02-core-expanded-all.pdf \
