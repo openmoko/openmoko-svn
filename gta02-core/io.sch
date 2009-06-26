@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 26 Jun 2009 21:16:40 BST
+EESchema Schematic File Version 2  date Fri 26 Jun 2009 22:11:25 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,38 +13,25 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text GLabel 10800 2850 0    60   Input ~ 0
-VIBRATOR_ON
-NoConn ~ 5850 8000
-NoConn ~ 5850 7900
-NoConn ~ 5850 7800
-NoConn ~ 5850 7700
-NoConn ~ 5850 7600
-NoConn ~ 5850 7550
-NoConn ~ 5850 7500
-NoConn ~ 5850 7400
-NoConn ~ 5850 6900
-NoConn ~ 5850 6800
-NoConn ~ 5850 6700
-NoConn ~ 5850 6600
-NoConn ~ 5850 6400
-NoConn ~ 5850 6300
-NoConn ~ 5850 6200
-NoConn ~ 5850 6100
-NoConn ~ 5850 6000
-NoConn ~ 5850 5900
-NoConn ~ 5850 5800
-Text Notes 1700 1700 0    200  ~ 0
-I/O
+Wire Wire Line
+	6450 8100 6050 8100
+Wire Wire Line
+	6050 8100 6050 8000
+Wire Wire Line
+	6050 8000 5850 8000
+Wire Wire Line
+	5850 7900 6250 7900
+Wire Wire Line
+	6250 7900 6250 7950
+Wire Wire Line
+	6250 7950 6450 7950
 Connection ~ 13400 3450
 Wire Wire Line
 	5850 6500 6050 6500
 Wire Wire Line
-	6050 6600 6050 6500
+	6050 6500 6050 6600
 Wire Wire Line
-	8400 6600 7450 6600
-Wire Wire Line
-	7450 6600 6050 6600
+	6050 6600 8400 6600
 Connection ~ 13850 2450
 Wire Wire Line
 	13850 2150 13850 2450
@@ -56,17 +43,9 @@ Wire Wire Line
 	13650 3450 13650 3150
 Connection ~ 13100 2450
 Wire Wire Line
-	14650 2450 14350 2450
+	13100 2450 14650 2450
 Wire Wire Line
-	14350 2450 13850 2450
-Wire Wire Line
-	13850 2450 13100 2450
-Wire Wire Line
-	14650 2350 13650 2350
-Wire Wire Line
-	13650 2350 13450 2350
-Wire Wire Line
-	13450 2350 12400 2350
+	14650 2350 12400 2350
 Wire Wire Line
 	12400 2350 12400 2600
 Wire Wire Line
@@ -86,19 +65,7 @@ Wire Wire Line
 Wire Wire Line
 	11300 7450 11300 7850
 Wire Wire Line
-	11300 7850 10800 7850
-Wire Wire Line
-	10800 7850 10100 7850
-Wire Wire Line
-	10100 7850 9850 7850
-Wire Wire Line
-	9850 7850 9800 7850
-Wire Wire Line
-	9800 7850 9750 7850
-Wire Wire Line
-	9750 7850 9650 7850
-Wire Wire Line
-	9650 7850 9550 7850
+	11300 7850 9550 7850
 Wire Wire Line
 	10800 7050 10800 6750
 Connection ~ 9850 7850
@@ -114,13 +81,9 @@ Wire Wire Line
 Wire Wire Line
 	7100 7300 7100 6800
 Wire Wire Line
-	7100 6800 8150 6800
+	7100 6800 8400 6800
 Wire Wire Line
-	8150 6800 8400 6800
-Wire Wire Line
-	8400 6700 7800 6700
-Wire Wire Line
-	7800 6700 7000 6700
+	8400 6700 7000 6700
 Wire Wire Line
 	8400 7100 5850 7100
 Wire Wire Line
@@ -134,9 +97,7 @@ Wire Wire Line
 	9800 7850 9800 8050
 Connection ~ 9800 7850
 Wire Wire Line
-	10600 6750 10800 6750
-Wire Wire Line
-	10800 6750 11300 6750
+	11300 6750 10600 6750
 Connection ~ 10800 6750
 Wire Wire Line
 	10800 7850 10800 7450
@@ -145,11 +106,7 @@ Connection ~ 10100 7850
 Wire Wire Line
 	11300 6550 10600 6550
 Wire Wire Line
-	11300 7050 11300 6750
-Wire Wire Line
-	11300 6750 11300 6650
-Wire Wire Line
-	11300 6650 11300 6350
+	11300 6350 11300 7050
 Connection ~ 11300 6650
 Wire Wire Line
 	11300 5700 11300 5850
@@ -157,15 +114,11 @@ Wire Wire Line
 	7800 6350 7800 6700
 Connection ~ 7800 6700
 Wire Wire Line
-	7450 5650 7800 5650
-Wire Wire Line
-	7800 5650 8150 5650
+	7450 5650 8150 5650
 Wire Wire Line
 	8150 5650 8150 5850
 Wire Wire Line
-	7450 5850 7450 5650
-Wire Wire Line
-	7450 5650 7450 5500
+	7450 5500 7450 5850
 Connection ~ 7450 5650
 Wire Wire Line
 	7000 6700 7000 5700
@@ -174,22 +127,14 @@ Wire Wire Line
 Wire Wire Line
 	8400 7200 5850 7200
 Wire Wire Line
-	13100 2050 13100 2450
+	13100 2700 13100 2050
 Wire Wire Line
-	13100 2450 13100 2700
-Wire Wire Line
-	13650 2650 13650 2350
+	13650 2350 13650 2650
 Connection ~ 13650 2350
 Wire Wire Line
 	12400 3200 12400 3450
 Wire Wire Line
-	12400 3450 13100 3450
-Wire Wire Line
-	13100 3450 13400 3450
-Wire Wire Line
-	13400 3450 13650 3450
-Wire Wire Line
-	13650 3450 14350 3450
+	12400 3450 14350 3450
 Wire Wire Line
 	14350 3450 14350 3150
 Wire Wire Line
@@ -199,8 +144,36 @@ Wire Wire Line
 	13450 2150 13450 2350
 Connection ~ 13450 2350
 Wire Wire Line
-	13400 3650 13400 3450
+	13400 3450 13400 3650
 Connection ~ 13400 3450
+Wire Wire Line
+	5850 7800 6450 7800
+Text GLabel 6450 8100 2    60   Input ~ 0
+NAND_BUS_WIDTH
+Text GLabel 6450 7950 2    60   Input ~ 0
+NAND_ADDR_CYCLE
+Text GLabel 6450 7800 2    60   Input ~ 0
+NAND_PAGE_SIZE
+Text GLabel 10800 2850 0    60   Input ~ 0
+VIBRATOR_ON
+NoConn ~ 5850 7700
+NoConn ~ 5850 7600
+NoConn ~ 5850 7550
+NoConn ~ 5850 7500
+NoConn ~ 5850 7400
+NoConn ~ 5850 6900
+NoConn ~ 5850 6800
+NoConn ~ 5850 6700
+NoConn ~ 5850 6600
+NoConn ~ 5850 6400
+NoConn ~ 5850 6300
+NoConn ~ 5850 6200
+NoConn ~ 5850 6100
+NoConn ~ 5850 6000
+NoConn ~ 5850 5900
+NoConn ~ 5850 5800
+Text Notes 1700 1700 0    200  ~ 0
+I/O
 $Comp
 L GND #PWR?
 U 1 1 4A4308D5
