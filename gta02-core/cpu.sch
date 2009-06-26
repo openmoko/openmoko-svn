@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 26 Jun 2009 21:19:48 BST
+EESchema Schematic File Version 2  date Fri 26 Jun 2009 22:55:44 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -14,22 +14,250 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L SC32442 U1501
-U 10 1 4A452BEB
-P 3300 3250
-F 0 "U1501" H 3300 3150 50  0000 C CNN
-F 1 "SC32442" H 3300 3350 50  0000 C CNN
-	10   3300 3250
+L HT210 D?
+U 1 1 4A4542FD
+P 7700 3300
+F 0 "D?" H 7700 3600 60  0000 C CNN
+F 1 "HT210" H 7700 2950 60  0000 C CNN
+	1    7700 3300
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	5400 2900 5400 2700
+Connection ~ 15450 3600
+Wire Wire Line
+	15650 3800 15650 3600
+Wire Wire Line
+	15650 3600 14400 3600
+Connection ~ 15100 1100
+Connection ~ 14750 3600
+Connection ~ 15100 2400
+Wire Wire Line
+	13800 2400 15100 2400
+Connection ~ 14400 2100
+Wire Wire Line
+	13800 2100 14400 2100
+Wire Wire Line
+	15100 1800 15100 2800
+Wire Wire Line
+	14400 1800 14400 2800
+Wire Wire Line
+	5200 2150 6450 2150
+Wire Wire Line
+	6450 1150 6450 1350
+Wire Wire Line
+	6100 1350 6100 1550
+Wire Wire Line
+	5200 1450 5400 1450
+Wire Wire Line
+	5200 1850 5400 1850
+Wire Wire Line
+	6450 2150 6450 1850
+Wire Wire Line
+	5400 1850 5400 1450
+Wire Wire Line
+	5650 2050 5200 2050
+Wire Wire Line
+	6100 1550 5200 1550
+Wire Wire Line
+	14400 1300 14400 1100
+Wire Wire Line
+	14750 1100 14750 1300
+Wire Wire Line
+	15100 1100 15100 1300
+Wire Wire Line
+	14400 3600 14400 3300
+Wire Wire Line
+	14750 3300 14750 3600
+Wire Wire Line
+	15100 3600 15100 3300
+Wire Wire Line
+	15450 1100 15450 1300
+Wire Wire Line
+	15450 3600 15450 3300
+Wire Wire Line
+	14750 2800 14750 1800
+Wire Wire Line
+	15450 2800 15450 1800
+Wire Wire Line
+	13800 2250 14750 2250
+Connection ~ 14750 2250
+Wire Wire Line
+	13800 2550 15450 2550
+Connection ~ 15450 2550
+Connection ~ 15100 3600
+Connection ~ 14750 1100
+Wire Wire Line
+	14400 1100 15700 1100
+Wire Wire Line
+	15700 1100 15700 900 
+Connection ~ 15450 1100
+Wire Wire Line
+	5400 2900 5200 2900
+Wire Wire Line
+	5400 2700 5650 2700
+Text GLabel 5650 2700 2    50   Output ~ 0
+VIBRATOR_ON
+Text Notes 10850 1950 0    50   ~ 0
+0: 8-bit bus Width\n1: 16-bit bus width
+Text Notes 10750 1850 0    60   ~ 0
+NAND_TYPE (NCON0) - NAND Flash memory selection (Normal/Advance)
+Text Notes 10850 1600 0    50   ~ 0
+0: 3 address cycle (NAND_TYPE=0) or  4 address cycle (NAND_TYPE=1)\n1: 4 address cycle (NAND_TYPE=0) or  5 address cycle (NAND_TYPE=1)
+Text Notes 10750 1500 0    60   ~ 0
+NAND_ADDR_CYCLE (GPG14) - NAND Flash memory address cycle selection
+Text Notes 10850 1250 0    50   ~ 0
+0: Page=256 Words (NAND_TYPE=0) or  Page=1K Words (NAND_TYPE=1)\n1: Page=512 Bytes (NAND_TYPE=0) or  Page=2K Bytes (NAND_TYPE=1)
+Text Notes 10750 1150 0    60   ~ 0
+NAND_PAGE_SIZE (GPG13) - NAND flash memory page capacity selection
+Text Notes 10850 900  0    50   ~ 0
+0: Normal NAND flash (256 Words / 512 Bytes page size, 3/4 address cycle)\n1: Advance NAND flash (1K Words / 2K Bytes page size, 4/5 address cycle)
+Text Notes 10750 800  0    60   ~ 0
+NAND_TYPE (NCON0) - NAND flash memory selection (Normal/Advance)
+$Comp
+L IO_3V3 #PWR?
+U 1 1 4A453C27
+P 15700 900
+F 0 "#PWR?" H 15700 800 50  0001 C CNN
+F 1 "IO_3V3" H 15700 1050 50  0000 C CNN
+	1    15700 900 
 	1    0    0    -1  
 $EndComp
 $Comp
-L SC32442 U?
-U 12 1 4A452BD1
-P 3300 2300
-F 0 "U1501" H 3300 2200 50  0000 C CNN
-F 1 "SC32442" H 3300 2400 50  0000 C CNN
-	12   3300 2300
+L GND #PWR?
+U 1 1 4A453C19
+P 15650 3800
+F 0 "#PWR?" H 15650 3800 30  0001 C CNN
+F 1 "GND" H 15650 3730 30  0001 C CNN
+	1    15650 3800
 	1    0    0    -1  
+$EndComp
+Text GLabel 13800 2550 0    60   Output ~ 0
+NAND_BUS_WIDTH
+Text GLabel 13800 2400 0    60   Output ~ 0
+NAND_ADDR_CYCLE
+Text GLabel 13800 2250 0    60   Output ~ 0
+NAND_PAGE_SIZE
+Text GLabel 13800 2100 0    60   Output ~ 0
+NAND_TYPE
+$Comp
+L R_US R1526
+U 1 1 4A453B31
+P 15450 3050
+F 0 "R1526" H 15450 3150 50  0000 C CNN
+F 1 "33K" H 15450 2950 50  0000 C CNN
+	1    15450 3050
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1525
+U 1 1 4A453B30
+P 15450 1550
+F 0 "R1525" H 15450 1650 50  0000 C CNN
+F 1 "NC" H 15450 1450 50  0000 C CNN
+	1    15450 1550
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1523
+U 1 1 4A453B22
+P 15100 3050
+F 0 "R1523" H 15100 3150 50  0000 C CNN
+F 1 "NC" H 15100 2950 50  0000 C CNN
+	1    15100 3050
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1522
+U 1 1 4A453B21
+P 14750 3050
+F 0 "R1522" H 14750 3150 50  0000 C CNN
+F 1 "NC" H 14750 2950 50  0000 C CNN
+	1    14750 3050
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1504
+U 1 1 4A453B20
+P 14400 3050
+F 0 "R1504" H 14400 3150 50  0000 C CNN
+F 1 "NC" H 14400 2950 50  0000 C CNN
+	1    14400 3050
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1524
+U 1 1 4A453B16
+P 15100 1550
+F 0 "R1524" H 15100 1650 50  0000 C CNN
+F 1 "100K" H 15100 1450 50  0000 C CNN
+	1    15100 1550
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1521
+U 1 1 4A453B10
+P 14750 1550
+F 0 "R1521" H 14750 1650 50  0000 C CNN
+F 1 "100K" H 14750 1450 50  0000 C CNN
+	1    14750 1550
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R1503
+U 1 1 4A453B0A
+P 14400 1550
+F 0 "R1503" H 14400 1650 50  0000 C CNN
+F 1 "100K" H 14400 1450 50  0000 C CNN
+	1    14400 1550
+	0    1    1    0   
+$EndComp
+Text GLabel 5650 2050 2    60   Input ~ 0
+NAND_TYPE
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A453624
+P 6450 1150
+F 0 "#PWR?" H 6450 1050 50  0001 C CNN
+F 1 "SDRAM_1V8" H 6450 1300 50  0000 C CNN
+	1    6450 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A4535FF
+P 6450 1600
+F 0 "R?" H 6450 1700 50  0000 C CNN
+F 1 "100K" H 6450 1500 50  0000 C CNN
+	1    6450 1600
+	0    1    1    0   
+$EndComp
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A4535AC
+P 6100 1350
+F 0 "#PWR?" H 6100 1250 50  0001 C CNN
+F 1 "SDRAM_1V8" H 6100 1500 50  0000 C CNN
+	1    6100 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L SC32442 U1501
+U 10 1 4A452BEB
+P 3300 1750
+F 0 "U1501" H 3300 1650 50  0000 C CNN
+F 1 "SC32442" H 3300 1850 50  0000 C CNN
+	10   3300 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L SC32442 U1501
+U 12 1 4A452BD1
+P 3300 3100
+F 0 "U1501" H 3300 3000 50  0000 C CNN
+F 1 "SC32442" H 3300 3200 50  0000 C CNN
+	12   3300 3100
+	1    0    0    1   
 $EndComp
 $Comp
 L SC32442 U1501

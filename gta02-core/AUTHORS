@@ -1,8 +1,10 @@
 Dave Ball <openmoko@daveball.org.uk>
 
   bt.sch
+  cpu.sch
   components/aat1275irn.lib
   components/k4m51323pe.lib
+  componants/ht110.lib
   components/lis302dl.lib
   components/pcf50633-04-n3.lib
   components/sc32442.lib

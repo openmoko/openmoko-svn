@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 26 Jun 2009 22:11:25 BST
+EESchema Schematic File Version 2  date Fri 26 Jun 2009 22:14:42 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -158,7 +158,6 @@ Text GLabel 10800 2850 0    60   Input ~ 0
 VIBRATOR_ON
 NoConn ~ 5850 7700
 NoConn ~ 5850 7600
-NoConn ~ 5850 7550
 NoConn ~ 5850 7500
 NoConn ~ 5850 7400
 NoConn ~ 5850 6900

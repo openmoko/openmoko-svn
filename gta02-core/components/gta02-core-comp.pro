@@ -1,4 +1,4 @@
-update=Fri 19 Jun 2009 08:59:50 WEST
+update=Fri 26 Jun 2009 23:05:13 BST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -146,3 +146,4 @@ LibName38=./btp-03ja4g.lib
 LibName39=./gta02_power.lib
 LibName40=./upg2012tb.lib
 LibName41=./zxct1009.lib
+LibName42=./ht110.lib
