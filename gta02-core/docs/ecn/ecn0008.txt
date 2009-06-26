@@ -1,7 +1,14 @@
 Remove external GPS antenna connector and circuit (CON7602)
 
 
-To do:
-- components to remove (includes antenna switch)
-- simplification of supply voltage circuit
-- readjust antenna-side components of RF filter
+Changes to implement in order to remove the external GPS antenna:
+
+- Remove U7606 and C7620
+- Merge C7601 and C7630 into a single capacitor, or remove them completely
+- Remove U7605, R7620, C7623, R7613, R7614, C7629, C7628 (external
+  antenna power sense)
+- Remove R7615, Q7602 and R7617. Connect R7610 to LNA_AVDD.
+
+
+
+Author: Alvaro Lopes <alvieboy@alvie.com>
