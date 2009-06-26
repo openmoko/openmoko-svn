@@ -1,10 +1,13 @@
 Remove Glamo (U1801)
 
+Changes:
+- Removed Glamo (U1801) and related passives
+- LCM pixel data reassigned directly to screen
+- LCM controller SPI moved to GPIO (GPG-5-7)
+- LCD_xRES signal moved to GPD9
+- LP Filters for LCM interface rearranged for better organization
 
 To do:
-- components to remove
-- reassign LCM pixel data (check voltage domain !)
-- reassign LCM controller SPI (check voltage domain !)
 - reassign SD/MMC
 - move WLAN to SPI
 - software impact of LCM pixel change on kernel

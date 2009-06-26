@@ -13,6 +13,25 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 5850 8000
+NoConn ~ 5850 7900
+NoConn ~ 5850 7800
+NoConn ~ 5850 7700
+NoConn ~ 5850 7600
+NoConn ~ 5850 7550
+NoConn ~ 5850 7500
+NoConn ~ 5850 7400
+NoConn ~ 5850 6900
+NoConn ~ 5850 6800
+NoConn ~ 5850 6700
+NoConn ~ 5850 6600
+NoConn ~ 5850 6400
+NoConn ~ 5850 6300
+NoConn ~ 5850 6200
+NoConn ~ 5850 6100
+NoConn ~ 5850 6000
+NoConn ~ 5850 5900
+NoConn ~ 5850 5800
 Text Notes 1700 1700 0    200  ~
 I/O
 NoConn ~ 10800 2950

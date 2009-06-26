@@ -13,6 +13,10 @@ Items to remove:
 Items to add:
 - NC pullup resistor to second interrupt (INT2) of remaining sensor
 
+Changes:
+- Moved CS signal of remaining sensor to GPG0
+- Connected INT2 of remaining sensor to GPG8 (formerly INT1 of other sensor)
+
 To do:
 - why the upper ?
 - connect both interrupts (motivation)
