@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu Jun 25 07:00:01 2009
+EESchema Schematic File Version 2  date Fr 26 Jun 2009 10:55:26 CDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 9 9
+Sheet 10 10
 Title ""
 Date ""
 Rev ""
@@ -13,8 +13,18 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 1400 1450 0    200  ~ 40
-USB
+Wire Wire Line
+	11150 1400 11150 1450
+Wire Wire Line
+	10350 1400 11150 1400
+Wire Wire Line
+	10350 1550 11600 1550
+Wire Wire Line
+	11600 1750 11400 1750
+Wire Wire Line
+	11400 1750 11400 2500
+Wire Wire Line
+	11400 2500 9900 2500
 Connection ~ 10250 3550
 Wire Wire Line
 	10250 4550 10250 3550
@@ -35,8 +45,6 @@ Wire Wire Line
 	5050 3700 5050 4500
 Wire Wire Line
 	4500 1650 4500 1450
-Wire Wire Line
-	11850 2200 9900 2200
 Wire Wire Line
 	11850 2800 11500 2800
 Wire Wire Line
@@ -231,8 +239,6 @@ Wire Wire Line
 Wire Wire Line
 	11500 4000 12100 4000
 Wire Wire Line
-	9900 2500 11850 2500
-Wire Wire Line
 	4500 3250 4500 2950
 Wire Wire Line
 	5050 4500 4850 4500
@@ -265,6 +271,25 @@ Wire Wire Line
 Wire Wire Line
 	11900 3350 11900 3550
 Connection ~ 11900 3550
+Wire Wire Line
+	11150 1450 11600 1450
+Wire Wire Line
+	9900 2200 11300 2200
+Wire Wire Line
+	11300 2200 11300 1650
+Wire Wire Line
+	11300 1650 11600 1650
+$Comp
+L SC32442 U?
+U 11 1 4A44EBED
+P 13500 1450
+F 0 "U?" H 13500 1350 50  0000 C CNN
+F 1 "SC32442" H 13500 1550 50  0000 C CNN
+	11   13500 1450
+	-1   0    0    -1  
+$EndComp
+Text Notes 1400 1450 0    200  ~ 40
+USB
 $Comp
 L TST TP4904
 U 1 1 4A3CFF0D
@@ -377,10 +402,10 @@ F 3 "http://www.kmax.com.tw/doc/07_KHB_Series.pdf" H 9550 3550 60  0001 C CNN
 	1    9550 3550
 	1    0    0    -1  
 $EndComp
-Text GLabel 11850 2200 2    60   BiDi ~ 0
-USB_D-
-Text GLabel 11850 2500 2    60   BiDi ~ 0
-USB_D+
+Text GLabel 10350 1400 0    60   BiDi ~ 0
+DN
+Text GLabel 10350 1550 0    60   BiDi ~ 0
+DP
 $Comp
 L R_US R4915
 U 1 1 4A3C5874
