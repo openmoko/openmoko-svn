@@ -20,6 +20,7 @@ gta02_wlan_s		CON7901	Rene
 ht110			LED1502	Dave
 ht210			LED1501	Alvaro	Werner	Dave	Rene
 it3205be		X7601	Rene	Werner
+isc5804at2		Q1502	Dave
 jack_4p			JK4401	Rene	Werner
 k4m51323pe		U2201	Dave	Werner	Alvaro	Rene	<1>
 lis302dl		U7801	Dave	Werner	Alvaro	Rene
