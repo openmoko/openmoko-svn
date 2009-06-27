@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 27 Jun 2009 11:02:44 BST
+EESchema Schematic File Version 2  date Sat 27 Jun 2009 11:18:50 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L FLASH_1V8 #PWR?
+U 1 1 4A45F187
+P 10050 2800
+F 0 "#PWR?" H 10050 2700 50  0001 C CNN
+F 1 "FLASH_1V8" H 10050 2950 50  0000 C CNN
+	1    10050 2800
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
 	5850 4100 4550 4100
 Wire Wire Line
@@ -443,7 +452,7 @@ F 1 "GND" H 4550 4830 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C1507
 U 1 1 4A45EC17
 P 4550 4500
 F 0 "C1507" H 4600 4600 50  0000 L CNN
@@ -638,24 +647,6 @@ P 11200 3850
 F 0 "#PWR?" H 11200 3750 50  0001 C CNN
 F 1 "SDRAM_1V8" H 11200 4000 50  0000 C CNN
 	1    11200 3850
-	1    0    0    -1  
-$EndComp
-$Comp
-L SDRAM_1V8 #PWR?
-U 1 1 4A45E651
-P 10050 2800
-F 0 "#PWR?" H 10050 2700 50  0001 C CNN
-F 1 "SDRAM_1V8" H 10050 2950 50  0000 C CNN
-	1    10050 2800
-	1    0    0    -1  
-$EndComp
-$Comp
-L SDRAM_1V8 #PWR?
-U 1 1 4A45E61C
-P 10050 2800
-F 0 "#PWR?" H 10050 2700 50  0001 C CNN
-F 1 "SDRAM_1V8" H 10050 2950 50  0000 C CNN
-	1    10050 2800
 	1    0    0    -1  
 $EndComp
 $Comp
