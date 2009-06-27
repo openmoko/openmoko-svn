@@ -83,6 +83,11 @@ D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 S: gta02_wlan_s
 D: http://www.panasonic-electric-works.it/catalogues/downloads/connectors/ds_65306_0000_en_axk5_6f.pdf
 
+# side mount LED
+S: ht110
+A: led
+D: http://www.harvatek-intl.com/web/content/download.asp?fx=54
+
 # Bi-color LED
 S: ht210
 A: dual-led
