@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 26 Jun 2009 22:14:42 BST
+EESchema Schematic File Version 2  date Sat 27 Jun 2009 09:56:59 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -171,7 +171,7 @@ NoConn ~ 5850 6100
 NoConn ~ 5850 6000
 NoConn ~ 5850 5900
 NoConn ~ 5850 5800
-Text Notes 1700 1700 0    200  ~ 0
+Text Notes 1700 1700 0    200  ~ 40
 I/O
 $Comp
 L GND #PWR?

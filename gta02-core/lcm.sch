@@ -1,6 +1,6 @@
-EESchema Schematic File Version 1
-LIBS:power,device,conn,linear,regul,74xx,cmos4000,adc-dac,memory,xilinx,special,microcontrollers,dsp,microchip,analog_switches,motorola,texas,intel,audio,interface,digital-audio,philips,display,cypress,siliconi,contrib,valves,./lcm.cache
-EELAYER 23  0
+EESchema Schematic File Version 2  date Sat 27 Jun 2009 09:57:11 BST
+LIBS:power,device,conn,gta02-core
+EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
 Sheet 2 10
@@ -18,7 +18,7 @@ NoConn ~ 3400 3550
 NoConn ~ 3400 3450
 NoConn ~ 3400 2750
 NoConn ~ 3400 2650
-Text Label 3700 4350 0    60   ~
+Text Label 3700 4350 0    60   ~ 0
 LCD_xRES
 Wire Wire Line
 	3400 4350 4200 4350
@@ -408,15 +408,15 @@ Wire Wire Line
 	5700 7150 4400 7150
 Entry Wire Line
 	4200 4350 4300 4450
-Text Label 3750 5950 0    60   ~
+Text Label 3750 5950 0    60   ~ 0
 LCD_SCL
-Text Label 3750 5850 0    60   ~
+Text Label 3750 5850 0    60   ~ 0
 LCD_DIN
-Text Label 3750 5750 0    60   ~
+Text Label 3750 5750 0    60   ~ 0
 LCD_xCS
-Text Label 4400 7250 0    60   ~
+Text Label 4400 7250 0    60   ~ 0
 LCD_SCL
-Text Label 4400 7150 0    60   ~
+Text Label 4400 7150 0    60   ~ 0
 LCD_DIN
 Entry Wire Line
 	4300 7050 4400 7150
@@ -428,17 +428,17 @@ Entry Wire Line
 	4200 5950 4300 6050
 Entry Wire Line
 	4200 5750 4300 5850
-Text Label 3950 4950 0    60   ~
+Text Label 3950 4950 0    60   ~ 0
 VD23
-Text Label 3950 4850 0    60   ~
+Text Label 3950 4850 0    60   ~ 0
 VD22
-Text Label 3950 4750 0    60   ~
+Text Label 3950 4750 0    60   ~ 0
 VD21
-Text Label 3950 4650 0    60   ~
+Text Label 3950 4650 0    60   ~ 0
 VD20
-Text Label 3950 4550 0    60   ~
+Text Label 3950 4550 0    60   ~ 0
 VD19
-Text Label 3950 4450 0    60   ~
+Text Label 3950 4450 0    60   ~ 0
 VD18
 Entry Wire Line
 	4200 4950 4300 5050
@@ -452,13 +452,13 @@ Entry Wire Line
 	4200 4550 4300 4650
 Entry Wire Line
 	4200 4450 4300 4550
-Text Notes 950  1050 0    200  ~
+Text Notes 950  1050 0    200  ~ 40
 LCM
-Text Label 4400 7450 0    60   ~
+Text Label 4400 7450 0    60   ~ 0
 LDEN
 Entry Wire Line
 	4300 7350 4400 7450
-Text Label 4400 7350 0    60   ~
+Text Label 4400 7350 0    60   ~ 0
 VCLK
 Entry Wire Line
 	4300 7250 4400 7350
@@ -467,45 +467,45 @@ NoConn ~ 7350 5300
 NoConn ~ 7350 5200
 NoConn ~ 7350 5100
 NoConn ~ 7350 5000
-Text Label 14850 7950 0    60   ~
+Text Label 14850 7950 0    60   ~ 0
 VD23
-Text Label 14850 7850 0    60   ~
+Text Label 14850 7850 0    60   ~ 0
 VD22
-Text Label 14850 7750 0    60   ~
+Text Label 14850 7750 0    60   ~ 0
 VD21
-Text Label 14850 7650 0    60   ~
+Text Label 14850 7650 0    60   ~ 0
 VD20
-Text Label 14850 6650 0    60   ~
+Text Label 14850 6650 0    60   ~ 0
 VD19
-Text Label 14850 6550 0    60   ~
+Text Label 14850 6550 0    60   ~ 0
 VD18
-Text Label 14850 6450 0    60   ~
+Text Label 14850 6450 0    60   ~ 0
 VD15
-Text Label 14850 6350 0    60   ~
+Text Label 14850 6350 0    60   ~ 0
 VD14
-Text Label 14900 5300 0    60   ~
+Text Label 14900 5300 0    60   ~ 0
 VD13
-Text Label 14900 5200 0    60   ~
+Text Label 14900 5200 0    60   ~ 0
 VD12
-Text Label 14900 5100 0    60   ~
+Text Label 14900 5100 0    60   ~ 0
 VD11
-Text Label 14900 5000 0    60   ~
+Text Label 14900 5000 0    60   ~ 0
 VD10
-Text Label 14900 4000 0    60   ~
+Text Label 14900 4000 0    60   ~ 0
 VD7
-Text Label 14900 3900 0    60   ~
+Text Label 14900 3900 0    60   ~ 0
 VD6
-Text Label 14900 3800 0    60   ~
+Text Label 14900 3800 0    60   ~ 0
 VD5
-Text Label 14900 3700 0    60   ~
+Text Label 14900 3700 0    60   ~ 0
 VD4
-Text Label 14900 2700 0    60   ~
+Text Label 14900 2700 0    60   ~ 0
 VD3
-Text Label 14900 2600 0    60   ~
+Text Label 14900 2600 0    60   ~ 0
 VD2
-Text Label 14750 2500 0    60   ~
+Text Label 14750 2500 0    60   ~ 0
 VLINE
-Text Label 14750 2400 0    60   ~
+Text Label 14750 2400 0    60   ~ 0
 VFRAME
 Entry Wire Line
 	15150 5300 15250 5400
@@ -551,8 +551,8 @@ $Comp
 L FA2012-KR40PAA U6007
 U 1 1 4A404686
 P 6100 7300
-F 0 "U6007" H 6100 7600 60  0000 C C
-F 1 "FA2012-KR40PAA" H 5700 7000 60  0000 C C
+F 0 "U6007" H 6100 7600 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 5700 7000 60  0000 C CNN
 	1    6100 7300
 	1    0    0    -1  
 $EndComp
@@ -560,8 +560,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A404687
 P 8800 10450
-F 0 "#PWR?" H 8800 10450 30  0001 C C
-F 1 "GND" H 8800 10380 30  0001 C C
+F 0 "#PWR?" H 8800 10450 30  0001 C CNN
+F 1 "GND" H 8800 10380 30  0001 C CNN
 	1    8800 10450
 	1    0    0    -1  
 $EndComp
@@ -569,8 +569,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A40437C
 P 14050 8650
-F 0 "#PWR?" H 14050 8650 30  0001 C C
-F 1 "GND" H 14050 8580 30  0001 C C
+F 0 "#PWR?" H 14050 8650 30  0001 C CNN
+F 1 "GND" H 14050 8580 30  0001 C CNN
 	1    14050 8650
 	1    0    0    -1  
 $EndComp
@@ -578,8 +578,8 @@ $Comp
 L FA2012-KR40PAA U6008
 U 1 1 4A40437B
 P 14050 7800
-F 0 "U6008" H 14050 8100 60  0000 C C
-F 1 "FA2012-KR40PAA" H 13650 7500 60  0000 C C
+F 0 "U6008" H 14050 8100 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 13650 7500 60  0000 C CNN
 	1    14050 7800
 	-1   0    0    -1  
 $EndComp
@@ -587,8 +587,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A4042FC
 P 14050 7350
-F 0 "#PWR?" H 14050 7350 30  0001 C C
-F 1 "GND" H 14050 7280 30  0001 C C
+F 0 "#PWR?" H 14050 7350 30  0001 C CNN
+F 1 "GND" H 14050 7280 30  0001 C CNN
 	1    14050 7350
 	1    0    0    -1  
 $EndComp
@@ -596,8 +596,8 @@ $Comp
 L FA2012-KR40PAA U6009
 U 1 1 4A4042FB
 P 14050 6500
-F 0 "U6009" H 14050 6800 60  0000 C C
-F 1 "FA2012-KR40PAA" H 13650 6200 60  0000 C C
+F 0 "U6009" H 14050 6800 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 13650 6200 60  0000 C CNN
 	1    14050 6500
 	-1   0    0    -1  
 $EndComp
@@ -605,8 +605,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A4042C6
 P 14050 6000
-F 0 "#PWR?" H 14050 6000 30  0001 C C
-F 1 "GND" H 14050 5930 30  0001 C C
+F 0 "#PWR?" H 14050 6000 30  0001 C CNN
+F 1 "GND" H 14050 5930 30  0001 C CNN
 	1    14050 6000
 	1    0    0    -1  
 $EndComp
@@ -614,8 +614,8 @@ $Comp
 L FA2012-KR40PAA U6010
 U 1 1 4A4042C5
 P 14050 5150
-F 0 "U6010" H 14050 5450 60  0000 C C
-F 1 "FA2012-KR40PAA" H 13650 4850 60  0000 C C
+F 0 "U6010" H 14050 5450 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 13650 4850 60  0000 C CNN
 	1    14050 5150
 	-1   0    0    -1  
 $EndComp
@@ -623,8 +623,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A40423F
 P 14050 4700
-F 0 "#PWR?" H 14050 4700 30  0001 C C
-F 1 "GND" H 14050 4630 30  0001 C C
+F 0 "#PWR?" H 14050 4700 30  0001 C CNN
+F 1 "GND" H 14050 4630 30  0001 C CNN
 	1    14050 4700
 	1    0    0    -1  
 $EndComp
@@ -632,8 +632,8 @@ $Comp
 L FA2012-KR40PAA U6011
 U 1 1 4A40423E
 P 14050 3850
-F 0 "U6011" H 14050 4150 60  0000 C C
-F 1 "FA2012-KR40PAA" H 13650 3550 60  0000 C C
+F 0 "U6011" H 14050 4150 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 13650 3550 60  0000 C CNN
 	1    14050 3850
 	-1   0    0    -1  
 $EndComp
@@ -641,8 +641,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A404188
 P 14050 3400
-F 0 "#PWR?" H 14050 3400 30  0001 C C
-F 1 "GND" H 14050 3330 30  0001 C C
+F 0 "#PWR?" H 14050 3400 30  0001 C CNN
+F 1 "GND" H 14050 3330 30  0001 C CNN
 	1    14050 3400
 	1    0    0    -1  
 $EndComp
@@ -650,8 +650,8 @@ $Comp
 L FA2012-KR40PAA U6011
 U 1 1 4A404145
 P 14050 2550
-F 0 "U6011" H 14050 2850 60  0000 C C
-F 1 "FA2012-KR40PAA" H 13650 2250 60  0000 C C
+F 0 "U6011" H 14050 2850 60  0000 C CNN
+F 1 "FA2012-KR40PAA" H 13650 2250 60  0000 C CNN
 	1    14050 2550
 	-1   0    0    -1  
 $EndComp
@@ -659,8 +659,8 @@ $Comp
 L LCM_3V #PWR?
 U 1 1 4A403E4B
 P 6550 2400
-F 0 "#PWR?" H 6550 2300 50  0001 C C
-F 1 "LCM_3V" H 6550 2550 50  0000 C C
+F 0 "#PWR?" H 6550 2300 50  0001 C CNN
+F 1 "LCM_3V" H 6550 2550 50  0000 C CNN
 	1    6550 2400
 	1    0    0    -1  
 $EndComp
@@ -668,8 +668,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A403DB3
 P 6550 3600
-F 0 "#PWR?" H 6550 3600 30  0001 C C
-F 1 "GND" H 6550 3530 30  0001 C C
+F 0 "#PWR?" H 6550 3600 30  0001 C CNN
+F 1 "GND" H 6550 3530 30  0001 C CNN
 	1    6550 3600
 	1    0    0    -1  
 $EndComp
@@ -677,8 +677,8 @@ $Comp
 L R_US R6002
 U 1 1 4A403D7C
 P 9250 2600
-F 0 "R6002" H 9250 2700 50  0000 C C
-F 1 "0R" H 9250 2500 50  0000 C C
+F 0 "R6002" H 9250 2700 50  0000 C CNN
+F 1 "0R" H 9250 2500 50  0000 C CNN
 	1    9250 2600
 	1    0    0    -1  
 $EndComp
@@ -686,8 +686,8 @@ $Comp
 L C C6001
 U 1 1 4A403CB0
 P 8500 3000
-F 0 "C6001" H 8550 3100 50  0000 L C
-F 1 "47p" H 8550 2900 50  0000 L C
+F 0 "C6001" H 8550 3100 50  0000 L CNN
+F 1 "47p" H 8550 2900 50  0000 L CNN
 	1    8500 3000
 	1    0    0    -1  
 $EndComp
@@ -695,8 +695,8 @@ $Comp
 L C C6002
 U 1 1 4A403CA9
 P 8000 3000
-F 0 "C6002" H 8050 3100 50  0000 L C
-F 1 "100n" H 8050 2900 50  0000 L C
+F 0 "C6002" H 8050 3100 50  0000 L CNN
+F 1 "100n" H 8050 2900 50  0000 L CNN
 	1    8000 3000
 	1    0    0    -1  
 $EndComp
@@ -704,8 +704,8 @@ $Comp
 L C C6006
 U 1 1 4A403CA7
 P 7550 3000
-F 0 "C6006" H 7600 3100 50  0000 L C
-F 1 "47p" H 7600 2900 50  0000 L C
+F 0 "C6006" H 7600 3100 50  0000 L CNN
+F 1 "47p" H 7600 2900 50  0000 L CNN
 	1    7550 3000
 	1    0    0    -1  
 $EndComp
@@ -713,8 +713,8 @@ $Comp
 L C C6003
 U 1 1 4A403CA3
 P 7050 3000
-F 0 "C6003" H 7100 3100 50  0000 L C
-F 1 "100n" H 7100 2900 50  0000 L C
+F 0 "C6003" H 7100 3100 50  0000 L CNN
+F 1 "100n" H 7100 2900 50  0000 L CNN
 	1    7050 3000
 	1    0    0    -1  
 $EndComp
@@ -722,8 +722,8 @@ $Comp
 L C C6007
 U 1 1 4A403C8C
 P 6550 3000
-F 0 "C6007" H 6600 3100 50  0000 L C
-F 1 "10u" H 6600 2900 50  0000 L C
+F 0 "C6007" H 6600 3100 50  0000 L CNN
+F 1 "10u" H 6600 2900 50  0000 L CNN
 	1    6550 3000
 	1    0    0    -1  
 $EndComp
@@ -731,12 +731,12 @@ $Comp
 L GND #PWR?
 U 1 1 4A403BA1
 P 9800 5200
-F 0 "#PWR?" H 9800 5200 30  0001 C C
-F 1 "GND" H 9800 5130 30  0001 C C
+F 0 "#PWR?" H 9800 5200 30  0001 C CNN
+F 1 "GND" H 9800 5130 30  0001 C CNN
 	1    9800 5200
 	1    0    0    -1  
 $EndComp
-Text Label 4400 4300 0    60   ~
+Text Label 4400 4300 0    60   ~ 0
 LCD_xRES
 Entry Wire Line
 	4300 4200 4400 4300
@@ -744,8 +744,8 @@ $Comp
 L GND #PWR?
 U 1 1 4A403A8B
 P 8950 5000
-F 0 "#PWR?" H 8950 5000 30  0001 C C
-F 1 "GND" H 8950 4930 30  0001 C C
+F 0 "#PWR?" H 8950 5000 30  0001 C CNN
+F 1 "GND" H 8950 4930 30  0001 C CNN
 	1    8950 5000
 	1    0    0    -1  
 $EndComp
@@ -753,34 +753,34 @@ $Comp
 L R_US R6004
 U 1 1 4A403A57
 P 8950 4550
-F 0 "R6004" H 8950 4450 50  0000 C C
-F 1 "100k" H 8950 4650 50  0000 C C
+F 0 "R6004" H 8950 4450 50  0000 C CNN
+F 1 "100k" H 8950 4650 50  0000 C CNN
 	1    8950 4550
 	0    1    1    0   
 $EndComp
-Text Label 4400 3900 0    60   ~
+Text Label 4400 3900 0    60   ~ 0
 LCD_xCS
 $Comp
 L R_US R6001
 U 1 1 4A403949
 P 8800 3900
-F 0 "R6001" H 8800 4000 50  0000 C C
-F 1 "0R" H 8800 3800 50  0000 C C
+F 0 "R6001" H 8800 4000 50  0000 C CNN
+F 1 "0R" H 8800 3800 50  0000 C CNN
 	1    8800 3900
 	1    0    0    -1  
 $EndComp
 Entry Wire Line
 	4300 3800 4400 3900
-Text Label 9000 5700 0    60   ~
+Text Label 9000 5700 0    60   ~ 0
 XP
 NoConn ~ 10000 3700
-Text Label 9350 3500 0    60   ~
+Text Label 9350 3500 0    60   ~ 0
 YP
-Text Label 9350 3200 0    60   ~
+Text Label 9350 3200 0    60   ~ 0
 XP
-Text Label 9350 3400 0    60   ~
+Text Label 9350 3400 0    60   ~ 0
 XM
-Text Label 9350 3300 0    60   ~
+Text Label 9350 3300 0    60   ~ 0
 YM
 Entry Wire Line
 	9250 3100 9350 3200
@@ -790,11 +790,11 @@ Entry Wire Line
 	9250 3300 9350 3400
 Entry Wire Line
 	9250 3400 9350 3500
-Text Label 9000 5600 0    60   ~
+Text Label 9000 5600 0    60   ~ 0
 XM
-Text Label 9000 5500 0    60   ~
+Text Label 9000 5500 0    60   ~ 0
 YP
-Text Label 9000 5400 0    60   ~
+Text Label 9000 5400 0    60   ~ 0
 YM
 Entry Wire Line
 	9150 5700 9250 5800
@@ -808,20 +808,20 @@ $Comp
 L SC32442 U1501
 U 6 1 4A403127
 P 5450 5250
-F 0 "U1501" H 5450 5150 50  0000 C C
-F 1 "SC32442" H 5450 5350 50  0000 C C
+F 0 "U1501" H 5450 5150 50  0000 C CNN
+F 1 "SC32442" H 5450 5350 50  0000 C CNN
 	6    5450 5250
 	1    0    0    -1  
 $EndComp
-Text Label 3900 5550 0    60   ~
+Text Label 3900 5550 0    60   ~ 0
 LDEN
-Text Label 3800 5450 0    60   ~
+Text Label 3800 5450 0    60   ~ 0
 VFRAME
-Text Label 3850 5350 0    60   ~
+Text Label 3850 5350 0    60   ~ 0
 VLINE
-Text Label 3950 5250 0    60   ~
+Text Label 3950 5250 0    60   ~ 0
 VCLK
-Text Label 3950 5150 0    60   ~
+Text Label 3950 5150 0    60   ~ 0
 LEND
 Entry Wire Line
 	4200 5550 4300 5650
@@ -833,29 +833,29 @@ Entry Wire Line
 	4200 5250 4300 5350
 Entry Wire Line
 	4200 5150 4300 5250
-Text Label 3950 4150 0    60   ~
+Text Label 3950 4150 0    60   ~ 0
 VD15
-Text Label 3950 4050 0    60   ~
+Text Label 3950 4050 0    60   ~ 0
 VD14
-Text Label 3950 3950 0    60   ~
+Text Label 3950 3950 0    60   ~ 0
 VD13
-Text Label 3950 3850 0    60   ~
+Text Label 3950 3850 0    60   ~ 0
 VD12
-Text Label 3950 3750 0    60   ~
+Text Label 3950 3750 0    60   ~ 0
 VD11
-Text Label 3950 3650 0    60   ~
+Text Label 3950 3650 0    60   ~ 0
 VD10
-Text Label 3950 3350 0    60   ~
+Text Label 3950 3350 0    60   ~ 0
 VD7
-Text Label 3950 3250 0    60   ~
+Text Label 3950 3250 0    60   ~ 0
 VD6
-Text Label 3950 3150 0    60   ~
+Text Label 3950 3150 0    60   ~ 0
 VD5
-Text Label 3950 3050 0    60   ~
+Text Label 3950 3050 0    60   ~ 0
 VD4
-Text Label 3950 2950 0    60   ~
+Text Label 3950 2950 0    60   ~ 0
 VD3
-Text Label 3950 2850 0    60   ~
+Text Label 3950 2850 0    60   ~ 0
 VD2
 Entry Wire Line
 	4200 4150 4300 4250
@@ -885,8 +885,8 @@ $Comp
 L TD028TTEC1 CON6001
 U 1 1 4A4024AF
 P 10650 3800
-F 0 "CON6001" H 10650 5200 60  0000 C C
-F 1 "TD028TTEC1" H 10650 2400 60  0000 C C
+F 0 "CON6001" H 10650 5200 60  0000 C CNN
+F 1 "TD028TTEC1" H 10650 2400 60  0000 C CNN
 	1    10650 3800
 	1    0    0    -1  
 $EndComp
@@ -894,8 +894,8 @@ $Comp
 L SC32442 U1501
 U 7 1 4A0CAA1E
 P 1500 4250
-F 0 "U1501" H 1500 4150 50  0000 C C
-F 1 "SC32442" H 1500 4350 50  0000 C C
+F 0 "U1501" H 1500 4150 50  0000 C CNN
+F 1 "SC32442" H 1500 4350 50  0000 C CNN
 	7    1500 4250
 	1    0    0    -1  
 $EndComp
