@@ -1,0 +1,735 @@
+EESchema Schematic File Version 2  date Sat 27 Jun 2009 11:02:44 BST
+LIBS:power,device,conn,gta02-core
+EELAYER 24  0
+EELAYER END
+$Descr A3 16535 11700
+Sheet 2 11
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Wire Wire Line
+	5850 4100 4550 4100
+Wire Wire Line
+	5850 5100 4150 5100
+Connection ~ 4150 5100
+Wire Wire Line
+	4150 4900 4150 5300
+Connection ~ 5650 4900
+Wire Wire Line
+	5850 4900 5650 4900
+Wire Wire Line
+	5650 5100 5650 4800
+Wire Wire Line
+	5650 4800 5850 4800
+Wire Wire Line
+	4550 4700 4550 4900
+Connection ~ 4550 4100
+Wire Wire Line
+	5050 4350 5050 4550
+Wire Wire Line
+	5050 4550 5850 4550
+Connection ~ 5650 4450
+Wire Wire Line
+	5850 4450 5450 4450
+Connection ~ 9400 1900
+Wire Wire Line
+	9400 1700 9400 3200
+Connection ~ 5900 1900
+Connection ~ 9100 1900
+Connection ~ 9400 3000
+Wire Wire Line
+	9350 1900 8050 1900
+Connection ~ 8400 1900
+Wire Wire Line
+	9100 1900 9100 2100
+Wire Wire Line
+	9100 2500 9100 2700
+Wire Wire Line
+	8750 1900 8750 2100
+Wire Wire Line
+	8750 2500 8750 2700
+Wire Wire Line
+	8400 1900 8400 2100
+Wire Wire Line
+	8400 2500 8400 2700
+Wire Wire Line
+	8050 1900 8050 2100
+Wire Wire Line
+	8050 2500 8050 2700
+Connection ~ 5650 3000
+Wire Wire Line
+	5650 1700 5650 4000
+Wire Wire Line
+	6700 3000 6700 3200
+Wire Wire Line
+	5650 3900 5850 3900
+Wire Wire Line
+	5650 4000 5850 4000
+Connection ~ 9000 3000
+Wire Wire Line
+	9000 3200 9000 3000
+Connection ~ 9200 3000
+Wire Wire Line
+	9200 3200 9200 3000
+Wire Wire Line
+	9400 3000 8800 3000
+Wire Wire Line
+	8800 3000 8800 3200
+Connection ~ 5650 1900
+Wire Wire Line
+	6800 2100 6800 1900
+Connection ~ 6900 3000
+Wire Wire Line
+	6900 3200 6900 3000
+Connection ~ 7100 3000
+Wire Wire Line
+	7100 3200 7100 3000
+Connection ~ 7300 3000
+Wire Wire Line
+	7300 3200 7300 3000
+Connection ~ 7500 3000
+Wire Wire Line
+	7500 3000 7500 3200
+Connection ~ 7700 3000
+Wire Wire Line
+	7700 3200 7700 3000
+Connection ~ 7900 3000
+Wire Wire Line
+	7900 3200 7900 3000
+Connection ~ 8100 3000
+Wire Wire Line
+	8100 3200 8100 3000
+Wire Wire Line
+	8300 3200 8300 3000
+Wire Wire Line
+	7600 3000 7600 3200
+Connection ~ 11200 4150
+Wire Wire Line
+	11000 4150 11200 4150
+Connection ~ 11200 4350
+Wire Wire Line
+	11000 4350 11200 4350
+Connection ~ 11200 4550
+Wire Wire Line
+	11000 4550 11200 4550
+Connection ~ 11200 4750
+Wire Wire Line
+	11000 4750 11200 4750
+Connection ~ 11200 4950
+Wire Wire Line
+	11000 4950 11200 4950
+Connection ~ 10050 3000
+Wire Wire Line
+	10050 2800 10050 3200
+Wire Wire Line
+	10050 3000 9850 3000
+Wire Wire Line
+	9850 3000 9850 3200
+Connection ~ 11200 6500
+Wire Wire Line
+	11000 6500 11200 6500
+Connection ~ 11200 6300
+Wire Wire Line
+	11000 6300 11200 6300
+Wire Wire Line
+	11000 6600 11200 6600
+Wire Wire Line
+	11200 6600 11200 6100
+Connection ~ 11200 5900
+Wire Wire Line
+	11000 5900 11200 5900
+Connection ~ 11200 5700
+Wire Wire Line
+	11000 5700 11200 5700
+Connection ~ 5650 6350
+Wire Wire Line
+	5450 6550 5450 6350
+Wire Wire Line
+	5450 6350 5850 6350
+Wire Wire Line
+	5850 6550 5650 6550
+Wire Wire Line
+	5650 6550 5650 6350
+Connection ~ 5650 5700
+Wire Wire Line
+	5650 5700 5850 5700
+Connection ~ 5650 5900
+Wire Wire Line
+	5650 5900 5850 5900
+Wire Wire Line
+	5850 6100 5650 6100
+Wire Wire Line
+	5650 6100 5650 5600
+Wire Wire Line
+	10050 7550 10050 7750
+Wire Wire Line
+	10050 7750 9950 7750
+Connection ~ 9550 7750
+Wire Wire Line
+	9550 7550 9550 7750
+Connection ~ 9350 7750
+Wire Wire Line
+	9350 7550 9350 7750
+Connection ~ 9150 7750
+Wire Wire Line
+	9150 7550 9150 7750
+Connection ~ 8950 7750
+Wire Wire Line
+	8950 7550 8950 7750
+Connection ~ 8750 7750
+Wire Wire Line
+	8750 7550 8750 7750
+Connection ~ 8550 7750
+Wire Wire Line
+	8550 7550 8550 7750
+Connection ~ 8350 7750
+Wire Wire Line
+	8350 7550 8350 7750
+Connection ~ 8150 7750
+Wire Wire Line
+	8150 7550 8150 7750
+Connection ~ 7950 7750
+Wire Wire Line
+	7950 7550 7950 7750
+Connection ~ 7750 7750
+Wire Wire Line
+	7750 7550 7750 7750
+Connection ~ 6550 7750
+Wire Wire Line
+	6550 7950 6550 7550
+Connection ~ 6750 7750
+Wire Wire Line
+	6750 7550 6750 7750
+Connection ~ 6950 7750
+Wire Wire Line
+	6950 7750 6950 7550
+Connection ~ 7150 7750
+Wire Wire Line
+	7150 7550 7150 7750
+Wire Wire Line
+	6550 7750 7250 7750
+Wire Wire Line
+	7250 7750 7250 7550
+Wire Wire Line
+	7050 7550 7050 7750
+Connection ~ 7050 7750
+Wire Wire Line
+	6850 7550 6850 7750
+Connection ~ 6850 7750
+Wire Wire Line
+	6650 7550 6650 7750
+Connection ~ 6650 7750
+Wire Wire Line
+	7650 7750 9650 7750
+Wire Wire Line
+	9650 7750 9650 7550
+Wire Wire Line
+	7850 7550 7850 7750
+Connection ~ 7850 7750
+Wire Wire Line
+	8050 7550 8050 7750
+Connection ~ 8050 7750
+Wire Wire Line
+	8250 7550 8250 7750
+Connection ~ 8250 7750
+Wire Wire Line
+	8450 7550 8450 7750
+Connection ~ 8450 7750
+Wire Wire Line
+	8650 7550 8650 7750
+Connection ~ 8650 7750
+Wire Wire Line
+	8850 7550 8850 7750
+Connection ~ 8850 7750
+Wire Wire Line
+	9050 7550 9050 7750
+Connection ~ 9050 7750
+Wire Wire Line
+	9250 7550 9250 7750
+Connection ~ 9250 7750
+Wire Wire Line
+	9450 7550 9450 7750
+Connection ~ 9450 7750
+Wire Wire Line
+	7650 7950 7650 7550
+Connection ~ 7650 7750
+Wire Wire Line
+	9950 7950 9950 7550
+Connection ~ 9950 7750
+Wire Wire Line
+	5850 6000 5650 6000
+Connection ~ 5650 6000
+Wire Wire Line
+	5850 5800 5650 5800
+Connection ~ 5650 5800
+Wire Wire Line
+	5850 5600 5450 5600
+Wire Wire Line
+	5450 5600 5450 5800
+Connection ~ 5650 5600
+Wire Wire Line
+	5850 6450 5650 6450
+Connection ~ 5650 6450
+Wire Wire Line
+	11200 5600 11200 6000
+Wire Wire Line
+	11200 6000 11000 6000
+Wire Wire Line
+	11000 5800 11200 5800
+Connection ~ 11200 5800
+Wire Wire Line
+	11000 5600 11400 5600
+Wire Wire Line
+	11400 5600 11400 5800
+Connection ~ 11200 5600
+Wire Wire Line
+	11000 6200 11200 6200
+Connection ~ 11200 6200
+Wire Wire Line
+	11000 6400 11200 6400
+Connection ~ 11200 6400
+Wire Wire Line
+	11000 6100 11400 6100
+Wire Wire Line
+	11400 6100 11400 6300
+Connection ~ 11200 6100
+Wire Wire Line
+	9950 3200 9950 3000
+Connection ~ 9950 3000
+Wire Wire Line
+	11200 4050 11000 4050
+Wire Wire Line
+	11000 5050 11200 5050
+Wire Wire Line
+	11000 4850 11200 4850
+Connection ~ 11200 4850
+Wire Wire Line
+	11000 4650 11200 4650
+Connection ~ 11200 4650
+Wire Wire Line
+	11000 4450 11200 4450
+Connection ~ 11200 4450
+Wire Wire Line
+	11000 4250 11200 4250
+Connection ~ 11200 4250
+Wire Wire Line
+	11200 5050 11200 3850
+Connection ~ 11200 4050
+Wire Wire Line
+	8200 3200 8200 3000
+Connection ~ 8200 3000
+Wire Wire Line
+	8000 3200 8000 3000
+Connection ~ 8000 3000
+Wire Wire Line
+	7800 3200 7800 3000
+Connection ~ 7800 3000
+Connection ~ 7600 3000
+Wire Wire Line
+	7400 3200 7400 3000
+Connection ~ 7400 3000
+Wire Wire Line
+	7200 3200 7200 3000
+Connection ~ 7200 3000
+Wire Wire Line
+	7000 3200 7000 3000
+Connection ~ 7000 3000
+Wire Wire Line
+	6800 3200 6800 3000
+Connection ~ 6800 3000
+Connection ~ 6700 3000
+Wire Wire Line
+	6800 2500 6800 2700
+Wire Wire Line
+	6350 1900 6350 2100
+Wire Wire Line
+	6350 2500 6350 2700
+Wire Wire Line
+	5900 1900 5900 2100
+Wire Wire Line
+	5900 2500 5900 2700
+Wire Wire Line
+	9300 3200 9300 3000
+Connection ~ 9300 3000
+Wire Wire Line
+	9100 3200 9100 3000
+Connection ~ 9100 3000
+Wire Wire Line
+	8900 3200 8900 3000
+Connection ~ 8900 3000
+Wire Wire Line
+	8300 3000 5650 3000
+Connection ~ 5650 3900
+Connection ~ 8750 1900
+Wire Wire Line
+	6800 1900 5650 1900
+Connection ~ 6350 1900
+Wire Wire Line
+	5650 4450 5650 4350
+Wire Wire Line
+	5650 4350 5850 4350
+Wire Wire Line
+	5450 4450 5450 4350
+Wire Wire Line
+	5850 5000 5650 5000
+Connection ~ 5650 5000
+Connection ~ 5650 5100
+Wire Wire Line
+	4150 4400 4150 4200
+Wire Wire Line
+	4150 5700 4150 5900
+Wire Wire Line
+	4550 3400 4550 3200
+Wire Wire Line
+	4550 4300 4550 3900
+$Comp
+L IO_3V3 #PWR?
+U 1 1 4A45ED29
+P 4150 4200
+F 0 "#PWR?" H 4150 4100 50  0001 C CNN
+F 1 "IO_3V3" H 4150 4350 50  0000 C CNN
+	1    4150 4200
+	1    0    0    -1  
+$EndComp
+$Comp
+L IO_3V3 #PWR?
+U 1 1 4A45ED26
+P 4550 3200
+F 0 "#PWR?" H 4550 3100 50  0001 C CNN
+F 1 "IO_3V3" H 4550 3350 50  0000 C CNN
+	1    4550 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45EC97
+P 4150 5900
+F 0 "#PWR?" H 4150 5900 30  0001 C CNN
+F 1 "GND" H 4150 5830 30  0001 C CNN
+	1    4150 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1506
+U 1 1 4A45EC96
+P 4150 5500
+F 0 "C1506" H 4200 5600 50  0000 L CNN
+F 1 "100nF" H 4200 5400 50  0000 L CNN
+	1    4150 5500
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R1516
+U 1 1 4A45EC83
+P 4150 4650
+F 0 "R1516" H 4150 4750 50  0000 C CNN
+F 1 "0R" H 4150 4550 50  0000 C CNN
+	1    4150 4650
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45EC18
+P 4550 4900
+F 0 "#PWR?" H 4550 4900 30  0001 C CNN
+F 1 "GND" H 4550 4830 30  0001 C CNN
+	1    4550 4900
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4A45EC17
+P 4550 4500
+F 0 "C1507" H 4600 4600 50  0000 L CNN
+F 1 "100nF" H 4600 4400 50  0000 L CNN
+	1    4550 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R1517
+U 1 1 4A45EBC0
+P 4550 3650
+F 0 "R1517" H 4550 3750 50  0000 C CNN
+F 1 "0R" H 4550 3550 50  0000 C CNN
+	1    4550 3650
+	0    1    1    0   
+$EndComp
+$Comp
+L IO_3V3 #PWR?
+U 1 1 4A45EB89
+P 5050 4350
+F 0 "#PWR?" H 5050 4250 50  0001 C CNN
+F 1 "IO_3V3" H 5050 4500 50  0000 C CNN
+	1    5050 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L STBY_1V2 #PWR?
+U 1 1 4A45EB6B
+P 5450 4350
+F 0 "#PWR?" H 5450 4250 50  0001 C CNN
+F 1 "STBY_1V2" H 5450 4500 50  0000 C CNN
+	1    5450 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L IO_1V8 #PWR?
+U 1 1 4A45E9D9
+P 9400 1700
+F 0 "#PWR?" H 9400 1600 50  0001 C CNN
+F 1 "IO_1V8" H 9400 1850 50  0000 C CNN
+	1    9400 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E994
+P 9100 2700
+F 0 "#PWR?" H 9100 2700 30  0001 C CNN
+F 1 "GND" H 9100 2630 30  0001 C CNN
+	1    9100 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1510
+U 1 1 4A45E993
+P 9100 2300
+F 0 "C1510" H 9150 2400 50  0000 L CNN
+F 1 "1uF" H 9150 2200 50  0000 L CNN
+	1    9100 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E987
+P 8050 2700
+F 0 "#PWR?" H 8050 2700 30  0001 C CNN
+F 1 "GND" H 8050 2630 30  0001 C CNN
+	1    8050 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1502
+U 1 1 4A45E986
+P 8050 2300
+F 0 "C1502" H 8100 2400 50  0000 L CNN
+F 1 "100nF" H 8100 2200 50  0000 L CNN
+	1    8050 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E985
+P 8400 2700
+F 0 "#PWR?" H 8400 2700 30  0001 C CNN
+F 1 "GND" H 8400 2630 30  0001 C CNN
+	1    8400 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1503
+U 1 1 4A45E984
+P 8400 2300
+F 0 "C1503" H 8450 2400 50  0000 L CNN
+F 1 "100nF" H 8450 2200 50  0000 L CNN
+	1    8400 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E983
+P 8750 2700
+F 0 "#PWR?" H 8750 2700 30  0001 C CNN
+F 1 "GND" H 8750 2630 30  0001 C CNN
+	1    8750 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1504
+U 1 1 4A45E982
+P 8750 2300
+F 0 "C1504" H 8800 2400 50  0000 L CNN
+F 1 "100nF" H 8800 2200 50  0000 L CNN
+	1    8750 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L CORE_1V3 #PWR?
+U 1 1 4A45E78F
+P 5650 1700
+F 0 "#PWR?" H 5650 1600 50  0001 C CNN
+F 1 "CORE_1V3" H 5650 1850 50  0000 C CNN
+	1    5650 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E77C
+P 5900 2700
+F 0 "#PWR?" H 5900 2700 30  0001 C CNN
+F 1 "GND" H 5900 2630 30  0001 C CNN
+	1    5900 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1501
+U 1 1 4A45E77B
+P 5900 2300
+F 0 "C1501" H 5950 2400 50  0000 L CNN
+F 1 "100nF" H 5950 2200 50  0000 L CNN
+	1    5900 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E778
+P 6350 2700
+F 0 "#PWR?" H 6350 2700 30  0001 C CNN
+F 1 "GND" H 6350 2630 30  0001 C CNN
+	1    6350 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1508
+U 1 1 4A45E777
+P 6350 2300
+F 0 "C1508" H 6400 2400 50  0000 L CNN
+F 1 "100nF" H 6400 2200 50  0000 L CNN
+	1    6350 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E770
+P 6800 2700
+F 0 "#PWR?" H 6800 2700 30  0001 C CNN
+F 1 "GND" H 6800 2630 30  0001 C CNN
+	1    6800 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1509
+U 1 1 4A45E74C
+P 6800 2300
+F 0 "C1509" H 6850 2400 50  0000 L CNN
+F 1 "1uF" H 6850 2200 50  0000 L CNN
+	1    6800 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A45E657
+P 11200 3850
+F 0 "#PWR?" H 11200 3750 50  0001 C CNN
+F 1 "SDRAM_1V8" H 11200 4000 50  0000 C CNN
+	1    11200 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A45E656
+P 11200 3850
+F 0 "#PWR?" H 11200 3750 50  0001 C CNN
+F 1 "SDRAM_1V8" H 11200 4000 50  0000 C CNN
+	1    11200 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A45E651
+P 10050 2800
+F 0 "#PWR?" H 10050 2700 50  0001 C CNN
+F 1 "SDRAM_1V8" H 10050 2950 50  0000 C CNN
+	1    10050 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L SDRAM_1V8 #PWR?
+U 1 1 4A45E61C
+P 10050 2800
+F 0 "#PWR?" H 10050 2700 50  0001 C CNN
+F 1 "SDRAM_1V8" H 10050 2950 50  0000 C CNN
+	1    10050 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5C8
+P 5450 5800
+F 0 "#PWR?" H 5450 5800 30  0001 C CNN
+F 1 "GND" H 5450 5730 30  0001 C CNN
+	1    5450 5800
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5C6
+P 5450 6550
+F 0 "#PWR?" H 5450 6550 30  0001 C CNN
+F 1 "GND" H 5450 6480 30  0001 C CNN
+	1    5450 6550
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5C2
+P 6550 7950
+F 0 "#PWR?" H 6550 7950 30  0001 C CNN
+F 1 "GND" H 6550 7880 30  0001 C CNN
+	1    6550 7950
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5BF
+P 7650 7950
+F 0 "#PWR?" H 7650 7950 30  0001 C CNN
+F 1 "GND" H 7650 7880 30  0001 C CNN
+	1    7650 7950
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5BB
+P 9950 7950
+F 0 "#PWR?" H 9950 7950 30  0001 C CNN
+F 1 "GND" H 9950 7880 30  0001 C CNN
+	1    9950 7950
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5B5
+P 11400 6300
+F 0 "#PWR?" H 11400 6300 30  0001 C CNN
+F 1 "GND" H 11400 6230 30  0001 C CNN
+	1    11400 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4A45E5B2
+P 11400 5800
+F 0 "#PWR?" H 11400 5800 30  0001 C CNN
+F 1 "GND" H 11400 5730 30  0001 C CNN
+	1    11400 5800
+	1    0    0    -1  
+$EndComp
+Text Notes 1100 1200 0    200  ~ 40
+CPU_POWER
+$Comp
+L SC32442 U1501
+U 16 1 4A45E0E6
+P 8400 5300
+F 0 "U1501" H 8400 5200 50  0000 C CNN
+F 1 "SC32442" H 8400 5400 50  0000 C CNN
+	16   8400 5300
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
