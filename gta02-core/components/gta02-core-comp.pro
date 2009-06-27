@@ -1,4 +1,4 @@
-update=Fri 26 Jun 2009 23:05:13 BST
+update=Sat 27 Jun 2009 17:20:39 BST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -147,3 +147,4 @@ LibName39=./gta02_power.lib
 LibName40=./upg2012tb.lib
 LibName41=./zxct1009.lib
 LibName42=./ht110.lib
+LibName43=debug_con
