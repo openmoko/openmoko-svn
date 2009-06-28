@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 27 Jun 2009 11:18:42 BST
+EESchema Schematic File Version 2  date Sun 28 Jun 2009 23:54:44 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -943,8 +943,8 @@ $Comp
 L R_US R2502
 U 1 1 4A4535FF
 P 5400 1550
-F 0 "R2502" H 5400 1650 50  0000 C CNN
-F 1 "100K" H 5400 1450 50  0000 C CNN
+F 0 "R2502" V 5350 1750 50  0000 C CNN
+F 1 "100K" V 5450 1715 50  0000 C CNN
 	1    5400 1550
 	0    1    1    0   
 $EndComp

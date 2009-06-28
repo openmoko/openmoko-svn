@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sun 28 Jun 2009 21:31:38 BST
+EESchema Schematic File Version 2  date Sun 28 Jun 2009 23:40:24 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -437,8 +437,8 @@ $Comp
 L R_US R1516
 U 1 1 4A45EC83
 P 4150 4650
-F 0 "R1516" H 4150 4750 50  0000 C CNN
-F 1 "0R" H 4150 4550 50  0000 C CNN
+F 0 "R1516" V 4100 4450 50  0000 C CNN
+F 1 "0R" V 4200 4520 50  0000 C CNN
 	1    4150 4650
 	0    1    1    0   
 $EndComp
@@ -464,8 +464,8 @@ $Comp
 L R_US R1517
 U 1 1 4A45EBC0
 P 4550 3650
-F 0 "R1517" H 4550 3750 50  0000 C CNN
-F 1 "0R" H 4550 3550 50  0000 C CNN
+F 0 "R1517" V 4500 3850 50  0000 C CNN
+F 1 "0R" V 4600 3770 50  0000 C CNN
 	1    4550 3650
 	0    1    1    0   
 $EndComp
