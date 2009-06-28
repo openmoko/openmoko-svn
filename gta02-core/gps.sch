@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu Jun 25 06:59:27 2009
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Fri 26 Jun 2009 09:46:01 WEST
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 8 9
+Sheet 9 10
 Title ""
 Date ""
 Rev ""
@@ -13,8 +13,10 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 1250 1450 0    200  ~ 40
-GPS
+Wire Wire Line
+	14650 1400 14650 1200
+Wire Wire Line
+	14650 2100 13950 2100
 Wire Wire Line
 	9200 5850 8600 5850
 Wire Wire Line
@@ -27,7 +29,7 @@ Connection ~ 9000 4900
 Wire Wire Line
 	9000 5100 9000 4900
 Wire Wire Line
-	8400 4900 9150 4900
+	9150 4900 8400 4900
 Connection ~ 8600 4500
 Wire Wire Line
 	8800 4700 8800 4500
@@ -56,7 +58,7 @@ Wire Wire Line
 	15000 6900 15000 7100
 Connection ~ 13950 6900
 Wire Wire Line
-	13950 7900 13950 7500
+	13950 7500 13950 7900
 Wire Wire Line
 	13950 6900 13950 7100
 Wire Wire Line
@@ -67,13 +69,13 @@ Wire Wire Line
 Connection ~ 14300 7700
 Connection ~ 5200 4000
 Wire Wire Line
-	5400 4000 5000 4000
+	5000 4000 5400 4000
 Wire Wire Line
 	5200 4000 5200 3800
 Wire Wire Line
 	5200 3800 5400 3800
 Wire Wire Line
-	5000 3600 5400 3600
+	5400 3600 5000 3600
 Wire Wire Line
 	3650 3700 3650 3500
 Wire Wire Line
@@ -92,7 +94,7 @@ Wire Wire Line
 	8050 9500 7850 9500
 Connection ~ 10800 8500
 Wire Wire Line
-	10800 8700 10800 8300
+	10800 8300 10800 8700
 Connection ~ 9750 9100
 Wire Wire Line
 	9750 8500 9750 9200
@@ -104,7 +106,7 @@ Wire Wire Line
 	7650 2250 7650 1300
 Connection ~ 8900 1300
 Wire Wire Line
-	8900 1500 8900 1100
+	8900 1100 8900 1500
 Wire Wire Line
 	7650 2050 7550 2050
 Wire Wire Line
@@ -158,7 +160,7 @@ Wire Wire Line
 	6550 2050 6450 2050
 Connection ~ 5900 7500
 Wire Wire Line
-	5900 7700 5900 7300
+	5900 7300 5900 7700
 Connection ~ 6200 7500
 Wire Wire Line
 	6200 7500 6200 7300
@@ -167,7 +169,7 @@ Wire Wire Line
 	6000 7300 6000 7500
 Connection ~ 7900 7500
 Wire Wire Line
-	7900 7700 7900 7300
+	7900 7300 7900 7700
 Connection ~ 7000 7500
 Wire Wire Line
 	7000 7500 7000 7300
@@ -189,7 +191,7 @@ Wire Wire Line
 	5050 9100 5050 9250
 Connection ~ 5550 8800
 Wire Wire Line
-	5550 9000 5550 8600
+	5550 8600 5550 9000
 Wire Wire Line
 	4150 9100 4150 9250
 Wire Wire Line
@@ -231,7 +233,7 @@ Wire Wire Line
 	3850 5000 3650 5000
 Connection ~ 2650 4400
 Wire Wire Line
-	2450 4400 5400 4400
+	5400 4400 2450 4400
 Wire Wire Line
 	750  4900 750  4700
 Wire Wire Line
@@ -240,12 +242,10 @@ Wire Wire Line
 	2650 4600 2650 4400
 Wire Wire Line
 	2650 5000 2650 5200
-Wire Wire Line
-	13750 2100 14650 2100
 Connection ~ 14300 3000
 Connection ~ 15250 4300
 Wire Wire Line
-	15250 4500 15250 4100
+	15250 4100 15250 4500
 Wire Wire Line
 	15250 4300 15850 4300
 Wire Wire Line
@@ -267,27 +267,21 @@ Wire Wire Line
 Wire Wire Line
 	11250 3950 11050 3950
 Wire Wire Line
-	10350 4500 10350 4100
+	10350 4100 10350 4500
 Wire Wire Line
-	14300 3200 14300 2750
+	14300 2750 14300 3200
 Wire Wire Line
 	12850 3250 12850 3450
 Wire Wire Line
 	12850 3450 12650 3450
 Connection ~ 14300 2100
 Wire Wire Line
-	14650 2100 14650 2900
-Connection ~ 13950 2100
-Connection ~ 13050 2100
-Wire Wire Line
-	13250 2100 13050 2100
-Wire Wire Line
 	14300 2350 14300 2100
 Wire Wire Line
 	13950 2100 13950 2350
 Connection ~ 14650 3700
 Wire Wire Line
-	14450 3700 14850 3700
+	14850 3700 14450 3700
 Wire Wire Line
 	14650 3500 14650 3700
 Connection ~ 13850 3700
@@ -326,20 +320,9 @@ Wire Wire Line
 Wire Wire Line
 	11250 3700 10850 3700
 Wire Wire Line
-	14050 3700 13650 3700
-Wire Wire Line
-	13050 1900 13050 2300
-Wire Wire Line
-	12050 1700 11850 1700
-Wire Wire Line
-	13050 1300 13050 1500
-Wire Wire Line
-	13050 2800 13050 3000
+	13650 3700 14050 3700
 Wire Wire Line
 	13950 2750 13950 3000
-Wire Wire Line
-	13050 3000 14300 3000
-Connection ~ 13950 3000
 Wire Wire Line
 	13850 4300 13850 4500
 Wire Wire Line
@@ -354,8 +337,6 @@ Wire Wire Line
 Wire Wire Line
 	11050 2250 10450 2250
 Connection ~ 10650 2250
-Wire Wire Line
-	12550 1700 12750 1700
 Wire Wire Line
 	1850 4400 2050 4400
 Wire Wire Line
@@ -388,7 +369,7 @@ Wire Wire Line
 Wire Wire Line
 	3800 2600 4000 2600
 Wire Wire Line
-	2050 9200 2450 9200
+	2450 9200 2050 9200
 Connection ~ 2250 9200
 Wire Wire Line
 	3950 8900 4150 8900
@@ -433,13 +414,13 @@ Connection ~ 6300 7500
 Wire Wire Line
 	6600 7300 6600 7700
 Wire Wire Line
-	6450 1850 6450 2250
+	6450 2250 6450 1850
 Connection ~ 6450 2050
 Wire Wire Line
 	7250 2050 7250 2250
 Connection ~ 7250 2050
 Wire Wire Line
-	7050 1850 7050 2250
+	7050 2250 7050 1850
 Connection ~ 7050 2050
 Wire Wire Line
 	12950 8550 12750 8550
@@ -447,7 +428,7 @@ Wire Wire Line
 	12750 8550 12750 8350
 Connection ~ 13950 8550
 Wire Wire Line
-	13950 9550 13950 9150
+	13950 9150 13950 9550
 Wire Wire Line
 	13950 8550 13950 8750
 Wire Wire Line
@@ -510,7 +491,7 @@ Wire Wire Line
 	5400 3900 5200 3900
 Connection ~ 5200 3900
 Wire Wire Line
-	3950 8800 5550 8800
+	5550 8800 3950 8800
 Wire Wire Line
 	8400 4400 9250 4400
 Wire Wire Line
@@ -532,6 +513,22 @@ Wire Wire Line
 Connection ~ 9000 5400
 Wire Wire Line
 	9000 5600 9200 5600
+Wire Wire Line
+	13950 3000 14300 3000
+Wire Wire Line
+	14650 2900 14650 1900
+Connection ~ 14650 2100
+$Comp
+L LNA_AVDD #PWR?
+U 1 1 4A44852F
+P 14650 1200
+F 0 "#PWR?" H 14650 1100 50  0001 C CNN
+F 1 "LNA_AVDD" H 14650 1350 50  0000 C CNN
+	1    14650 1200
+	1    0    0    -1  
+$EndComp
+Text Notes 1250 1450 0    200  ~ 40
+GPS
 $Comp
 L TST TP7603
 U 1 1 4A3FD717
@@ -1327,51 +1324,13 @@ F 1 "VCCRF" H 12850 3400 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L LNA_AVDD #PWR?
-U 1 1 4A3D10F8
-P 13050 1300
-F 0 "#PWR?" H 13050 1200 50  0001 C CNN
-F 1 "LNA_AVDD" H 13050 1450 50  0000 C CNN
-	1    13050 1300
-	1    0    0    -1  
-$EndComp
-Text GLabel 11850 1700 0    60   Input ~ 0
-VCONT
-$Comp
-L R_US R7615
-U 1 1 4A3D0FAA
-P 13050 2550
-F 0 "R7615" V 13100 2750 50  0000 C CNN
-F 1 "47K" V 13000 2700 50  0000 C CNN
-	1    13050 2550
-	0    1    -1   0   
-$EndComp
-$Comp
 L R_US R7618
 U 1 1 4A3D0FA0
-P 13500 2100
-F 0 "R7618" H 13500 2000 50  0000 C CNN
-F 1 "10R" H 13500 2200 50  0000 C CNN
-	1    13500 2100
-	1    0    0    1   
-$EndComp
-$Comp
-L PNP Q7602
-U 1 1 4A3D0F86
-P 12950 1700
-F 0 "Q7602" H 13300 1650 50  0000 C CNN
-F 1 "BC858BLT1G" H 13400 1750 50  0000 C CNN
-	1    12950 1700
-	1    0    0    1   
-$EndComp
-$Comp
-L R_US R7617
-U 1 1 4A3D0F76
-P 12300 1700
-F 0 "R7617" H 12300 1600 50  0000 C CNN
-F 1 "10K" H 12300 1800 50  0000 C CNN
-	1    12300 1700
-	1    0    0    1   
+P 14650 1650
+F 0 "R7618" V 14600 1450 50  0000 C CNN
+F 1 "10R" V 14700 1500 50  0000 C CNN
+	1    14650 1650
+	0    -1   1    0   
 $EndComp
 $Comp
 L C C7637
