@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Fri Jun 19 07:21:46 2009
-LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
+EESchema Schematic File Version 2  date Mon Jun 29 09:27:27 2009
+LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
@@ -13,6 +13,24 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XHT110 D?
+U 1 1 4A45ACAC
+P 6900 5100
+F 0 "D?" H 6900 5250 60  0000 C CNN
+F 1 "XHT110" H 6900 4950 60  0000 C CNN
+	1    6900 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L XISC5804AT2 Q?
+U 1 1 4A45AC90
+P 6950 6400
+F 0 "Q?" H 6950 6650 60  0000 C CNN
+F 1 "XISC5804AT2" H 6950 6150 60  0000 C CNN
+	1    6950 6400
+	1    0    0    -1  
+$EndComp
 $Comp
 L XR_US R?
 U 1 1 4A397F6F
