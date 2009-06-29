@@ -23,3 +23,4 @@ Number	Status	Description
 0021	Defer	Use EMI-hardened microphone (MC4301)
 0022	Discuss	Apply bass fix
 0023	Edit	Fix #1024 (C1009)
+0024	Edit	Improve GPS ground and PCB layout
