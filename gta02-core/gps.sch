@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Mon 29 Jun 2009 15:54:12 WEST
+EESchema Schematic File Version 2  date Mon 29 Jun 2009 16:01:14 WEST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -887,8 +887,9 @@ $Comp
 L C C?
 U 1 1 4A3FC9BB
 P 10000 4850
-F 0 "C?" V 10150 4850 50  0000 L CNN
-F 1 "C" V 9800 4850 50  0000 L CNN
+F 0 "C7611" H 9700 4750 50  0000 L CNN
+F 1 "2N2" H 9800 4950 50  0000 L CNN
+F 2 "C0402" H 10000 4850 60  0001 C CNN
 	1    10000 4850
 	-1   0    0    1   
 $EndComp
