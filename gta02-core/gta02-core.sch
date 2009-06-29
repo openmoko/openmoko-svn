@@ -16,8 +16,8 @@ $EndDescr
 $Sheet
 S 8950 4500 1500 1500
 U 4A45E033
-F0 "CPU_POWER" 60
-F1 "cpu_power.sch" 60
+F0 "CPU-POWER" 60
+F1 "cpu-power.sch" 60
 $EndSheet
 $Sheet
 S 8950 2000 1500 1500
