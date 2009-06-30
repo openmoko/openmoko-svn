@@ -1,0 +1,20 @@
+plotter->circle expects the diameter, but DRAWJUNCTION_SIZE is just the
+radius. This fix is originally by Alvaro Lopes <alvieboy@alvie.com>
+
+- Werner
+
+---
+
+Index: kicad/eeschema/plot.cpp
+===================================================================
+--- kicad.orig/eeschema/plot.cpp	2009-06-29 23:14:22.000000000 -0300
++++ kicad/eeschema/plot.cpp	2009-06-29 23:14:47.000000000 -0300
+@@ -761,7 +761,7 @@
+                 #undef STRUCT
+                 #define STRUCT ( (DrawJunctionStruct*) drawlist )
+             plotter->set_color( ReturnLayerColor( STRUCT->GetLayer() ) );
+-            plotter->circle( STRUCT->m_Pos, DRAWJUNCTION_SIZE, FILLED_SHAPE );
++            plotter->circle( STRUCT->m_Pos, DRAWJUNCTION_SIZE*2, FILLED_SHAPE );
+             break;
+ 
+         case TYPE_SCH_TEXT:
