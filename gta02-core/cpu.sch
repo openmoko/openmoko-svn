@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Mon 29 Jun 2009 11:16:28 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Tue 30 Jun 2009 16:42:25 BST
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -455,15 +455,6 @@ F 0 "C1515" H 7050 6650 50  0000 L CNN
 F 1 "1n5" H 7050 6450 50  0000 L CNN
 	1    7000 6550
 	1    0    0    -1  
-$EndComp
-$Comp
-L C C?
-U 1 1 4A4564BE
-P 8400 7950
-F 0 "C?" H 8450 8050 50  0000 L CNN
-F 1 "15pF" H 8450 7850 50  0000 L CNN
-	1    8400 7950
-	-1   0    0    1   
 $EndComp
 $Comp
 L TAS4025A X?
