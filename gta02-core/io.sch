@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 30 Jun 2009 10:30:48 BST
+EESchema Schematic File Version 2  date Wed 01 Jul 2009 17:21:05 BST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	4850 5450 6250 5450
+Wire Wire Line
+	4850 5250 6250 5250
+Wire Wire Line
+	4850 4850 6250 4850
 Wire Wire Line
 	12550 7050 12750 7050
 Connection ~ 12750 6850
@@ -88,17 +94,7 @@ Wire Wire Line
 	14050 9950 14050 9650
 Wire Wire Line
 	14050 9650 14250 9650
-Wire Wire Line
-	3700 6250 4300 6250
-Wire Wire Line
-	4300 6150 3700 6150
 Connection ~ 13050 3450
-Wire Wire Line
-	3700 4750 3900 4750
-Wire Wire Line
-	3900 4750 3900 4850
-Wire Wire Line
-	3900 4850 6250 4850
 Connection ~ 13950 2450
 Wire Wire Line
 	13950 2450 13950 2650
@@ -115,7 +111,7 @@ Wire Wire Line
 	5650 4100 5650 3900
 Connection ~ 5300 4850
 Wire Wire Line
-	5300 4600 5300 4850
+	5300 4850 5300 4600
 Connection ~ 6000 5050
 Wire Wire Line
 	6000 4600 6000 5050
@@ -135,17 +131,7 @@ Connection ~ 7500 6100
 Wire Wire Line
 	7500 5900 7500 6100
 Wire Wire Line
-	3700 5250 6250 5250
-Wire Wire Line
-	3700 5550 4950 5550
-Wire Wire Line
-	4950 5550 4950 5050
-Wire Wire Line
-	4950 5050 6250 5050
-Wire Wire Line
 	6250 4950 4850 4950
-Wire Wire Line
-	6250 5350 3700 5350
 Wire Wire Line
 	7400 6100 7400 5900
 Wire Wire Line
@@ -181,12 +167,6 @@ Wire Wire Line
 	5300 4100 5300 3750
 Connection ~ 5300 3900
 Wire Wire Line
-	4850 4950 4850 3950
-Wire Wire Line
-	4850 3950 3700 3950
-Wire Wire Line
-	6250 5450 3700 5450
-Wire Wire Line
 	13550 2350 13550 2650
 Wire Wire Line
 	12400 3200 12400 3450
@@ -200,8 +180,6 @@ Connection ~ 12850 3450
 Wire Wire Line
 	13050 3450 13050 3650
 Connection ~ 13050 3450
-Wire Wire Line
-	3700 6050 4300 6050
 Wire Wire Line
 	14150 5300 14150 5850
 Wire Wire Line
@@ -302,6 +280,22 @@ Wire Wire Line
 	13850 9550 13850 9800
 Wire Wire Line
 	13850 9800 12450 9800
+Wire Wire Line
+	4850 5050 6250 5050
+Wire Wire Line
+	4850 5350 6250 5350
+Text GLabel 4850 5450 0    60   Input ~ 0
+ACCEL_SPICLK
+Text GLabel 4850 5350 0    60   Input ~ 0
+ACCEL_SPIMOSI
+Text GLabel 4850 5250 0    60   Input ~ 0
+ACCEL_SPIMISO
+Text GLabel 4850 5050 0    60   Input ~ 0
+nACCEL_INT2
+Text GLabel 4850 4950 0    60   Input ~ 0
+nACCEL_INT1
+Text GLabel 4850 4850 0    60   Input ~ 0
+ACCEL_CS
 Text GLabel 12450 5950 0    60   Input ~ 0
 STDI
 $Comp
@@ -657,29 +651,8 @@ F 1 "FH23-39S" H 14750 5700 60  0000 C CNN
 	1    14750 7750
 	1    0    0    -1  
 $EndComp
-Text GLabel 4300 6250 2    60   Input ~ 0
-NAND_BUS_WIDTH
-Text GLabel 4300 6150 2    60   Input ~ 0
-NAND_ADDR_CYCLE
-Text GLabel 4300 6050 2    60   Input ~ 0
-NAND_PAGE_SIZE
 Text GLabel 11600 2850 0    60   Input ~ 0
 VIBRATOR_ON
-NoConn ~ 3700 5950
-NoConn ~ 3700 5850
-NoConn ~ 3700 5750
-NoConn ~ 3700 5650
-NoConn ~ 3700 5150
-NoConn ~ 3700 5050
-NoConn ~ 3700 4950
-NoConn ~ 3700 4850
-NoConn ~ 3700 4650
-NoConn ~ 3700 4550
-NoConn ~ 3700 4450
-NoConn ~ 3700 4350
-NoConn ~ 3700 4250
-NoConn ~ 3700 4150
-NoConn ~ 3700 4050
 Text Notes 1700 1700 0    200  ~ 40
 I/O
 $Comp
@@ -833,15 +806,6 @@ P 7650 6300
 F 0 "#PWR?" H 7650 6300 30  0001 C CNN
 F 1 "GND" H 7650 6230 30  0001 C CNN
 	1    7650 6300
-	1    0    0    -1  
-$EndComp
-$Comp
-L SC32442 U1501
-U 4 1 4A4016E2
-P 1800 5050
-F 0 "U1501" H 1800 4950 50  0000 C CNN
-F 1 "SC32442" H 1800 5150 50  0000 C CNN
-	4    1800 5050
 	1    0    0    -1  
 $EndComp
 $Comp
