@@ -1,8 +1,4 @@
-# Based on SVN revision 1853
-
-# this patch worked around incompatibilities with older libboost in a dirty
-# way. better to just upgrade libboost.
-#old-boost-build-fix.patch
+# Based on SVN revision 1855
 
 # eeschema --plot extension, pending
 eeschema-plot-only-mode.patch
@@ -17,6 +13,7 @@ fix-pinedit-collision.patch
 #drag-override.patch
 #pcbnew-plot-only-mode.patch
 
-# updated for r1846
-make-junctions-larger-in-plots.patch
+# accepted as of r1854
+#make-junctions-larger-in-plots.patch
 #make-junctions-larger-on-plotps.patch
+

@@ -1,5 +1,6 @@
 plotter->circle expects the diameter, but DRAWJUNCTION_SIZE is just the
 radius. This fix is originally by Alvaro Lopes <alvieboy@alvie.com>
+For SVN revsion 1853.
 
 - Werner
 
