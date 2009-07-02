@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 02 Jul 2009 10:57:07 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 12:21:13 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -296,7 +296,7 @@ Text GLabel 4850 4950 0    60   Input ~ 0
 nACCEL_INT1
 Text GLabel 4850 4850 0    60   Input ~ 0
 ACCEL_CS
-Text GLabel 12450 5950 0    60   Input ~ 0
+Text GLabel 12450 5950 0    60   Output ~ 0
 STDI
 $Comp
 L IO_3V3 #PWR?
@@ -419,12 +419,12 @@ nNOR_WP
 Text GLabel 12450 6450 0    60   Input ~ 0
 nGSM_EN
 Text GLabel 12450 6350 0    60   Input ~ 0
-STD0
-Text GLabel 12450 6250 0    60   Input ~ 0
+STDO
+Text GLabel 12450 6250 0    60   Output ~ 0
 STCK
-Text GLabel 12450 6150 0    60   Input ~ 0
+Text GLabel 12450 6150 0    60   Output ~ 0
 STMS
-Text GLabel 12450 6050 0    60   Input ~ 0
+Text GLabel 12450 6050 0    60   Output ~ 0
 nRESET
 $Comp
 L TST TP4706
@@ -607,7 +607,7 @@ F 1 "100K" H 13400 9450 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L R_US 100K
+L R_US R4702
 U 1 1 4A479744
 P 15800 9350
 F 0 "R4702" H 15800 9450 50  0000 C CNN

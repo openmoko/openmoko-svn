@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu Jul  2 00:35:23 2009
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:53:16 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -811,10 +811,10 @@ F 1 "GND" H 14050 3330 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L FA2012-KR40PAA U6011
+L FA2012-KR40PAA U6012
 U 1 1 4A404145
 P 14050 2550
-F 0 "U6011" H 14050 2850 60  0000 C CNN
+F 0 "U6012" H 14050 2850 60  0000 C CNN
 F 1 "FA2012-KR40PAA" H 13650 2250 60  0000 C CNN
 	1    14050 2550
 	-1   0    0    -1  

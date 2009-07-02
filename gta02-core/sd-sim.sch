@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed 01 Jul 2009 21:57:02 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:44:04 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -388,10 +388,10 @@ F 1 "NC" H 6800 6000 50  0000 L CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L R_US R7505
+L R_US R7507
 U 1 1 4A4BC268
 P 6100 5100
-F 0 "R7505" H 5970 5180 50  0000 C CNN
+F 0 "R7507" H 5970 5180 50  0000 C CNN
 F 1 "75R" H 6230 5180 50  0000 C CNN
 	1    6100 5100
 	1    0    0    -1  
