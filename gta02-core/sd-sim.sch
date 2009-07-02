@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:44:04 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 14:00:38 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -275,7 +275,7 @@ L R_US R7515
 U 1 1 4A4BC5C3
 P 7750 4250
 F 0 "R7515" V 7700 4420 50  0000 C CNN
-F 1 "NC" V 7800 4370 50  0000 C CNN
+F 1 "10K" V 7800 4370 50  0000 C CNN
 	1    7750 4250
 	0    1    1    0   
 $EndComp

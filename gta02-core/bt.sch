@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 02 Jul 2009 12:06:38 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 14:03:13 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 3750 6800 0    50   ~ 0
+Renamed from R7901 \nused in OM schematics
 Wire Wire Line
 	13250 4050 13250 4000
 Wire Wire Line
@@ -387,7 +389,7 @@ $Comp
 L R_US R7901
 U 1 1 4A42BBEA
 P 9750 9300
-F 0 "R7901" H 9600 9400 50  0000 C CNN
+F 0 "R7911" H 9600 9400 50  0000 C CNN
 F 1 "0R" H 9900 9400 50  0000 C CNN
 	1    9750 9300
 	1    0    0    -1  
@@ -463,7 +465,7 @@ $Comp
 L INDUCTOR R7901
 U 1 1 4A42B1E4
 P 4700 6800
-F 0 "R7901" H 4880 6850 40  0000 C CNN
+F 0 "L7901" H 4880 6850 40  0000 C CNN
 F 1 "27NH" H 4860 6750 40  0000 C CNN
 	1    4700 6800
 	1    0    0    -1  
