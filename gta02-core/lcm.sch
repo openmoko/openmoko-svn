@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:53:16 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Thu Jul  2 12:09:09 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -718,15 +718,6 @@ P 6100 7300
 F 0 "U6007" H 6100 7600 60  0000 C CNN
 F 1 "FA2012-KR40PAA" H 5700 7000 60  0000 C CNN
 	1    6100 7300
-	1    0    0    -1  
-$EndComp
-$Comp
-L GND #PWR?
-U 1 1 4A404687
-P 8800 10450
-F 0 "#PWR?" H 8800 10450 30  0001 C CNN
-F 1 "GND" H 8800 10380 30  0001 C CNN
-	1    8800 10450
 	1    0    0    -1  
 $EndComp
 $Comp
