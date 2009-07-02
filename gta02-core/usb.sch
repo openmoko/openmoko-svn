@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Fri 26 Jun 2009 17:54:23 BST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:25:43 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 10 10
+Sheet 12 12
 Title ""
 Date ""
 Rev ""
@@ -280,10 +280,10 @@ Wire Wire Line
 Wire Wire Line
 	11300 1650 11600 1650
 $Comp
-L SC32442 U?
+L SC32442 U1501
 U 11 1 4A44EBED
 P 13500 1450
-F 0 "U?" H 13500 1350 50  0000 C CNN
+F 0 "U1501" H 13500 1350 50  0000 C CNN
 F 1 "SC32442" H 13500 1550 50  0000 C CNN
 	11   13500 1450
 	-1   0    0    -1  

@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Thu Jun 25 06:57:53 2009
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:06:03 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 4 9
+Sheet 7 12
 Title ""
 Date ""
 Rev ""
@@ -698,10 +698,10 @@ Entry Wire Line
 Entry Wire Line
 	1050 7300 1150 7400
 $Comp
-L R_PACK4 33R
+L R_PACK4 RP2202
 U 1 1 4A39C7C0
 P 10750 6500
-F 0 "33R" H 10750 6950 50  0000 C CNN
+F 0 "RP2202" H 10750 6950 50  0000 C CNN
 F 1 "33R" H 10750 6450 50  0000 C CNN
 	1    10750 6500
 	1    0    0    -1  

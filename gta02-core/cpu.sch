@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Wed 01 Jul 2009 17:28:39 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:25:19 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 5 11
+Sheet 6 12
 Title ""
 Date ""
 Rev ""
@@ -643,10 +643,10 @@ F 1 "0R" H 12130 5330 50  0000 C CNN
 $EndComp
 NoConn ~ 13450 7100
 $Comp
-L SC32442 U?
+L SC32442 U1501
 U 4 1 4A4B73FE
 P 15350 6200
-F 0 "U?" H 15350 6100 50  0000 C CNN
+F 0 "U1501" H 15350 6100 50  0000 C CNN
 F 1 "SC32442" H 15350 6300 50  0000 C CNN
 	4    15350 6200
 	-1   0    0    -1  

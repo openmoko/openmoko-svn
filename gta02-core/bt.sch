@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sun 28 Jun 2009 23:52:38 BST
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:31:41 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 4 11
+Sheet 5 12
 Title ""
 Date ""
 Rev ""
@@ -268,7 +268,7 @@ Wire Wire Line
 Wire Wire Line
 	10200 9550 10200 9100
 $Comp
-L R_US R?
+L R_US R7905
 U 1 1 4A47F326
 P 4050 8000
 F 0 "R7905" V 4100 8180 50  0000 C CNN
