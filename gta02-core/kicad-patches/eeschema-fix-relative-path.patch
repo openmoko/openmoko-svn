@@ -1,0 +1,121 @@
+make command-line invocation with relative paths work
+
+When eeschema et al. are invoked with a file name, they change the current
+directory to where this file lives. However, this only works reliably if
+an absolute path is given.
+
+Relative paths may or may not work. The reason for this is that GetSettings
+always sets the current directory to the last recorded location, which in
+turn affects how the relative paths are interpreted.
+
+This patch suppresses directory changes in GetSettings if a file name is
+given on the command line.
+
+This patch is only lightly tested. Please let me know if this is going in
+the right direction.
+
+- Werner
+
+---
+
+Index: kicad/common/edaappl.cpp
+===================================================================
+--- kicad.orig/common/edaappl.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/common/edaappl.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -594,7 +594,7 @@
+  *
+  * @return  none
+  */
+-void WinEDA_App::GetSettings()
++void WinEDA_App::GetSettings( bool change_cwd )
+ {
+     wxASSERT( m_EDA_Config != NULL && m_EDA_CommonConfig != NULL );
+ 
+@@ -613,7 +613,8 @@
+ 
+     m_EDA_Config->Read( wxT( "ShowPageLimits" ), &g_ShowPageLimits );
+ 
+-    if( m_EDA_Config->Read( wxT( "WorkingDir" ), &Line ) && wxDirExists( Line ) )
++    if( change_cwd && m_EDA_Config->Read( wxT( "WorkingDir" ), &Line ) &&
++	wxDirExists( Line ) )
+     {
+         wxSetWorkingDirectory( Line );
+     }
+Index: kicad/cvpcb/cvpcb.cpp
+===================================================================
+--- kicad.orig/cvpcb/cvpcb.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/cvpcb/cvpcb.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -54,7 +54,7 @@
+             return false;
+     }
+ 
+-    GetSettings();                      // read current setup
++    GetSettings( argc == 1);            // read current setup
+ 
+     wxSetWorkingDirectory( currCWD );   // mofifie par GetSetting
+ 
+Index: kicad/eeschema/eeschema.cpp
+===================================================================
+--- kicad.orig/eeschema/eeschema.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/eeschema/eeschema.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -151,7 +151,7 @@
+ 
+     /* init EESCHEMA */
+     SeedLayers();
+-    GetSettings();
++    GetSettings( !fn.IsOk() );
+     Read_Hotkey_Config( frame, false );   /* Must be called before creating
+                                            * the main frame  in order to
+                                            * display the real hotkeys in menus
+Index: kicad/gerbview/gerbview.cpp
+===================================================================
+--- kicad.orig/gerbview/gerbview.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/gerbview/gerbview.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -45,7 +45,7 @@
+     ScreenPcb->m_CurrentSheetDesc = &g_Sheet_GERBER;
+ 
+     ActiveScreen = ScreenPcb;
+-    GetSettings();
++    GetSettings( argc == 1);
+     extern PARAM_CFG_BASE* ParamCfgList[];
+     wxGetApp().ReadCurrentSetupValues( ParamCfgList );
+ 
+Index: kicad/include/appl_wxstruct.h
+===================================================================
+--- kicad.orig/include/appl_wxstruct.h	2009-07-01 23:14:33.000000000 -0300
++++ kicad/include/appl_wxstruct.h	2009-07-01 23:14:44.000000000 -0300
+@@ -115,7 +115,7 @@
+     void      InitOnLineHelp();
+ 
+     // Sauvegarde de configurations et options:
+-    void      GetSettings();
++    void      GetSettings( bool change_cwd );
+     void      SaveSettings();
+ 
+     void      WriteProjectConfig( const wxString&  local_config_filename,
+Index: kicad/kicad/kicad.cpp
+===================================================================
+--- kicad.orig/kicad/kicad.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/kicad/kicad.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -372,7 +372,7 @@
+     InitEDA_Appl( wxT( "KiCad" ), APP_TYPE_KICAD );
+ 
+     /* init kicad */
+-    GetSettings();                  // read current setup
++    GetSettings( argc == 1 );       // read current setup
+ 
+     /* Make nameless project translatable */
+     wxFileName namelessProject( wxGetCwd(), _( "noname" ), ProjectFileExtension );
+Index: kicad/pcbnew/pcbnew.cpp
+===================================================================
+--- kicad.orig/pcbnew/pcbnew.cpp	2009-07-01 23:14:33.000000000 -0300
++++ kicad/pcbnew/pcbnew.cpp	2009-07-01 23:14:44.000000000 -0300
+@@ -83,7 +83,7 @@
+     }
+ 
+     ScreenPcb = new PCB_SCREEN();
+-    GetSettings();
++    GetSettings( argc == 1 );
+ 
+     if( argc > 1 )
+     {

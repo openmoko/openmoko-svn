@@ -17,8 +17,8 @@ This patch is for KiCad SVN revision 1771.
 
 Index: kicad/eeschema/eeschema.cpp
 ===================================================================
---- kicad.orig/eeschema/eeschema.cpp	2009-05-21 23:00:00.000000000 -0300
-+++ kicad/eeschema/eeschema.cpp	2009-05-21 23:00:07.000000000 -0300
+--- kicad.orig/eeschema/eeschema.cpp	2009-07-01 23:14:44.000000000 -0300
++++ kicad/eeschema/eeschema.cpp	2009-07-01 23:15:15.000000000 -0300
 @@ -12,6 +12,7 @@
  #include "general.h"
  #include "bitmaps.h"
@@ -27,7 +27,7 @@ Index: kicad/eeschema/eeschema.cpp
  
  #include "libcmp.h"
  #include "protos.h"
-@@ -121,6 +122,69 @@
+@@ -120,6 +121,69 @@
  int DefaultTransformMatrix[2][2] = { { 1, 0 }, { 0, -1 } };
  
  
@@ -64,7 +64,7 @@ Index: kicad/eeschema/eeschema.cpp
 +
 +    /* init EESCHEMA */
 +    SeedLayers();
-+    app->GetSettings();
++    app->GetSettings( FALSE );
 +
 +    // Create main frame (schematic frame) :
 +    frame = new WinEDA_SchematicFrame( NULL, wxT( "EESchema" ),
@@ -97,7 +97,7 @@ Index: kicad/eeschema/eeschema.cpp
  /************************************/
  /* Called to initialize the program */
  /************************************/
-@@ -141,6 +205,9 @@
+@@ -140,6 +204,9 @@
  
      InitEDA_Appl( wxT( "EESchema" ), APP_TYPE_EESCHEMA );
  
