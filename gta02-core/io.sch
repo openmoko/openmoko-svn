@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Wed 01 Jul 2009 17:21:05 BST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 02 Jul 2009 10:57:07 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 7 11
+Sheet 8 12
 Title ""
 Date ""
 Rev ""
@@ -610,8 +610,8 @@ $Comp
 L R_US 100K
 U 1 1 4A479744
 P 15800 9350
-F 0 "100K" H 15800 9450 50  0000 C CNN
-F 1 "R4702" H 15800 9250 50  0000 C CNN
+F 0 "R4702" H 15800 9450 50  0000 C CNN
+F 1 "100K" H 15800 9250 50  0000 C CNN
 	1    15800 9350
 	0    1    1    0   
 $EndComp
