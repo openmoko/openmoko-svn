@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 10:21:21 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 12:25:30 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,44 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	3450 6850 4150 6850
+Wire Wire Line
+	4150 6850 4150 6700
+Wire Wire Line
+	11550 7500 11550 7350
+Wire Wire Line
+	12250 7350 12850 7350
+Wire Wire Line
+	4800 4300 3700 4300
+Wire Wire Line
+	3700 4300 3700 4600
+Wire Wire Line
+	3700 4600 3450 4600
+Wire Wire Line
+	13450 6500 12350 6500
+Wire Wire Line
+	12350 6500 12350 6600
+Wire Wire Line
+	12350 6600 11550 6600
+Wire Wire Line
+	13450 6700 12550 6700
+Wire Wire Line
+	12550 6700 12550 6900
+Wire Wire Line
+	12550 6900 11550 6900
+Wire Wire Line
+	11550 7200 12750 7200
+Wire Wire Line
+	12750 7200 12750 6900
+Wire Wire Line
+	12750 6900 13450 6900
+Wire Wire Line
+	13450 7100 12950 7100
+Wire Wire Line
+	12950 7100 12950 7500
+Wire Wire Line
+	13150 7300 13150 7800
 Connection ~ 7000 7700
 Wire Wire Line
 	7200 7700 7000 7700
@@ -37,28 +75,6 @@ Wire Wire Line
 	13150 6000 13150 6150
 Wire Wire Line
 	13150 6150 11550 6150
-Wire Wire Line
-	13450 6400 12450 6400
-Wire Wire Line
-	12450 6400 12450 6450
-Wire Wire Line
-	12450 6450 11550 6450
-Wire Wire Line
-	11550 6750 12650 6750
-Wire Wire Line
-	12650 6750 12650 6600
-Wire Wire Line
-	12650 6600 13450 6600
-Wire Wire Line
-	11550 7050 12850 7050
-Wire Wire Line
-	12850 7050 12850 6800
-Wire Wire Line
-	12850 6800 13450 6800
-Wire Wire Line
-	13050 7200 13050 7350
-Wire Wire Line
-	13250 7400 13250 7650
 Wire Wire Line
 	9800 6150 10500 6150
 Connection ~ 10500 5700
@@ -110,12 +126,6 @@ Wire Wire Line
 Wire Wire Line
 	4200 4900 3450 4900
 Wire Wire Line
-	4800 5050 4600 5050
-Wire Wire Line
-	4600 5050 4600 5100
-Wire Wire Line
-	4600 5100 3450 5100
-Wire Wire Line
 	4800 5800 3700 5800
 Wire Wire Line
 	3700 5800 3700 5700
@@ -148,8 +158,6 @@ Wire Wire Line
 Connection ~ 7000 8450
 Wire Wire Line
 	3450 8300 5600 8300
-Wire Wire Line
-	3450 6850 3850 6850
 Wire Wire Line
 	3650 6550 3650 6750
 Wire Wire Line
@@ -408,9 +416,9 @@ Wire Wire Line
 Wire Wire Line
 	13550 2500 15050 2500
 Wire Wire Line
-	13250 7400 13450 7400
+	13450 7400 13250 7400
 Wire Wire Line
-	13250 7650 11550 7650
+	11550 7950 13250 7950
 Wire Wire Line
 	13450 5200 13150 5200
 Wire Wire Line
@@ -424,9 +432,9 @@ Wire Wire Line
 Wire Wire Line
 	13150 4950 11550 4950
 Wire Wire Line
-	13450 7300 13150 7300
+	13150 7300 13450 7300
 Wire Wire Line
-	11550 7500 13150 7500
+	13150 7800 11550 7800
 Wire Wire Line
 	12850 5500 12850 5400
 Wire Wire Line
@@ -472,29 +480,9 @@ Wire Wire Line
 Wire Wire Line
 	3450 7400 7000 7400
 Wire Wire Line
-	13050 7200 13450 7200
+	13450 7200 13050 7200
 Wire Wire Line
-	13050 7350 11550 7350
-Wire Wire Line
-	13150 7500 13150 7300
-Wire Wire Line
-	11550 7200 12950 7200
-Wire Wire Line
-	12950 7200 12950 6900
-Wire Wire Line
-	12950 6900 13450 6900
-Wire Wire Line
-	13450 6700 12750 6700
-Wire Wire Line
-	12750 6700 12750 6900
-Wire Wire Line
-	12750 6900 11550 6900
-Wire Wire Line
-	11550 6600 12550 6600
-Wire Wire Line
-	12550 6600 12550 6500
-Wire Wire Line
-	12550 6500 13450 6500
+	11550 7650 13050 7650
 Wire Wire Line
 	11550 6300 13250 6300
 Wire Wire Line
@@ -524,6 +512,77 @@ Wire Wire Line
 Wire Wire Line
 	8300 7300 3450 7300
 Connection ~ 8300 7700
+Wire Wire Line
+	13050 7650 13050 7200
+Wire Wire Line
+	13250 7950 13250 7400
+Wire Wire Line
+	13450 7000 12850 7000
+Wire Wire Line
+	12850 7000 12850 7350
+Wire Wire Line
+	13450 6800 12650 6800
+Wire Wire Line
+	12650 6800 12650 7050
+Wire Wire Line
+	12650 7050 11550 7050
+Wire Wire Line
+	13450 6600 12450 6600
+Wire Wire Line
+	12450 6600 12450 6750
+Wire Wire Line
+	12450 6750 11550 6750
+Wire Wire Line
+	11550 6450 12250 6450
+Wire Wire Line
+	12250 6450 12250 6400
+Wire Wire Line
+	12250 6400 13450 6400
+Wire Wire Line
+	11550 7350 11750 7350
+Wire Wire Line
+	12950 7500 12250 7500
+Wire Wire Line
+	11750 7500 10750 7500
+Wire Wire Line
+	10750 7500 10750 7400
+Connection ~ 11550 7500
+Text Notes 9750 7400 0    50   ~ 0
+board revision detection\necn0001
+Text Notes 3750 4200 0    50   ~ 0
+BT_PIO5 moved here - ecn0001
+Text Notes 4800 5100 0    50   ~ 0
+3D_RST net removed - ecn0001
+NoConn ~ 3450 5100
+$Comp
+L R_US R1551
+U 1 1 4A4DE542
+P 12000 7500
+F 0 "R1551" H 11870 7420 50  0000 C CNN
+F 1 "NC" H 12130 7420 50  0000 C CNN
+	1    12000 7500
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R1550
+U 1 1 4A4DE541
+P 12000 7350
+F 0 "R1550" H 11870 7430 50  0000 C CNN
+F 1 "NC" H 12130 7430 50  0000 C CNN
+	1    12000 7350
+	1    0    0    -1  
+$EndComp
+$Comp
+L IO_3V3 #PWR?
+U 1 1 4A4DE43E
+P 10750 7400
+F 0 "#PWR?" H 10750 7300 50  0001 C CNN
+F 1 "IO_3V3" H 10750 7550 50  0000 C CNN
+	1    10750 7400
+	1    0    0    -1  
+$EndComp
+Text GLabel 4800 4300 2    60   BiDi ~ 0
+BT_PIO5
 $Comp
 L TST TP1525
 U 1 1 4A4B8E1E
@@ -610,11 +669,11 @@ Text GLabel 11550 6600 0    60   Input ~ 0
 ACCEL_SPIMOSI
 Text GLabel 11550 6450 0    60   Input ~ 0
 ACCEL_SPIMISO
-Text GLabel 11550 7650 0    60   Input ~ 0
+Text GLabel 11550 7950 0    60   Input ~ 0
 NAND_BUS_WIDTH
-Text GLabel 11550 7500 0    60   Input ~ 0
+Text GLabel 11550 7800 0    60   Input ~ 0
 NAND_ADDR_CYCLE
-Text GLabel 11550 7350 0    60   Input ~ 0
+Text GLabel 11550 7650 0    60   Input ~ 0
 NAND_PAGE_SIZE
 Text GLabel 11550 6300 0    60   Input ~ 0
 WLAN_SS
@@ -630,13 +689,12 @@ Text GLabel 11550 5400 0    60   Input ~ 0
 JACK_INSERT
 Text GLabel 11550 5250 0    60   Input ~ 0
 EINT3
-Text GLabel 11550 5100 0    60   Input ~ 0
-PIO_2
+Text GLabel 11550 5100 0    60   BiDi ~ 0
+BT_PIO2
 Text GLabel 11550 4950 0    60   Input ~ 0
 IO1
 Text GLabel 11550 4800 0    60   Input ~ 0
 nACCEL_INT1
-NoConn ~ 13450 7000
 NoConn ~ 13450 6300
 NoConn ~ 13450 6200
 $Comp
@@ -648,7 +706,6 @@ F 1 "0R" H 12130 5330 50  0000 C CNN
 	1    12000 5250
 	1    0    0    -1  
 $EndComp
-NoConn ~ 13450 7100
 $Comp
 L SC32442 U1501
 U 4 1 4A4B73FE
@@ -690,8 +747,6 @@ Text GLabel 4800 4750 2    60   Output ~ 0
 INTO
 Text GLabel 4800 4900 2    60   Output ~ 0
 nGSM_EN
-Text GLabel 4800 5050 2    60   Output ~ 0
-3D_RST
 $Comp
 L R_US R1545
 U 1 1 4A45665C
@@ -727,7 +782,6 @@ WLAN_GPIO0
 Text GLabel 4800 5200 2    60   Output ~ 0
 DL_GSM
 NoConn ~ 3450 5600
-NoConn ~ 3450 4600
 $Comp
 L C C1516
 U 1 1 4A4564D2
@@ -830,10 +884,10 @@ $EndComp
 $Comp
 L TST TP1532
 U 1 1 4A456249
-P 3850 6850
-F 0 "TP1532" H 3850 7150 40  0000 C CNN
-F 1 " " H 3850 7100 30  0000 C CNN
-	1    3850 6850
+P 4150 6700
+F 0 "TP1532" H 4150 7000 40  0000 C CNN
+F 1 " " H 4150 6950 30  0000 C CNN
+	1    4150 6700
 	1    0    0    -1  
 $EndComp
 $Comp

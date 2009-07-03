@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 10:26:25 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 12:13:57 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Connection ~ 9150 4800
+Wire Wire Line
+	9600 4500 9600 4600
+Connection ~ 9150 4600
+Wire Wire Line
+	9600 4600 9150 4600
 Wire Wire Line
 	4850 5450 6250 5450
 Wire Wire Line
@@ -151,11 +157,9 @@ Connection ~ 8650 6100
 Connection ~ 7950 6100
 Wire Wire Line
 	9150 4800 8450 4800
-Wire Wire Line
-	9150 5300 9150 4600
 Connection ~ 9150 4900
 Wire Wire Line
-	9150 3950 9150 4100
+	9150 3750 9150 3900
 Wire Wire Line
 	5650 4600 5650 4950
 Connection ~ 5650 4950
@@ -284,6 +288,17 @@ Wire Wire Line
 	4850 5050 6250 5050
 Wire Wire Line
 	4850 5350 6250 5350
+Wire Wire Line
+	9150 4400 9150 5300
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4A4DE7CA
+P 9600 4500
+F 0 "#FLG?" H 9600 4770 30  0001 C CNN
+F 1 "PWR_FLAG" H 9600 4730 30  0000 C CNN
+	1    9600 4500
+	1    0    0    -1  
+$EndComp
 Text GLabel 4850 5450 0    60   Input ~ 0
 ACCEL_SPICLK
 Text GLabel 4850 5350 0    60   Input ~ 0
@@ -766,19 +781,19 @@ $EndComp
 $Comp
 L R_US R7804
 U 1 1 4A401AEB
-P 9150 4350
-F 0 "R7804" H 9150 4250 50  0000 C CNN
-F 1 "0R" H 9150 4450 50  0000 C CNN
-	1    9150 4350
+P 9150 4150
+F 0 "R7804" H 9150 4050 50  0000 C CNN
+F 1 "0R" H 9150 4250 50  0000 C CNN
+	1    9150 4150
 	0    1    1    0   
 $EndComp
 $Comp
 L GSENSOR_3V3 #PWR?
 U 1 1 4A401A8A
-P 9150 3950
-F 0 "#PWR?" H 9150 3850 50  0001 C CNN
-F 1 "GSENSOR_3V3" H 9150 4100 50  0000 C CNN
-	1    9150 3950
+P 9150 3750
+F 0 "#PWR?" H 9150 3650 50  0001 C CNN
+F 1 "GSENSOR_3V3" H 9150 3900 50  0000 C CNN
+	1    9150 3750
 	1    0    0    -1  
 $EndComp
 $Comp

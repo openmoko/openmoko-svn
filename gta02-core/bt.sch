@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 11:08:10 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 11:45:10 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -553,17 +553,17 @@ $EndComp
 Text GLabel 8300 3450 0    60   Input ~ 0
 BT_ACTIVE
 Text GLabel 8300 3200 0    60   Input ~ 0
-PIO_5
+BT_PIO5
 Text GLabel 8300 3050 0    60   Input ~ 0
-PIO_2
+BT_PIO2
 Text GLabel 13500 4150 2    60   BiDi ~ 0
 USB_DN
 Text GLabel 13500 4000 2    60   BiDi ~ 0
 USB_DP
-Text GLabel 13500 3350 2    60   Input ~ 0
-PCM_IN
-Text GLabel 13500 3200 2    60   Input ~ 0
-PCM_IN
+Text GLabel 13500 3350 2    60   BiDi ~ 0
+PCM_SYNC
+Text GLabel 13500 3200 2    60   BiDi ~ 0
+PCM_CLK
 Text GLabel 13500 2900 2    60   Input ~ 0
 PCM_IN
 Text GLabel 13500 3050 2    60   Output ~ 0

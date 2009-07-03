@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 02 Jul 2009 11:37:33 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 11:23:01 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -1484,11 +1484,11 @@ F 2 "0402" H 6600 5700 60  0001 C CNN
 $EndComp
 Text GLabel 4600 5550 0    60   Input ~ 0
 PCM_OUT
-Text GLabel 4600 5400 0    60   Input ~ 0
+Text GLabel 4600 5400 0    60   BiDi ~ 0
 PCM_SYNC
-Text GLabel 4600 5250 0    60   Input ~ 0
+Text GLabel 4600 5250 0    60   BiDi ~ 0
 PCM_CLK
-Text GLabel 4600 5100 0    60   Input ~ 0
+Text GLabel 4600 5100 0    60   Output ~ 0
 PCM_IN
 $Comp
 L GND #PWR?
