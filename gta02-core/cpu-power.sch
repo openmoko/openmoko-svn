@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 10:23:05 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 10:55:13 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Connection ~ 5250 5100
+Wire Wire Line
+	5250 5000 5250 5100
 Wire Wire Line
 	9400 1900 7750 1900
 Wire Wire Line
@@ -388,6 +391,27 @@ Wire Wire Line
 	4550 3400 4550 3200
 Wire Wire Line
 	4550 4300 4550 3900
+Wire Wire Line
+	5250 4000 5250 4100
+Connection ~ 5250 4100
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4A4DD563
+P 5250 4000
+F 0 "#FLG?" H 5250 4270 30  0001 C CNN
+F 1 "PWR_FLAG" H 5250 4230 30  0000 C CNN
+	1    5250 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4A4DD552
+P 5250 5000
+F 0 "#FLG?" H 5250 5270 30  0001 C CNN
+F 1 "PWR_FLAG" H 5250 5230 30  0000 C CNN
+	1    5250 5000
+	1    0    0    -1  
+$EndComp
 $Comp
 L FLASH_1V8 #PWR?
 U 1 1 4A45F187
