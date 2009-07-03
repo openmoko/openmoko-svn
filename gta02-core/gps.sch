@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Mon 29 Jun 2009 17:56:30 WEST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 12:43:13 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 10 11
+Sheet 11 12
 Title ""
 Date ""
 Rev ""
@@ -1110,7 +1110,7 @@ F 2 "C0402-H" H 12150 8800 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Text GLabel 4300 6400 0    60   Input ~ 0
-EXTINT0
+GPS_EXTINT
 $Comp
 L R_US R7609
 U 1 1 4A3D39FE

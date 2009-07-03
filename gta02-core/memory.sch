@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 11:35:43 BST
+EESchema Schematic File Version 2  date Fri 03 Jul 2009 12:43:08 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -14,9 +14,15 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
-	2950 3850 2950 3500
+	2750 8850 3550 8850
 Wire Wire Line
-	2950 3500 2000 3500
+	2750 8550 3350 8550
+Wire Wire Line
+	3450 8350 3450 8700
+Wire Wire Line
+	2950 3850 2950 3550
+Wire Wire Line
+	2950 3550 2350 3550
 Connection ~ 13050 1150
 Wire Wire Line
 	13250 1050 13250 1150
@@ -474,10 +480,22 @@ Connection ~ 13850 2750
 Wire Wire Line
 	2850 3850 2850 3700
 Wire Wire Line
-	2850 3700 2000 3700
-Text GLabel 2000 3500 0    60   Output ~ 0
+	2850 3700 2350 3700
+Wire Wire Line
+	3350 8550 3350 8350
+Wire Wire Line
+	3550 8850 3550 8350
+Wire Wire Line
+	3450 8700 2750 8700
+Text GLabel 2750 8550 0    60   Output ~ 0
+MODEM_ON
+Text GLabel 2750 8850 0    60   Output ~ 0
+USB_PULLUP
+Text GLabel 2750 8700 0    60   Output ~ 0
+GPS_EXTINT
+Text GLabel 2350 3550 0    60   Output ~ 0
 BT_EN
-Text GLabel 2000 3700 0    60   Output ~ 0
+Text GLabel 2350 3700 0    60   Output ~ 0
 MODEM_RST
 $Comp
 L PWR_FLAG #FLG?
@@ -527,9 +545,6 @@ F 1 "GND" H 14050 3680 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 3650 8350
-NoConn ~ 3550 8350
-NoConn ~ 3450 8350
-NoConn ~ 3350 8350
 NoConn ~ 4150 3850
 NoConn ~ 4050 3850
 NoConn ~ 3750 3850
