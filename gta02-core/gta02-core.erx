@@ -1,0 +1,5 @@
+# suppress errors caused by parallel power output pins
+U1701	58	U1701	59	# PCF50633 SYSx
+U1701	42	U1701	43	# PCF50633 AUTOOUTx
+U7609	2	U7609	3	# SI1040X OUT
+U7610	2	U7610	3	# SI1040X OUT
