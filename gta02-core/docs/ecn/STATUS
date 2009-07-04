@@ -24,3 +24,4 @@ Number	Status	Description
 0022	Discuss	Apply bass fix
 0023	Edit	Fix #1024 (C1009)
 0024	Edit	Improve GPS ground and PCB layout
+0025	Discuss	Connect CLKOUT1 to UEXTCLK (U1501)

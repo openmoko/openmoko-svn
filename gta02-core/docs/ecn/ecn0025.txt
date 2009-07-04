@@ -1,0 +1,12 @@
+Connect CLKOUT1 to UEXTCLK (U1501)
+
+
+Routing CLOCKOUT1 to UEXTCLK would allow the serial ports to use the USB
+clock as input to the clock dividers. This would come in handy when using
+frequency scaling, because we can't usually avoid glitching any of the
+internally available clock sources on frequency changes. Suggested by Cesar
+Eduardo Barros here:
+https://lists.openmoko.org/pipermail/hardware/2008-August/000461.html
+
+
+Author: Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
