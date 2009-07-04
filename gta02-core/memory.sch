@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 12:43:08 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Sat Jul  4 11:05:12 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -572,7 +572,7 @@ U 1 1 4A3EB650
 P 12100 1150
 F 0 "B2201" H 12100 1300 60  0000 C CNN
 F 1 "600R" H 12100 1050 60  0000 C CNN
-F 4 "100M" H 12200 1400 60  0001 C CNN "Freq"
+F 4 "100MHz" H 12200 1400 60  0001 C CNN "Freq"
 F 5 "800mA" H 12100 950 70  0000 C CNN "Current"
 F 6 "0.45R" H 12200 1400 60  0001 C CNN "DCR"
 	1    12100 1150
