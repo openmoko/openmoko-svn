@@ -3,7 +3,27 @@
 ps=true
 pdf=false
 shrink=false
-cmd=cat
+cmd=shift_only
+
+
+shift_only()
+{
+    # With the default settings, the right edge of the schematics gets cut off
+    # on the screen and in printouts.
+    # With -25, we get perfect on-screen display and almost no clipping on A4
+    # printouts either.
+    # This can be overridden locally by setting the environment variable
+    # KICAD_PS_XSHIFT.
+
+    pstops "0(0,${KICAD_PS_XSHIFT:--25})" "$@"
+}
+
+
+resize_and_shift()
+{
+    psresize -Pa3 -pa4 "$@" | shift_only
+}
+
 
 while [ "${1#-}" != "$1" ]; do
     case "$1" in
@@ -11,7 +31,7 @@ while [ "${1#-}" != "$1" ]; do
 	ps=false
 	pdf=true;;
     --shrink)
-	cmd="psresize -Pa3 -pa4"
+	cmd=resize_and_shift
 	shrink=true;;
     esac
     shift
