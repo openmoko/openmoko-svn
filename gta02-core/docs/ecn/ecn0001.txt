@@ -18,4 +18,4 @@ To do:
 - software impact of SD/MMC change on Qi and kernel
 - software impact of WLAN move on kernel
 
-See also ecn0001/lcm-wiring.txt
+See also ecn0001/lcm-wiring.txt, ecn0001/wlan-wiring.txt
