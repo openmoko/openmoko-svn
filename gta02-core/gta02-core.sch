@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed 01 Jul 2009 17:33:35 BST
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 14:04:59 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,96 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Notes Line
+	12350 9650 12350 6350
+Wire Notes Line
+	12350 9650 15000 9650
+Wire Notes Line
+	15000 9650 15000 6350
+Wire Notes Line
+	15000 6350 12350 6350
+Wire Wire Line
+	13450 9300 13650 9300
+Wire Wire Line
+	13450 9000 13650 9000
+Wire Wire Line
+	13450 8550 13650 8550
+Wire Wire Line
+	13650 8100 13450 8100
+Wire Wire Line
+	13650 7800 13450 7800
+Wire Wire Line
+	13650 7200 13450 7200
+Wire Wire Line
+	13650 7350 13450 7350
+Wire Wire Line
+	13650 7050 12850 7050
+Wire Wire Line
+	13650 7500 13450 7500
+Wire Wire Line
+	12850 7050 12850 6900
+Wire Wire Line
+	13650 7950 13450 7950
+Wire Wire Line
+	13450 8250 13650 8250
+Wire Wire Line
+	13450 8700 13650 8700
+Wire Wire Line
+	13450 9150 13650 9150
+Wire Wire Line
+	13450 9450 13650 9450
+Text Notes 12450 6500 0    60   ~ 0
+GSM labels unused while calypso status is unresolved
+NoConn ~ 13450 9450
+NoConn ~ 13450 9300
+NoConn ~ 13450 9150
+NoConn ~ 13450 9000
+Text GLabel 13650 9450 2    60   Input ~ 0
+MICIN
+Text GLabel 13650 9300 2    60   Input ~ 0
+MICIP
+Text GLabel 13650 9150 2    60   Output ~ 0
+EARN
+Text GLabel 13650 9000 2    60   Output ~ 0
+EARP
+NoConn ~ 13450 8700
+NoConn ~ 13450 8550
+Text GLabel 13650 8700 2    60   Input ~ 0
+MODEM_ON
+Text GLabel 13650 8550 2    60   Input ~ 0
+MODEM_RST
+NoConn ~ 13450 8250
+Text GLabel 13650 8250 2    60   Input ~ 0
+DL_GSM
+NoConn ~ 13450 8100
+NoConn ~ 13450 7950
+NoConn ~ 13450 7800
+Text GLabel 13650 7800 2    60   Input ~ 0
+AMP_SHUT
+Text GLabel 13650 7950 2    60   Input ~ 0
+HP_IN
+Text GLabel 13650 8100 2    60   Input ~ 0
+INTO
+NoConn ~ 13450 7500
+NoConn ~ 13450 7350
+NoConn ~ 13450 7200
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4A5C71E1
+P 12850 6900
+F 0 "#FLG?" H 12850 7170 30  0001 C CNN
+F 1 "PWR_FLAG" H 12850 7130 30  0000 C CNN
+	1    12850 6900
+	1    0    0    -1  
+$EndComp
+Text GLabel 13650 7350 2    60   Output ~ 0
+SIM_CLK
+Text GLabel 13650 7200 2    60   Output ~ 0
+SIM_RST
+Text GLabel 13650 7050 2    60   Output ~ 0
+SIM_V
+Text GLabel 13650 7500 2    60   BiDi ~ 0
+SIM_IO
 $Sheet
 S 10900 2000 1550 1500
 U 4A4B8F03

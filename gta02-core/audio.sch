@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 03 Jul 2009 11:23:01 BST
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 13:57:45 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 13650 9200
 Wire Wire Line
 	3250 6250 6400 6250
 Wire Wire Line
@@ -612,7 +613,7 @@ Wire Wire Line
 Wire Wire Line
 	6300 6150 3250 6150
 Text GLabel 5050 6500 2    60   Output ~ 0
-ISS_MCLK
+IIS_MCLK
 $Comp
 L SC32442 U1501
 U 13 1 4A44E90B
