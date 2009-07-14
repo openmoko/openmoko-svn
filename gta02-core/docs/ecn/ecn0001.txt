@@ -17,3 +17,5 @@ To do:
 - software impact of LCM controller SPI change on kernel
 - software impact of SD/MMC change on Qi and kernel
 - software impact of WLAN move on kernel
+
+See also ecn0001/lcm-wiring.txt
