@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 14:59:50 BST
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 22:07:21 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 3400 5150
 Connection ~ 9800 2600
 Wire Wire Line
 	9800 2500 9800 2600
@@ -184,8 +185,6 @@ Wire Wire Line
 	3400 5550 4200 5550
 Wire Wire Line
 	3400 5350 4200 5350
-Wire Wire Line
-	3400 5150 4200 5150
 Wire Wire Line
 	4200 4150 3400 4150
 Wire Wire Line
@@ -428,15 +427,15 @@ NoConn ~ 3400 3550
 NoConn ~ 3400 3450
 NoConn ~ 3400 2750
 NoConn ~ 3400 2650
-Text Label 3700 4350 0    60   ~ 0
+Text Label 4200 4350 2    60   ~ 0
 LCD_xRES
 Entry Wire Line
 	4200 4350 4300 4450
-Text Label 3750 5950 0    60   ~ 0
+Text Label 4200 5950 2    60   ~ 0
 LCD_SCL
-Text Label 3750 5850 0    60   ~ 0
+Text Label 4200 5850 2    60   ~ 0
 LCD_DIN
-Text Label 3750 5750 0    60   ~ 0
+Text Label 4200 5750 2    60   ~ 0
 LCD_xCS
 Text Label 4400 7250 0    60   ~ 0
 LCD_SCL
@@ -452,17 +451,17 @@ Entry Wire Line
 	4200 5950 4300 6050
 Entry Wire Line
 	4200 5750 4300 5850
-Text Label 3950 4950 0    60   ~ 0
+Text Label 4200 4950 2    60   ~ 0
 VD23
-Text Label 3950 4850 0    60   ~ 0
+Text Label 4200 4850 2    60   ~ 0
 VD22
-Text Label 3950 4750 0    60   ~ 0
+Text Label 4200 4750 2    60   ~ 0
 VD21
-Text Label 3950 4650 0    60   ~ 0
+Text Label 4200 4650 2    60   ~ 0
 VD20
-Text Label 3950 4550 0    60   ~ 0
+Text Label 4200 4550 2    60   ~ 0
 VD19
-Text Label 3950 4450 0    60   ~ 0
+Text Label 4200 4450 2    60   ~ 0
 VD18
 Entry Wire Line
 	4200 4950 4300 5050
@@ -491,45 +490,45 @@ NoConn ~ 7350 5300
 NoConn ~ 7350 5200
 NoConn ~ 7350 5100
 NoConn ~ 7350 5000
-Text Label 14850 8500 0    60   ~ 0
+Text Label 15150 8500 2    60   ~ 0
 VD23
-Text Label 14850 8400 0    60   ~ 0
+Text Label 15150 8400 2    60   ~ 0
 VD22
-Text Label 14850 8300 0    60   ~ 0
+Text Label 15150 8300 2    60   ~ 0
 VD21
-Text Label 14850 8200 0    60   ~ 0
+Text Label 15150 8200 2    60   ~ 0
 VD20
-Text Label 14850 7050 0    60   ~ 0
+Text Label 15150 7050 2    60   ~ 0
 VD19
-Text Label 14850 6950 0    60   ~ 0
+Text Label 15150 6950 2    60   ~ 0
 VD18
-Text Label 14850 6850 0    60   ~ 0
+Text Label 15150 6850 2    60   ~ 0
 VD15
-Text Label 14850 6750 0    60   ~ 0
+Text Label 15150 6750 2    60   ~ 0
 VD14
-Text Label 14900 5600 0    60   ~ 0
+Text Label 15150 5600 2    60   ~ 0
 VD13
-Text Label 14900 5500 0    60   ~ 0
+Text Label 15150 5500 2    60   ~ 0
 VD12
-Text Label 14900 5400 0    60   ~ 0
+Text Label 15150 5400 2    60   ~ 0
 VD11
-Text Label 14900 5300 0    60   ~ 0
+Text Label 15150 5300 2    60   ~ 0
 VD10
-Text Label 14900 4150 0    60   ~ 0
+Text Label 15150 4150 2    60   ~ 0
 VD7
-Text Label 14900 4050 0    60   ~ 0
+Text Label 15150 4050 2    60   ~ 0
 VD6
-Text Label 14900 3950 0    60   ~ 0
+Text Label 15150 3950 2    60   ~ 0
 VD5
-Text Label 14900 3850 0    60   ~ 0
+Text Label 15150 3850 2    60   ~ 0
 VD4
-Text Label 14900 2700 0    60   ~ 0
+Text Label 15150 2700 2    60   ~ 0
 VD3
-Text Label 14900 2600 0    60   ~ 0
+Text Label 15150 2600 2    60   ~ 0
 VD2
-Text Label 14750 2500 0    60   ~ 0
+Text Label 15150 2500 2    60   ~ 0
 VLINE
-Text Label 14750 2400 0    60   ~ 0
+Text Label 15150 2400 2    60   ~ 0
 VFRAME
 Entry Wire Line
 	15150 5600 15250 5700
@@ -768,8 +767,8 @@ $Comp
 L R_US R6004
 U 1 1 4A403A57
 P 8950 4650
-F 0 "R6004" H 8950 4550 50  0000 C CNN
-F 1 "100k" H 8950 4750 50  0000 C CNN
+F 0 "R6004" V 8900 4450 50  0000 C CNN
+F 1 "100k" V 9000 4500 50  0000 C CNN
 	1    8950 4650
 	0    1    1    0   
 $EndComp
@@ -786,7 +785,7 @@ F 1 "0R" H 8800 3800 50  0000 C CNN
 $EndComp
 Entry Wire Line
 	4300 3800 4400 3900
-Text Label 9000 5700 0    60   ~ 0
+Text Label 9150 5700 2    60   ~ 0
 XP
 NoConn ~ 10000 3700
 Text Label 9350 3500 0    60   ~ 0
@@ -805,11 +804,11 @@ Entry Wire Line
 	9250 3300 9350 3400
 Entry Wire Line
 	9250 3400 9350 3500
-Text Label 9000 5600 0    60   ~ 0
+Text Label 9150 5600 2    60   ~ 0
 XM
-Text Label 9000 5500 0    60   ~ 0
+Text Label 9150 5500 2    60   ~ 0
 YP
-Text Label 9000 5400 0    60   ~ 0
+Text Label 9150 5400 2    60   ~ 0
 YM
 Entry Wire Line
 	9150 5700 9250 5800
@@ -828,16 +827,14 @@ F 1 "SC32442" H 5450 5350 50  0000 C CNN
 	6    5450 5250
 	1    0    0    -1  
 $EndComp
-Text Label 3900 5550 0    60   ~ 0
+Text Label 4200 5550 2    60   ~ 0
 LDEN
-Text Label 3800 5450 0    60   ~ 0
+Text Label 4200 5450 2    60   ~ 0
 VFRAME
-Text Label 3850 5350 0    60   ~ 0
+Text Label 4200 5350 2    60   ~ 0
 VLINE
-Text Label 3950 5250 0    60   ~ 0
+Text Label 4200 5250 2    60   ~ 0
 VCLK
-Text Label 3950 5150 0    60   ~ 0
-LEND
 Entry Wire Line
 	4200 5550 4300 5650
 Entry Wire Line
@@ -846,31 +843,29 @@ Entry Wire Line
 	4200 5350 4300 5450
 Entry Wire Line
 	4200 5250 4300 5350
-Entry Wire Line
-	4200 5150 4300 5250
-Text Label 3950 4150 0    60   ~ 0
+Text Label 4200 4150 2    60   ~ 0
 VD15
-Text Label 3950 4050 0    60   ~ 0
+Text Label 4200 4050 2    60   ~ 0
 VD14
-Text Label 3950 3950 0    60   ~ 0
+Text Label 4200 3950 2    60   ~ 0
 VD13
-Text Label 3950 3850 0    60   ~ 0
+Text Label 4200 3850 2    60   ~ 0
 VD12
-Text Label 3950 3750 0    60   ~ 0
+Text Label 4200 3750 2    60   ~ 0
 VD11
-Text Label 3950 3650 0    60   ~ 0
+Text Label 4200 3650 2    60   ~ 0
 VD10
-Text Label 3950 3350 0    60   ~ 0
+Text Label 4200 3350 2    60   ~ 0
 VD7
-Text Label 3950 3250 0    60   ~ 0
+Text Label 4200 3250 2    60   ~ 0
 VD6
-Text Label 3950 3150 0    60   ~ 0
+Text Label 4200 3150 2    60   ~ 0
 VD5
-Text Label 3950 3050 0    60   ~ 0
+Text Label 4200 3050 2    60   ~ 0
 VD4
-Text Label 3950 2950 0    60   ~ 0
+Text Label 4200 2950 2    60   ~ 0
 VD3
-Text Label 3950 2850 0    60   ~ 0
+Text Label 4200 2850 2    60   ~ 0
 VD2
 Entry Wire Line
 	4200 4150 4300 4250
