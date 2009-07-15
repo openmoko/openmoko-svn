@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Tue Jul 14 15:27:53 2009
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700

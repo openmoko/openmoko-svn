@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 13:46:03 BST
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,24 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L LED- #PWR?
+U 1 1 4A5D76A6
+P 12900 6900
+F 0 "#PWR?" H 12900 6800 50  0001 C CNN
+F 1 "LED-" H 12900 7050 50  0000 C CNN
+	1    12900 6900
+	-1   0    0    1   
+$EndComp
+$Comp
+L LED+ #PWR?
+U 1 1 4A5D769E
+P 12900 6600
+F 0 "#PWR?" H 12900 6500 50  0001 C CNN
+F 1 "LED+" H 12900 6750 50  0000 C CNN
+	1    12900 6600
+	1    0    0    -1  
+$EndComp
 Connection ~ 13700 9600
 Wire Wire Line
 	13700 9500 13700 9600
@@ -2124,30 +2142,12 @@ F 2 "R0402-H" H 12150 6900 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L VAA #PWR50
-U 1 1 4A39F8D3
-P 12900 6900
-F 0 "#PWR50" H 12900 6960 30  0001 C CNN
-F 1 "LED-" H 12900 7050 50  0000 C CNN
-	1    12900 6900
-	-1   0    0    1   
-$EndComp
-$Comp
 L GND #PWR53
 U 1 1 4A39F7D7
 P 13700 6800
 F 0 "#PWR53" H 13700 6800 30  0001 C CNN
 F 1 "GND" H 13700 6730 30  0001 C CNN
 	1    13700 6800
-	1    0    0    -1  
-$EndComp
-$Comp
-L VAA #PWR49
-U 1 1 4A39F7C2
-P 12900 6600
-F 0 "#PWR49" H 12900 6660 30  0001 C CNN
-F 1 "LED+" H 12900 6750 50  0000 C CNN
-	1    12900 6600
 	1    0    0    -1  
 $EndComp
 $Comp

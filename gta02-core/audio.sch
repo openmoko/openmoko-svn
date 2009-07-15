@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 13:57:45 BST
+EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
