@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed 15 Jul 2009 08:19:57 PM PDT
+LIBS:power,device,conn,linear,regul,74xx,cmos4000,adc-dac,memory,xilinx,special,microcontrollers,dsp,microchip,analog_switches,motorola,texas,intel,audio,interface,digital-audio,philips,display,cypress,siliconi,contrib,valves,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 9 12
+Sheet 1 1
 Title ""
 Date "20 jun 2009"
 Rev ""
@@ -15,7 +15,7 @@ Comment4 ""
 $EndDescr
 $Comp
 L LED- #PWR?
-U 1 1 4A5D76A6
+U 1 1 4A5E9C57
 P 12900 6900
 F 0 "#PWR?" H 12900 6800 50  0001 C CNN
 F 1 "LED-" H 12900 7050 50  0000 C CNN
@@ -24,7 +24,7 @@ F 1 "LED-" H 12900 7050 50  0000 C CNN
 $EndComp
 $Comp
 L LED+ #PWR?
-U 1 1 4A5D769E
+U 1 1 4A5E9C4F
 P 12900 6600
 F 0 "#PWR?" H 12900 6500 50  0001 C CNN
 F 1 "LED+" H 12900 6750 50  0000 C CNN
