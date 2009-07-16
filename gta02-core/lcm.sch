@@ -1,5 +1,5 @@
 EESchema Schematic File Version 2  date Wed 15 Jul 2009 08:22:23 PM PDT
-LIBS:power,device,conn,linear,regul,74xx,cmos4000,adc-dac,memory,xilinx,special,microcontrollers,dsp,microchip,analog_switches,motorola,texas,intel,audio,interface,digital-audio,philips,display,cypress,siliconi,contrib,valves,gta02-core,lcm-cache
+LIBS:power,device,conn,gta02-core 
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
