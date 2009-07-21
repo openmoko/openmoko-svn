@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Wed 15 Jul 2009 08:22:23 PM PDT
-LIBS:power,device,conn,gta02-core 
+EESchema Schematic File Version 2  date Tue 21 Jul 2009 13:57:22 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 1 1
+Sheet 4 12
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Connection ~ 6550 2550
 Connection ~ 8750 3000
 Wire Wire Line
 	8750 3250 8750 3000
@@ -603,7 +604,7 @@ F 1 "LED+" H 7300 3050 50  0000 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L TST P?
+L TST TP6002
 U 1 1 4A5E9A21
 P 8500 3250
 F 0 "TP6002" H 8500 3550 40  0000 C CNN
@@ -630,7 +631,7 @@ F 1 "GND" H 7750 3930 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C6005
 U 1 1 4A5E98AB
 P 8000 3400
 F 0 "C6005" H 8050 3500 50  0000 L CNN
@@ -639,7 +640,7 @@ F 1 "100n" H 8050 3300 50  0000 L CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C?
+L C C6004
 U 1 1 4A5E98AA
 P 7500 3400
 F 0 "C6004" H 7550 3500 50  0000 L CNN
