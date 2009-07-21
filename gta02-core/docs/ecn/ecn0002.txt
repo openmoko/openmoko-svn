@@ -1,5 +1,9 @@
 Remove NOR (U2501)
 
+Remove U2501
+Remove U2502
+
+Remove signals GCS0, GCS3, nNOR_WP, nFLASH_CE, nOE 
 
 To do:
 - chips to remove

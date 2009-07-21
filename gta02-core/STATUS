@@ -7,7 +7,7 @@ CPU-POWER	Dave
 IO		Luke
 GPS		Alvaro	Werner	5253
 LCM		Luke    Dave	5306
-MEMORY		Luke	Werner	5182
+MEMORY		Luke	Werner	5182	Dave	5308
 PMU		Alvaro	Werner	5182
 SD-SIM		Dave	Werner	5275
 USB		Rene	Werner	5182

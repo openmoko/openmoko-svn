@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
+EESchema Schematic File Version 2  date Tue 21 Jul 2009 15:52:06 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 3250 3200 0    50   ~ 0
+GCS0 & GCS3 signals no longer used (ecn0002)
+Text Notes 3250 3100 0    50   ~ 0
+3d_CS signal no longer used (ecn0001)
+Wire Bus Line
+	6000 4500 6000 10450
 Wire Wire Line
 	2750 8850 3550 8850
 Wire Wire Line
@@ -65,11 +71,8 @@ Wire Wire Line
 	13850 2750 13850 2950
 Wire Wire Line
 	14250 2950 14250 2750
-Connection ~ 14250 3350
 Wire Wire Line
-	14250 3300 14250 3550
-Wire Wire Line
-	14250 3550 13850 3550
+	13850 3550 14250 3550
 Wire Wire Line
 	13850 3550 13850 3350
 Wire Wire Line
@@ -86,8 +89,6 @@ Wire Wire Line
 	9300 7650 9300 8700
 Wire Wire Line
 	10550 6450 9200 6450
-Wire Bus Line
-	6000 7900 6000 4500
 Wire Bus Line
 	15400 8150 15400 9900
 Wire Wire Line
@@ -379,8 +380,6 @@ Wire Wire Line
 	8750 9400 10400 9400
 Wire Bus Line
 	15400 9900 10500 9900
-Wire Bus Line
-	6000 10450 6000 7950
 Wire Wire Line
 	12650 1950 12650 1750
 Wire Wire Line
@@ -487,6 +486,8 @@ Wire Wire Line
 	3550 8850 3550 8350
 Wire Wire Line
 	3450 8700 2750 8700
+Wire Wire Line
+	14250 3550 14250 3350
 Text GLabel 2750 8550 0    60   Output ~ 0
 MODEM_ON
 Text GLabel 2750 8850 0    60   Output ~ 0
