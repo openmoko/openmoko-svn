@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 21 Jul 2009 13:57:22 BST
+EESchema Schematic File Version 2  date Tue 21 Jul 2009 14:49:04 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 13150 1900 0    50   ~ 0
+NOTE: filter pinouts are different to gta01/gta02\n
 Connection ~ 6550 2550
 Connection ~ 8750 3000
 Wire Wire Line
