@@ -1,5 +1,17 @@
 Remove Calypso serial interface on headset (U4401)
 
+
+The Calypso serial interface on the headset port caused many problem. 
+
+Changes:
+- removed U4401
+- removed R4407 and R4408, these resistors probably keept the input signal from
+  shorting through the amplifier, so there is no need for them anymore.
+- removed TP4405/4406
+- removed R4403, pulldown resistor for U4401 enable lines 
+
 To do:
-- mixing digital and analog ain't no good
-- we don't really need it - factory could just use test points
+- depending on Calypso replacement we might want to keep/remove R4411 and TP4402/4401 as well
+
+
+Author: Rene Harder <rehar@saweb.de>

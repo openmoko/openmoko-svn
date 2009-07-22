@@ -14,11 +14,11 @@ Number	Status	Description
 0012	Defer	Add fuse to USB_VBUS
 0013	Defer	Increase rated current of B4902
 0014	Defer	Limit non-ESD overvoltage on USB_VBUS
-0015	Edit	Remove Calypso serial interface on headset (U4401)
+0015	Discuss	Remove Calypso serial interface on headset (U4401)
 0016	Edit	Remove upper acceleration sensor (U7801)
 0017	Edit	Move Bluetooth module (U2) to main PCB
 0018	Edit	Add beads/filters to audio signals leaving/entering can
-0019	Edit	Consider applying buzz fix
+0019	Discuss	Consider applying buzz fix
 0020	Discuss	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
 0022	Discuss	Apply bass fix
