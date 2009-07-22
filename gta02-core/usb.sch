@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Fri 17 Jul 2009 17:27:26 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Tue 21 Jul 2009 20:27:43 CDT
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -486,7 +486,7 @@ P 11500 4800
 F 0 "D4904" V 11400 5000 50  0000 C CNN
 F 1 "151pF" V 11500 5000 50  0000 C CNN
 F 2 "0402" H 11440 5010 60  0001 C CNN
-F 4 "9Vdc" V 11600 5000 50  0000 C CNN "Field1"
+F 4 "9Vdc" V 11600 5000 50  0000 C CNN "DC-Voltage"
 	1    11500 4800
 	0    -1   1    0   
 $EndComp
@@ -534,7 +534,7 @@ F 0 "D4902" V 10800 5000 50  0000 C CNN
 F 1 "151pF" V 10900 5000 50  0000 C CNN
 F 2 "0402" H 10840 5010 60  0001 C CNN
 F 3 "http://www.kmax.com.tw/doc/02_KEV_Series.pdf" H 9000 4800 60  0001 C CNN
-F 4 "6.5Vac" V 11000 5000 50  0000 C CNN "Field1"
+F 4 "6.5Vac" V 11000 5000 50  0000 C CNN "AC-Voltage"
 	1    10900 4800
 	0    -1   1    0   
 $EndComp
@@ -545,7 +545,7 @@ P 10250 4800
 F 0 "D4903" V 10150 5000 50  0000 C CNN
 F 1 "331pF" V 10250 5000 50  0000 C CNN
 F 2 "0402" H 10190 5010 60  0001 C CNN
-F 4 "5.6Vdc" V 10350 5000 50  0000 C CNN "Field1"
+F 4 "5.6Vdc" V 10350 5000 50  0000 C CNN "DC-Voltage"
 	1    10250 4800
 	0    -1   1    0   
 $EndComp
@@ -556,7 +556,7 @@ P 9650 4800
 F 0 "D4901" V 9550 5000 50  0000 C CNN
 F 1 "151pF" V 9650 5000 50  0000 C CNN
 F 2 "0402" H 9590 5010 60  0001 C CNN
-F 4 "6.5Vac" V 9750 5000 50  0000 C CNN "Field1"
+F 4 "6.5Vac" V 9750 5000 50  0000 C CNN "AC-Voltage"
 	1    9650 4800
 	0    -1   1    0   
 $EndComp
@@ -567,7 +567,7 @@ P 9000 4800
 F 0 "C4902" V 8900 5000 50  0000 C CNN
 F 1 "331pF" V 9000 5000 50  0000 C CNN
 F 2 "0402" H 8940 5010 60  0001 C CNN
-F 4 "5.6Vdc" V 9100 5000 50  0000 C CNN "Field1"
+F 4 "5.6Vdc" V 9100 5000 50  0000 C CNN "DC-Voltage"
 	1    9000 4800
 	0    -1   1    0   
 $EndComp
