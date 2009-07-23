@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
+EESchema Schematic File Version 2  date Thu 23 Jul 2009 23:55:10 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -14,94 +14,114 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Notes Line
-	12350 9650 12350 6350
+	15000 6150 15000 10200
+Wire Wire Line
+	13450 10000 13650 10000
+Wire Wire Line
+	13450 9700 13650 9700
+Wire Wire Line
+	13450 8500 13650 8500
+Wire Wire Line
+	13450 8050 13650 8050
+Wire Wire Line
+	13650 7750 13450 7750
+Wire Wire Line
+	12850 6700 12850 6850
+Wire Wire Line
+	13650 7300 13450 7300
+Wire Wire Line
+	12850 6850 13650 6850
+Wire Wire Line
+	13650 7150 13450 7150
+Wire Wire Line
+	13650 7000 13450 7000
+Wire Wire Line
+	13650 7600 13450 7600
+Wire Wire Line
+	13650 7900 13450 7900
+Wire Wire Line
+	13450 8350 13650 8350
+Wire Wire Line
+	13450 9550 13650 9550
+Wire Wire Line
+	13450 9850 13650 9850
 Wire Notes Line
-	12350 9650 15000 9650
+	15000 6150 12350 6150
 Wire Notes Line
-	15000 9650 15000 6350
+	15000 10200 12350 10200
+Wire Wire Line
+	13450 8950 13650 8950
+Wire Wire Line
+	13450 8800 13650 8800
+Wire Wire Line
+	13450 9250 13650 9250
+Wire Wire Line
+	13450 9100 13650 9100
 Wire Notes Line
-	15000 6350 12350 6350
-Wire Wire Line
-	13450 9300 13650 9300
-Wire Wire Line
-	13450 9000 13650 9000
-Wire Wire Line
-	13450 8550 13650 8550
-Wire Wire Line
-	13650 8100 13450 8100
-Wire Wire Line
-	13650 7800 13450 7800
-Wire Wire Line
-	13650 7200 13450 7200
-Wire Wire Line
-	13650 7350 13450 7350
-Wire Wire Line
-	13650 7050 12850 7050
-Wire Wire Line
-	13650 7500 13450 7500
-Wire Wire Line
-	12850 7050 12850 6900
-Wire Wire Line
-	13650 7950 13450 7950
-Wire Wire Line
-	13450 8250 13650 8250
-Wire Wire Line
-	13450 8700 13650 8700
-Wire Wire Line
-	13450 9150 13650 9150
-Wire Wire Line
-	13450 9450 13650 9450
-Text Notes 12450 6500 0    60   ~ 0
+	12350 10200 12350 6150
+NoConn ~ 13450 9250
+NoConn ~ 13450 9100
+Text GLabel 13650 9250 2    60   Input ~ 0
+MODEM_RX
+Text GLabel 13650 9100 2    60   Output ~ 0
+MODEM_TX
+NoConn ~ 13450 8950
+NoConn ~ 13450 8800
+Text GLabel 13650 8950 2    60   Output ~ 0
+MODEM_RTS
+Text GLabel 13650 8800 2    60   Input ~ 0
+MODEM_CTS
+Text Notes 12450 6300 0    60   ~ 0
 GSM labels unused while calypso status is unresolved
-NoConn ~ 13450 9450
-NoConn ~ 13450 9300
-NoConn ~ 13450 9150
-NoConn ~ 13450 9000
-Text GLabel 13650 9450 2    60   Input ~ 0
+NoConn ~ 13450 10000
+NoConn ~ 13450 9850
+NoConn ~ 13450 9700
+NoConn ~ 13450 9550
+Text GLabel 13650 10000 2    60   Input ~ 0
 MICIN
-Text GLabel 13650 9300 2    60   Input ~ 0
+Text GLabel 13650 9850 2    60   Input ~ 0
 MICIP
-Text GLabel 13650 9150 2    60   Output ~ 0
+Text GLabel 13650 9700 2    60   Output ~ 0
 EARN
-Text GLabel 13650 9000 2    60   Output ~ 0
+Text GLabel 13650 9550 2    60   Output ~ 0
 EARP
-NoConn ~ 13450 8700
-NoConn ~ 13450 8550
-Text GLabel 13650 8700 2    60   Input ~ 0
+NoConn ~ 13450 8500
+NoConn ~ 13450 8350
+Text GLabel 13650 8500 2    60   Input ~ 0
 MODEM_ON
-Text GLabel 13650 8550 2    60   Input ~ 0
+Text GLabel 13650 8350 2    60   Input ~ 0
 MODEM_RST
-NoConn ~ 13450 8250
-Text GLabel 13650 8250 2    60   Input ~ 0
+NoConn ~ 13450 8050
+Text GLabel 13650 8050 2    60   Input ~ 0
 DL_GSM
-NoConn ~ 13450 8100
-NoConn ~ 13450 7950
-NoConn ~ 13450 7800
-Text GLabel 13650 7800 2    60   Input ~ 0
+NoConn ~ 13450 7900
+NoConn ~ 13450 7750
+NoConn ~ 13450 7600
+Text GLabel 13650 7600 2    60   Input ~ 0
 AMP_SHUT
-Text GLabel 13650 7950 2    60   Input ~ 0
+Text GLabel 13650 7750 2    60   Input ~ 0
 HP_IN
-Text GLabel 13650 8100 2    60   Input ~ 0
+Text GLabel 13650 7900 2    60   Input ~ 0
 INTO
-NoConn ~ 13450 7500
-NoConn ~ 13450 7350
-NoConn ~ 13450 7200
+NoConn ~ 13450 7300
+NoConn ~ 13450 7150
+NoConn ~ 13450 7000
 $Comp
 L PWR_FLAG #FLG?
 U 1 1 4A5C71E1
-P 12850 6900
-F 0 "#FLG?" H 12850 7170 30  0001 C CNN
-F 1 "PWR_FLAG" H 12850 7130 30  0000 C CNN
-	1    12850 6900
+P 12850 6700
+F 0 "#FLG?" H 12850 6970 30  0001 C CNN
+F 1 "PWR_FLAG" H 12850 6930 30  0000 C CNN
+	1    12850 6700
 	1    0    0    -1  
 $EndComp
-Text GLabel 13650 7350 2    60   Output ~ 0
+Text GLabel 13650 7150 2    60   Output ~ 0
 SIM_CLK
-Text GLabel 13650 7200 2    60   Output ~ 0
+Text GLabel 13650 7000 2    60   Output ~ 0
 SIM_RST
-Text GLabel 13650 7050 2    60   Output ~ 0
+Text GLabel 13650 6850 2    60   Output ~ 0
 SIM_V
-Text GLabel 13650 7500 2    60   BiDi ~ 0
+Text GLabel 13650 7300 2    60   BiDi ~ 0
 SIM_IO
 $Sheet
 S 5000 4500 1550 1500

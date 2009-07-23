@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
+EESchema Schematic File Version 2  date Thu 23 Jul 2009 23:09:58 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -620,7 +620,7 @@ F 1 " " H 13150 4800 30  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 11550 5850 0    60   Input ~ 0
-ACCEL_CS
+nACCEL_CS
 $Comp
 L GND #PWR?
 U 1 1 4A4B88E1
