@@ -1,0 +1,35 @@
+Introduce better bus termination on SDIO data lines / SD-Card.
+
+
+
+In early gta02's use of the SD-card generated interference causing GPS 
+performance to be poor, including significantly increasing Time To First 
+Fix.  With the SD card removed, TTFF was ~2 mins, but with card inserted 
+it went up to 10 minutes or more (depending on signal strengths).
+
+A software workaround was introduced that stopped the SDIO clock when SD 
+card was not in use, and this proved effective in allowing GPS to function 
+correctly while SD card was not in use.
+
+Later GTA02's came with an additional 10pF capacitor between Clk (pin5) and 
+Vss (pin6) of the SD card connector.
+
+
+The root cause of the problem is beieved to be EMF interference from the 
+SDIO bus not being properly terminated.
+
+
+To reduce ds EMF interference in gta02-core, we should:
+
+ - Fit 10pF capacitors in C7501-C7506 (currently NC)
+
+ - reduce 75R series resistors R7503-R7508 to 33R
+
+
+
+
+Author: Dave (openmoko@daveball.org.uk)
+
+
+http://wiki.openmoko.org/wiki/GPS_Problems
+http://wiki.openmoko.org/images/5/5b/SOP_for_GPS_capacitor_rework.pdf
