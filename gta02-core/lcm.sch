@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 21 Jul 2009 14:49:04 BST
+EESchema Schematic File Version 2  date Fri 24 Jul 2009 10:59:06 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -637,7 +637,7 @@ L C C6005
 U 1 1 4A5E98AB
 P 8000 3400
 F 0 "C6005" H 8050 3500 50  0000 L CNN
-F 1 "100n" H 8050 3300 50  0000 L CNN
+F 1 "NC" H 8050 3300 50  0000 L CNN
 	1    8000 3400
 	1    0    0    -1  
 $EndComp
