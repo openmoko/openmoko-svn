@@ -1,4 +1,4 @@
-.PHONY:		all gen generate gv sch update upload xpdf
+.PHONY:		all gen generate gv sch update upload xpdf bom-by-ref
 
 all:
 		@echo "make what ? target: gen generate sch upload"
@@ -28,3 +28,7 @@ upload:		generate
 sch:
 		eeschema `pwd`/gta02-core.sch
 
+bom-by-ref:
+		sed '/^#Cmp ( order = Reference )/,/#End Cmp/p;d' \
+		  gta02-core.lst | \
+		  sed '/^#/d;/ NC /d;s/^| //;/^TP/d'
