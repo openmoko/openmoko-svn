@@ -29,6 +29,6 @@ sch:
 		eeschema `pwd`/gta02-core.sch
 
 bom-by-ref:
-		sed '/^#Cmp ( order = Reference )/,/#End Cmp/p;d' \
+		@sed '/^#Cmp ( order = Reference )/,/#End Cmp/p;d' \
 		  gta02-core.lst | \
 		  sed '/^#/d;/ NC /d;s/^| //;/^TP/d'
