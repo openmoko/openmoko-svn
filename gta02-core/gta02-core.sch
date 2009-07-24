@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Thu 23 Jul 2009 23:55:10 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Fri Jul 24 01:46:36 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -13,52 +13,106 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 9050 5000 0    60   ~ 0
+x
+Text Notes 9050 4850 0    60   ~ 0
+79xx
+Text Notes 9050 4700 0    60   ~ 0
+77xx
+Text Notes 7100 4700 0    60   ~ 0
+76xx
+Text Notes 5100 4850 0    60   ~ 0
+U1501
+Text Notes 5100 4700 0    60   ~ 0
+75xx
+Text Notes 3100 4850 0    60   ~ 0
+U1501
+Text Notes 3100 4700 0    60   ~ 0
+60xx
+Text Notes 1100 5150 0    60   ~ 0
+15xx
+Text Notes 1100 5000 0    60   ~ 0
+78xx
+Text Notes 1100 4850 0    60   ~ 0
+47xx
+Text Notes 1100 4700 0    60   ~ 0
+46xx
+Text Notes 11000 2500 0    60   ~ 0
+R1918
 Wire Notes Line
-	15000 6150 15000 10200
+	12350 10200 12350 6150
 Wire Wire Line
-	13450 10000 13650 10000
-Wire Wire Line
-	13450 9700 13650 9700
-Wire Wire Line
-	13450 8500 13650 8500
-Wire Wire Line
-	13450 8050 13650 8050
-Wire Wire Line
-	13650 7750 13450 7750
-Wire Wire Line
-	12850 6700 12850 6850
-Wire Wire Line
-	13650 7300 13450 7300
-Wire Wire Line
-	12850 6850 13650 6850
-Wire Wire Line
-	13650 7150 13450 7150
-Wire Wire Line
-	13650 7000 13450 7000
-Wire Wire Line
-	13650 7600 13450 7600
-Wire Wire Line
-	13650 7900 13450 7900
-Wire Wire Line
-	13450 8350 13650 8350
-Wire Wire Line
-	13450 9550 13650 9550
-Wire Wire Line
-	13450 9850 13650 9850
-Wire Notes Line
-	15000 6150 12350 6150
-Wire Notes Line
-	15000 10200 12350 10200
-Wire Wire Line
-	13450 8950 13650 8950
-Wire Wire Line
-	13450 8800 13650 8800
+	13450 9100 13650 9100
 Wire Wire Line
 	13450 9250 13650 9250
 Wire Wire Line
-	13450 9100 13650 9100
+	13450 8800 13650 8800
+Wire Wire Line
+	13450 8950 13650 8950
 Wire Notes Line
-	12350 10200 12350 6150
+	12350 10200 15000 10200
+Wire Notes Line
+	12350 6150 15000 6150
+Wire Wire Line
+	13450 9850 13650 9850
+Wire Wire Line
+	13450 9550 13650 9550
+Wire Wire Line
+	13450 8350 13650 8350
+Wire Wire Line
+	13650 7900 13450 7900
+Wire Wire Line
+	13650 7600 13450 7600
+Wire Wire Line
+	13650 7000 13450 7000
+Wire Wire Line
+	13650 7150 13450 7150
+Wire Wire Line
+	13650 6850 12850 6850
+Wire Wire Line
+	13650 7300 13450 7300
+Wire Wire Line
+	12850 6850 12850 6700
+Wire Wire Line
+	13650 7750 13450 7750
+Wire Wire Line
+	13450 8050 13650 8050
+Wire Wire Line
+	13450 8500 13650 8500
+Wire Wire Line
+	13450 9700 13650 9700
+Wire Wire Line
+	13450 10000 13650 10000
+Wire Notes Line
+	15000 6150 15000 10200
+Text Notes 11000 2350 0    60   ~ 0
+U1501
+Text Notes 11000 2200 0    60   ~ 0
+49xx
+Text Notes 9050 2800 0    60   ~ 0
+U1501
+Text Notes 9050 2650 0    60   ~ 0
+44xx
+Text Notes 9050 2500 0    60   ~ 0
+43xx
+Text Notes 9050 2350 0    60   ~ 0
+41xx
+Text Notes 9050 2200 0    60   ~ 0
+30xx
+Text Notes 7100 2350 0    60   ~ 0
+U1501
+Text Notes 5100 2350 0    60   ~ 0
+R2504
+Text Notes 1100 2350 0    60   ~ 0
+R2502
+Text Notes 7100 2200 0    60   ~ 0
+22xx
+Text Notes 5100 2200 0    60   ~ 0
+17xx
+Text Notes 3100 2200 0    60   ~ 0
+15xx
+Text Notes 1100 2200 0    60   ~ 0
+15xx
 NoConn ~ 13450 9250
 NoConn ~ 13450 9100
 Text GLabel 13650 9250 2    60   Input ~ 0

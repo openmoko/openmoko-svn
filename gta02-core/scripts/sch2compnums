@@ -1,0 +1,14 @@
+#!/usr/bin/perl
+# Extract component references from schematics file, sorted by the numeric
+# part of the reference.
+
+for (sort <>) {
+    next unless /^F 0 "[A-Z]*/;
+    ($n = $_) =~ s///;
+    next if $n =~ /#/;
+    $n =~ s/".*//;
+    $c{$n} .= $_;
+}
+for (sort keys %c) {
+    print $c{$_};
+}
