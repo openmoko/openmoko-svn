@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed 29 Jul 2009 21:08:36 BST
+EESchema Schematic File Version 2  date Wed 29 Jul 2009 22:03:09 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,16 +13,16 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 4250 4650 0    50   ~ 0
-AMP_SHUTDOWN and HP_IN removed - ecn0010
-NoConn ~ 3450 4850
-NoConn ~ 3450 4750
+Text Notes 4550 7000 0    50   ~ 0
+Connect CLKOUT1 to \nUEXTCLK - ecn0025
+Wire Wire Line
+	3450 7300 4600 7300
 Wire Wire Line
 	4900 5400 4700 5400
 Wire Wire Line
-	4700 5350 4700 5400
+	4700 5400 4700 5350
 Wire Wire Line
-	3450 5350 4700 5350
+	4700 5350 3450 5350
 Wire Wire Line
 	4900 4800 4000 4800
 Wire Wire Line
@@ -551,6 +551,18 @@ Wire Wire Line
 	4100 4950 4900 4950
 Wire Wire Line
 	3700 4350 4900 4350
+Wire Wire Line
+	4800 7200 4600 7200
+Wire Wire Line
+	4600 7200 4600 7300
+Text GLabel 4900 6150 2    60   Output ~ 0
+WLAN_nRESET
+Text GLabel 4800 7200 2    60   Output ~ 0
+EXT_CLK
+Text Notes 4250 4650 0    50   ~ 0
+AMP_SHUTDOWN and HP_IN removed - ecn0010
+NoConn ~ 3450 4850
+NoConn ~ 3450 4750
 Text GLabel 4900 5850 2    60   BiDi ~ 0
 WLAN_DATA2
 Text Notes 9400 5100 0    80   ~ 16
@@ -774,8 +786,6 @@ Text GLabel 4900 6000 2    60   Output ~ 0
 CHIP_PWD
 Text GLabel 4900 5700 2    60   Output ~ 0
 SHUTDOWN
-Text GLabel 4900 6150 2    60   Output ~ 0
-WLAN_nRESET
 Text GLabel 4900 6000 2    60   Output ~ 0
 CHIP_PWD
 Text GLabel 4900 5700 2    60   Output ~ 0
@@ -914,7 +924,6 @@ F 1 "TAS4025A" H 7650 8350 60  0000 C CNN
 $EndComp
 NoConn ~ 3450 7950
 NoConn ~ 3450 7850
-NoConn ~ 3450 7300
 $Comp
 L GND #PWR?
 U 1 1 4A456131

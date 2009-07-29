@@ -47,3 +47,5 @@ replacing it with a common-cathode type (if such a component exists).
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Review: Dave Ball <openmoko@daveball.org.uk>, rev5338, reverse the logic 
+	for gta02-core, less hassle than sourcing new LED's.
