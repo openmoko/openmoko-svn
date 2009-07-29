@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 23 Jul 2009 23:09:58 BST
+EESchema Schematic File Version 2  date Wed 29 Jul 2009 21:08:36 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,14 +13,16 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 4250 4650 0    50   ~ 0
+AMP_SHUTDOWN and HP_IN removed - ecn0010
+NoConn ~ 3450 4850
+NoConn ~ 3450 4750
 Wire Wire Line
 	4900 5400 4700 5400
 Wire Wire Line
 	4700 5350 4700 5400
 Wire Wire Line
 	3450 5350 4700 5350
-Wire Wire Line
-	4900 4500 3800 4500
 Wire Wire Line
 	4900 4800 4000 4800
 Wire Wire Line
@@ -434,10 +436,6 @@ Wire Wire Line
 Wire Wire Line
 	3450 5750 3700 5750
 Wire Wire Line
-	3450 4750 3800 4750
-Wire Wire Line
-	3800 4750 3800 4500
-Wire Wire Line
 	13550 2350 14600 2350
 Wire Wire Line
 	13550 2650 15500 2650
@@ -546,12 +544,6 @@ Wire Wire Line
 Wire Wire Line
 	3900 5550 3450 5550
 Wire Wire Line
-	3450 4850 3900 4850
-Wire Wire Line
-	3900 4850 3900 4650
-Wire Wire Line
-	3900 4650 4900 4650
-Wire Wire Line
 	3450 5050 4100 5050
 Wire Wire Line
 	4100 5050 4100 4950
@@ -567,9 +559,9 @@ Text GLabel 11550 6300 0    60   Input ~ 0
 WLAN_INT
 Text Notes 9750 7400 0    50   ~ 0
 board revision detection\necn0001
-Text Notes 3850 4250 0    50   ~ 0
+Text Notes 4250 4250 0    50   ~ 0
 BT_PIO5 moved here - ecn0001
-Text Notes 4900 5150 0    50   ~ 0
+Text Notes 4250 5150 0    50   ~ 0
 3D_RST net removed - ecn0001
 NoConn ~ 3450 5150
 $Comp
@@ -756,10 +748,6 @@ F 1 "FLASH_1V8" H 4050 1600 50  0000 C CNN
 	1    4050 1450
 	1    0    0    -1  
 $EndComp
-Text GLabel 4900 4500 2    60   Output ~ 0
-AMP_SHUT
-Text GLabel 4900 4650 2    60   Output ~ 0
-HP_IN
 Text GLabel 4900 4800 2    60   Output ~ 0
 INTO
 Text GLabel 4900 4950 2    60   Output ~ 0
