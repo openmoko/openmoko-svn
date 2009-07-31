@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Thu 23 Jul 2009 19:04:44 CDT
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 30 Jul 2009 10:55:48 PM CDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -1472,7 +1472,7 @@ F 2 "0402" H 7900 5900 60  0001 C CNN
 	1    7950 5750
 	1    0    0    -1  
 $EndComp
-Text GLabel 8500 6050 2    60   BiDi ~ 0
+Text GLabel 8500 6050 2    60   Input ~ 0
 X_I2C_SCL
 Text GLabel 8500 5900 2    60   BiDi ~ 0
 X_I2C_SDA
