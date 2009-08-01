@@ -1,0 +1,21 @@
+ABOUT THIS LIBRARY
+
+  This is a perl parser for several Kicad file formats.
+
+  For information about Kicad, please visit http://kicad.sourceforge.net
+
+BUILDING AND INSTALLING
+
+  Just type:
+  
+    perl Makefile.PL
+    make
+    make install
+
+COPYRIGHT
+
+  Copyright 2009 Alvaro Lopes <alvieboy@alvie.com>
+  
+  This library is free software; you can redistribute it and/or
+  modify it under the same terms as Perl itself.
+
