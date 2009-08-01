@@ -8,7 +8,7 @@ my $sch = new Kicad::Netlist;
 
 defined $ARGV[0] or do { print "Usage: $0 netlistfile\n"; exit 0; };
 
-$sch->parse("../gta02-core.net");
+$sch->parse($ARGV[0]);
 
 my %libs;
 my %uses;
