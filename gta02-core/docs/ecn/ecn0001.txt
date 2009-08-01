@@ -1,7 +1,8 @@
 Remove Glamo (U1801)
 
 Changes:
-- Removed Glamo (U1801) and related passives
+- Removed Glamo (U1801) and related passives, except
+  - Preserve the nWAIT pull-up R1801.
 - LCM pixel data reassigned directly to screen
 - LCM controller SPI moved to GPIO (GPG-5-7)
 - LCD_xRES signal moved to GPD9

@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed 29 Jul 2009 21:06:16 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Sat Aug  1 14:24:10 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 7100 2500 0    60   ~ 0
+R1801
 Text Notes 9050 5000 0    60   ~ 0
 x
 Text Notes 9050 4850 0    60   ~ 0
@@ -151,10 +153,10 @@ NoConn ~ 13450 7300
 NoConn ~ 13450 7150
 NoConn ~ 13450 7000
 $Comp
-L PWR_FLAG #FLG?
+L PWR_FLAG #FLG01
 U 1 1 4A5C71E1
 P 12850 6700
-F 0 "#FLG?" H 12850 6970 30  0001 C CNN
+F 0 "#FLG01" H 12850 6970 30  0001 C CNN
 F 1 "PWR_FLAG" H 12850 6930 30  0000 C CNN
 	1    12850 6700
 	1    0    0    -1  
