@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat Aug  1 14:30:58 2009
+EESchema Schematic File Version 2  date Mon Aug  3 10:56:52 2009
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 2000 8750 2    50   ~ 0
+ECN0027: EXTINT0 in GTA02
 Wire Wire Line
 	4150 3650 4150 3850
 Wire Wire Line
