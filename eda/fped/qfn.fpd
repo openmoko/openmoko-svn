@@ -1,0 +1,70 @@
+/*
+ * Example of a QFN package (and general construction site to experiment with
+ * fped features during development)
+ *
+ * Everything you see here is likely to change sooner or later.
+ *
+ * http://www.nxp.com/acrobat/packages/footprint/SOT616-1_fp_reflow.pdf
+ */
+
+frame pad_up {
+	c: vec @(-D/2, 0mm)
+	vec .(0mm, C)
+	meas c . 0.2mm
+	vec c(D, C)
+	set pad = n+1
+	pad "$pad" c .
+}
+
+frame pads {
+	loop n = 0, N/4-1
+
+	vec @(P*(n-(N/4-1)/2), -Ay/2)
+	frame pad_up .
+
+}
+
+
+set N = 24
+
+/*
+ * Note that this table is not a great example because it contains lots of
+ * fields we don't really need for iterations. But it's useful for driving
+ * the GUI to extremes.
+ */
+
+table
+    { P, Ax, Ay, Bx, By, C, D, SLx, SLy, SPx_tot, SPy_tot, SPx, SPy, Gx, Gy, Hx, Hy }
+    { 0.5mm, 5mm, 5mm, 3.2mm, 3.2mm, 0.9mm, 0.24mm, 2.1mm, 2.1mm, 1.2mm,
+      1.2mm, 0.45mm, 0.45mm, 4.3mm, 4.3mm, 5.25mm, 5.25mm }
+
+h_x0y0: vec @(-Hx/2, -Hy/2)
+h_x1y1: vec .(Hx, Hy)
+rect h_x0y0 h_x1y1 8mil
+
+/*
+ * we can't draw the package outline on the silk screen for it would print
+ * over the pads.
+ */
+#if 0
+g_x0y0: vec @(-Gx/2, -Gy/2)
+g_x1y1: vec .(Gx, Gy)
+#endif
+
+frame pads @
+
+// ARC, just for testing
+
+c: vec @(-1mm, 1mm)
+r: vec c(0mm, 0.5mm)
+e: vec c(-0.5mm, 0mm)
+arc c r e 2mil
+
+r2: vec c(0mm, 0.8mm)
+circ c r2 5mil
+
+/*
+x1 = 1+2*3
+x2 = (1+2)*3
+x3 = 1-(2+3)
+*/

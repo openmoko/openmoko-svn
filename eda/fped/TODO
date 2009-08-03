@@ -1,0 +1,54 @@
+Missing features:
+- add row selection
+- populate input area (still needed: mm/mil, rezoom)
+- add vec editor (need to be able to edit name, x, and y)
+- add obj editor
+- add table/var/loop editor (missing: add col/row, add/del var/table/loop)
+- add default unit (combine with grid unit selection ?)
+- consider adding auto/mm/mil selection for each dimension
+- add measurements (partly done. still needed: find out how to define
+  non-trivial endpoints, e.g., some vector in last iteration of loop)
+- add KiCad output
+- add postscript output
+- add option to include/omit helper vecs and frames (display and postscript)
+
+Error detection:
+- eliminate duplicate instances
+
+Style:
+- make column of entry field greedily consume all unallocated space
+
+Bugs:
+- default silk width has no business being hard-coded in obj.c
+
+Code cleanup:
+- merge edit_unique with edit_name
+- merge find_var_in_frame with similar mechanisms in expr.c and fpd.y
+- add regression tests
+
+Open decisions:
+- decide on table presentation (merge frame and vars into single entity ?)
+- Q: should loop be (start, last) or (start, iterations) ? or start ... last ?
+- change vector circle color ? (also, highlight on hover ?)
+- Q: allow reassignment of vector names ?
+  A1: no: would cause confusion in GUI (vectors could become orphaned)
+  A2: yes. but we don't change the linkage.
+- Q: how do we handle stacks of objects ?
+  A: we don't but we make it easy to avoid them, by giving a good zoom,
+     flexible selection, and by disallowing stacks of identical objects in the
+     first place.
+- Q: add frame arguments ? (e.g., .frame pad(pin_num_offset) ...)
+  we can already approximate this by introducing an intermediate table that
+  sets up the arguments (provided that we don't consider vectors as well)
+- Q: should we make it a requirement to generate objects only once ?
+  A: almost certainly yes.
+
+Future directions:
+- future: consider using cairo instead of gdk
+- live update of value when entering strings and expressions ?
+- advanced: non-standard solder mask
+- advanced: solder paste exceptions (subtractive, additive)
+- advanced: silk line width
+- future: when encountering an error after a change, we could try to find the
+  same element in the old instance, and select it
+- future: consider editing off-canvas items in place
