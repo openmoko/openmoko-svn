@@ -62,6 +62,7 @@ enum inst_prio {
 
 
 struct inst *selected_inst = NULL;
+struct bbox active_frame_bbox;
 
 static struct inst *curr_frame = NULL;
 static struct inst *insts[ip_n], **next_inst[ip_n];
@@ -224,6 +225,16 @@ static void propagate_bbox(const struct inst *inst)
 	update_bbox(&curr_frame->bbox, inst->bbox.max);
 }
 
+
+static void grow_bbox_by_width(struct bbox *bbox, unit_type width)
+{
+	bbox->min.x -= width/2;
+	bbox->min.y -= width/2;
+	bbox->max.x += width/2;
+	bbox->max.y += width/2;
+}
+
+
 static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
     struct coord base)
 {
@@ -331,6 +342,7 @@ int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width)
 	inst->u.rect.end = b;
 	inst->u.rect.width = width;
 	update_bbox(&inst->bbox, b);
+	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
 	return 1;
 }
@@ -371,6 +383,7 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width)
 	inst->u.rect.end = b;
 	inst->u.rect.width = width;
 	update_bbox(&inst->bbox, b);
+	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
 	return 1;
 }
@@ -482,6 +495,7 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 	inst->bbox.max.x = center.x+r;
 	inst->bbox.min.y = center.y-r;
 	inst->bbox.max.y = center.y+r;
+	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
 	return 1;
 }
@@ -581,6 +595,8 @@ void inst_end_frame(const struct frame *frame)
 	curr_frame = curr_frame->outer;
 	if (curr_frame)
 		propagate_bbox(inst);
+	if (inst->active && frame == active_frame)
+		active_frame_bbox = inst->bbox;
 }
 
 
@@ -609,8 +625,10 @@ static void inst_free(struct inst *list[ip_n])
 
 void inst_start(void)
 {
+	static struct bbox bbox_zero = { { 0, 0 }, { 0, 0 }};
 	enum inst_prio prio;
 
+	active_frame_bbox = bbox_zero;
 	FOR_INST_PRIOS_UP(prio) {
 		prev_insts[prio] = insts[prio];
 		insts[prio] = NULL;

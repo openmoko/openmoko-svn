@@ -49,24 +49,24 @@ static void update_pos(struct coord pos)
 /* ----- coordinate system ------------------------------------------------- */
 
 
-static void center(void)
+static void center(const struct bbox *this_bbox)
 {
 	struct bbox bbox;
 
-	bbox = inst_get_bbox();
+	bbox = this_bbox ? *this_bbox : inst_get_bbox();
 	ctx.center.x = (bbox.min.x+bbox.max.x)/2;
 	ctx.center.y = (bbox.min.y+bbox.max.y)/2;
 }
 
 
-static void auto_scale(void)
+static void auto_scale(const struct bbox *this_bbox)
 {
 	struct bbox bbox;
 	unit_type h, w;
 	int sx, sy;
 	float aw, ah;
 
-	bbox = inst_get_bbox();
+	bbox = this_bbox ? *this_bbox : inst_get_bbox();
 	aw = ctx.widget->allocation.width;
 	ah = ctx.widget->allocation.height;
 	h = bbox.max.x-bbox.min.x;
@@ -236,9 +236,15 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		zoom_out(pos);
 		break;
 	case '*':
-		center();
-		auto_scale();
+		center(NULL);
+		auto_scale(NULL);
 		redraw();
+		break;
+	case '#':
+		center(&active_frame_bbox);
+		auto_scale(&active_frame_bbox);
+		redraw();
+		break;
 	case '.':
 		ctx.center = pos;
 		redraw();
@@ -293,8 +299,8 @@ static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
 
 void init_canvas(void)
 {
-	center();
-	auto_scale();
+	center(NULL);
+	auto_scale(NULL);
 }
 
 

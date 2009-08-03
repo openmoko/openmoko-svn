@@ -71,6 +71,7 @@ struct inst {
 
 
 extern struct inst *selected_inst;
+extern struct bbox active_frame_bbox;
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));

@@ -310,7 +310,8 @@ static int expr_activate(GtkWidget *widget, const char *s, void *ctx)
 	expr = try_parse_expr(s);
 	if (!expr)
 		return 0;
-	free_expr(*anchor);
+	if (*anchor)
+		free_expr(*anchor);
 	*anchor = expr;
 	entry_color(COLOR_EDIT_ASIS);
 	return 1;
