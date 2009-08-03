@@ -92,8 +92,9 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 	for (obj = frame->objs; obj; obj = obj->next)
 		switch (obj->type) {
 		case ot_frame:
-			if (!generate_frame(obj->u.frame,
-			    obj->base ? obj->base->pos : base, frame, active))
+			if (!generate_frame(obj->u.frame.ref,
+			    obj->base ? obj->base->pos : base, frame,
+			    active && obj->u.frame.ref->active_ref == obj))
 				return 0;
 			break;
 		case ot_line:

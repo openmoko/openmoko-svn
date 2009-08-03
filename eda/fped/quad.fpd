@@ -1,0 +1,13 @@
+frame c {
+	vec @(1mm, 0mm)
+	circ . @
+}
+
+vec @(-1mm, 1mm)
+frame c .
+vec @(1mm, -1mm)
+frame c .
+vec @(-1mm, -1mm)
+frame c .
+vec @(1mm, 1mm)
+frame c .

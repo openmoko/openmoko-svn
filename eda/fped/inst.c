@@ -61,9 +61,9 @@ enum inst_prio {
 		for (inst = insts[prio]; inst; inst = inst->next)
 
 
-struct inst *curr_frame = NULL;
 struct inst *selected_inst = NULL;
 
+static struct inst *curr_frame = NULL;
 static struct inst *insts[ip_n], **next_inst[ip_n];
 static struct inst *prev_insts[ip_n];
 
@@ -480,8 +480,8 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 	inst->u.arc.width = width;
 	inst->bbox.min.x = center.x-r;
 	inst->bbox.max.x = center.x+r;
-	inst->bbox.min.y = center.x-r;
-	inst->bbox.max.y = center.x+r;
+	inst->bbox.min.y = center.y-r;
+	inst->bbox.max.y = center.y+r;
 	propagate_bbox(inst);
 	return 1;
 }

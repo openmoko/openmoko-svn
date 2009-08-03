@@ -79,9 +79,11 @@ static void make_var(const char *id, struct expr *expr)
 	table->vars->name = id;
 	table->vars->frame = curr_frame;
 	table->rows = zalloc_type(struct row);
+	table->rows->table = table;
 	table->rows->values = zalloc_type(struct value);
 	table->rows->values->expr = expr;
 	table->rows->values->row = table->rows;
+	table->active_row = table->rows;
 	*next_table = table;
 	next_table = &table->next;
 }
@@ -421,15 +423,22 @@ obj:
 			$$->u.meas.other = $3;
 			$$->u.meas.offset = $4;
 		}
-	| TOK_FRAME ID base
+	| TOK_FRAME ID 
+		{ 
+		    $<num>$.n = lineno;
+		}
+		    base
 		{
 			$$ = new_obj(ot_frame);
-			$$->base = $3;
-			$$->u.frame = find_frame($2);
-			if (!$$->u.frame) {
+			$$->base = $4;
+			$$->u.frame.ref = find_frame($2);
+			if (!$$->u.frame.ref) {
 				yyerrorf("unknown frame \"%s\"", $2);
 				YYABORT;
 			}
+			if (!$$->u.frame.ref->active_ref)
+				$$->u.frame.ref->active_ref = $$;
+			$$->u.frame.lineno = $<num>3.n;
 		}
 	;
 

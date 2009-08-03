@@ -51,7 +51,7 @@ void yyerror(const char *s)
 
 void report_parse_error(const char *s)
 {
-	fprintf(stderr, "%d: %s near \"%s\" ", lineno, s, yytext);
+	fprintf(stderr, "%d: %s near \"%s\"\n", lineno, s, yytext);
 	exit(1);
 }
 

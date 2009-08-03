@@ -31,7 +31,6 @@
 GtkWidget *root;
 
 static GtkWidget *frames_box;
-static GtkWidget *vars_box;
 
 
 /* ----- menu bar ---------------------------------------------------------- */
@@ -385,12 +384,13 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 /* ----- the list of variables, tables, and loops -------------------------- */
 
 
-static void build_vars(GtkWidget *vbox, struct frame *frame)
+static GtkWidget *build_vars(struct frame *frame)
 {
+	GtkWidget *vbox;
 	struct table *table;
 	struct loop *loop;
 
-	destroy_all_children(GTK_CONTAINER(vbox));
+	vbox= gtk_vbox_new(FALSE, 0);
 	for (table = frame->tables; table; table = table->next) {
 		add_sep(vbox, 3);
 		build_assignment(vbox, frame, table);
@@ -400,11 +400,11 @@ static void build_vars(GtkWidget *vbox, struct frame *frame)
 		add_sep(vbox, 3);
 		build_loop(vbox, frame, loop);
 	}
-	gtk_widget_show_all(vbox);
+	return vbox;
 }
 
 
-/* ----- frame list -------------------------------------------------------- */
+/* ----- frame labels ------------------------------------------------------ */
 
 
 static int validate_frame_name(const char *s, void *ctx)
@@ -468,27 +468,97 @@ static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 
-static void build_frames(GtkWidget *vbox)
+static GtkWidget *build_frame_label(struct frame *frame)
 {
-	struct frame *f;
 	GtkWidget *label;
 
+	label = label_in_box_new(frame->name ? frame->name : "(root)");
+	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
+	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+
+	label_in_box_bg(label, active_frame == frame ?
+	    COLOR_FRAME_SELECTED : COLOR_FRAME_UNSELECTED);
+
+	g_signal_connect(G_OBJECT(box_of_label(label)),
+	    "button_press_event", G_CALLBACK(frame_select_event), frame);
+	frame->label = label;
+
+	return box_of_label(label);
+}
+
+
+/* ----- frame references -------------------------------------------------- */
+
+
+static gboolean frame_ref_select_event(GtkWidget *widget, GdkEventButton *event,
+     gpointer data)
+{
+	struct obj *obj = data;
+
+	obj->u.frame.ref->active_ref = data;
+	change_world();
+	return TRUE;
+}
+
+
+static GtkWidget *build_frame_refs(const struct frame *frame)
+{
+	GtkWidget *hbox, *label;
+	struct obj *obj;
+	char buf[100];
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type == ot_frame && obj->u.frame.ref == active_frame) {
+			sprintf(buf, "%d", obj->u.frame.lineno);
+			label = label_in_box_new(buf);
+			gtk_misc_set_padding(GTK_MISC(label), 2, 2);
+			gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+			label_in_box_bg(label,
+			    obj == obj->u.frame.ref->active_ref ?
+			    COLOR_REF_SELECTED : COLOR_REF_UNSELECTED);
+			gtk_box_pack_start(GTK_BOX(hbox), box_of_label(label),
+			    FALSE, FALSE, 2);
+			g_signal_connect(G_OBJECT(box_of_label(label)),
+			    "button_press_event",
+			    G_CALLBACK(frame_ref_select_event), obj);
+		}
+	return hbox;
+}
+
+
+/* ----- frames ------------------------------------------------------------ */
+
+
+static void build_frames(GtkWidget *vbox)
+{
+	struct frame *frame;
+	GtkWidget *tab, *label, *refs, *vars;
+	int n;
+
 	destroy_all_children(GTK_CONTAINER(vbox));
-	for (f = root_frame; f; f = f->prev) {
-		label = label_in_box_new(f->name ? f->name : "(root)");
-		gtk_box_pack_start(GTK_BOX(vbox), box_of_label(label),
-		    FALSE, TRUE, 0);
-		gtk_misc_set_padding(GTK_MISC(label), 2, 2);
-		gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+	for (frame = frames; frame; frame = frame->next)
+		n++;
 
-		label_in_box_bg(label, active_frame == f ?
-		    COLOR_FRAME_SELECTED : COLOR_FRAME_UNSELECTED);
+	tab = gtk_table_new(n*2, 2, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
+	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
+	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, FALSE, 0);
 
-		g_signal_connect(G_OBJECT(box_of_label(label)),
-		    "button_press_event", G_CALLBACK(frame_select_event), f);
-		f->label = label;
+	n = 0;
+	for (frame = root_frame; frame; frame = frame->prev) {
+		label = build_frame_label(frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), label,
+                    0, 1, n*2, n*2+1);
+		refs = build_frame_refs(frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
+                    1, 2, n*2, n*2+1);
+		vars = build_vars(frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
+                    1, 2, n*2+1, n*2+2);
+		n++;
 	}
-	gtk_widget_show_all(vbox);
+	gtk_widget_show_all(tab);
 }
 
 
@@ -497,41 +567,28 @@ static void build_frames(GtkWidget *vbox)
 
 static void make_center_area(GtkWidget *vbox)
 {
-	GtkWidget *hbox, *vars, *paned;
-	GtkWidget *frame_list, *icons;
+	GtkWidget *hbox, *frames_area, *paned;
+	GtkWidget *icons;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
-	/* Frame list */
-
-	frame_list = gtk_scrolled_window_new(NULL, NULL);
-	gtk_box_pack_start(GTK_BOX(hbox), frame_list, FALSE, TRUE, 0);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(frame_list),
-	    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-
-	frames_box = gtk_vbox_new(FALSE, 0);
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(frame_list),
-	    frames_box);
-
-	build_frames(frames_box);
-
-	add_sep(hbox, 2);
-
 	paned = gtk_hpaned_new();
 	gtk_box_pack_start(GTK_BOX(hbox), paned, TRUE, TRUE, 0);
 	
-	/* Variables */
+	/* Frames */
 
-	vars = gtk_scrolled_window_new(NULL, NULL);
-	gtk_paned_add1(GTK_PANED(paned), vars);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(vars),
+	frames_area = gtk_scrolled_window_new(NULL, NULL);
+	gtk_paned_add1(GTK_PANED(paned), frames_area);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(frames_area),
 	    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_size_request(vars, 150, 100);
-	vars_box = gtk_vbox_new(FALSE, 0);
+	gtk_widget_set_size_request(frames_area, 250, 100);
 
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(vars),
-	    vars_box);
+	frames_box = gtk_vbox_new(FALSE, 0);
+	build_frames(frames_box);
+
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(frames_area),
+	    frames_box);
 
 	/* Canvas */
 
@@ -553,7 +610,6 @@ void change_world(void)
 	instantiate();
 	label_in_box_bg(active_frame->label, COLOR_FRAME_SELECTED);
 	build_frames(frames_box);
-	build_vars(vars_box, active_frame);
 	redraw();
 }
 
@@ -592,7 +648,6 @@ int gui_main(int argc, char **argv)
 	    G_CALLBACK(gtk_main_quit), NULL);
 
 	make_screen(root);
-	build_vars(vars_box, root_frame);
 
 	gtk_widget_show_all(root);
 

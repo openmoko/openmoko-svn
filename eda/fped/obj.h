@@ -108,6 +108,9 @@ struct frame {
 	/* used during generation */
 	const struct frame *curr_parent;
 
+	/* generating and editing */
+	struct obj *active_ref;
+
 	/* for the GUI */
 	GtkWidget *label;
 };
@@ -119,6 +122,11 @@ enum obj_type {
 	ot_line,
 	ot_arc,
 	ot_meas,
+};
+
+struct frame_ref {
+	struct frame *ref;
+	int lineno;
 };
 
 struct rect {
@@ -145,7 +153,7 @@ struct meas {
 struct obj {
 	enum obj_type type;
 	union {
-		struct frame *frame;
+		struct frame_ref frame;
 		struct rect rect;
 		struct rect line;
 		struct pad pad;
@@ -154,6 +162,7 @@ struct obj {
 	} u;
 	struct vec *base;
 	struct obj *next;
+	int lineno;
 };
 
 
