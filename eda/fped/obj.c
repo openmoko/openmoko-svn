@@ -223,18 +223,13 @@ fail:
 static int iterate_tables(struct frame *frame, struct table *table,
     struct coord base, int active)
 {
-	int n;
-
 	if (!table)
 		return run_loops(frame, frame->loops, base, active);
-	n = 0;
 	for (table->curr_row = table->rows; table->curr_row;
-	    table->curr_row = table->curr_row->next) {
+	    table->curr_row = table->curr_row->next)
 		if (!iterate_tables(frame, table->next, base,
-		    active && table->active == n))
+		    active && table->active_row == table->curr_row))
 			return 0;
-		n++;
-	}
 	return 1;
 }
 

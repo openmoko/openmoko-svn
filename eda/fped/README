@@ -337,3 +337,15 @@ Expressions
 Expressions can contain numeric constants (in non-exponential notation),
 variable names, the arithmetic operations +, -, *, /, and unary -.
 Parentheses can be used to change precedence.
+
+
+GUI
+---
+
+Keys:
+
+space	reset user coordinates
++, =	zoom in (like mouse wheel forward)
+-	zoom out (like mouse wheel backward)
+.	cursor position to screen center (like middle click)
+*	zoom and center to extents

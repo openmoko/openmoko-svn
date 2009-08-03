@@ -121,6 +121,8 @@ SP	[\t ]*
 					BEGIN(INITIAL);
 				  lineno++; }
 
+;				BEGIN(INITIAL);
+
 "{"				{ BEGIN(NOKEYWORD);
 				  disable_keywords = is_table;
 				  return '{'; }

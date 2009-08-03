@@ -1,5 +1,4 @@
 Missing features:
-- add row selection
 - populate input area (still needed: mm/mil, rezoom)
 - add vec editor (need to be able to edit name, x, and y)
 - add obj editor

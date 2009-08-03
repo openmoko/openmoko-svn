@@ -62,7 +62,7 @@ struct table {
 	struct row *curr_row;
 
 	/* GUI use */
-	int active;	/* n-th row is active, 0 based */
+	struct row *active_row;
 };
 
 struct loop {

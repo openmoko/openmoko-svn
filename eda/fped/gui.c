@@ -128,8 +128,8 @@ static void unselect_value(void *data)
 	struct value *value = data;
 
         label_in_box_bg(value->widget,
-	    value->row && value->row->table && value->row->table->curr_row ==
-	     value->row ? COLOR_CHOICE_SELECTED : COLOR_EXPR_PASSIVE);
+	    value->row && value->row->table->active_row == value->row ?
+	     COLOR_CHOICE_SELECTED : COLOR_EXPR_PASSIVE);
 }
 
 
@@ -139,7 +139,6 @@ static void edit_value(struct value *value)
         label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
 	edit_expr(&value->expr);
 }
-
 
 
 /* ----- assignments ------------------------------------------------------- */
@@ -201,6 +200,19 @@ static void build_assignment(GtkWidget *vbox, struct frame *frame,
 /* ----- tables ------------------------------------------------------------ */
 
 
+static void select_row(struct row *row)
+{
+	struct table *table = row->table;
+	struct value *value;
+
+	for (value = table->active_row->values; value; value = value->next)
+		label_in_box_bg(value->widget, COLOR_ROW_UNSELECTED);
+	table->active_row = row;
+	for (value = table->active_row->values; value; value = value->next)
+		label_in_box_bg(value->widget, COLOR_ROW_SELECTED);
+}
+
+
 static gboolean table_var_select_event(GtkWidget *widget,
      GdkEventButton *event, gpointer data)
 {
@@ -212,7 +224,14 @@ static gboolean table_var_select_event(GtkWidget *widget,
 static gboolean table_value_select_event(GtkWidget *widget,
      GdkEventButton *event, gpointer data)
 {
-	edit_value(data);
+	struct value *value = data;
+
+	if (!value->row || value->row->table->active_row == value->row)
+		edit_value(value);
+	else {
+		select_row(value->row);
+		change_world();
+	}
 	return TRUE;
 }
 
@@ -272,7 +291,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			    box_of_label(field),
 			    n_vars, n_vars+1,
 			    n_rows+1, n_rows+2);
-			label_in_box_bg(field, table->active == n_rows ?
+			label_in_box_bg(field, table->active_row == row ?
 			    COLOR_ROW_SELECTED : COLOR_ROW_UNSELECTED);
 			g_signal_connect(G_OBJECT(box_of_label(field)),
 			    "button_press_event",

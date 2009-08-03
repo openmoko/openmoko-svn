@@ -249,7 +249,7 @@ table:
 			$$ = $<table>2;
 			$$->vars = $4;
 			$$->rows = $6;
-			$$->active = 0;
+			$$->active_row = $6;
 			next_table = &$$->next;
 		}
 	;
@@ -272,7 +272,7 @@ vars:
 var:
 	ID
 		{
-			$$ = alloc_type(struct var);
+			$$ = zalloc_type(struct var);
 			$$->name = $1;
 			$$->frame = curr_frame;
 			$$->next = NULL;

@@ -228,6 +228,21 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		user_origin = pos;
 		update_pos(pos);
 		break;
+	case '+':
+	case '=':
+		zoom_in(pos);
+		break;
+	case '-':
+		zoom_out(pos);
+		break;
+	case '*':
+		center();
+		auto_scale();
+		redraw();
+	case '.':
+		ctx.center = pos;
+		redraw();
+		break;
 	}
 	return TRUE;
 }

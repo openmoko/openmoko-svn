@@ -1,0 +1,14 @@
+/*
+ * row selection example
+ */
+
+table
+    { x, x2 }
+    { 1mm, 1 }
+    { 2mm, 4 }
+    { 3mm, 9 }
+vec @(x, 0mm)
+circ @ .
+c: vec @(x-1mm, -4mm)
+vec c(0.5mm, 0.5mm)
+pad "$x2" c .
