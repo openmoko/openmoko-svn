@@ -140,6 +140,33 @@ static void edit_value(struct value *value)
 }
 
 
+/* ----- activator --------------------------------------------------------- */
+
+
+static GtkWidget *add_activator(GtkWidget *hbox, int active,
+    gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
+    gpointer user, const char *fmt, ...)
+{
+	GtkWidget *label;
+	va_list ap;
+	char buf[100];
+
+	va_start(ap, fmt);
+	vsprintf(buf, fmt, ap);
+	va_end(ap);
+	label = label_in_box_new(buf);
+	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
+	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+	label_in_box_bg(label,
+	    active ? COLOR_CHOICE_SELECTED : COLOR_CHOICE_UNSELECTED);
+	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(label),
+	    FALSE, FALSE, 2);
+	g_signal_connect(G_OBJECT(box_of_label(label)),
+	    "button_press_event", G_CALLBACK(cb), user);
+	return label;
+}
+
+
 /* ----- assignments ------------------------------------------------------- */
 
 
@@ -336,11 +363,23 @@ static gboolean loop_to_select_event(GtkWidget *widget,
 }
 
 
+static gboolean loop_select_event(GtkWidget *widget, GdkEventButton *event,
+     gpointer data)
+{
+	struct loop *loop = data;
+
+	loop->active = (long) gtk_object_get_data(GTK_OBJECT(widget), "value");
+	change_world();
+	return TRUE;
+}
+
+
 static void build_loop(GtkWidget *vbox, struct frame *frame,
      struct loop *loop)
 {
-	GtkWidget *hbox, *field;
+	GtkWidget *hbox, *field, *label;
 	char *expr;
+	int i;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -378,6 +417,19 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 	    "button_press_event",
 	    G_CALLBACK(loop_to_select_event), loop);
 	loop->to.widget = field;
+
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(" ("),
+	    FALSE, FALSE, 0);
+
+	for (i = 0; i != loop->iterations; i++) {
+		label = add_activator(hbox, loop->active == i,
+		    loop_select_event, loop, "%d", i);
+		gtk_object_set_data(GTK_OBJECT(box_of_label(label)), "value",
+		    (gpointer) (long) i);
+	}
+
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(")"),
+	    FALSE, FALSE, 0);
 }
 
 
@@ -503,26 +555,16 @@ static gboolean frame_ref_select_event(GtkWidget *widget, GdkEventButton *event,
 
 static GtkWidget *build_frame_refs(const struct frame *frame)
 {
-	GtkWidget *hbox, *label;
+	GtkWidget *hbox;
 	struct obj *obj;
-	char buf[100];
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	for (obj = frame->objs; obj; obj = obj->next)
-		if (obj->type == ot_frame && obj->u.frame.ref == active_frame) {
-			sprintf(buf, "%d", obj->u.frame.lineno);
-			label = label_in_box_new(buf);
-			gtk_misc_set_padding(GTK_MISC(label), 2, 2);
-			gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-			label_in_box_bg(label,
-			    obj == obj->u.frame.ref->active_ref ?
-			    COLOR_REF_SELECTED : COLOR_REF_UNSELECTED);
-			gtk_box_pack_start(GTK_BOX(hbox), box_of_label(label),
-			    FALSE, FALSE, 2);
-			g_signal_connect(G_OBJECT(box_of_label(label)),
-			    "button_press_event",
-			    G_CALLBACK(frame_ref_select_event), obj);
-		}
+		if (obj->type == ot_frame && obj->u.frame.ref == active_frame)
+			add_activator(hbox,
+			    obj == obj->u.frame.ref->active_ref,
+			    frame_ref_select_event, obj,
+			    "%d", obj->u.frame.lineno);
 	return hbox;
 }
 

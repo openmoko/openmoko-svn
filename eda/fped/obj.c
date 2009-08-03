@@ -213,6 +213,7 @@ static int run_loops(struct frame *frame, struct loop *loop,
 		n++;
 	}
 	loop->initialized = 0;
+	loop->iterations = n;
 	return 1;
 
 fail:

@@ -76,6 +76,7 @@ struct loop {
 
 	/* GUI use */
 	int active;	/* n-th iteration is active, 0 based */
+	int iterations;	/* iterations when it was active */
 
 	/* for evaluation */
 	int initialized;
