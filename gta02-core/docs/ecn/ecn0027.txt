@@ -1,0 +1,17 @@
+Renamed some nets for clarity
+
+
+A few nets in the Openmokos schematics have names that are difficult to
+understand or are inconsistent. This is the list of changed names:
+
+They are:
+
+Openmoko	gta02-core	Connects
+---------------	---------------	----------------------------------------------
+EXTINT0		GPS_EXTINT	U1501A nXDREQ1/GPB8	U7608 P9/EXTINT0
+
+This ECN is a compilation of changes made by various people, so the
+"author" is actually just (one) editor.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

@@ -26,3 +26,4 @@ Number	Status	Description
 0024	Edit	Improve GPS ground and PCB layout
 0025	Discuss	Connect CLKOUT1 to UEXTCLK (U1501)
 0026	Discuss	Improve bus termination at sd-card
+0027	Edit	Renamed some nets for clarity
