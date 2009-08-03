@@ -116,4 +116,4 @@ LabSize=60
 LibName1=power
 LibName2=device
 LibName3=conn
-LibName4=../components/gta02-core-expanded
+LibName4=gta02-core-expanded

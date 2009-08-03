@@ -5,6 +5,7 @@ Dave Ball <openmoko@daveball.org.uk>
   cpu_power.sch
   components/aat1275irn.lib
   components/k4m51323pe.lib
+  componants/ge865.lib
   componants/ht110.lib
   componants/isc5804at2.lib
   components/lis302dl.lib

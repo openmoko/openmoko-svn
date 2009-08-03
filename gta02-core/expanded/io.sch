@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Tue Jun  9 21:09:11 2009
-LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
+EESchema Schematic File Version 2  date Mon 03 Aug 2009 21:43:10 BST
+LIBS:power,device,conn,gta02-core-expanded
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XGE865 U?
+U 1 1 4A774B74
+P 2500 4200
+F 0 "U?" H 2500 4100 60  0000 C CNN
+F 1 "XGE865" H 2500 4300 60  0000 C CNN
+	1    2500 4200
+	1    0    0    -1  
+$EndComp
 Text Notes 1050 1050 0    120  ~ 24
 IO
 $Comp
@@ -36,28 +45,28 @@ $EndComp
 $Comp
 L XSC32442 U?
 U 2 1 4A11234D
-P 4200 2450
-F 0 "U?" H 4200 2350 50  0000 C CNN
-F 1 "XSC32442" H 4200 2550 50  0000 C CNN
-	2    4200 2450
+P 4950 2400
+F 0 "U?" H 4950 2300 50  0000 C CNN
+F 1 "XSC32442" H 4950 2500 50  0000 C CNN
+	2    4950 2400
 	1    0    0    -1  
 $EndComp
 $Comp
 L XSC32442 U?
 U 5 1 4A112247
-P 4200 5550
-F 0 "U?" H 4200 5450 50  0000 C CNN
-F 1 "XSC32442" H 4200 5650 50  0000 C CNN
-	5    4200 5550
+P 4950 5500
+F 0 "U?" H 4950 5400 50  0000 C CNN
+F 1 "XSC32442" H 4950 5600 50  0000 C CNN
+	5    4950 5500
 	1    0    0    -1  
 $EndComp
 $Comp
 L XSC32442 U?
 U 3 1 4A0AE864
-P 4200 3850
-F 0 "U?" H 4200 3750 50  0000 C CNN
-F 1 "XSC32442" H 4200 3950 50  0000 C CNN
-	3    4200 3850
+P 4950 3800
+F 0 "U?" H 4950 3700 50  0000 C CNN
+F 1 "XSC32442" H 4950 3900 50  0000 C CNN
+	3    4950 3800
 	1    0    0    -1  
 $EndComp
 $Comp
