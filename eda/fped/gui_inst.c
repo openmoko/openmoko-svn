@@ -257,7 +257,7 @@ void gui_draw_pad(struct inst *self, struct draw_ctx *ctx)
 	c = add_vec(min, max);
 	h = min.y-max.y;
 	w = max.x-min.x;
-	render_text(DA, gc, c.x/2, c.y/2, w <= h ? 0 : 90, self->u.name,
+	render_text(DA, gc, c.x/2, c.y/2, w <= h*1.1 ? 0 : 90, self->u.name,
 	    PAD_FONT, 0.5, 0.5,
 	    w-2*PAD_BORDER, h-2*PAD_BORDER);
 }
