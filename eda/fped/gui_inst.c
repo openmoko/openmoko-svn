@@ -176,7 +176,7 @@ unit_type gui_dist_line(struct inst *self, struct coord pos, unit_type scale)
 	r = self->u.rect.width/scale/2;
 	if (r < SELECT_R)
 		r = SELECT_R;
-	d = dist_line(pos, self->bbox.min, self->bbox.max)/scale;
+	d = dist_line(pos, self->base, self->u.rect.end)/scale;
 	return d > r ? -1 : d;
 }
 
@@ -203,21 +203,22 @@ unit_type gui_dist_rect(struct inst *self, struct coord pos, unit_type scale)
 	r = self->u.rect.width/scale/2;
 	if (r < SELECT_R)
 		r = SELECT_R;
-	d = dist_rect(pos, self->bbox.min, self->bbox.max)/scale;
+	d = dist_rect(pos, self->base, self->u.rect.end)/scale;
 	return d > r ? -1 : d;
 }
 
 
 void gui_draw_rect(struct inst *self, struct draw_ctx *ctx)
 {
-	struct coord min = translate(ctx, self->bbox.min);
-	struct coord max = translate(ctx, self->bbox.max);
+	struct coord min = translate(ctx, self->base);
+	struct coord max = translate(ctx, self->u.rect.end);
 	GdkGC *gc;
 
+	sort_coord(&min, &max);
 	gc = gc_obj[get_mode(self)];
 	set_width(gc, self->u.rect.width/ctx->scale);
 	gdk_draw_rectangle(DA, gc, FALSE,
-	    min.x, max.y, max.x-min.x, min.y-max.y);
+	    min.x, min.y, max.x-min.x, max.y-min.y);
 }
 
 
@@ -228,47 +229,37 @@ unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale)
 {
 	unit_type d;
 
-	if (inside_rect(pos, self->bbox.min, self->bbox.max))
+	if (inside_rect(pos, self->base, self->u.pad.other))
 		return SELECT_R;
-	d = dist_rect(pos, self->bbox.min, self->bbox.max)/scale;
+	d = dist_rect(pos, self->base, self->u.pad.other)/scale;
 	return d > SELECT_R ? -1 : d;
 }
 
 
 void gui_draw_pad(struct inst *self, struct draw_ctx *ctx)
 {
-	struct coord min = translate(ctx, self->bbox.min);
-	struct coord max = translate(ctx, self->bbox.max);
+	struct coord min = translate(ctx, self->base);
+	struct coord max = translate(ctx, self->u.pad.other);
 	GdkGC *gc;
 	struct coord c;
 	unit_type h, w;
 
 	gc = gc_pad[get_mode(self)];
+	sort_coord(&min, &max);
 	gdk_draw_rectangle(DA, gc, TRUE,
-	    min.x, max.y, max.x-min.x, min.y-max.y);
+	    min.x, min.y, max.x-min.x, max.y-min.y);
 
 	gc = gc_ptext[get_mode(self)];
 	c = add_vec(min, max);
-	h = min.y-max.y;
+	h = max.y-min.y;
 	w = max.x-min.x;
-	render_text(DA, gc, c.x/2, c.y/2, w <= h*1.1 ? 0 : 90, self->u.name,
-	    PAD_FONT, 0.5, 0.5,
+	render_text(DA, gc, c.x/2, c.y/2, w <= h*1.1 ? 0 : 90,
+	    self->u.pad.name, PAD_FONT, 0.5, 0.5,
 	    w-2*PAD_BORDER, h-2*PAD_BORDER);
 }
 
 
 /* ----- arc --------------------------------------------------------------- */
-
-
-static struct coord rotate_r(struct coord center, unit_type r, double angle)
-{
-	struct coord res;
-
-	angle = angle/180.0*M_PI;
-	res.x = center.x+r*cos(angle);
-	res.y = center.y+r*sin(angle);
-	return res;
-}
 
 
 unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
@@ -305,9 +296,7 @@ unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
 
 	/* see if we're close to the part that's actually drawn */
 
-	angle = atan2(pos.y-c.y, pos.x-c.x)/M_PI*180.0;
-	if (angle < 0)
-		angle += 180;
+	angle = theta(c, pos);
 	a2 = self->u.arc.a2;
 	if (a2 < self->u.arc.a1)
 		a2 += 180;

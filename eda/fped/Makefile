@@ -74,7 +74,7 @@ endif
 # sed '/2 2 0 1 /{s//2 2 0 15 /;s/ 0 7 / 22 7 /;}' $< | \
 
 .fig.xpm:
-		fig2dev -L xpm -Z 0.32 -S 4 $< | \
+		$(GEN) fig2dev -L xpm -Z 0.32 -S 4 $< | \
 		  convert -crop 24x24+1+1 - - | \
 		  sed "s/*.*\[]/*xpm_`basename $@ .xpm`[]/" >$@
 

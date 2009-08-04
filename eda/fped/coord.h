@@ -69,10 +69,16 @@ struct coord add_vec(struct coord a, struct coord b);
 struct coord sub_vec(struct coord a, struct coord b);
 struct coord neg_vec(struct coord v);
 
+struct coord rotate_r(struct coord c, unit_type r, double angle);
+double theta(struct coord c, struct coord p);
+
+void swap_coord(unit_type *a, unit_type *b);
+void sort_coord(struct coord *min, struct coord *max);
+
 unit_type dist_point(struct coord a, struct coord b);
 unit_type dist_line(struct coord p, struct coord a, struct coord b);
-unit_type dist_rect(struct coord p, struct coord min, struct coord max);
-int inside_rect(struct coord p, struct coord min, struct coord max);
+unit_type dist_rect(struct coord p, struct coord a, struct coord b);
+int inside_rect(struct coord p, struct coord a, struct coord b);
 unit_type dist_circle(struct coord p, struct coord c, unit_type r);
 
 #endif /* !COORD_H */

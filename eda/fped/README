@@ -50,7 +50,8 @@ with existing designs when introduction future language features.
 
 fped uses the C preprocessor for comments, conditional compilation,
 and - to a limited extent - also macros. Long lines can be split by
-ending them with a backslash.
+ending them with a backslash. If multiple items need to be placed in a
+single line, e.g., in a macro, they can be separated with semicolons.
 
 
 Geometry model
@@ -279,7 +280,10 @@ and
 
 loop n = 1, 3.5
 
-both assign the values 1, 2, and 3 to the variable "n".
+both assign the values 1, 2, and 3 to the variable "n". The
+following loop would not execute at all:
+
+loop n = 1, 0
 
 When a loop is executed, the objects contained in the body of the
 enclosing frame are generated for each value of the variable. If

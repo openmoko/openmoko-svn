@@ -79,6 +79,54 @@ struct coord neg_vec(struct coord v)
 }
 
 
+/* ----- point on circle --------------------------------------------------- */
+
+
+struct coord rotate_r(struct coord c, unit_type r, double angle)
+{
+	struct coord p;
+
+	angle = angle/180.0*M_PI;
+	p.x = c.x+r*cos(angle);
+	p.y = c.y+r*sin(angle);
+	return p;
+}
+
+
+double theta(struct coord c, struct coord p)
+{
+	double a;
+
+	a = atan2(p.y-c.y, p.x-c.x)/M_PI*180.0;
+	if (a < 0)
+		a += 360.0;
+	return a;
+}
+
+
+/* ----- sorting coordinates ----------------------------------------------- */
+
+
+void swap_coord(unit_type *a, unit_type *b)
+{
+	unit_type tmp;
+
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+
+void sort_coord(struct coord *min, struct coord *max)
+{
+	if (min->x > max->x)
+		swap_coord(&min->x, &max->x);
+	if (min->y > max->y)
+		swap_coord(&min->y, &max->y);
+
+}
+
+
 /* ----- distance calculations --------------------------------------------- */
 
 
@@ -127,29 +175,30 @@ unit_type dist_line(struct coord p, struct coord a, struct coord b)
 }
 
 
-unit_type dist_rect(struct coord p, struct coord min, struct coord max)
+unit_type dist_rect(struct coord p, struct coord a, struct coord b)
 {
 	unit_type d_min, d;
 
-	d_min = dist_line_xy(p.x, p.y, min.x, min.y, max.x, min.y);
-	d = dist_line_xy(p.x, p.y, min.x, min.y, min.x, max.y);
+	d_min = dist_line_xy(p.x, p.y, a.x, a.y, b.x, a.y);
+	d = dist_line_xy(p.x, p.y, a.x, a.y, a.x, b.y);
 	if (d < d_min)
 		d_min = d;
-	d = dist_line_xy(p.x, p.y, min.x, max.y, max.x, max.y);
+	d = dist_line_xy(p.x, p.y, a.x, b.y, b.x, b.y);
 	if (d < d_min)
 		d_min = d;
-	d = dist_line_xy(p.x, p.y, max.x, min.y, max.x, max.y);
+	d = dist_line_xy(p.x, p.y, b.x, a.y, b.x, b.y);
 	if (d < d_min)
 		d_min = d;
 	return d_min;
 }
 
 
-int inside_rect(struct coord p, struct coord min, struct coord max)
+int inside_rect(struct coord p, struct coord a, struct coord b)
 {
-	if (p.x < min.x || p.x > max.x)
+	sort_coord(&a, &b);
+	if (p.x < a.x || p.x > b.x)
 		return 0;
-	if (p.y < min.y || p.y > max.y)
+	if (p.y < a.y || p.y > b.y)
 		return 0;
 	return 1;
 }

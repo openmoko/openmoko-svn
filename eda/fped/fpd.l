@@ -93,7 +93,7 @@ SP	[\t ]*
 <INITIAL>"meas"			{ BEGIN(NOKEYWORD);
 				  return TOK_MEAS; }
 
-[a-zA-Z_][a-zA-Z_0-9]*:		{ *strchr(yytext, ':') = 0;
+<INITIAL>[a-zA-Z_][a-zA-Z_0-9]*: { *strchr(yytext, ':') = 0;
 				  yylval.id = unique(yytext);
 				  return LABEL; }
 [a-zA-Z_][a-zA-Z_0-9]*		{ yylval.id = unique(yytext);

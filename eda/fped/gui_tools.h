@@ -19,6 +19,17 @@
 #include "inst.h"
 
 
+struct pix_buf *draw_move_line(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+struct pix_buf *draw_move_pad(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+
+void do_move_to_arc(struct inst *inst, struct vec *vec, int i);
+
 void tool_dehover(struct draw_ctx *ctx);
 void tool_hover(struct draw_ctx *ctx, struct coord pos);
 int tool_consider_drag(struct draw_ctx *ctx, struct coord pos);

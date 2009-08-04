@@ -79,7 +79,7 @@ struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
 		buf->x = 0;
 	}
 	if (buf->y < 0) {
-		w += buf->y;
+		h += buf->y;
 		buf->y = 0;
 	}
 	buf->buf = gdk_pixbuf_get_from_drawable(NULL, da, NULL,

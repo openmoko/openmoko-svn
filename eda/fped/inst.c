@@ -20,7 +20,7 @@
 #include "expr.h"
 #include "obj.h"
 #include "gui_status.h"
-#include "gui_status.h"
+#include "gui_tools.h"
 #include "gui_inst.h"
 #include "inst.h"
 
@@ -34,6 +34,10 @@ struct inst_ops {
 	    unit_type scale);
 	void (*select)(struct inst *self);
 	int (*anchors)(struct inst *self, struct vec ***anchors);
+	struct pix_buf *(*draw_move)(struct inst *inst, struct draw_ctx *ctx,
+	    struct coord pos, int i);
+	/* arcs need this special override */
+	void (*do_move_to)(struct inst *inst, struct vec *vec, int i);
 };
 
 enum inst_prio {
@@ -269,9 +273,7 @@ static void rect_status(struct coord a, struct coord b, unit_type width)
 	if (!d.x && !d.y)
 		status_set_angle("a = 0 deg");
 	else {
-		angle = atan2(d.y, d.x)/M_PI*180.0;
-		if (angle < 0)
-			angle += 360;
+		angle = theta(a, b);
 		status_set_angle("a = %3.1f deg", angle);
 	}
 	status_set_r("r = %5.2f mm", hypot(units_to_mm(d.x), units_to_mm(d.y)));
@@ -432,6 +434,7 @@ static struct inst_ops line_ops = {
 	.distance	= gui_dist_line,
 	.select		= line_op_select,
 	.anchors	= line_op_anchors,
+	.draw_move	= draw_move_line,
 };
 
 
@@ -474,6 +477,7 @@ static struct inst_ops rect_ops = {
 	.distance	= gui_dist_rect,
 	.select		= rect_op_select,
 	.anchors	= line_op_anchors,
+	.draw_move	= draw_move_rect,
 };
 
 
@@ -498,8 +502,8 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width)
 static void pad_op_debug(struct inst *self)
 {
 	printf("pad \"%s\" %lg, %lg / %lg, %lg\n", self->u.name,
-	    units_to_mm(self->bbox.min.x), units_to_mm(self->bbox.min.y),
-	    units_to_mm(self->bbox.max.x), units_to_mm(self->bbox.max.y));
+	    units_to_mm(self->base.x), units_to_mm(self->base.y),
+	    units_to_mm(self->u.pad.other.x), units_to_mm(self->u.pad.other.y));
 }
 
 
@@ -518,8 +522,8 @@ static int validate_pad_name(const char *s, void *ctx)
 static void pad_op_select(struct inst *self)
 {
 	status_set_type_entry("label =");
-	status_set_name("%s", self->u.name);
-	rect_status(self->bbox.min, self->bbox.max, -1);
+	status_set_name("%s", self->u.pad.name);
+	rect_status(self->base, self->u.pad.other, -1);
 	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL);
 }
 
@@ -540,6 +544,7 @@ static struct inst_ops pad_ops = {
 	.distance	= gui_dist_pad,
 	.select		= pad_op_select,
 	.anchors	= pad_op_anchors,
+	.draw_move	= draw_move_pad,
 };
 
 
@@ -549,7 +554,8 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 
 	inst = add_inst(&pad_ops, ip_pad, a);
 	inst->obj = obj;
-	inst->u.name = stralloc(name);
+	inst->u.pad.name = stralloc(name);
+	inst->u.pad.other = b;
 	update_bbox(&inst->bbox, b);
 	propagate_bbox(inst);
 	return 1;
@@ -597,6 +603,8 @@ static struct inst_ops arc_ops = {
 	.distance	= gui_dist_arc,
 	.select		= arc_op_select,
 	.anchors	= arc_op_anchors,
+	.draw_move	= draw_move_arc,
+	.do_move_to	= do_move_to_arc,
 };
 
 
@@ -609,13 +617,9 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 	inst = add_inst(&arc_ops, ip_arc, center);
 	inst->obj = obj;
 	r = hypot(start.x-center.x, start.y-center.y);
-	a1 = atan2(start.y-center.y, start.x-center.x)/M_PI*180.0;
-	a2 = atan2(end.y-center.y, end.x-center.x)/M_PI*180.0;
-	if (a1 < 0)
-		a1 += 360.0;
-	if (a2 < 0)
-		a2 += 360.0;
 	inst->u.arc.r = r;
+	a1 = theta(center, start);
+	a2 = theta(center, end);
 	inst->u.arc.a1 = a1;
 	inst->u.arc.a2 = a2;
 	inst->u.arc.width = width;
@@ -831,6 +835,22 @@ void inst_draw(struct draw_ctx *ctx)
 			inst->ops->draw(inst, ctx);
 	if (selected_inst && selected_inst->ops->draw)
 		selected_inst->ops->draw(selected_inst, ctx);
+}
+
+
+struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i)
+{
+	return inst->ops->draw_move(inst, ctx, pos, i);
+}
+
+
+int inst_do_move_to(struct inst *inst, struct vec *vec, int i)
+{
+	if (!inst->ops->do_move_to)
+		return 0;
+	inst->ops->do_move_to(inst, vec, i);
+	return 1;
 }
 
 

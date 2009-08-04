@@ -59,6 +59,10 @@ struct inst {
 			unit_type width;
 		} rect;
 		struct {
+			const char *name;
+			struct coord other;
+		} pad;
+		struct {
 			unit_type r;
 			double a1, a2;
 			unit_type width;
@@ -109,6 +113,9 @@ void inst_commit(void);
 void inst_revert(void);
 
 void inst_draw(struct draw_ctx *ctx);
+struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
 void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on);
 void inst_debug(void);
 

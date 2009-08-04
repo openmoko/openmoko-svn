@@ -65,7 +65,6 @@ static struct pix_buf *pix_buf;
 static struct tool_ops vec_ops;
 static struct tool_ops frame_ops;
 static struct tool_ops pad_ops;
-static struct tool_ops circ_ops;
 static struct tool_ops meas_ops;
 
 
@@ -101,6 +100,31 @@ static struct pix_buf *drag_new_line(struct draw_ctx *ctx,
 }
 
 
+struct pix_buf *draw_move_line(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i)
+{
+	struct coord from, to;
+	struct pix_buf *buf;
+
+	from = translate(ctx, inst->base);
+	to = translate(ctx, inst->u.rect.end);
+	pos = translate(ctx, pos);
+	switch (i) {
+	case 0:
+		from = pos;
+		break;
+	case 1:
+		to = pos;
+		break;
+	default:
+		abort();
+	}
+	buf = save_pix_buf(DA, from.x, from.y, to.x, to.y, 1);
+	gdk_draw_line(DA, gc_drag, from.x, from.y, to.x, to.y);
+	return buf;
+}
+
+
 static int end_new_line(struct draw_ctx *ctx,
     struct inst *from, struct inst *to)
 {
@@ -124,16 +148,6 @@ static struct tool_ops line_ops = {
 /* ----- rect -------------------------------------------------------------- */
 
 
-static void swap_coord(unit_type *a, unit_type *b)
-{
-	unit_type tmp;
-
-	tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
-
-
 static struct pix_buf *drag_new_rect(struct draw_ctx *ctx,
     struct inst *from, struct coord to)
 {
@@ -142,14 +156,45 @@ static struct pix_buf *drag_new_rect(struct draw_ctx *ctx,
 
 	pos = translate(ctx, inst_get_point(from));
 	to = translate(ctx, to);
-	if (pos.x > to.x)
-		swap_coord(&pos.x, &to.x);
-	if (pos.y > to.y)
-		swap_coord(&pos.y, &to.y);
+	sort_coord(&pos, &to);
 	buf = save_pix_buf(DA, pos.x, pos.y, to.x, to.y, 1);
 	gdk_draw_rectangle(DA, gc_drag, FALSE,
 	    pos.x, pos.y, to.x-pos.x, to.y-pos.y);
 	return buf;
+}
+
+
+static struct pix_buf *draw_move_rect_common(struct inst *inst,
+    struct coord other, struct draw_ctx *ctx, struct coord pos, int i)
+{
+	struct coord min, max;
+	struct pix_buf *buf;
+
+	min = translate(ctx, inst->base);
+	max = translate(ctx, other);
+	pos = translate(ctx, pos);
+	switch (i) {
+	case 0:
+		min = pos;
+		break;
+	case 1:
+		max = pos;
+		break;
+	default:
+		abort();
+	}
+	sort_coord(&min, &max);
+	buf = save_pix_buf(DA, min.x, min.y, max.x, max.y, 1);
+	gdk_draw_rectangle(DA, gc_drag, FALSE,
+	    min.x, min.y, max.x-min.x, max.y-min.y);
+	return buf;
+}
+
+
+struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i)
+{
+	return draw_move_rect_common(inst, inst->u.rect.end, ctx, pos, i);
 }
 
 
@@ -170,6 +215,36 @@ static int end_new_rect(struct draw_ctx *ctx,
 static struct tool_ops rect_ops = {
 	.drag_new	= drag_new_rect,
 	.end_new	= end_new_rect,
+};
+
+
+/* ----- pad --------------------------------------------------------------- */
+
+
+static int end_new_pad(struct draw_ctx *ctx,
+    struct inst *from, struct inst *to)
+{
+	struct obj *obj;
+
+	if (from == to)
+		return 0;
+	obj = new_obj(ot_pad, from);
+	obj->u.pad.other = inst_get_ref(to);
+	obj->u.pad.name = stralloc("?");
+	return 1;
+}
+
+
+struct pix_buf *draw_move_pad(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i)
+{
+	return draw_move_rect_common(inst, inst->u.pad.other, ctx, pos, i);
+}
+
+
+static struct tool_ops pad_ops = {
+	.drag_new	= drag_new_rect,
+	.end_new	= end_new_pad,
 };
 
 
@@ -204,6 +279,83 @@ static int end_new_circ(struct draw_ctx *ctx,
 	obj->u.arc.end = inst_get_ref(to);
 	obj->u.arc.width = NULL;
 	return 1;
+}
+
+
+struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i)
+{
+	struct coord c, from, to;
+	double r, a1, a2;
+	struct pix_buf *buf;
+
+	c = translate(ctx, inst->base);
+	from =
+	    translate(ctx, rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a1));
+	to =
+	    translate(ctx, rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a2));
+	pos = translate(ctx, pos);
+	switch (i) {
+	case 0:
+		c = pos;
+		break;
+	case 1:
+		from = pos;
+		if (inst->obj->u.arc.start != inst->obj->u.arc.end)
+			break;
+		/* fall through */
+	case 2:
+		to = pos;
+		break;
+	default:
+		abort();
+	}
+	r = hypot(from.x-c.x, from.y-c.y);
+	/*
+	 * the screen coordinate system is reversed with y growing downward,
+	 * so we have to negate the angles.
+	 */
+	a1 = -theta(c, from);
+	a2 = -theta(c, to);
+	if (a2 < a1)
+		a2 += 360.0;
+	buf = save_pix_buf(DA, c.x-r, c.y-r, c.x+r, c.y+r, 1);
+	draw_arc(DA, gc_drag, FALSE, c.x, c.y, r, a1, a2);
+	return buf;
+}
+
+
+static void replace(struct vec **anchor, struct vec *new)
+{
+	if (*anchor)
+		(*anchor)->n_refs--;
+	*anchor = new;
+	if (new)
+		new->n_refs++;
+}
+
+
+void do_move_to_arc(struct inst *inst, struct vec *vec, int i)
+{
+	struct obj *obj = inst->obj;
+	int is_circle;
+
+	is_circle = obj->u.arc.start == obj->u.arc.end;
+	switch (i) {
+	case 0:
+		replace(&obj->base, vec);
+		break;
+	case 1:
+		replace(&obj->u.arc.start, vec);
+		if (!is_circle)
+			break;
+		/* fall through */
+	case 2:
+		replace(&obj->u.arc.end, vec);
+		break;
+	default:
+		abort();
+	}
 }
 
 
@@ -274,7 +426,6 @@ static void do_move_to(struct drag_state *state, struct inst *curr)
 	if (old)
 		old->n_refs--;
 	*state->anchors[state->anchor_i] = inst_get_ref(curr);
-	state->anchors_n = 0;
 }
 
 
@@ -339,7 +490,8 @@ void tool_drag(struct draw_ctx *ctx, struct coord to)
 	if (pix_buf)
 		restore_pix_buf(pix_buf);
 	tool_hover(ctx, to);
-	pix_buf = drag.new ? active_ops->drag_new(ctx, drag.new, to) : NULL;
+	pix_buf = drag.new ? active_ops->drag_new(ctx, drag.new, to) :
+	    inst_draw_move(selected_inst, ctx, to, drag.anchor_i);
 }
 
 
@@ -369,7 +521,8 @@ int tool_end_drag(struct draw_ctx *ctx, struct coord to)
 		return ops->end_new(ctx, state.new, end);
 	if (!may_move_to(&state, end))
 		return 0;
-	do_move_to(&state, end);
+	if (!inst_do_move_to(selected_inst, inst_get_vec(end), state.anchor_i))
+		do_move_to(&state, end);
 	return 1;
 }
 
