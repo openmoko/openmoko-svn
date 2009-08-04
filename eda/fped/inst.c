@@ -33,6 +33,7 @@ struct inst_ops {
 	unit_type (*distance)(struct inst *self, struct coord pos, 
 	    unit_type scale);
 	void (*select)(struct inst *self);
+	int (*anchors)(struct inst *self, struct vec ***anchors);
 };
 
 enum inst_prio {
@@ -179,9 +180,9 @@ struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
 
 	found = NULL;
 	for (inst = insts[ip_frame]; inst; inst = inst->next) {
-		if (!inst->active || !inst->ops->distance)
+		if (!inst->active)
 			continue;
-		dist = inst->ops->distance(inst, pos, ctx->scale);
+		dist = gui_dist_frame_eye(inst, pos, ctx->scale);
 		if (dist >= 0 && (!found || best_dist > dist)) {
 			found = inst;
 			best_dist = dist;
@@ -222,6 +223,22 @@ struct vec *inst_get_ref(const struct inst *inst)
 	if (inst->ops == &frame_ops)
 		return NULL;
 	abort();
+}
+
+
+struct vec *inst_get_vec(const struct inst *inst)
+{
+	if (inst->ops == &vec_ops)
+		return inst->vec;
+	if (inst->ops == &frame_ops)
+		return NULL;
+	abort();
+}
+
+
+int inst_anchors(struct inst *inst, struct vec ***anchors)
+{
+	return inst->ops->anchors ? inst->ops->anchors(inst, anchors) : 0;
 }
 
 
@@ -343,11 +360,18 @@ static int validate_vec_name(const char *s, void *ctx)
 static void vec_op_select(struct inst *self)
 {
 	status_set_type_entry("ref =");
-	status_set_name(self->vec->name ? self->vec->name : "");
+	status_set_name("%s", self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.rect.end, -1);
 	edit_unique_null(&self->vec->name, validate_vec_name, self->vec);
 	edit_x(&self->vec->x);
 	edit_y(&self->vec->y);
+}
+
+
+static int vec_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	anchors[0] = &inst->vec->base;
+	return 1;
 }
 
 
@@ -357,6 +381,7 @@ static struct inst_ops vec_ops = {
 	.hover		= gui_hover_vec,
 	.distance	= gui_dist_vec,
 	.select		= vec_op_select,
+	.anchors	= vec_op_anchors,
 };
 
 
@@ -391,11 +416,22 @@ static void line_op_select(struct inst *self)
 }
 
 
+static int line_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	struct obj *obj = inst->obj;
+
+	anchors[0] = &obj->base;
+	anchors[1] = &obj->u.rect.other;
+	return 2;
+}
+
+
 static struct inst_ops line_ops = {
 	.debug		= line_op_debug,
 	.draw		= gui_draw_line,
 	.distance	= gui_dist_line,
 	.select		= line_op_select,
+	.anchors	= line_op_anchors,
 };
 
 
@@ -437,6 +473,7 @@ static struct inst_ops rect_ops = {
 	.draw		= gui_draw_rect,
 	.distance	= gui_dist_rect,
 	.select		= rect_op_select,
+	.anchors	= line_op_anchors,
 };
 
 
@@ -481,9 +518,19 @@ static int validate_pad_name(const char *s, void *ctx)
 static void pad_op_select(struct inst *self)
 {
 	status_set_type_entry("label =");
-	status_set_name(self->u.name);
+	status_set_name("%s", self->u.name);
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL);
+}
+
+
+static int pad_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	struct obj *obj = inst->obj;
+
+	anchors[0] = &obj->base;
+	anchors[1] = &obj->u.pad.other;
+	return 2;
 }
 
 
@@ -492,6 +539,7 @@ static struct inst_ops pad_ops = {
 	.draw		= gui_draw_pad,
 	.distance	= gui_dist_pad,
 	.select		= pad_op_select,
+	.anchors	= pad_op_anchors,
 };
 
 
@@ -532,11 +580,23 @@ static void arc_op_select(struct inst *self)
 }
 
 
+static int arc_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	struct obj *obj = inst->obj;
+
+	anchors[0] = &obj->base;
+	anchors[1] = &obj->u.arc.start;
+	anchors[2] = &obj->u.arc.end;
+	return 3;
+}
+
+
 static struct inst_ops arc_ops = {
 	.debug		= arc_op_debug,
 	.draw		= gui_draw_arc,
 	.distance	= gui_dist_arc,
 	.select		= arc_op_select,
+	.anchors	= arc_op_anchors,
 };
 
 
@@ -590,11 +650,22 @@ static void meas_op_select(struct inst *self)
 }
 
 
+static int meas_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	struct obj *obj = inst->obj;
+
+	anchors[0] = &obj->base;
+	anchors[1] = &obj->u.meas.other;
+	return 2;
+}
+
+
 static struct inst_ops meas_ops = {
 	.debug		= meas_op_debug,
 	.draw		= gui_draw_meas,
 	.distance	= gui_dist_meas,
 	.select		= meas_op_select,
+	.anchors	= meas_op_anchors,
 };
 
 
@@ -640,19 +711,39 @@ static void frame_op_debug(struct inst *self)
 }
 
 
+static void frame_op_select(struct inst *self)
+{
+	rect_status(self->bbox.min, self->bbox.max, -1);
+	status_set_type_entry("name =");
+	status_set_name("%s", self->u.frame.ref->name);
+}
+
+
+static int frame_op_anchors(struct inst *inst, struct vec ***anchors)
+{
+	anchors[0] = &inst->vec->base;
+	return 1;
+}
+
+
 static struct inst_ops frame_ops = {
-	.debug	= frame_op_debug,
-	.draw	= gui_draw_frame,
-	.hover	= gui_hover_frame,
+	.debug		= frame_op_debug,
+	.draw		= gui_draw_frame,
+	.hover		= gui_hover_frame,
+	.distance	= gui_dist_frame,
+	.select		= frame_op_select,
+	.anchors	= frame_op_anchors,
 };
 
 
-void inst_begin_frame(const struct frame *frame, struct coord base, int active)
+void inst_begin_frame(const struct frame *frame, struct coord base,
+    int active, int is_active_frame)
 {
 	struct inst *inst;
 
 	inst = add_inst(&frame_ops, ip_frame, base);
 	inst->u.frame.ref = frame;
+	inst->u.frame.active = is_active_frame;
 	inst->active = active;
 	curr_frame = inst;
 }

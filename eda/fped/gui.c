@@ -115,7 +115,7 @@ static void edit_var(struct var *var)
 	inst_select_outside(var, unselect_var);
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
-	status_set_name(var->name);
+	status_set_name("%s", var->name);
 	edit_unique(&var->name, validate_var_name, var);
 }
 
@@ -493,7 +493,7 @@ static void edit_frame(struct frame *frame)
 	inst_select_outside(frame, unselect_frame);
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
 	status_set_type_entry("name =");
-	status_set_name(frame->name);
+	status_set_name("%s", frame->name);
 	edit_unique(&frame->name, validate_frame_name, frame);
 }
 

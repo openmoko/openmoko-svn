@@ -24,6 +24,7 @@
 
 GdkGC *gc_bg;
 GdkGC *gc_drag;
+GdkGC *gc_active_frame;
 GdkGC *gc_vec[mode_n];
 GdkGC *gc_obj[mode_n];
 GdkGC *gc_pad[mode_n];
@@ -67,7 +68,8 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_pad,	"#400000", INVALID,   "#ff0000", INVALID,   "#ffff80");
 	style(gc_ptext,	"#404040", INVALID,   "#ffffff", INVALID,   "#ffffff");
 	style(gc_meas,	"#280040", INVALID,   "#ff00ff", INVALID,   "#ffff80");
-	style(gc_frame,	"#004000", "#205020", "#00ff00", INVALID,   INVALID);
+	style(gc_frame,	"#004000", "#205020", "#009000", INVALID,   "#ffff80");
+	gc_active_frame = gc("#00ff00", 2);
 
 	gc_frame[mode_hover] = gc_vec[mode_hover] = gc("#c00000", 1);
 }

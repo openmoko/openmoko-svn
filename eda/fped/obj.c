@@ -244,7 +244,9 @@ static int generate_frame(struct frame *frame, struct coord base,
 	/*
 	 * We ensure during construction that frames can never recurse.
 	 */
-	inst_begin_frame(frame, base, active && frame == active_frame);
+	inst_begin_frame(frame, base,
+	    active && parent == active_frame,
+	    active && frame == active_frame);
 	frame->curr_parent = parent;
 	ok = iterate_tables(frame, frame->tables, base, active);
 	inst_end_frame(frame);

@@ -11,6 +11,8 @@
  */
 
 
+#include <stdlib.h>
+#include <assert.h>
 #include <gtk/gtk.h>
 
 #include "util.h"
@@ -36,9 +38,10 @@
 
 
 struct tool_ops {
-	struct pix_buf *(*drag)(struct draw_ctx *ctx, struct inst *from,
+	struct pix_buf *(*drag_new)(struct draw_ctx *ctx, struct inst *from,
 	     struct coord to);
-	int (*end)(struct draw_ctx *ctx, struct inst *from, struct inst *to);
+	int (*end_new)(struct draw_ctx *ctx, struct inst *from,
+	    struct inst *to);
 };
 
 
@@ -47,7 +50,16 @@ static GtkWidget *active_tool;
 static struct tool_ops *active_ops = NULL;
 static struct inst *hover_inst = NULL;
 
-static struct inst *drag;
+static struct drag_state {
+	struct inst *new; /* non-NULL if dragging a new object */
+	int anchors_n; /* number of anchors, 0 if no moving */
+	int anchor_i; /* current anchor */
+	struct vec **anchors[3];
+} drag = {
+	.new = NULL,
+	.anchors_n = 0,
+};
+
 static struct pix_buf *pix_buf;
 
 static struct tool_ops vec_ops;
@@ -104,8 +116,8 @@ static int end_new_line(struct draw_ctx *ctx,
 
 
 static struct tool_ops line_ops = {
-	.drag	= drag_new_line,
-	.end	= end_new_line,
+	.drag_new	= drag_new_line,
+	.end_new	= end_new_line,
 };
 
 
@@ -156,8 +168,8 @@ static int end_new_rect(struct draw_ctx *ctx,
 
 
 static struct tool_ops rect_ops = {
-	.drag	= drag_new_rect,
-	.end	= end_new_rect,
+	.drag_new	= drag_new_rect,
+	.end_new	= end_new_rect,
 };
 
 
@@ -196,12 +208,77 @@ static int end_new_circ(struct draw_ctx *ctx,
 
 
 static struct tool_ops circ_ops = {
-	.drag	= drag_new_circ,
-	.end	= end_new_circ,
+	.drag_new	= drag_new_circ,
+	.end_new	= end_new_circ,
 };
 
 
-/* ----- mouse actions ----------------------------------------------------- */
+/* ----- moving references ------------------------------------------------- */
+
+
+static int may_move(struct inst *curr)
+{
+	if (!selected_inst)
+		return 0;
+	if (drag.anchors_n)
+		return 0; /* already moving something else */
+	drag.anchors_n = inst_anchors(selected_inst, drag.anchors);
+	for (drag.anchor_i = 0; drag.anchor_i != drag.anchors_n;
+	    drag.anchor_i++)
+		if (*drag.anchors[drag.anchor_i] == inst_get_vec(curr))
+			return 1;
+	drag.anchors_n = 0;
+	return 0;
+}
+
+
+static int would_be_equal(const struct drag_state *state,
+    int a, int b, struct inst *curr)
+{
+	const struct vec *va;
+	const struct vec *vb;
+
+	va = a == state->anchor_i ? inst_get_vec(curr) : *state->anchors[a];
+	vb = b == state->anchor_i ? inst_get_vec(curr) : *state->anchors[b];
+	return va == vb;
+}
+
+
+static int may_move_to(const struct drag_state *state, struct inst *curr)
+{
+	assert(selected_inst);
+	assert(state->anchors_n);
+	switch (state->anchors_n) {
+	case 3:
+		if (would_be_equal(state, 0, 2, curr))
+			return 0;
+		/* fall through */
+	case 2:
+		if (would_be_equal(state, 0, 1, curr))
+			return 0;
+		/* fall through */
+	case 1:
+		return 1;
+	default:
+		abort();
+	}
+}
+
+
+static void do_move_to(struct drag_state *state, struct inst *curr)
+{
+	struct vec *old;
+
+	assert(may_move_to(state, curr));
+	old = *state->anchors[state->anchor_i];
+	if (old)
+		old->n_refs--;
+	*state->anchors[state->anchor_i] = inst_get_ref(curr);
+	state->anchors_n = 0;
+}
+
+
+/* ----- hover ------------------------------------------------------------- */
 
 
 void tool_dehover(struct draw_ctx *ctx)
@@ -214,29 +291,46 @@ void tool_dehover(struct draw_ctx *ctx)
 
 void tool_hover(struct draw_ctx *ctx, struct coord pos)
 {
-	struct inst *inst;
+	struct inst *curr;
 
-	if (!active_ops)
-		return;
-	inst = inst_find_point(ctx, pos);
-	if (inst != hover_inst)
+	curr = inst_find_point(ctx, pos);
+	if (curr && !active_ops) {
+		if (drag.anchors_n) {
+			if (!may_move_to(&drag, curr))
+				curr = NULL;
+		} else {
+			if (!may_move(curr))
+				curr = NULL;
+			drag.anchors_n = 0;
+		}
+	}
+	if (curr != hover_inst)
 		tool_dehover(ctx);
-	if (inst) {
-		inst_hover(inst, ctx, 1);
-		hover_inst = inst;
+	if (curr) {
+		inst_hover(curr, ctx, 1);
+		hover_inst = curr;
 	}
 }
 
 
+/* ----- mouse actions ----------------------------------------------------- */
+
+
 int tool_consider_drag(struct draw_ctx *ctx, struct coord pos)
 {
-	if (!active_ops)
-		return 0;
-	drag = inst_find_point(ctx, pos);
-	if (!drag)
+	struct inst *curr;
+
+	assert(!drag.new);
+	assert(!drag.anchors_n);
+	curr = inst_find_point(ctx, pos);
+	if (!curr)
 		return 0;
 	pix_buf = NULL;
-	return 1;
+	if (active_ops) {
+		drag.new = curr;
+		return 1;
+	}
+	return may_move(curr);
 }
 
 
@@ -245,7 +339,7 @@ void tool_drag(struct draw_ctx *ctx, struct coord to)
 	if (pix_buf)
 		restore_pix_buf(pix_buf);
 	tool_hover(ctx, to);
-	pix_buf = active_ops->drag(ctx, drag, to);
+	pix_buf = drag.new ? active_ops->drag_new(ctx, drag.new, to) : NULL;
 }
 
 
@@ -255,22 +349,28 @@ void tool_cancel_drag(struct draw_ctx *ctx)
 	tool_reset();
 	if (pix_buf)
 		restore_pix_buf(pix_buf);
-	drag = NULL;
+	drag.new = NULL;
 	active_ops = NULL;
+	drag.anchors_n = 0;
 }
 
 
 int tool_end_drag(struct draw_ctx *ctx, struct coord to)
 {
-	struct inst *from = drag;
+	struct drag_state state = drag;
 	struct inst *end;
 	struct tool_ops *ops = active_ops;
 
 	tool_cancel_drag(ctx);
 	end = inst_find_point(ctx, to);
-	if (end)
-		return ops->end(ctx, from, end);
-	return 0;
+	if (!end)
+		return 0;
+	if (state.new)
+		return ops->end_new(ctx, state.new, end);
+	if (!may_move_to(&state, end))
+		return 0;
+	do_move_to(&state, end);
+	return 1;
 }
 
 

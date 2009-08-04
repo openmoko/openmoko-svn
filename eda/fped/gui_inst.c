@@ -393,12 +393,47 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 /* ----- frame ------------------------------------------------------------- */
 
 
-unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale)
+unit_type gui_dist_frame_eye(struct inst *self, struct coord pos,
+    unit_type scale)
 {
 	unit_type d;
 
 	d = dist_point(pos, self->base)/scale;
 	return d > FRAME_EYE_R2 ? -1 : d;
+}
+
+
+static unit_type dist_from_corner_line(struct inst *self, struct coord pos,
+    struct coord vec, unit_type scale)
+{
+	struct coord ref;
+
+	ref.x = self->bbox.min.x;
+	ref.y = self->bbox.max.y;
+	return dist_line(pos, ref, add_vec(ref, vec))/scale;
+}
+
+
+unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale)
+{
+	unit_type d_min, d;
+	struct coord vec;
+
+	d_min = dist_point(pos, self->base)/scale;
+
+	vec.x = FRAME_SHORT_X*scale;
+	vec.y = 0;
+	d = dist_from_corner_line(self, pos, vec, scale);
+	if (d < d_min)
+		d_min = d;
+
+	vec.x = 0;
+	vec.y = FRAME_SHORT_Y*scale;
+	d = dist_from_corner_line(self, pos, vec, scale);
+	if (d < d_min)
+		d_min = d;
+
+	return d_min > SELECT_R ? -1 : d_min;
 }
 
 
@@ -418,7 +453,7 @@ void gui_draw_frame(struct inst *self, struct draw_ctx *ctx)
 	struct coord corner = { self->bbox.min.x, self->bbox.max.y };
 	GdkGC *gc;
 
-	gc = gc_frame[get_mode(self)];
+	gc = self->u.frame.active ? gc_active_frame : gc_frame[get_mode(self)];
 	draw_eye(ctx, gc, center, FRAME_EYE_R1, FRAME_EYE_R2);
 	if (!self->u.frame.ref->name)
 		return;

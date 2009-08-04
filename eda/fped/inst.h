@@ -51,6 +51,7 @@ struct inst {
 	union {
 		struct {
 			const struct frame *ref;
+			int active;
 		} frame;
 		const char *name;
 		struct {
@@ -81,7 +82,9 @@ void inst_deselect(void);
 
 struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos);
 struct coord inst_get_point(const struct inst *inst);
+int inst_anchors(struct inst *inst, struct vec ***anchors);
 struct vec *inst_get_ref(const struct inst *inst);
+struct vec *inst_get_vec(const struct inst *inst);
 
 int inst_vec(struct vec *vec, struct coord base);
 int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width);
@@ -95,7 +98,8 @@ int inst_meas(struct obj *obj, struct coord from, struct coord to,
 void inst_begin_active(int active);
 void inst_end_active(void);
 
-void inst_begin_frame(const struct frame *frame, struct coord base, int active);
+void inst_begin_frame(const struct frame *frame, struct coord base,
+    int active, int is_active_frame);
 void inst_end_frame(const struct frame *frame);
 
 struct bbox inst_get_bbox(void);

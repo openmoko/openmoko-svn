@@ -84,6 +84,7 @@
 
 extern GdkGC *gc_bg;
 extern GdkGC *gc_drag;
+extern GdkGC *gc_active_frame;
 extern GdkGC *gc_vec[mode_n];
 extern GdkGC *gc_obj[mode_n];
 extern GdkGC *gc_pad[mode_n];
