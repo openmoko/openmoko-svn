@@ -32,17 +32,17 @@ struct edit_ops {
 	int (*activate)(GtkWidget *widget, const char *s, void *ctx);
 };
 
-static struct edit_ops *edit_ops = NULL;
-static void *edit_ctx;
-
 
 /* ----- setter functions -------------------------------------------------- */
 
 
 static GtkWidget *status_name, *status_entry;
+static GtkWidget *status_type_x, *status_type_y, *status_type_entry;
+static GtkWidget *status_entry_x, *status_entry_y;
 static GtkWidget *status_x, *status_y;
 static GtkWidget *status_r, *status_angle;
-static GtkWidget *status_sys_pos, *status_user_pos;
+static GtkWidget *status_sys_x, *status_sys_y;
+static GtkWidget *status_user_x, *status_user_y;
 static GtkWidget *status_zoom, *status_grid;
 static GtkWidget *status_msg;
 
@@ -67,13 +67,18 @@ static void set_label(GtkWidget *label, const char *fmt, va_list ap)
 		va_end(ap);				\
 	}
 
+SETTER(type_x)
+SETTER(type_y)
+SETTER(type_entry)
 SETTER(name)
 SETTER(x)
 SETTER(y)
 SETTER(r)
 SETTER(angle)
-SETTER(sys_pos)
-SETTER(user_pos)
+SETTER(sys_x)
+SETTER(sys_y)
+SETTER(user_x)
+SETTER(user_y)
 SETTER(zoom)
 SETTER(grid)
 
@@ -83,18 +88,35 @@ SETTER(grid)
 
 void status_set_xy(struct coord coord)
 {
-	status_set_x("x = %5.2f mm", units_to_mm(coord.x));
-	status_set_y("y = %5.2f mm", units_to_mm(coord.y));
+	/* do dX/dY etc. stuff later */
+	status_set_type_x("X =");
+	status_set_type_y("Y =");
+
+	status_set_x("%5.2f mm", units_to_mm(coord.x));
+	status_set_y("%5.2f mm", units_to_mm(coord.y));
 }
 
 
-static void entry_color(const char *color)
+static void entry_color(GtkWidget *widget, const char *color)
 {
 	GdkColor col;
 
 	col = get_color(color);
-	gtk_widget_modify_base(GTK_WIDGET(status_entry),
-	    GTK_STATE_NORMAL, &col);
+	gtk_widget_modify_base(widget, GTK_STATE_NORMAL, &col);
+}
+
+
+/* ----- helper functions -------------------------------------------------- */
+
+
+static void setup_edit(GtkWidget *widget, const char *s,
+    struct edit_ops *ops, void *ctx)
+{
+	gtk_entry_set_text(GTK_ENTRY(widget), s);
+	entry_color(widget, COLOR_EDIT_ASIS);
+	gtk_widget_show(widget);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ctx", ctx);
 }
 
 
@@ -114,11 +136,11 @@ static int unique_changed(GtkWidget *widget, const char *s, void *ctx)
 	int ok;
 
 	if (!strcmp(s, *unique_ctx->s)) {
-		entry_color(COLOR_EDIT_ASIS);
+		entry_color(widget, COLOR_EDIT_ASIS);
 		return 1;
 	}
 	ok = !unique_ctx->validate || unique_ctx->validate(s, unique_ctx->ctx);
-	entry_color(ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
+	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
 	return ok;
 }
 
@@ -131,7 +153,7 @@ static int unique_activate(GtkWidget *widget, const char *s, void *ctx)
 	     unique_ctx->validate && !unique_ctx->validate(s, unique_ctx->ctx))
 		return 0;
 	*unique_ctx->s = unique(s);
-	entry_color(COLOR_EDIT_ASIS);
+	entry_color(widget, COLOR_EDIT_ASIS);
 	return 1;
 }
 
@@ -150,11 +172,7 @@ void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	edit_ops = &edit_ops_unique;
-	edit_ctx = &unique_ctx;
-	gtk_entry_set_text(GTK_ENTRY(status_entry), *s);
-	entry_color(COLOR_EDIT_ASIS);
-	gtk_widget_show(status_entry);
+	setup_edit(status_entry, *s, &edit_ops_unique, &unique_ctx);
 }
 
 
@@ -167,14 +185,14 @@ static int unique_null_changed(GtkWidget *widget, const char *s, void *ctx)
 	int ok;
 
 	if (!strcmp(s, *unique_ctx->s ? *unique_ctx->s : "")) {
-		entry_color(COLOR_EDIT_ASIS);
+		entry_color(widget, COLOR_EDIT_ASIS);
 		return 1;
 	}
 	ok = !*s;
 	if (!ok)
 		ok = !unique_ctx->validate ||
 		     unique_ctx->validate(s, unique_ctx->ctx);
-	entry_color(ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
+	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
 	return ok;
 }
 
@@ -191,7 +209,7 @@ static int unique_null_activate(GtkWidget *widget, const char *s, void *ctx)
 			return 0;
 		*unique_ctx->s = unique(s);
 	}
-	entry_color(COLOR_EDIT_ASIS);
+	entry_color(widget, COLOR_EDIT_ASIS);
 	return 1;
 }
 
@@ -210,11 +228,8 @@ void edit_unique_null(const char **s,
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	edit_ops = &edit_ops_null_unique;
-	edit_ctx = &unique_ctx;
-	gtk_entry_set_text(GTK_ENTRY(status_entry), *s ? *s : "");
-	entry_color(COLOR_EDIT_ASIS);
-	gtk_widget_show(status_entry);
+	setup_edit(status_entry, *s ? *s : "",
+	    &edit_ops_null_unique, &unique_ctx);
 }
 
 
@@ -234,11 +249,11 @@ static int name_changed(GtkWidget *widget, const char *s, void *ctx)
 	int ok;
 
 	if (!strcmp(s, *name_ctx->s)) {
-		entry_color(COLOR_EDIT_ASIS);
+		entry_color(widget, COLOR_EDIT_ASIS);
 		return 1;
 	}
 	ok = !name_ctx->validate || name_ctx->validate(s, name_ctx->ctx);
-	entry_color(ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
+	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
 	return ok;
 }
 
@@ -251,7 +266,7 @@ static int name_activate(GtkWidget *widget, const char *s, void *ctx)
 		return 0;
 	free(*name_ctx->s);
 	*name_ctx->s = stralloc(s);
-	entry_color(COLOR_EDIT_ASIS);
+	entry_color(widget, COLOR_EDIT_ASIS);
 	return 1;
 }
 
@@ -269,11 +284,7 @@ void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx)
 	name_ctx.s = s;
 	name_ctx.validate = validate;
 	name_ctx.ctx = ctx;
-	edit_ops = &edit_ops_name;
-	edit_ctx = &name_ctx;
-	gtk_entry_set_text(GTK_ENTRY(status_entry), *s);
-	entry_color(COLOR_EDIT_ASIS);
-	gtk_widget_show(status_entry);
+	setup_edit(status_entry, *s, &edit_ops_name, &name_ctx);
 }
 
 
@@ -293,10 +304,10 @@ static int expr_changed(GtkWidget *widget, const char *s, void *ctx)
 
 	expr = try_parse_expr(s);
 	if (!expr) {
-		entry_color(COLOR_EDIT_BAD);
+		entry_color(widget, COLOR_EDIT_BAD);
 		return 0;
 	}
-	entry_color(COLOR_EDIT_GOOD);
+	entry_color(widget, COLOR_EDIT_GOOD);
 	free_expr(expr);
 	return 1;
 }
@@ -313,7 +324,7 @@ static int expr_activate(GtkWidget *widget, const char *s, void *ctx)
 	if (*anchor)
 		free_expr(*anchor);
 	*anchor = expr;
-	entry_color(COLOR_EDIT_ASIS);
+	entry_color(widget, COLOR_EDIT_ASIS);
 	return 1;
 }
 
@@ -324,17 +335,31 @@ static struct edit_ops edit_ops_expr = {
 };
 
 
-void edit_expr(struct expr **expr)
+static void edit_any_expr(GtkWidget *widget, struct expr **expr)
 {
 	char *s;
 
-	edit_ops = &edit_ops_expr;
-	edit_ctx = expr;
 	s = unparse(*expr);
-	gtk_entry_set_text(GTK_ENTRY(status_entry), s);
+	setup_edit(widget, s, &edit_ops_expr, expr);
 	free(s);
-	entry_color(COLOR_EDIT_ASIS);
-	gtk_widget_show(status_entry);
+}
+
+
+void edit_expr(struct expr **expr)
+{
+	edit_any_expr(status_entry, expr);
+}
+
+
+void edit_x(struct expr **expr)
+{
+	edit_any_expr(status_entry_x, expr);
+}
+
+
+void edit_y(struct expr **expr)
+{
+	edit_any_expr(status_entry_y, expr);
 }
 
 
@@ -344,9 +369,13 @@ void edit_expr(struct expr **expr)
 static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
      gpointer data)
 {
-	if (edit_ops && edit_ops->changed)
-		edit_ops->changed(widget,
-		    gtk_entry_get_text(GTK_ENTRY(widget)), edit_ctx);
+	struct edit_ops *ops =
+	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
+	void *ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+
+	if (ops && ops->changed)
+		ops->changed(widget, gtk_entry_get_text(GTK_ENTRY(widget)),
+		    ctx);
 	return TRUE;
 }
 
@@ -354,9 +383,13 @@ static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
 static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
      gpointer data)
 {
-	if (edit_ops && edit_ops->activate)
-		if (edit_ops->activate(widget,
-		    gtk_entry_get_text(GTK_ENTRY(widget)), edit_ctx)) {
+	struct edit_ops *ops =
+	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
+	void *ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+
+	if (ops && ops->activate)
+		if (ops->activate(widget,
+		    gtk_entry_get_text(GTK_ENTRY(widget)), ctx)) {
 			inst_deselect();
 			change_world();
 		}
@@ -366,8 +399,9 @@ static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
 
 void edit_nothing(void)
 {
-	edit_ops = NULL;
 	gtk_widget_hide(status_entry);
+	gtk_widget_hide(status_entry_x);
+	gtk_widget_hide(status_entry_y);
 }
 
 
@@ -418,54 +452,65 @@ static GtkWidget *add_label(GtkWidget *tab, int col, int row)
 }
 
 
+static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
+{
+	GtkWidget *entry;
+
+	entry = gtk_entry_new();
+	gtk_entry_set_has_frame(GTK_ENTRY(entry), FALSE);
+	gtk_table_attach_defaults(GTK_TABLE(tab), entry,
+	    col, col+1, row, row+1);
+
+	g_signal_connect(G_OBJECT(entry), "changed",
+            G_CALLBACK(changed), entry);
+	g_signal_connect(G_OBJECT(entry), "activate",
+            G_CALLBACK(activate), entry);
+
+	return entry;
+}
+
+
 void make_status_area(GtkWidget *vbox)
 {
-	GtkWidget *tab, *hbox;
+	GtkWidget *tab;
 
-	tab = gtk_table_new(5, 2, FALSE);
+	tab = gtk_table_new(6, 3, FALSE);
 	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, TRUE, 0);
 
-	/* name and input */
+	/* types */
 
-	status_name = add_label(tab, 0, 0);
-
-	/*
-	 * @@@ this should make the entry consume all available space. alas, it
-	 * doesn't work like that :-(
-	 */
-	hbox = gtk_hbox_new(TRUE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(tab), hbox,
-	    0, 1, 1, 2);
-	
-	status_entry = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), status_entry, TRUE, TRUE, 0);
-
-	gtk_entry_set_has_frame(GTK_ENTRY(status_entry), FALSE);
-
-	g_signal_connect(G_OBJECT(status_entry), "changed",
-            G_CALLBACK(changed), status_entry);
-	g_signal_connect(G_OBJECT(status_entry), "activate",
-            G_CALLBACK(activate), status_entry);
+	status_type_x = add_label(tab, 0, 0);
+	status_type_y = add_label(tab, 0, 1);
+	status_type_entry = add_label(tab, 0, 2);
 
 	/* x / y */
 
 	status_x = add_label(tab, 1, 0);
+	status_entry_x = add_entry(tab, 2, 0);
 	status_y = add_label(tab, 1, 1);
+	status_entry_y = add_entry(tab, 2, 1);
 
-	/* r / angle */
+	/* name and input */
 
-	status_r = add_label(tab, 2, 0);
-	status_angle = add_label(tab, 2, 1);
+	status_name = add_label(tab, 1, 2);
+	status_entry = add_entry(tab, 2, 2);
 
 	/* sys / user pos */
 
-	status_sys_pos = add_label(tab, 3, 0);
-	status_user_pos = add_label(tab, 3, 1);
+	status_sys_x = add_label(tab, 3, 0);
+	status_sys_y = add_label(tab, 3, 1);
+	status_user_x = add_label(tab, 4, 0);
+	status_user_y = add_label(tab, 4, 1);
+
+	/* r / angle */
+
+	status_r = add_label(tab, 3, 2);
+	status_angle = add_label(tab, 4, 2);
 
 	/* zoom / grid */
 
-	status_zoom = add_label(tab, 4, 0);
-	status_grid = add_label(tab, 4, 1);
+	status_zoom = add_label(tab, 5, 0);
+	status_grid = add_label(tab, 5, 1);
 
 	/* message bar */
 

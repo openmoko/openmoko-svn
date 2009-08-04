@@ -173,6 +173,9 @@ void inst_deselect(void)
 	if (selected_inst)
 		set_path(0);
 	deselect_outside();
+	status_set_type_x("");
+	status_set_type_y("");
+	status_set_type_entry("");
 	status_set_name("");
 	status_set_x("");
 	status_set_y("");
@@ -198,8 +201,10 @@ static void rect_status(struct coord a, struct coord b, unit_type width)
 		status_set_angle("a = %3.1f deg", angle);
 	}
 	status_set_r("r = %5.2f mm", hypot(units_to_mm(d.x), units_to_mm(d.y)));
-	if (width != -1)
-		status_set_name("width = %5.2f mm", units_to_mm(width));
+	if (width != -1) {
+		status_set_type_entry("width =");
+		status_set_name("%5.2f mm", units_to_mm(width));
+	}
 }
 
 
@@ -280,9 +285,12 @@ static int validate_vec_name(const char *s, void *ctx)
 
 static void vec_op_select(struct inst *self)
 {
+	status_set_type_entry("ref =");
 	status_set_name(self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.rect.end, -1);
 	edit_unique_null(&self->vec->name, validate_vec_name, self->vec);
+	edit_x(&self->vec->x);
+	edit_y(&self->vec->y);
 }
 
 
@@ -414,6 +422,7 @@ static int validate_pad_name(const char *s, void *ctx)
 
 static void pad_op_select(struct inst *self)
 {
+	status_set_type_entry("label =");
 	status_set_name(self->u.name);
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL);
@@ -459,7 +468,8 @@ static void arc_op_select(struct inst *self)
 	    self->u.arc.a1 == self->u.arc.a2 ? 360 :
 	    self->u.arc.a2-self->u.arc.a1);
 	status_set_r("r = %5.2f mm", units_to_mm(self->u.arc.r));
-	status_set_name("width = %5.2f mm", units_to_mm(self->u.arc.width));
+	status_set_type_entry("width =");
+	status_set_name("%5.2f mm", units_to_mm(self->u.arc.width));
 	edit_expr(&self->obj->u.arc.width);
 }
 
@@ -516,7 +526,8 @@ static void meas_op_debug(struct inst *self)
 static void meas_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, -1);
-	status_set_name("offset = %5.2f mm", units_to_mm(self->u.meas.offset));
+	status_set_type_entry("width =");
+	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
 	edit_expr(&self->obj->u.meas.offset);
 }
 

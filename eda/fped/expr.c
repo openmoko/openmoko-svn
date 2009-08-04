@@ -365,7 +365,7 @@ char *expand(const char *name, const struct frame *frame)
 		value_len = snprintf(num_buf, sizeof(num_buf), "%lg%s",
 		    value.n, str_unit(value));
 		len += value_len;
-		buf = realloc(buf, len);
+		buf = realloc(buf, len+1);
 		if (!buf)
 			abort();
 		strcpy(buf+i, num_buf);

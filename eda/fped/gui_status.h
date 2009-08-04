@@ -26,15 +26,22 @@ void edit_unique_null(const char **s, int (*validate)(const char *s, void *ctx),
     void *ctx);
 void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx);
 void edit_expr(struct expr **expr);
+void edit_x(struct expr **expr);
+void edit_y(struct expr **expr);
 void edit_nothing(void);
 
+void status_set_type_x(const char *fmt, ...);
+void status_set_type_y(const char *fmt, ...);
+void status_set_type_entry(const char *fmt, ...);
 void status_set_name(const char *fmt, ...);
 void status_set_x(const char *fmt, ...);
 void status_set_y(const char *fmt, ...);
 void status_set_r(const char *fmt, ...);
 void status_set_angle(const char *fmt, ...);
-void status_set_sys_pos(const char *fmt, ...);
-void status_set_user_pos(const char *fmt, ...);
+void status_set_sys_x(const char *fmt, ...);
+void status_set_sys_y(const char *fmt, ...);
+void status_set_user_x(const char *fmt, ...);
+void status_set_user_y(const char *fmt, ...);
 void status_set_zoom(const char *fmt, ...);
 void status_set_grid(const char *fmt, ...);
 
