@@ -576,7 +576,7 @@ static void build_frames(GtkWidget *vbox)
 {
 	struct frame *frame;
 	GtkWidget *tab, *label, *refs, *vars;
-	int n;
+	int n = 0;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
 	for (frame = frames; frame; frame = frame->next)

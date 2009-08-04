@@ -126,7 +126,8 @@ int inst_select(const struct draw_ctx *ctx, struct coord pos)
 {
 	enum inst_prio prio;
 	struct inst *inst;
-	int best_dist, dist;
+	int best_dist = 0; /* keep gcc happy */
+	int dist;
 
 	deselect_outside();
 	edit_nothing();

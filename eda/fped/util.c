@@ -29,7 +29,7 @@ char *stralloc_vprintf(const char *fmt, va_list ap)
 	int n;
 
 	va_copy(aq, ap);
-	n = snprintf(NULL, 0, fmt, aq);
+	n = vsnprintf(NULL, 0, fmt, aq);
 	va_end(aq);
 	buf = alloc_size(n+1);
 	vsnprintf(buf, n+1, fmt, ap);

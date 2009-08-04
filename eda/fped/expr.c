@@ -182,6 +182,7 @@ static struct num compatible_sum(struct num *a, struct num *b)
 	}
 	res.type = a->type;
 	res.exponent = a->exponent;
+	res.n = 0; /* keep gcc happy */
 	return res;
 }
 
@@ -203,6 +204,7 @@ static struct num compatible_mult(struct num *a, struct num *b,
 	}
 	res.type = a->type;
 	res.exponent = exponent;
+	res.n = 0; /* keep gcc happy */
 	return res;
 }
 
