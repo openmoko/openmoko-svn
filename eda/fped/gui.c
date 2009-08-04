@@ -88,7 +88,7 @@ static int find_var_in_frame(const struct frame *frame, const char *name)
 	for (loop = frame->loops; loop; loop = loop->next)
 		if (!strcmp(loop->var.name, name))
 			return 1;
-        return 0;
+	return 0;
 }
 
 
@@ -106,14 +106,14 @@ static void unselect_var(void *data)
 {
 	struct var *var = data;
 
-        label_in_box_bg(var->widget, COLOR_VAR_PASSIVE);
+	label_in_box_bg(var->widget, COLOR_VAR_PASSIVE);
 }
 
 
 static void edit_var(struct var *var)
 {
 	inst_select_outside(var, unselect_var);
-        label_in_box_bg(var->widget, COLOR_VAR_EDITING);
+	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
 	status_set_name(var->name);
 	edit_unique(&var->name, validate_var_name, var);
@@ -127,7 +127,7 @@ static void unselect_value(void *data)
 {
 	struct value *value = data;
 
-        label_in_box_bg(value->widget,
+	label_in_box_bg(value->widget,
 	    value->row && value->row->table->active_row == value->row ?
 	     COLOR_CHOICE_SELECTED : COLOR_EXPR_PASSIVE);
 }
@@ -136,7 +136,7 @@ static void unselect_value(void *data)
 static void edit_value(struct value *value)
 {
 	inst_select_outside(value, unselect_value);
-        label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
+	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
 	edit_expr(&value->expr);
 }
 
@@ -172,7 +172,7 @@ static GtkWidget *add_activator(GtkWidget *hbox, int active,
 
 
 static gboolean assignment_var_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	edit_var(data);
 	return TRUE;
@@ -180,7 +180,7 @@ static gboolean assignment_var_select_event(GtkWidget *widget,
 
 
 static gboolean assignment_value_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	edit_value(data);
 	return TRUE;
@@ -188,7 +188,7 @@ static gboolean assignment_value_select_event(GtkWidget *widget,
 
 
 static void build_assignment(GtkWidget *vbox, struct frame *frame,
-     struct table *table)
+    struct table *table)
 {
 	GtkWidget *hbox, *field;
 	char *expr;
@@ -241,7 +241,7 @@ static void select_row(struct row *row)
 
 
 static gboolean table_var_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	edit_var(data);
 	return TRUE;
@@ -249,7 +249,7 @@ static gboolean table_var_select_event(GtkWidget *widget,
 
 
 static gboolean table_value_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	struct value *value = data;
 
@@ -264,7 +264,7 @@ static gboolean table_value_select_event(GtkWidget *widget,
 
 
 static void build_table(GtkWidget *vbox, struct frame *frame,
-     struct table *table)
+    struct table *table)
 {
 	GtkWidget *tab, *field;
 	GtkWidget *evbox;
@@ -290,7 +290,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 	gtk_container_add(GTK_CONTAINER(evbox), tab);
 	col = get_color(COLOR_VAR_TABLE_SEP);
 	gtk_widget_modify_bg(GTK_WIDGET(evbox),
-            GTK_STATE_NORMAL, &col);
+	    GTK_STATE_NORMAL, &col);
 
 	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
@@ -335,7 +335,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 
 
 static gboolean loop_var_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	struct loop *loop = data;
 
@@ -345,7 +345,7 @@ static gboolean loop_var_select_event(GtkWidget *widget,
 
 
 static gboolean loop_from_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	struct loop *loop = data;
 
@@ -355,7 +355,7 @@ static gboolean loop_from_select_event(GtkWidget *widget,
 
 
 static gboolean loop_to_select_event(GtkWidget *widget,
-     GdkEventButton *event, gpointer data)
+    GdkEventButton *event, gpointer data)
 {
 	struct loop *loop = data;
 
@@ -365,7 +365,7 @@ static gboolean loop_to_select_event(GtkWidget *widget,
 
 
 static gboolean loop_select_event(GtkWidget *widget, GdkEventButton *event,
-     gpointer data)
+    gpointer data)
 {
 	struct loop *loop = data;
 
@@ -376,7 +376,7 @@ static gboolean loop_select_event(GtkWidget *widget, GdkEventButton *event,
 
 
 static void build_loop(GtkWidget *vbox, struct frame *frame,
-     struct loop *loop)
+    struct loop *loop)
 {
 	GtkWidget *hbox, *field, *label;
 	char *expr;
@@ -484,7 +484,7 @@ static void unselect_frame(void *data)
 	 * change here doesn't matter if selecting a different frame.)
 	 * So we revert from "editing" to "selected".
 	 */
-        label_in_box_bg(frame->label, COLOR_FRAME_SELECTED);
+	label_in_box_bg(frame->label, COLOR_FRAME_SELECTED);
 }
 
 
@@ -508,7 +508,7 @@ static void select_frame(struct frame *frame)
 
 
 static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
-     gpointer data)
+    gpointer data)
 {
 	if (active_frame != data)
 		select_frame(data);
@@ -543,7 +543,7 @@ static GtkWidget *build_frame_label(struct frame *frame)
 
 
 static gboolean frame_ref_select_event(GtkWidget *widget, GdkEventButton *event,
-     gpointer data)
+    gpointer data)
 {
 	struct obj *obj = data;
 
@@ -591,13 +591,13 @@ static void build_frames(GtkWidget *vbox)
 	for (frame = root_frame; frame; frame = frame->prev) {
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
-                    0, 1, n*2, n*2+1);
+		    0, 1, n*2, n*2+1);
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
-                    1, 2, n*2, n*2+1);
+		    1, 2, n*2, n*2+1);
 		vars = build_vars(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
-                    1, 2, n*2+1, n*2+2);
+		    1, 2, n*2+1, n*2+2);
 		n++;
 	}
 	gtk_widget_show_all(tab);
@@ -648,6 +648,7 @@ static void make_center_area(GtkWidget *vbox)
 
 void change_world(void)
 {
+	tool_reset();
 	inst_deselect();
 	status_begin_reporting();
 	instantiate();

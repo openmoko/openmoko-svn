@@ -17,9 +17,25 @@
 #include <gtk/gtk.h>
 
 
+struct pix_buf {
+	GdkDrawable *da;
+	int x, y;
+	GdkPixbuf *buf;
+};
+
+
 GdkColor get_color(const char *spec);
 
 void set_width(GdkGC *gc, int width);
+
+struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
+    int border);
+void restore_pix_buf(struct pix_buf *buf);
+
+void draw_arc(GdkDrawable *da, GdkGC *gc, int fill,
+    int x, int y, int r, double a1, double a2);
+void draw_circle(GdkDrawable *da, GdkGC *gc, int fill,
+    int x, int y, int r);
 
 GtkWidget *label_in_box_new(const char *s);
 GtkWidget *box_of_label(GtkWidget *label);

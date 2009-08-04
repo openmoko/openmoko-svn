@@ -367,7 +367,7 @@ void edit_y(struct expr **expr)
 
 
 static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
-     gpointer data)
+    gpointer data)
 {
 	struct edit_ops *ops =
 	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
@@ -381,7 +381,7 @@ static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
 
 
 static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
-     gpointer data)
+    gpointer data)
 {
 	struct edit_ops *ops =
 	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
@@ -462,9 +462,9 @@ static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
 	    col, col+1, row, row+1);
 
 	g_signal_connect(G_OBJECT(entry), "changed",
-            G_CALLBACK(changed), entry);
+	    G_CALLBACK(changed), entry);
 	g_signal_connect(G_OBJECT(entry), "activate",
-            G_CALLBACK(activate), entry);
+	    G_CALLBACK(activate), entry);
 
 	return entry;
 }

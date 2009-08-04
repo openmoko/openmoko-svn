@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "obj.h"
 #include "gui_status.h"
+#include "gui_status.h"
 #include "gui_inst.h"
 #include "inst.h"
 
@@ -28,8 +29,9 @@ struct inst_ops {
 	void (*debug)(struct inst *self);
 	void (*save)(FILE *file, struct inst *self);
 	void (*draw)(struct inst *self, struct draw_ctx *ctx);
+	void (*hover)(struct inst *self, struct draw_ctx *ctx);
 	unit_type (*distance)(struct inst *self, struct coord pos, 
-            unit_type scale);
+	    unit_type scale);
 	void (*select)(struct inst *self);
 };
 
@@ -169,6 +171,60 @@ selected:
 }
 
 
+struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
+{
+	struct inst *inst, *found;
+	int best_dist = 0; /* keep gcc happy */
+	int dist;
+
+	found = NULL;
+	for (inst = insts[ip_frame]; inst; inst = inst->next) {
+		if (!inst->active || !inst->ops->distance)
+			continue;
+		dist = inst->ops->distance(inst, pos, ctx->scale);
+		if (dist >= 0 && (!found || best_dist > dist)) {
+			found = inst;
+			best_dist = dist;
+		}
+	}
+	if (found)
+		return found;
+
+	for (inst = insts[ip_vec]; inst; inst = inst->next) {
+		if (!inst->active || !inst->ops->distance)
+			continue;
+		dist = inst->ops->distance(inst, pos, ctx->scale);
+		if (dist >= 0 && (!found || best_dist > dist)) {
+			found = inst;
+			best_dist = dist;
+		}
+	}
+	return found;
+}
+
+
+struct coord inst_get_point(const struct inst *inst)
+{
+	if (inst->ops == &vec_ops)
+		return inst->u.rect.end;
+	if (inst->ops == &frame_ops)
+		return inst->base;
+	abort();
+}
+
+
+struct vec *inst_get_ref(const struct inst *inst)
+{
+	if (inst->ops == &vec_ops) {
+		inst->vec->n_refs++;
+		return inst->vec;
+	}
+	if (inst->ops == &frame_ops)
+		return NULL;
+	abort();
+}
+
+
 void inst_deselect(void)
 {
 	if (selected_inst)
@@ -298,6 +354,7 @@ static void vec_op_select(struct inst *self)
 static struct inst_ops vec_ops = {
 	.debug		= vec_op_debug,
 	.draw		= gui_draw_vec,
+	.hover		= gui_hover_vec,
 	.distance	= gui_dist_vec,
 	.select		= vec_op_select,
 };
@@ -586,6 +643,7 @@ static void frame_op_debug(struct inst *self)
 static struct inst_ops frame_ops = {
 	.debug	= frame_op_debug,
 	.draw	= gui_draw_frame,
+	.hover	= gui_hover_frame,
 };
 
 
@@ -682,6 +740,17 @@ void inst_draw(struct draw_ctx *ctx)
 			inst->ops->draw(inst, ctx);
 	if (selected_inst && selected_inst->ops->draw)
 		selected_inst->ops->draw(selected_inst, ctx);
+}
+
+
+void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on)
+{
+	if (!inst->ops->hover)
+		return;
+	if (on)
+		inst->ops->hover(inst, ctx);
+	else
+		inst->ops->draw(inst, ctx);
 }
 
 

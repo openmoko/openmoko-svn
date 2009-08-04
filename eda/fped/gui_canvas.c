@@ -19,6 +19,7 @@
 #include "gui_inst.h"
 #include "gui_style.h"
 #include "gui_status.h"
+#include "gui_tools.h"
 #include "gui.h"
 #include "gui_canvas.h"
 
@@ -26,6 +27,9 @@
 static struct draw_ctx ctx;
 static struct coord curr_pos;
 static struct coord user_origin = { 0, 0 };
+
+static int dragging = 0;
+static struct coord drag_start;
 
 
 /* ----- status display ---------------------------------------------------- */
@@ -105,6 +109,12 @@ void redraw(void)
 
 static void drag_left(struct coord pos)
 {
+	if (!dragging)
+		return;
+	if (hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale <
+	    DRAG_MIN_R)
+		return;
+	tool_drag(&ctx, pos);
 }
 
 
@@ -114,7 +124,7 @@ static void drag_middle(struct coord pos)
 
 
 static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
-     gpointer data)
+    gpointer data)
 {
 	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
 
@@ -122,6 +132,8 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 	curr_pos.y = event->y;
 	if (event->state & GDK_BUTTON1_MASK)
 		drag_left(pos);
+	else
+		tool_hover(&ctx, pos);
 	if (event->state & GDK_BUTTON2_MASK)
 		drag_middle(pos);
 	update_pos(pos);
@@ -133,13 +145,23 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 
 
 static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
-     gpointer data)
+    gpointer data)
 {
 	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
 	const struct inst *prev;
 
 	switch (event->button) {
 	case 1:
+		if (dragging) {
+			fprintf(stderr, "HUH ?!?\n");
+			tool_cancel_drag(&ctx);
+			dragging = 0;
+		}
+		if (tool_consider_drag(&ctx, pos)) {
+			dragging = 1;
+			drag_start = pos;
+			break;
+		}
 		prev = selected_inst;
 		inst_deselect();
 		inst_select(&ctx, pos);
@@ -156,8 +178,20 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 
 
 static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
-     gpointer data)
+    gpointer data)
 {
+	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
+
+	if (dragging) {
+		dragging = 0;
+		if (hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale < 
+		    DRAG_MIN_R)
+			tool_cancel_drag(&ctx);
+		else {
+			if (tool_end_drag(&ctx, pos))
+				change_world();
+		}
+	}
 	return TRUE;
 }
 
@@ -197,7 +231,7 @@ static void zoom_out(struct coord pos)
 
 
 static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
-     gpointer data)
+    gpointer data)
 {
 	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
 
@@ -219,7 +253,7 @@ static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
 
 
 static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
-     gpointer data)
+    gpointer data)
 {
 	struct coord pos = canvas_to_coord(&ctx, curr_pos.x, curr_pos.y);
 
@@ -258,7 +292,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 
 
 static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event,
-     gpointer data)
+    gpointer data)
 {
 	static int first = 1;
 	if (first) {
@@ -274,7 +308,7 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event,
 
 
 static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event,
-     gpointer data)
+    gpointer data)
 {
 	gtk_widget_grab_focus(widget);
 	return TRUE;
@@ -282,8 +316,12 @@ static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event,
 
 
 static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
-     gpointer data)
+    gpointer data)
 {
+	if (dragging)
+		tool_cancel_drag(&ctx);
+	tool_dehover(&ctx);
+	dragging = 0;
 	return TRUE;
 }
 

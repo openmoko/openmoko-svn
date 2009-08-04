@@ -17,7 +17,7 @@ OBJS = fped.o expr.o coord.o obj.o inst.o util.o error.o \
        gui_tools.o
 
 XPMS = point.xpm vec.xpm frame.xpm \
-       line.xpm rect.xpm pad.xpm circ.xpm arc.xpm meas.xpm
+       line.xpm rect.xpm pad.xpm circ.xpm meas.xpm
 
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
 LIBS_GTK = `pkg-config --libs gtk+-2.0`
@@ -76,7 +76,7 @@ endif
 .fig.xpm:
 		fig2dev -L xpm -Z 0.32 -S 4 $< | \
 		  convert -crop 24x24+1+1 - - | \
-		  sed s/xpm__/xpm_`basename $@ .xpm`/ >$@
+		  sed "s/*.*\[]/*xpm_`basename $@ .xpm`[]/" >$@
 
 all:		fped
 

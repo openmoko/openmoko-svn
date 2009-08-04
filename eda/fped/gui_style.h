@@ -46,6 +46,8 @@
 
 #define	SELECT_R		6	/* pixels within which we select */
 
+#define	DRAG_MIN_R		5
+
 #define	MIN_FONT_SCALE		0.20	/* don't scale fonts below this */
 
 
@@ -73,11 +75,15 @@
 
 #define	COLOR_VAR_TABLE_SEP	"black"
 
+#define	TOOL_UNSELECTED		"#dcdad5"
+#define	TOOL_SELECTED		"red"
+
 
 /* ----- canvas drawing styles --------------------------------------------- */
 
 
 extern GdkGC *gc_bg;
+extern GdkGC *gc_drag;
 extern GdkGC *gc_vec[mode_n];
 extern GdkGC *gc_obj[mode_n];
 extern GdkGC *gc_pad[mode_n];

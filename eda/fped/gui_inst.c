@@ -49,9 +49,9 @@ struct coord canvas_to_coord(const struct draw_ctx *ctx, int x, int y)
 
 	x -= ctx->widget->allocation.width/2;
 	y -= ctx->widget->allocation.height/2;
-        y = -y;
-        pos.x = x*ctx->scale+ctx->center.x;
-        pos.y = y*ctx->scale+ctx->center.y;
+	y = -y;
+	pos.x = x*ctx->scale+ctx->center.x;
+	pos.y = y*ctx->scale+ctx->center.y;
 	return pos;
 }
 
@@ -59,27 +59,11 @@ struct coord canvas_to_coord(const struct draw_ctx *ctx, int x, int y)
 /* ----- drawing primitives ------------------------------------------------ */
 
 
-static void draw_arc(struct draw_ctx *ctx, GdkGC *gc, int fill,
-    int x, int y, int r, double a1, double a2)
-{
-	if (a1 == a2)
-		a2 = a1+360;
-	gdk_draw_arc(DA, gc, fill, x-r, y-r, 2*r, 2*r, a1*64, (a2-a1)*64);
-}
-
-
-static void draw_circle(struct draw_ctx *ctx, GdkGC *gc, int fill,
-    int x, int y, int r)
-{
-	draw_arc(ctx, gc, fill, x, y, r, 0, 360);
-}
-
-
 static void draw_eye(struct draw_ctx *ctx, GdkGC *gc, struct coord center,
     int r1, int r2)
 {
-	draw_circle(ctx, gc, TRUE, center.x, center.y, r1);
-	draw_circle(ctx, gc, FALSE, center.x, center.y, r2);
+	draw_circle(DA, gc, TRUE, center.x, center.y, r1);
+	draw_circle(DA, gc, FALSE, center.x, center.y, r2);
 }
 
 
@@ -159,6 +143,16 @@ unit_type gui_dist_vec_fallback(struct inst *self, struct coord pos,
 }
 
 
+void gui_hover_vec(struct inst *self, struct draw_ctx *ctx)
+{
+	struct coord center = translate(ctx, self->u.rect.end);
+	GdkGC *gc;
+
+	gc = gc_vec[mode_hover];
+	draw_circle(DA, gc, FALSE, center.x, center.y, VEC_EYE_R);
+}
+
+
 void gui_draw_vec(struct inst *self, struct draw_ctx *ctx)
 {
 	struct coord from = translate(ctx, self->base);
@@ -168,7 +162,7 @@ void gui_draw_vec(struct inst *self, struct draw_ctx *ctx)
 	gc = gc_vec[get_mode(self)];
 	draw_arrow(ctx, gc, TRUE, from, to, VEC_ARROW_LEN, VEC_ARROW_ANGLE);
 	gdk_draw_line(DA, gc, from.x, from.y, to.x, to.y);
-	draw_circle(ctx, gc, FALSE, to.x, to.y, VEC_EYE_R);
+	draw_circle(DA, gc, FALSE, to.x, to.y, VEC_EYE_R);
 }
 
 
@@ -295,8 +289,8 @@ unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
 
 	p = rotate_r(c, self->u.arc.r, self->u.arc.a2);
 	d = hypot(pos.x-p.x, pos.y-p.y);
-        if (d < d_min)
-                d_min = d;
+	if (d < d_min)
+		d_min = d;
 
 	if (d_min/scale <= r)
 		return d;
@@ -328,7 +322,7 @@ void gui_draw_arc(struct inst *self, struct draw_ctx *ctx)
 
 	gc = gc_obj[get_mode(self)];
 	set_width(gc, self->u.arc.width/ctx->scale);
-	draw_arc(ctx, gc, FALSE, center.x, center.y,
+	draw_arc(DA, gc, FALSE, center.x, center.y,
 	    self->u.arc.r/ctx->scale, self->u.arc.a1, self->u.arc.a2);
 }
 
@@ -397,6 +391,25 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 
 
 /* ----- frame ------------------------------------------------------------- */
+
+
+unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale)
+{
+	unit_type d;
+
+	d = dist_point(pos, self->base)/scale;
+	return d > FRAME_EYE_R2 ? -1 : d;
+}
+
+
+void gui_hover_frame(struct inst *self, struct draw_ctx *ctx)
+{
+	struct coord center = translate(ctx, self->base);
+	GdkGC *gc;
+
+	gc = gc_frame[mode_hover];
+	draw_circle(DA, gc, FALSE, center.x, center.y, FRAME_EYE_R2);
+}
 
 
 void gui_draw_frame(struct inst *self, struct draw_ctx *ctx)

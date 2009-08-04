@@ -15,6 +15,7 @@
 #include <math.h>
 #include <gtk/gtk.h>
 
+#include "util.h"
 #include "gui_style.h"
 #include "gui.h"
 #include "gui_util.h"
@@ -44,6 +45,74 @@ void set_width(GdkGC *gc, int width)
 {
 	gdk_gc_set_line_attributes(gc, width < 1 ? 1 : width,
 	    GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_ROUND);
+}
+
+
+/* ----- backing store ----------------------------------------------------- */
+
+
+struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
+    int border)
+{
+	struct pix_buf *buf;
+	int tmp;
+	int w, h;
+
+	if (xa > xb) {
+		tmp = xa;
+		xa = xb;
+		xb = tmp;
+	}
+	if (ya > yb) {
+		tmp = ya;
+		ya = yb;
+		yb = tmp;
+	}
+	buf = alloc_type(struct pix_buf);
+	buf->da = da;
+	buf->x = xa-border;
+	buf->y = ya-border;
+	w = xb-xa+1+2*border;
+	h = yb-ya+1+2*border;
+	if (buf->x < 0) {
+		w += buf->x;
+		buf->x = 0;
+	}
+	if (buf->y < 0) {
+		w += buf->y;
+		buf->y = 0;
+	}
+	buf->buf = gdk_pixbuf_get_from_drawable(NULL, da, NULL,
+	    buf->x, buf->y, 0, 0, w, h);
+	return buf;
+}
+
+
+void restore_pix_buf(struct pix_buf *buf)
+{
+	gdk_draw_pixbuf(buf->da, NULL, buf->buf, 0, 0, buf->x, buf->y, -1, -1,
+	    GDK_RGB_DITHER_NORMAL, 0, 0);
+	g_object_unref(G_OBJECT(buf->buf));
+	free(buf);
+}
+
+
+/* ----- arcs and circles -------------------------------------------------- */
+
+
+void draw_arc(GdkDrawable *da, GdkGC *gc, int fill,
+    int x, int y, int r, double a1, double a2)
+{
+        if (a1 == a2)
+                a2 = a1+360;
+        gdk_draw_arc(da, gc, fill, x-r, y-r, 2*r, 2*r, a1*64, (a2-a1)*64);
+}
+
+
+void draw_circle(GdkDrawable *da, GdkGC *gc, int fill,
+    int x, int y, int r)
+{
+        draw_arc(da, gc, fill, x, y, r, 0, 360);
 }
 
 

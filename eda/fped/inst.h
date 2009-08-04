@@ -26,6 +26,7 @@ enum mode {
 	mode_active,		/* on active frame */
 	mode_active_in_path,	/* active and is in path to selected */
 	mode_selected,		/* item is selected */
+	mode_hover,		/* hovering over item's contact area */
 	mode_n			/* number of modes */
 };
 
@@ -78,6 +79,10 @@ void inst_select_outside(void *item, void (*deselect)(void *item));
 int inst_select(const struct draw_ctx *ctx, struct coord pos);
 void inst_deselect(void);
 
+struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos);
+struct coord inst_get_point(const struct inst *inst);
+struct vec *inst_get_ref(const struct inst *inst);
+
 int inst_vec(struct vec *vec, struct coord base);
 int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width);
 int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width);
@@ -100,6 +105,7 @@ void inst_commit(void);
 void inst_revert(void);
 
 void inst_draw(struct draw_ctx *ctx);
+void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on);
 void inst_debug(void);
 
 #endif /* !INST_H */

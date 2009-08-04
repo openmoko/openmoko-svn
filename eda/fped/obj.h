@@ -172,6 +172,14 @@ extern struct frame *root_frame;
 extern struct frame *active_frame;
 
 
+static inline struct vec *get_vec(struct vec *vec)
+{
+	if (vec)
+		vec->n_refs++;
+	return vec;
+}
+
+
 int instantiate(void);
 
 #endif /* !OBJ_H */

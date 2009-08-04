@@ -27,7 +27,7 @@ double mm_to_mil(double mm, int exponent)
 
 double mil_to_mm(double mil, int exponent)
 {
-        return mil*pow(MIL_IN_MM, exponent);
+	return mil*pow(MIL_IN_MM, exponent);
 }
 
 /* ----- vector operations ------------------------------------------------- */
@@ -160,5 +160,5 @@ unit_type dist_circle(struct coord p, struct coord c, unit_type r)
 	unit_type d;
 
 	d = hypot(p.x-c.x, p.y-c.y);
-        return fabs(d-r);
+	return fabs(d-r);
 }

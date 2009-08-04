@@ -23,6 +23,7 @@
 
 
 GdkGC *gc_bg;
+GdkGC *gc_drag;
 GdkGC *gc_vec[mode_n];
 GdkGC *gc_obj[mode_n];
 GdkGC *gc_pad[mode_n];
@@ -59,6 +60,7 @@ static void style(GdkGC *gcs[mode_n],
 void gui_setup_style(GdkDrawable *drawable)
 {
 	gc_bg = gc("#000000", 0);
+	gc_drag = gc("#ffffff", 2);
 	/*		inactive   in+path    active     act+path   selected */
 	style(gc_vec,	"#202000", "#404020", "#909040", "#c0c080", "#ffff80");
 	style(gc_obj,	"#006060", INVALID,   "#00ffff", INVALID,   "#ffff80");
@@ -66,4 +68,6 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_ptext,	"#404040", INVALID,   "#ffffff", INVALID,   "#ffffff");
 	style(gc_meas,	"#280040", INVALID,   "#ff00ff", INVALID,   "#ffff80");
 	style(gc_frame,	"#004000", "#205020", "#00ff00", INVALID,   INVALID);
+
+	gc_frame[mode_hover] = gc_vec[mode_hover] = gc("#c00000", 1);
 }

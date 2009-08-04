@@ -38,6 +38,7 @@ unit_type gui_dist_rect(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale);
+unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale);
 
 void gui_draw_vec(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_line(struct inst *self, struct draw_ctx *ctx);
@@ -46,5 +47,8 @@ void gui_draw_pad(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_arc(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_meas(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_frame(struct inst *self, struct draw_ctx *ctx);
+
+void gui_hover_vec(struct inst *self, struct draw_ctx *ctx);
+void gui_hover_frame(struct inst *self, struct draw_ctx *ctx);
 
 #endif /* !GUI_INST_H */
