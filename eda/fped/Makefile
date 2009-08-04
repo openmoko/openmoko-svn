@@ -14,7 +14,7 @@ OBJS = fped.o expr.o coord.o obj.o inst.o util.o error.o \
        unparse.o \
        cpp.o lex.yy.o y.tab.o \
        gui.o gui_util.o gui_style.o gui_inst.o gui_status.o gui_canvas.o \
-       gui_icons.o
+       gui_tools.o
 
 XPMS = point.xpm vec.xpm frame.xpm \
        line.xpm rect.xpm pad.xpm circ.xpm arc.xpm meas.xpm
@@ -95,7 +95,7 @@ y.tab.c y.tab.h: fpd.y
 y.tab.o:	y.tab.c
 		$(CC) -c $(CFLAGS) $(SLOPPY) y.tab.c
 
-gui_icons.o:	$(XPMS:%=icons/%)
+gui_tools.o:	$(XPMS:%=icons/%)
 
 # ----- Dependencies ----------------------------------------------------------
 

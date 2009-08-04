@@ -24,7 +24,7 @@
 #include "gui_style.h"
 #include "gui_status.h"
 #include "gui_canvas.h"
-#include "gui_icons.h"
+#include "gui_tools.h"
 #include "gui.h"
 
 
@@ -610,7 +610,7 @@ static void build_frames(GtkWidget *vbox)
 static void make_center_area(GtkWidget *vbox)
 {
 	GtkWidget *hbox, *frames_area, *paned;
-	GtkWidget *icons;
+	GtkWidget *tools;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
@@ -638,8 +638,8 @@ static void make_center_area(GtkWidget *vbox)
 
 	/* Icon bar */
 
-	icons = gui_setup_icons(root->window);
-	gtk_box_pack_end(GTK_BOX(hbox), icons, FALSE, FALSE, 0);
+	tools = gui_setup_tools(root->window);
+	gtk_box_pack_end(GTK_BOX(hbox), tools, FALSE, FALSE, 0);
 }
 
 

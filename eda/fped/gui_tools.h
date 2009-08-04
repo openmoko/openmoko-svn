@@ -1,5 +1,5 @@
 /*
- * gui_icons.h - GUI, icon bar
+ * gui_tools.h - GUI, tool bar
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -11,12 +11,12 @@
  */
 
 
-#ifndef GUI_ICONS_H
-#define	GUI_ICONS_H
+#ifndef GUI_TOOLS_H
+#define	GUI_TOOLS_H
 
 #include <gtk/gtk.h>
 
 
-GtkWidget *gui_setup_icons(GdkDrawable *drawable);
+GtkWidget *gui_setup_tools(GdkDrawable *drawable);
 
-#endif /* !GUI_ICONS_H */
+#endif /* !GUI_TOOLS_H */

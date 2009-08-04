@@ -1,5 +1,5 @@
 /*
- * gui_icons.c - GUI, icon bar
+ * gui_tools.c - GUI, tool bar
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -14,7 +14,7 @@
 #include <gtk/gtk.h>
 
 #include "gui_util.h"
-#include "gui_icons.h"
+#include "gui_tools.h"
 
 
 #include "icons/arc.xpm"
@@ -28,7 +28,7 @@
 #include "icons/vec.xpm"
 
 
-static GtkToolItem *icon_button(GtkWidget *bar, GdkDrawable *drawable,
+static GtkToolItem *tool_button(GtkWidget *bar, GdkDrawable *drawable,
      char **xpm, GtkToolItem *last)
 {
 	GdkPixmap *pixmap;
@@ -62,7 +62,7 @@ static GtkToolItem *icon_button(GtkWidget *bar, GdkDrawable *drawable,
 }
 
 
-GtkWidget *gui_setup_icons(GdkDrawable *drawable)
+GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 {
 	GtkWidget *bar;
 	GtkToolItem *last;
@@ -73,15 +73,15 @@ GtkWidget *gui_setup_icons(GdkDrawable *drawable)
 	    GTK_ORIENTATION_VERTICAL);
 //gtk_container_set_border_width(GTK_CONTAINER(bar), 5);
 
-	last = icon_button(bar, drawable, xpm_point, NULL);
-	last = icon_button(bar, drawable, xpm_vec, last);
-	last = icon_button(bar, drawable, xpm_frame, last);
-	last = icon_button(bar, drawable, xpm_pad, last);
-	last = icon_button(bar, drawable, xpm_line, last);
-	last = icon_button(bar, drawable, xpm_rect, last);
-	last = icon_button(bar, drawable, xpm_circ, last);
-	last = icon_button(bar, drawable, xpm_arc, last);
-	last = icon_button(bar, drawable, xpm_meas, last);
+	last = tool_button(bar, drawable, xpm_point, NULL);
+	last = tool_button(bar, drawable, xpm_vec, last);
+	last = tool_button(bar, drawable, xpm_frame, last);
+	last = tool_button(bar, drawable, xpm_pad, last);
+	last = tool_button(bar, drawable, xpm_line, last);
+	last = tool_button(bar, drawable, xpm_rect, last);
+	last = tool_button(bar, drawable, xpm_circ, last);
+	last = tool_button(bar, drawable, xpm_arc, last);
+	last = tool_button(bar, drawable, xpm_meas, last);
 
 	return bar;
 }
