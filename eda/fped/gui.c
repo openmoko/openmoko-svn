@@ -678,7 +678,7 @@ int gui_init(int *argc, char ***argv)
 }
 
 
-int gui_main(int argc, char **argv)
+int gui_main(void)
 {
 	root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(root), GTK_WIN_POS_CENTER);

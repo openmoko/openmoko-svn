@@ -1,5 +1,5 @@
 /*
- * delete.h - Object deletion
+ * dump.h - Dump objects in the native FPD format
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -11,16 +11,12 @@
  */
 
 
-#ifndef DELETE_H
-#define DELETE_H
+#ifndef DUMP_H
+#define DUMP_H
+
+#include <stdio.h>
 
 
-#include "obj.h"
+int dump(FILE *file);
 
-
-int delete_vec(struct vec *vec);
-int delete_obj(struct obj *obj);
-int destroy(void);
-int undelete(void);
-
-#endif /* !DELETE_H */
+#endif /* !DUMP_H */

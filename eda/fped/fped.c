@@ -50,8 +50,11 @@ int main(int argc, char **argv)
 	if (!instantiate())
 		return 1;
 //	inst_debug();
-	error = gui_main(argc, argv);
+	error = gui_main();
 	if (error)
 		return error;
+
+//	dump(stdout);
+
 	return 0;
 }

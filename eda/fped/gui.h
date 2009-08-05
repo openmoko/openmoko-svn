@@ -24,6 +24,6 @@ extern GtkWidget *root;
 void change_world(void);
 
 int gui_init(int *argc, char ***argv);
-int gui_main(int argc, char **argv);
+int gui_main(void);
 
 #endif /* !GUI_H */
