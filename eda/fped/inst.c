@@ -185,7 +185,7 @@ struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
 
 	found = NULL;
 	for (inst = insts[ip_frame]; inst; inst = inst->next) {
-		if (!inst->active)
+		if (!inst->u.frame.active)
 			continue;
 		dist = gui_dist_frame_eye(inst, pos, ctx->scale);
 		if (dist >= 0 && (!found || best_dist > dist)) {
@@ -385,6 +385,7 @@ static struct inst_ops vec_ops = {
 	.distance	= gui_dist_vec,
 	.select		= vec_op_select,
 	.anchors	= vec_op_anchors,
+	.draw_move	= draw_move_vec,
 };
 
 
@@ -671,6 +672,7 @@ static struct inst_ops meas_ops = {
 	.distance	= gui_dist_meas,
 	.select		= meas_op_select,
 	.anchors	= meas_op_anchors,
+	.draw_move	= draw_move_meas,
 };
 
 
@@ -726,7 +728,7 @@ static void frame_op_select(struct inst *self)
 
 static int frame_op_anchors(struct inst *inst, struct vec ***anchors)
 {
-	anchors[0] = &inst->vec->base;
+	anchors[0] = &inst->obj->base;
 	return 1;
 }
 
@@ -738,6 +740,7 @@ static struct inst_ops frame_ops = {
 	.distance	= gui_dist_frame,
 	.select		= frame_op_select,
 	.anchors	= frame_op_anchors,
+	.draw_move	= draw_move_frame,
 };
 
 

@@ -154,6 +154,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 {
 	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
 	const struct inst *prev;
+	int res;
 
 	switch (event->button) {
 	case 1:
@@ -162,7 +163,15 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			tool_cancel_drag(&ctx);
 			dragging = 0;
 		}
-		if (tool_consider_drag(&ctx, pos)) {
+		res = tool_consider_drag(&ctx, pos);
+		/* tool doesn't do drag */
+		if (res < 0) {
+			change_world();
+			inst_deselect();
+			break;
+		}
+		if (res) {
+			inst_deselect();
 			dragging = 1;
 			drag_escaped = 0;
 			drag_start = pos;
@@ -292,8 +301,10 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 	case GDK_BackSpace:
 	case GDK_Delete:
 	case GDK_KP_Delete:
-		if (selected_inst && inst_delete(selected_inst))
+		if (selected_inst && inst_delete(selected_inst)) {
+			tool_frame_update();
 			change_world();
+		}
 		break;
 	case 'u':
 		if (undelete())

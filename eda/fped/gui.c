@@ -503,6 +503,7 @@ static void select_frame(struct frame *frame)
 	if (active_frame)
 		label_in_box_bg(active_frame->label, COLOR_FRAME_UNSELECTED);
 	active_frame = frame;
+	tool_frame_update();
 	change_world();
 }
 
@@ -648,7 +649,6 @@ static void make_center_area(GtkWidget *vbox)
 
 void change_world(void)
 {
-	tool_reset();
 	inst_deselect();
 	status_begin_reporting();
 	instantiate();

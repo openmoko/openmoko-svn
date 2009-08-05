@@ -81,6 +81,17 @@ static inline struct num make_num(double n)
 }
 
 
+static inline struct num make_mm(double mm)
+{
+	struct num res;
+
+	res.type = nt_mm;
+	res.exponent = 1;
+	res.n = mm;
+	return res;
+}
+
+
 static inline struct num make_mil(double mil)
 {
 	struct num res;
@@ -114,6 +125,7 @@ struct num eval_num(const struct expr *expr, const struct frame *frame);
 /* if frame == NULL, we only check the syntax without expanding */
 char *expand(const char *name, const struct frame *frame);
 
+struct expr *new_num(struct num num);
 struct expr *parse_expr(const char *s);
 void free_expr(struct expr *expr);
 

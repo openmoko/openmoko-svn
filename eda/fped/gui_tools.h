@@ -19,6 +19,8 @@
 #include "inst.h"
 
 
+struct pix_buf *draw_move_vec(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
 struct pix_buf *draw_move_line(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
@@ -26,6 +28,10 @@ struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
 struct pix_buf *draw_move_pad(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+struct pix_buf *draw_move_meas(struct inst *inst, struct draw_ctx *ctx,
+    struct coord pos, int i);
+struct pix_buf *draw_move_frame(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 
 void do_move_to_arc(struct inst *inst, struct vec *vec, int i);
@@ -36,6 +42,13 @@ int tool_consider_drag(struct draw_ctx *ctx, struct coord pos);
 void tool_drag(struct draw_ctx *ctx, struct coord to);
 void tool_cancel_drag(struct draw_ctx *ctx);
 int tool_end_drag(struct draw_ctx *ctx, struct coord to);
+
+/*
+ * Cache the frame and track it.
+ */
+
+void tool_frame_update(void);
+void tool_frame_deleted(const struct frame *frame);
 
 void tool_reset(void);
 

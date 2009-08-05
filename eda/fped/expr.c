@@ -384,6 +384,19 @@ fail:
 }
 
 
+/* ----- make a number -----------------------------------------------------*/
+
+
+struct expr *new_num(struct num num)
+{
+	struct expr *expr;
+
+	expr = new_op(op_num);
+	expr->u.num = num;
+	return expr;
+}
+
+
 /* ----- expression-only parser -------------------------------------------- */
 
 
