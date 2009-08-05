@@ -117,6 +117,7 @@ static struct obj *new_obj(enum obj_type type)
 
 	obj = alloc_type(struct obj);
 	obj->type = type;
+	obj->frame = curr_frame;
 	obj->next = NULL;
 	return obj;
 }

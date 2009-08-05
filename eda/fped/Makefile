@@ -10,7 +10,7 @@
 # (at your option) any later version.
 #
 
-OBJS = fped.o expr.o coord.o obj.o inst.o util.o error.o \
+OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        unparse.o \
        cpp.o lex.yy.o y.tab.o \
        gui.o gui_util.o gui_style.o gui_inst.o gui_status.o gui_canvas.o \

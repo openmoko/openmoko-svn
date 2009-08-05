@@ -14,6 +14,7 @@
 #ifndef OBJ_H
 #define OBJ_H
 
+#include <assert.h>
 #include <gtk/gtk.h>
 
 #include "expr.h"
@@ -161,6 +162,7 @@ struct obj {
 		struct arc arc;
 		struct meas meas;
 	} u;
+	struct frame *frame;
 	struct vec *base;
 	struct obj *next;
 	int lineno;
@@ -177,6 +179,15 @@ static inline struct vec *get_vec(struct vec *vec)
 	if (vec)
 		vec->n_refs++;
 	return vec;
+}
+
+
+static inline void put_vec(struct vec *vec)
+{
+	if (vec) {
+		assert(vec->n_refs);
+		vec->n_refs--;
+	}
 }
 
 

@@ -33,7 +33,7 @@ struct frame *active_frame = NULL;
 
 
 static int generate_frame(struct frame *frame, struct coord base,
-    const struct frame *parent, int active);
+    const struct frame *parent, struct obj *frame_ref, int active);
 
 
 static struct num eval_unit(const struct expr *expr, const struct frame *frame)
@@ -93,7 +93,7 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 		switch (obj->type) {
 		case ot_frame:
 			if (!generate_frame(obj->u.frame.ref,
-			    obj->base ? obj->base->pos : base, frame,
+			    obj->base ? obj->base->pos : base, frame, obj,
 			    active && obj->u.frame.ref->active_ref == obj))
 				return 0;
 			break;
@@ -237,14 +237,14 @@ static int iterate_tables(struct frame *frame, struct table *table,
 
 
 static int generate_frame(struct frame *frame, struct coord base,
-    const struct frame *parent, int active)
+    const struct frame *parent, struct obj *frame_ref, int active)
 {
 	int ok;
 
 	/*
 	 * We ensure during construction that frames can never recurse.
 	 */
-	inst_begin_frame(frame, base,
+	inst_begin_frame(frame_ref, frame, base,
 	    active && parent == active_frame,
 	    active && frame == active_frame);
 	frame->curr_parent = parent;
@@ -260,7 +260,7 @@ int instantiate(void)
 	int ok;
 
 	inst_start();
-	ok = generate_frame(root_frame, zero, NULL, 1);
+	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
 	if (ok)
 		inst_commit();
 	else

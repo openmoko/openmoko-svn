@@ -348,9 +348,11 @@ GUI
 
 Keys:
 
-space	reset user coordinates
+Space	reset user coordinates
 +, =	zoom in (like mouse wheel forward)
 -	zoom out (like mouse wheel backward)
 .	cursor position to screen center (like middle click)
 *	zoom and center to extents
 #	zoom and center to currently active frame instance
+Delete	delete the currently selected object
+U	undelete the previously deleted object

@@ -13,8 +13,10 @@
 
 #include <math.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "obj.h"
+#include "delete.h"
 #include "inst.h"
 #include "gui_inst.h"
 #include "gui_style.h"
@@ -29,6 +31,7 @@ static struct coord curr_pos;
 static struct coord user_origin = { 0, 0 };
 
 static int dragging = 0;
+static int drag_escaped = 0; /* 1 once we've made is out of the drag radius */
 static struct coord drag_start;
 
 
@@ -111,9 +114,11 @@ static void drag_left(struct coord pos)
 {
 	if (!dragging)
 		return;
-	if (hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale <
+	if (!drag_escaped &&
+	    hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale <
 	    DRAG_MIN_R)
 		return;
+	drag_escaped = 1;
 	tool_drag(&ctx, pos);
 }
 
@@ -159,6 +164,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 		}
 		if (tool_consider_drag(&ctx, pos)) {
 			dragging = 1;
+			drag_escaped = 0;
 			drag_start = pos;
 			break;
 		}
@@ -282,6 +288,16 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 	case '.':
 		ctx.center = pos;
 		redraw();
+		break;
+	case GDK_BackSpace:
+	case GDK_Delete:
+	case GDK_KP_Delete:
+		if (selected_inst && inst_delete(selected_inst))
+			change_world();
+		break;
+	case 'u':
+		if (undelete())
+			change_world();
 		break;
 	}
 	return TRUE;

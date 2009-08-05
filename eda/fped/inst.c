@@ -19,6 +19,7 @@
 #include "coord.h"
 #include "expr.h"
 #include "obj.h"
+#include "delete.h"
 #include "gui_status.h"
 #include "gui_tools.h"
 #include "gui_inst.h"
@@ -740,12 +741,13 @@ static struct inst_ops frame_ops = {
 };
 
 
-void inst_begin_frame(const struct frame *frame, struct coord base,
-    int active, int is_active_frame)
+void inst_begin_frame(struct obj *obj, const struct frame *frame,
+    struct coord base, int active, int is_active_frame)
 {
 	struct inst *inst;
 
 	inst = add_inst(&frame_ops, ip_frame, base);
+	inst->obj = obj;
 	inst->u.frame.ref = frame;
 	inst->u.frame.active = is_active_frame;
 	inst->active = active;
@@ -862,6 +864,13 @@ void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on)
 		inst->ops->hover(inst, ctx);
 	else
 		inst->ops->draw(inst, ctx);
+}
+
+
+int inst_delete(struct inst *inst)
+{
+	return inst->ops == &vec_ops ?
+	    delete_vec(inst->vec) : delete_obj(inst->obj);
 }
 
 

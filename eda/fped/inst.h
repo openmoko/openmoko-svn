@@ -102,8 +102,8 @@ int inst_meas(struct obj *obj, struct coord from, struct coord to,
 void inst_begin_active(int active);
 void inst_end_active(void);
 
-void inst_begin_frame(const struct frame *frame, struct coord base,
-    int active, int is_active_frame);
+void inst_begin_frame(struct obj *obj, const struct frame *frame,
+    struct coord base, int active, int is_active_frame);
 void inst_end_frame(const struct frame *frame);
 
 struct bbox inst_get_bbox(void);
@@ -117,6 +117,7 @@ struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
 void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on);
+int inst_delete(struct inst *inst);
 void inst_debug(void);
 
 #endif /* !INST_H */
