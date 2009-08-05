@@ -18,8 +18,9 @@
 #include "obj.h"
 
 
-int delete_vec(struct vec *vec);
-int delete_obj(struct obj *obj);
+void delete_vec(struct vec *vec);
+void delete_obj(struct obj *obj);
+void delete_frame(struct frame *frame);
 int destroy(void);
 int undelete(void);
 

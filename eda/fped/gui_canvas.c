@@ -301,7 +301,8 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 	case GDK_BackSpace:
 	case GDK_Delete:
 	case GDK_KP_Delete:
-		if (selected_inst && inst_delete(selected_inst)) {
+		if (selected_inst) {
+			inst_delete(selected_inst);
 			tool_frame_update();
 			change_world();
 		}

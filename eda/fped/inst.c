@@ -870,10 +870,12 @@ void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on)
 }
 
 
-int inst_delete(struct inst *inst)
+void inst_delete(struct inst *inst)
 {
-	return inst->ops == &vec_ops ?
-	    delete_vec(inst->vec) : delete_obj(inst->obj);
+	if (inst->ops == &vec_ops)
+		delete_vec(inst->vec);
+	else
+		delete_obj(inst->obj);
 }
 
 

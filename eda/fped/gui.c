@@ -15,10 +15,13 @@
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "util.h"
+#include "error.h"
 #include "inst.h"
 #include "obj.h"
+#include "delete.h"
 #include "unparse.h"
 #include "gui_util.h"
 #include "gui_style.h"
@@ -540,6 +543,49 @@ static GtkWidget *build_frame_label(struct frame *frame)
 }
 
 
+/* ----- frame delete ------------------------------------------------------ */
+
+
+static gboolean frame_delete_event(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	struct frame *frame = data;
+
+	switch (event->button) {
+	case 1:
+		if (frame == root_frame) {
+			fail("you cannot delete the root frame");
+			break;
+		}
+		delete_frame(frame);
+		if (active_frame == frame)
+			select_frame(root_frame);
+		change_world();
+		break;
+	}
+	return TRUE;
+}
+
+
+static GtkWidget *build_frame_delete(struct frame *frame)
+{
+	GtkWidget *evbox, *image;
+
+	evbox = gtk_event_box_new();
+	image = 
+	    gtk_image_new_from_stock(GTK_STOCK_CANCEL,
+	        GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_container_add(GTK_CONTAINER(evbox), image);
+
+	gtk_misc_set_padding(GTK_MISC(image), 2, 2);
+	gtk_misc_set_alignment(GTK_MISC(image), 0.3, 0);
+
+	g_signal_connect(G_OBJECT(evbox),
+	    "button_press_event", G_CALLBACK(frame_delete_event), frame);
+	return evbox;
+}
+
+
 /* ----- frame references -------------------------------------------------- */
 
 
@@ -576,7 +622,7 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 static void build_frames(GtkWidget *vbox)
 {
 	struct frame *frame;
-	GtkWidget *tab, *label, *refs, *vars;
+	GtkWidget *tab, *label, *delete, *refs, *vars;
 	int n = 0;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
@@ -593,9 +639,15 @@ static void build_frames(GtkWidget *vbox)
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
 		    0, 1, n*2, n*2+1);
+
+		delete = build_frame_delete(frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), delete,
+                    0, 1, n*2+1, n*2+2);
+
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
 		    1, 2, n*2, n*2+1);
+
 		vars = build_vars(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
 		    1, 2, n*2+1, n*2+2);

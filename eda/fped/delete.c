@@ -25,8 +25,13 @@ static struct deletion {
 	enum del_type {
 		dt_vec,
 		dt_obj,
+		dt_frame,
 	} type;
 	union {
+		struct {
+			struct frame *ref;
+			struct frame *prev;
+		} frame;
 		struct {
 			struct vec *ref;
 			struct vec *prev;
@@ -77,7 +82,7 @@ static void rereference_vec(struct vec *vec)
 }
 
 
-int delete_vec(struct vec *vec)
+void delete_vec(struct vec *vec)
 {
 	struct vec *walk, *prev;
 	struct deletion *del;
@@ -85,7 +90,7 @@ int delete_vec(struct vec *vec)
 	if (vec->n_refs) {
 		fail("vector has %d reference%s", vec->n_refs,
 		    vec->n_refs == 1 ? "" : "s");
-		return 0;
+		return;
 	}
 	prev = NULL;
 	for (walk = vec->frame->vecs; walk != vec; walk = walk->next)
@@ -98,7 +103,6 @@ int delete_vec(struct vec *vec)
 	del = new_deletion(dt_vec);
 	del->u.vec.ref = vec;
 	del->u.vec.prev = prev;
-	return 1;
 }
 
 
@@ -204,7 +208,7 @@ static void rereference_obj(struct obj *obj)
 }
 
 
-int delete_obj(struct obj *obj)
+void delete_obj(struct obj *obj)
 {
 	struct obj *walk, *prev;
 	struct deletion *del;
@@ -220,7 +224,6 @@ int delete_obj(struct obj *obj)
 	del = new_deletion(dt_obj);
 	del->u.obj.ref = obj;
 	del->u.obj.prev = prev;
-	return 1;
 }
 
 
@@ -234,6 +237,54 @@ static void undelete_obj(struct obj *obj, struct obj *prev)
 		obj->frame->objs = obj;
 	}
 	rereference_obj(obj);
+}
+
+
+/* ----- frames ------------------------------------------------------------ */
+
+
+static void delete_references(const struct frame *ref)
+{
+	struct frame *frame;
+	struct obj *obj;
+
+	for (frame = frames; frame; frame = frame->next)
+		for (obj = frame->objs; obj; obj = obj->next)
+			if (obj->type == ot_frame)
+				if (obj->u.frame.ref == ref)
+					delete_obj(obj);
+}
+
+
+void delete_frame(struct frame *frame)
+{
+	struct deletion *del;
+
+	delete_references(frame);
+
+	del = new_deletion(dt_frame);
+	del->u.frame.ref = frame;
+	del->u.frame.prev = frame->prev;
+
+	if (frame->next)
+		frame->next->prev = frame->prev;
+	if (frame->prev)
+		frame->prev->next = frame->next;
+	else
+		frames = frame->next;
+}
+
+
+static void undelete_frame(struct frame *frame, struct frame *prev)
+{
+	if (prev) {
+		assert(frame->next == prev->next);
+		prev->next = frame;
+	} else {
+		assert(frame->next == frames);
+		frames = frame;
+	}
+	frame->next->prev = frame;
 }
 
 
@@ -253,6 +304,10 @@ int destroy(void)
 		break;
 	case dt_obj:
 		destroy_obj(del->u.obj.ref);
+		break;
+	case dt_frame:
+		abort();
+		/* @@@ later */
 		break;
 	default:
 		abort();
@@ -276,6 +331,9 @@ int undelete(void)
 		break;
 	case dt_obj:
 		undelete_obj(del->u.obj.ref, del->u.obj.prev);
+		break;
+	case dt_frame:
+		undelete_frame(del->u.frame.ref, del->u.frame.prev);
 		break;
 	default:
 		abort();

@@ -10,6 +10,28 @@ the textual definition also has a straightforward equivalent operation
 that can be performed through the GUI.
 
 
+Building
+--------
+
+Check out the repository:
+
+  svn co http://svn.openmoko.org/trunk/eda/fped
+  cd fped
+
+Get updates:
+
+  svn update
+
+Compile:
+
+  make dep
+  make
+
+Run an example:
+
+  ./fped qfp.fpd
+
+
 Motivation
 ----------
 
@@ -346,7 +368,8 @@ Parentheses can be used to change precedence.
 GUI
 ---
 
-Keys:
+Keyboard shortcuts
+- - - - - - - - -
 
 Space	reset user coordinates
 +, =	zoom in (like mouse wheel forward)
@@ -356,3 +379,28 @@ Space	reset user coordinates
 #	zoom and center to currently active frame instance
 Delete	delete the currently selected object
 U	undelete the previously deleted object
+
+
+Canvas
+- - -
+
+To create a new object, click on the corresponding tool icon, move the
+mouse to the base point of the new object, then drag to the object's
+second point.
+
+Frame references are created as follows:
+
+- select the frame you want to add
+- click on the frame icon. A black dot should appear on the icon.
+- select the frame on which you want to add the new reference.
+  The black dot should change to a green dot. If the current frame
+  is a child of the selected frame, the dot remains black.
+- click on the desired base location
+
+To change a point of an object, select the object, then drag the point
+to its new location. To edit the object's parameters, select it and
+make the changes in the input area at the bottom.
+
+To delete an object, select it and press Delete. Deleted objects can
+be undeleted by pressing "u". If any other changes have been made
+since deletion, fped may misbehave.

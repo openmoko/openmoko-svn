@@ -444,8 +444,11 @@ static GtkWidget *add_label(GtkWidget *tab, int col, int row)
 	GtkWidget *label;
 
 	label = label_in_box_new(NULL);
-	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),
-	    col, col+1, row, row+1);
+	gtk_table_attach(GTK_TABLE(tab), box_of_label(label),
+	    col, col+1, row, row+1,
+	    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 1);
+	    /* 0 , 1 - padding */
+
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 	return label;
@@ -472,9 +475,9 @@ static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
 
 void make_status_area(GtkWidget *vbox)
 {
-	GtkWidget *tab;
+	GtkWidget *tab, *sep;
 
-	tab = gtk_table_new(6, 3, FALSE);
+	tab = gtk_table_new(7, 3, FALSE);
 	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, TRUE, 0);
 
 	/* types */
@@ -495,22 +498,27 @@ void make_status_area(GtkWidget *vbox)
 	status_name = add_label(tab, 1, 2);
 	status_entry = add_entry(tab, 2, 2);
 
+	/* separator */
+
+	sep = gtk_vseparator_new();
+	gtk_table_attach_defaults(GTK_TABLE(tab), sep, 3, 4, 0, 3);
+
 	/* sys / user pos */
 
-	status_sys_x = add_label(tab, 3, 0);
-	status_sys_y = add_label(tab, 3, 1);
-	status_user_x = add_label(tab, 4, 0);
-	status_user_y = add_label(tab, 4, 1);
+	status_sys_x = add_label(tab, 4, 0);
+	status_sys_y = add_label(tab, 4, 1);
+	status_user_x = add_label(tab, 5, 0);
+	status_user_y = add_label(tab, 5, 1);
 
 	/* r / angle */
 
-	status_r = add_label(tab, 3, 2);
-	status_angle = add_label(tab, 4, 2);
+	status_r = add_label(tab, 4, 2);
+	status_angle = add_label(tab, 5, 2);
 
 	/* zoom / grid */
 
-	status_zoom = add_label(tab, 5, 0);
-	status_grid = add_label(tab, 5, 1);
+	status_zoom = add_label(tab, 6, 0);
+	status_grid = add_label(tab, 6, 1);
 
 	/* message bar */
 

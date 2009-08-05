@@ -117,7 +117,7 @@ struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
 void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on);
-int inst_delete(struct inst *inst);
+void inst_delete(struct inst *inst);
 void inst_debug(void);
 
 #endif /* !INST_H */
