@@ -403,4 +403,5 @@ make the changes in the input area at the bottom.
 
 To delete an object, select it and press Delete. Deleted objects can
 be undeleted by pressing "u". If any other changes have been made
-since deletion, fped may misbehave.
+since deletion, fped may misbehave. If deleting a vector, all items
+that reference it are deleted.

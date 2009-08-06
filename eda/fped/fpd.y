@@ -345,7 +345,6 @@ vec:
 			$$->base = $2;
 			$$->x = $4;
 			$$->y = $6;
-			$$->n_refs = 0;
 			$$->frame = curr_frame;
 			$$->next = NULL;
 			last_vec = $$;
@@ -366,7 +365,6 @@ base:
 				yyerrorf(". without predecessor");
 				YYABORT;
 			}
-			$$->n_refs++;
 		}
 	| ID
 		{
@@ -375,7 +373,6 @@ base:
 				yyerrorf("unknown vector \"%s\"", $1);
 				YYABORT;
 			}
-			$$->n_refs++;
 		}
 	;
 
@@ -406,7 +403,7 @@ obj:
 			$$ = new_obj(ot_arc);
 			$$->base = $2;
 			$$->u.arc.start = $3;
-			$$->u.arc.end = get_vec($3);
+			$$->u.arc.end = $3;
 			$$->u.arc.width = $4;
 		}
 	| TOK_ARC base base base opt_expr

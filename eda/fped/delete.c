@@ -41,8 +41,15 @@ static struct deletion {
 			struct obj *prev;
 		} obj;
 	} u;
+	int group;
 	struct deletion *next;
 } *deletions = NULL;
+
+static int groups = 0;
+
+
+static void do_delete_vec(struct vec *vec);
+static void do_delete_obj(struct obj *obj);
 
 
 static struct deletion *new_deletion(enum del_type type)
@@ -51,6 +58,7 @@ static struct deletion *new_deletion(enum del_type type)
 
 	del = alloc_type(struct deletion);
 	del->type = type;
+	del->group = groups;
 	del->next = deletions;
 	deletions = del;
 	return del;
@@ -60,38 +68,64 @@ static struct deletion *new_deletion(enum del_type type)
 /* ----- vectors ----------------------------------------------------------- */
 
 
-static void dereference_vec(struct vec *vec)
-{
-	assert(!vec->n_refs);
-	put_vec(vec->base);
-}
-
-
 static void destroy_vec(struct vec *vec)
 {
-	assert(!vec->n_refs);
 	free_expr(vec->x);
 	free_expr(vec->y);
 	free(vec);
 }
 
 
-static void rereference_vec(struct vec *vec)
+static void delete_vecs_by_ref(struct vec *vecs, const struct vec *ref)
 {
-	get_vec(vec->base);
+	while (vecs) {
+		if (vecs->base == ref)
+			do_delete_vec(vecs);
+		vecs = vecs->next;
+	}
 }
 
 
-void delete_vec(struct vec *vec)
+static int obj_has_ref(const struct obj *obj, const struct vec *ref)
+{
+	if (obj->base == ref)
+		return 1;
+	switch (obj->type) {
+	case ot_frame:
+		return 0;
+	case ot_line:
+		return obj->u.line.other == ref;
+	case ot_rect:
+		return obj->u.rect.other == ref;
+	case ot_pad:
+		return obj->u.pad.other == ref;
+	case ot_arc:
+		return obj->u.arc.start == ref || obj->u.arc.end == ref;
+	case ot_meas:
+	default:
+		abort();
+	}
+}
+
+
+static void delete_objs_by_ref(struct obj **objs, const struct vec *ref)
+{
+	struct obj *obj;
+
+	for (obj = *objs; obj; obj = obj->next)
+		if (obj_has_ref(obj, ref))
+			do_delete_obj(obj);
+}
+
+
+static void do_delete_vec(struct vec *vec)
 {
 	struct vec *walk, *prev;
 	struct deletion *del;
 
-	if (vec->n_refs) {
-		fail("vector has %d reference%s", vec->n_refs,
-		    vec->n_refs == 1 ? "" : "s");
-		return;
-	}
+	delete_vecs_by_ref(vec->frame->vecs, vec);
+	delete_objs_by_ref(&vec->frame->objs, vec);
+
 	prev = NULL;
 	for (walk = vec->frame->vecs; walk != vec; walk = walk->next)
 		prev = walk;
@@ -99,10 +133,16 @@ void delete_vec(struct vec *vec)
 		prev->next = vec->next;
 	else
 		vec->frame->vecs = vec->next;
-	dereference_vec(vec);
 	del = new_deletion(dt_vec);
 	del->u.vec.ref = vec;
 	del->u.vec.prev = prev;
+}
+
+
+void delete_vec(struct vec *vec)
+{
+	groups++;
+	do_delete_vec(vec);
 }
 
 
@@ -115,40 +155,10 @@ static void undelete_vec(struct vec *vec, struct vec *prev)
 		assert(vec->next == vec->frame->vecs);
 		vec->frame->vecs = vec;
 	}
-	rereference_vec(vec);
 }
 
 
 /* ----- objects ----------------------------------------------------------- */
-
-
-static void dereference_obj(struct obj *obj)
-{
-	switch (obj->type) {
-	case ot_frame:
-		/* nothing */
-		break;
-	case ot_pad:
-		put_vec(obj->u.pad.other);
-		break;
-	case ot_line:
-		put_vec(obj->u.line.other);
-		break;
-	case ot_rect:
-		put_vec(obj->u.rect.other);
-		break;
-	case ot_arc:
-		put_vec(obj->u.arc.start);
-		put_vec(obj->u.arc.end);
-		break;
-	case ot_meas:
-		put_vec(obj->u.meas.other);
-		break;
-	default:
-		abort();
-	}
-	put_vec(obj->base);
-}
 
 
 static void destroy_obj(struct obj *obj)
@@ -179,36 +189,7 @@ static void destroy_obj(struct obj *obj)
 }
 
 
-static void rereference_obj(struct obj *obj)
-{
-	switch (obj->type) {
-	case ot_frame:
-		/* nothing */
-		break;
-	case ot_pad:
-		get_vec(obj->u.pad.other);
-		break;
-	case ot_line:
-		get_vec(obj->u.line.other);
-		break;
-	case ot_rect:
-		get_vec(obj->u.rect.other);
-		break;
-	case ot_arc:
-		get_vec(obj->u.arc.start);
-		get_vec(obj->u.arc.end);
-		break;
-	case ot_meas:
-		get_vec(obj->u.meas.other);
-		break;
-	default:
-		abort();
-	}
-	get_vec(obj->base);
-}
-
-
-void delete_obj(struct obj *obj)
+static void do_delete_obj(struct obj *obj)
 {
 	struct obj *walk, *prev;
 	struct deletion *del;
@@ -220,10 +201,16 @@ void delete_obj(struct obj *obj)
 		prev->next = obj->next;
 	else
 		obj->frame->objs = obj->next;
-	dereference_obj(obj);
 	del = new_deletion(dt_obj);
 	del->u.obj.ref = obj;
 	del->u.obj.prev = prev;
+}
+
+
+void delete_obj(struct obj *obj)
+{
+	groups++;
+	do_delete_obj(obj);
 }
 
 
@@ -236,7 +223,6 @@ static void undelete_obj(struct obj *obj, struct obj *prev)
 		assert(obj->next == obj->frame->objs);
 		obj->frame->objs = obj;
 	}
-	rereference_obj(obj);
 }
 
 
@@ -260,6 +246,7 @@ void delete_frame(struct frame *frame)
 {
 	struct deletion *del;
 
+	groups++;
 	delete_references(frame);
 
 	del = new_deletion(dt_frame);
@@ -318,7 +305,7 @@ int destroy(void)
 }
 
 
-int undelete(void)
+static int undelete_one(void)
 {
 	struct deletion *del;
 
@@ -340,5 +327,18 @@ int undelete(void)
 	}
 	deletions = del->next;
 	free(del);
+	return 1;
+}
+
+
+int undelete(void)
+{
+	int group;
+
+	if (!deletions)
+		return 0;
+	group = deletions->group;
+	while (deletions && deletions->group == group)
+		undelete_one();
 	return 1;
 }

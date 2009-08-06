@@ -88,7 +88,6 @@ struct vec {
 	struct expr *x;
 	struct expr *y;
 	struct vec *base; /* NULL if frame */
-	int n_refs;
 	struct vec *next;
 
 	/* used during generation */
@@ -172,23 +171,6 @@ struct obj {
 extern struct frame *frames;
 extern struct frame *root_frame;
 extern struct frame *active_frame;
-
-
-static inline struct vec *get_vec(struct vec *vec)
-{
-	if (vec)
-		vec->n_refs++;
-	return vec;
-}
-
-
-static inline void put_vec(struct vec *vec)
-{
-	if (vec) {
-		assert(vec->n_refs);
-		vec->n_refs--;
-	}
-}
 
 
 int instantiate(void);

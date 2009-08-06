@@ -219,18 +219,6 @@ struct coord inst_get_point(const struct inst *inst)
 }
 
 
-struct vec *inst_get_ref(const struct inst *inst)
-{
-	if (inst->ops == &vec_ops) {
-		inst->vec->n_refs++;
-		return inst->vec;
-	}
-	if (inst->ops == &frame_ops)
-		return NULL;
-	abort();
-}
-
-
 struct vec *inst_get_vec(const struct inst *inst)
 {
 	if (inst->ops == &vec_ops)

@@ -114,8 +114,6 @@ static int n_vec_refs(const struct vec *vec)
 	const struct vec *walk;
 	int n;
 
-	if (!vec->n_refs)
-		return 0;
 	n = 0;
 	for (walk = vec->frame->vecs; walk; walk = walk->next)
 		if (walk->base == vec)

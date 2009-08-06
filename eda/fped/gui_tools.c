@@ -80,8 +80,7 @@ static struct vec *new_vec(struct inst *base)
 
 	vec = alloc_type(struct vec);
 	vec->name = NULL;
-	vec->base = inst_get_ref(base);
-	vec->n_refs = 0;
+	vec->base = inst_get_vec(base);
 	vec->next = NULL;
 	vec->frame = active_frame;
 	for (walk = &active_frame->vecs; *walk; walk = &(*walk)->next);
@@ -97,7 +96,7 @@ static struct obj *new_obj(enum obj_type type, struct inst *base)
 	obj = alloc_type(struct obj);
 	obj->type = type;
 	obj->frame = active_frame;
-	obj->base = inst_get_ref(base);
+	obj->base = inst_get_vec(base);
 	obj->next = NULL;
 	obj->lineno = 0;
 	for (walk = &active_frame->objs; *walk; walk = &(*walk)->next);
@@ -164,10 +163,20 @@ static struct pix_buf *draw_move_rect_common(struct inst *inst,
 /* ----- vec --------------------------------------------------------------- */
 
 
-static void gridify(struct coord base, struct coord *pos)
+static struct coord gridify(struct coord base, struct coord pos)
 {
-	pos->x -= fmod(pos->x-base.x, mm_to_units(0.1));
-	pos->y -= fmod(pos->y-base.y, mm_to_units(0.1));
+	struct coord new;
+	unit_type unit = mm_to_units(0.1);
+
+	new.x = pos.x-(pos.x-base.x % unit);
+	new.y = pos.y-(pos.y-base.y % unit);
+	if (new.x != base.x || new.y != base.y)
+		return new;
+	if (fabs(pos.x-base.x) > fabs(pos.y-base.y))
+		new.x += pos.x > base.x ? unit : -unit;
+	else
+		new.y += pos.y > base.y ? unit : -unit;
+	return new;
 }
 
 
@@ -178,7 +187,7 @@ static struct pix_buf *drag_new_vec(struct draw_ctx *ctx,
 	struct pix_buf *buf;
 
 	pos = inst_get_point(from);
-	gridify(pos, &to);
+	to = gridify(pos, to);
 	status_set_type_x("dX =");
 	status_set_type_y("dX =");
 	status_set_x("%lg mm", units_to_mm(to.x-pos.x));
@@ -207,7 +216,7 @@ static int end_new_raw_vec(struct draw_ctx *ctx,
 
 	vec = new_vec(from);
 	pos = inst_get_point(from);
-	gridify(pos, &to);
+	to = gridify(pos, to);
 	vec->x = new_num(make_mm(units_to_mm(to.x-pos.x)));
 	vec->y = new_num(make_mm(units_to_mm(to.y-pos.y)));
 	return 1;
@@ -252,7 +261,7 @@ static int end_new_line(struct draw_ctx *ctx,
 	if (from == to)
 		return 0;
 	obj = new_obj(ot_line, from);
-	obj->u.line.other = inst_get_ref(to);
+	obj->u.line.other = inst_get_vec(to);
 	obj->u.line.width = NULL;
 	return 1;
 }
@@ -298,7 +307,7 @@ static int end_new_rect(struct draw_ctx *ctx,
 	if (from == to)
 		return 0;
 	obj = new_obj(ot_rect, from);
-	obj->u.rect.other = inst_get_ref(to);
+	obj->u.rect.other = inst_get_vec(to);
 	obj->u.rect.width = NULL;
 	return 1;
 }
@@ -321,7 +330,7 @@ static int end_new_pad(struct draw_ctx *ctx,
 	if (from == to)
 		return 0;
 	obj = new_obj(ot_pad, from);
-	obj->u.pad.other = inst_get_ref(to);
+	obj->u.pad.other = inst_get_vec(to);
 	obj->u.pad.name = stralloc("?");
 	return 1;
 }
@@ -367,8 +376,8 @@ static int end_new_circ(struct draw_ctx *ctx,
 	if (from == to)
 		return 0;
 	obj = new_obj(ot_arc, from);
-	obj->u.arc.start = inst_get_ref(to);
-	obj->u.arc.end = inst_get_ref(to);
+	obj->u.arc.start = inst_get_vec(to);
+	obj->u.arc.end = inst_get_vec(to);
 	obj->u.arc.width = NULL;
 	return 1;
 }
@@ -417,16 +426,6 @@ struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
 }
 
 
-static void replace(struct vec **anchor, struct vec *new)
-{
-	if (*anchor)
-		(*anchor)->n_refs--;
-	*anchor = new;
-	if (new)
-		new->n_refs++;
-}
-
-
 void do_move_to_arc(struct inst *inst, struct vec *vec, int i)
 {
 	struct obj *obj = inst->obj;
@@ -435,15 +434,15 @@ void do_move_to_arc(struct inst *inst, struct vec *vec, int i)
 	is_circle = obj->u.arc.start == obj->u.arc.end;
 	switch (i) {
 	case 0:
-		replace(&obj->base, vec);
+		obj->base = vec;
 		break;
 	case 1:
-		replace(&obj->u.arc.start, vec);
+		obj->u.arc.start = vec;
 		if (!is_circle)
 			break;
 		/* fall through */
 	case 2:
-		replace(&obj->u.arc.end, vec);
+		obj->u.arc.end = vec;
 		break;
 	default:
 		abort();
@@ -475,7 +474,7 @@ static int end_new_meas(struct draw_ctx *ctx,
 	if (from == to)
 		return 0;
 	obj = new_obj(ot_meas, from);
-	obj->u.meas.other = inst_get_ref(to);
+	obj->u.meas.other = inst_get_vec(to);
 	obj->u.meas.offset = parse_expr("0mm");
 	return 1;
 }
@@ -643,13 +642,8 @@ static int may_move_to(const struct drag_state *state, struct inst *curr)
 
 static void do_move_to(struct drag_state *state, struct inst *curr)
 {
-	struct vec *old;
-
 	assert(may_move_to(state, curr));
-	old = *state->anchors[state->anchor_i];
-	if (old)
-		old->n_refs--;
-	*state->anchors[state->anchor_i] = inst_get_ref(curr);
+	*state->anchors[state->anchor_i] = inst_get_vec(curr);
 }
 
 
