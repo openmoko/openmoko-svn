@@ -72,6 +72,8 @@ SP	[\t ]*
 				  return TOK_SET; }
 <INITIAL>"loop"			{ BEGIN(NOKEYWORD);
 				  return TOK_LOOP; }
+<INITIAL>"part"			{ BEGIN(NOKEYWORD);
+				  return TOK_PART; }
 <INITIAL>"frame"		{ BEGIN(NOKEYWORD);
 				  is_table = 0;
 				  return TOK_FRAME; }

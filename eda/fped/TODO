@@ -8,7 +8,6 @@ Missing features:
 - add KiCad output
 - add postscript output
 - add option to include/omit helper vecs and frames (display and postscript)
-- define part name
 
 Error detection:
 - eliminate duplicate instances
@@ -16,7 +15,6 @@ Error detection:
 Style:
 - make column of entry field greedily consume all unallocated space
 - status area looks awful
-- status area bounces when something becomes editable
 - add button with GTK_STOCK_UNDELETE for "undelete" to menu bar
 
 Bugs:
@@ -54,3 +52,4 @@ Future directions:
 - future: when encountering an error after a change, we could try to find the
   same element in the old instance, and select it
 - future: consider editing off-canvas items in place
+- near future: treat part name as pattern

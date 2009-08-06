@@ -23,6 +23,7 @@
 #include "obj.h"
 #include "delete.h"
 #include "unparse.h"
+#include "dump.h"
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_status.h"
@@ -39,10 +40,16 @@ static GtkWidget *frames_box;
 /* ----- menu bar ---------------------------------------------------------- */
 
 
+static void menu_save(GtkWidget *widget, gpointer user)
+{
+	dump(stdout);
+}
+
+
 static void make_menu_bar(GtkWidget *vbox)
 {
 	GtkWidget *bar;
-	GtkWidget *file_menu, *file, *quit;
+	GtkWidget *file_menu, *file, *quit, *save;
 
 	bar = gtk_menu_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), bar, FALSE, FALSE, 0);
@@ -53,9 +60,13 @@ static void make_menu_bar(GtkWidget *vbox)
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), file_menu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(bar), file);
 
+	save = gtk_menu_item_new_with_label("Save");
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), save);
+	g_signal_connect(G_OBJECT(save), "activate",
+	    G_CALLBACK(menu_save), NULL);
+
 	quit = gtk_menu_item_new_with_label("Quit");
 	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), quit);
-
 	g_signal_connect(G_OBJECT(quit), "activate",
 	    G_CALLBACK(gtk_main_quit), NULL);
 }
@@ -460,6 +471,56 @@ static GtkWidget *build_vars(struct frame *frame)
 }
 
 
+/* ----- part name --------------------------------------------------------- */
+
+
+static int validate_part_name(const char *s, void *ctx)
+{
+	if (!*s)
+		return 0;
+	while (*s)
+		if (!is_id_char(*s++, 0))
+			return 0;
+	return 1;
+}
+
+static void unselect_part_name(void *data)
+{
+	GtkWidget *widget = data;
+
+	label_in_box_bg(widget, COLOR_PART_NAME);
+}
+
+
+static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	inst_select_outside(widget, unselect_part_name);
+	label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
+	status_set_type_entry("part =");
+	status_set_name("%s", part_name);
+	edit_name(&part_name, validate_part_name, NULL);
+	return TRUE;
+}
+
+
+static GtkWidget *build_part_name(void)
+{
+	GtkWidget *label;
+
+	label = label_in_box_new(part_name);
+	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
+	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+
+	label_in_box_bg(label, COLOR_PART_NAME);
+
+	g_signal_connect(G_OBJECT(box_of_label(label)),
+	    "button_press_event", G_CALLBACK(part_name_edit_event), NULL);
+
+	return box_of_label(label);
+}
+
+
 /* ----- frame labels ------------------------------------------------------ */
 
 
@@ -570,6 +631,7 @@ static gboolean frame_delete_event(GtkWidget *widget, GdkEventButton *event,
 static GtkWidget *build_frame_delete(struct frame *frame)
 {
 	GtkWidget *evbox, *image;
+	GtkWidget *align;
 
 	evbox = gtk_event_box_new();
 	image = 
@@ -577,12 +639,14 @@ static GtkWidget *build_frame_delete(struct frame *frame)
 	        GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_container_add(GTK_CONTAINER(evbox), image);
 
-	gtk_misc_set_padding(GTK_MISC(image), 2, 2);
-	gtk_misc_set_alignment(GTK_MISC(image), 0.3, 0);
+	align = gtk_alignment_new(0.3, 0, 0, 0);
+	gtk_container_add(GTK_CONTAINER(align), evbox);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 2, 0, 0, 0);
 
 	g_signal_connect(G_OBJECT(evbox),
 	    "button_press_event", G_CALLBACK(frame_delete_event), frame);
-	return evbox;
+
+	return align;
 }
 
 
@@ -629,28 +693,31 @@ static void build_frames(GtkWidget *vbox)
 	for (frame = frames; frame; frame = frame->next)
 		n++;
 
-	tab = gtk_table_new(n*2, 2, FALSE);
+	tab = gtk_table_new(n*2+1, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
 	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, FALSE, 0);
+
+	label = build_part_name();
+	gtk_table_attach_defaults(GTK_TABLE(tab), label, 0, 1, 0, 1);
 
 	n = 0;
 	for (frame = root_frame; frame; frame = frame->prev) {
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
-		    0, 1, n*2, n*2+1);
+		    0, 1, n*2+1, n*2+2);
 
 		delete = build_frame_delete(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), delete,
-                    0, 1, n*2+1, n*2+2);
+                    0, 1, n*2+2, n*2+3);
 
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
-		    1, 2, n*2, n*2+1);
+		    1, 2, n*2+1, n*2+2);
 
 		vars = build_vars(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
-		    1, 2, n*2+1, n*2+2);
+		    1, 2, n*2+2, n*2+3);
 		n++;
 	}
 	gtk_widget_show_all(tab);

@@ -3,6 +3,8 @@ frame c {
 	circ . @
 }
 
+part "quad"
+
 vec @(-1mm, 1mm)
 frame c .
 vec @(1mm, -1mm)

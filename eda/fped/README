@@ -75,6 +75,14 @@ and - to a limited extent - also macros. Long lines can be split by
 ending them with a backslash. If multiple items need to be placed in a
 single line, e.g., in a macro, they can be separated with semicolons.
 
+The file has the following structure:
+
+frame definitions
+...
+part name
+objects
+...
+
 
 Geometry model
 --------------
@@ -212,6 +220,20 @@ Example:
 a: vec @(-1mm, 1mm)
 b: vec @(1mm, 1mm)
 meas a b 0.2 mm
+
+
+Part name
+- - - - -
+
+The part name is a string of alphanumerical characters. Underscores are
+allowed in the part name as well.
+
+part "<name>"
+
+Examples:
+
+part "SSOP_48"
+part "0603"
 
 
 Frames

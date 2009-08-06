@@ -25,6 +25,9 @@ frame pads {
 }
 
 
+part "qfn"
+
+
 set N = 24
 
 /*

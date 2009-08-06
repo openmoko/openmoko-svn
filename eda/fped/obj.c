@@ -27,6 +27,7 @@
 #define	MAX_ITERATIONS	1000	/* abort "loop"s at this limit */
 
 
+char *part_name = NULL;
 struct frame *frames = NULL;
 struct frame *root_frame = NULL;
 struct frame *active_frame = NULL;

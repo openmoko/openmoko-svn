@@ -142,7 +142,7 @@ static struct obj *new_obj(enum obj_type type)
 
 
 %token		START_FPD START_EXPR
-%token		TOK_SET TOK_LOOP TOK_FRAME TOK_TABLE TOK_VEC
+%token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC TOK_MEAS
 
 %token	<num>	NUMBER
@@ -172,13 +172,31 @@ fpd:
 			root_frame = zalloc_type(struct frame);
 			set_frame(root_frame);
 		}
-	frame_defs frame_items
+	frame_defs part_name frame_items
 		{
 			root_frame->prev = last_frame;
 			if (last_frame)
 				last_frame->next = root_frame;
 			else
 				frames = root_frame;
+		}
+	;
+
+part_name:
+	TOK_PART STRING
+		{
+			const char *p;
+
+			if (!*p) {
+				yyerrorf("invalid part name");
+				YYABORT;
+			}
+			for (p = $2; *p; *p++)
+				if (!is_id_char(*p, 0)) {
+					yyerrorf("invalid part name");
+					YYABORT;
+				}
+			part_name = $2;
 		}
 	;
 
