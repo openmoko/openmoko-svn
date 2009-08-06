@@ -26,6 +26,10 @@ static struct deletion {
 		dt_vec,
 		dt_obj,
 		dt_frame,
+		dt_table,
+		dt_row,
+		dt_column,
+		dt_loop,
 	} type;
 	union {
 		struct {
@@ -40,6 +44,24 @@ static struct deletion {
 			struct obj *ref;
 			struct obj *prev;
 		} obj;
+		struct {
+			struct table *ref;
+			struct table *prev;
+		} table;
+		struct {
+			struct row *ref;
+			struct row *prev;
+		} row;
+		struct {
+			struct var *var;
+			struct value *values;
+			struct table *table;
+			int n;
+		} col;
+		struct {
+			struct loop *ref;
+			struct loop *prev;
+		} loop;
 	} u;
 	int group;
 	struct deletion *next;
@@ -225,21 +247,85 @@ static void undelete_obj(struct obj *obj, struct obj *prev)
 	}
 }
 
-/* ----- tables ------------------------------------------------------------ */
+
+
+/* ----- rows -------------------------------------------------------------- */
 
 
 void delete_row(struct row *row)
 {
+	struct deletion *del;
+	struct row *walk, *prev;
+
+	groups++;
+	prev = NULL;
+	for (walk = row->table->rows; walk != row; walk = walk->next)
+		prev = walk;
+	if (prev)
+		prev->next = row->next;
+	else
+		row->table->rows = row->next;
+	del = new_deletion(dt_row);
+	del->u.row.ref = row;
+	del->u.row.prev = prev;
 }
+
+
+static void undelete_row(struct row *row, struct row *prev)
+{
+	if (prev) {
+		assert(row->next == prev->next);
+		prev->next = row;
+	} else {
+		assert(row->next == row->table->rows);
+		row->table->rows = row;
+	}
+}
+
+
+/* ----- columns ----------------------------------------------------------- */
 
 
 void delete_column(struct table *table, int n)
 {
+	groups++;
 }
+
+
+/* ----- tables ------------------------------------------------------------ */
 
 
 void delete_table(struct table *table)
 {
+	struct frame *frame = table->vars->frame;
+	struct deletion *del;
+	struct table *walk, *prev;
+
+	groups++;
+	prev = NULL;
+	for (walk = frame->tables; walk != table; walk = walk->next)
+		prev = walk;
+	if (prev)
+		prev->next = table->next;
+	else
+		frame->tables = table->next;
+	del = new_deletion(dt_table);
+	del->u.table.ref = table;
+	del->u.table.prev = prev;
+}
+
+
+static void undelete_table(struct table *table, struct table *prev)
+{
+	struct frame *frame = table->vars->frame;
+
+	if (prev) {
+		assert(table->next == prev->next);
+		prev->next = table;
+	} else {
+		assert(table->next == frame->tables);
+		frame->tables = table;
+	}
 }
 
 
@@ -248,6 +334,35 @@ void delete_table(struct table *table)
 
 void delete_loop(struct loop *loop)
 {
+	struct frame *frame = loop->var.frame;
+	struct deletion *del;
+	struct loop *walk, *prev;
+
+	groups++;
+	prev = NULL;
+	for (walk = frame->loops; walk != loop; walk = walk->next)
+		prev = walk;
+	if (prev)
+		prev->next = loop->next;
+	else
+		frame->loops = loop->next;
+	del = new_deletion(dt_loop);
+	del->u.loop.ref = loop;
+	del->u.loop.prev = prev;
+}
+
+
+static void undelete_loop(struct loop *loop, struct loop *prev)
+{
+	struct frame *frame = loop->var.frame;
+
+	if (prev) {
+		assert(loop->next == prev->next);
+		prev->next = loop;
+	} else {
+		assert(loop->next == frame->loops);
+		frame->loops = loop;
+	}
 }
 
 
@@ -346,6 +461,15 @@ static int undelete_one(void)
 		break;
 	case dt_frame:
 		undelete_frame(del->u.frame.ref, del->u.frame.prev);
+		break;
+	case dt_loop:
+		undelete_loop(del->u.loop.ref, del->u.loop.prev);
+		break;
+	case dt_table:
+		undelete_table(del->u.table.ref, del->u.table.prev);
+		break;
+	case dt_row:
+		undelete_row(del->u.row.ref, del->u.row.prev);
 		break;
 	default:
 		abort();

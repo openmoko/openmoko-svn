@@ -101,6 +101,13 @@ int to_unit(struct num *n)
 /* ----- primary expressions ----------------------------------------------- */
 
 
+struct num op_string(const struct expr *self, const struct frame *frame)
+{
+	fail("cannot evaluate string");
+	return undef;
+}
+
+
 struct num op_num(const struct expr *self, const struct frame *frame)
 {
 	return self->u.num;

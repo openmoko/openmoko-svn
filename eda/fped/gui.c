@@ -712,7 +712,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
     struct table *table)
 {
 	GtkWidget *tab, *field;
-	GtkWidget *evbox;
+	GtkWidget *evbox, *align;
 	struct var *var;
 	struct row *row;
 	struct value *value;
@@ -729,7 +729,9 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		return;
 
 	evbox = gtk_event_box_new();
-	gtk_box_pack_start(GTK_BOX(vbox), evbox, FALSE, FALSE, 0);
+	align = gtk_alignment_new(0, 0, 0, 0);
+	gtk_container_add(GTK_CONTAINER(align), evbox);
+	gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 0);
 
 	tab = gtk_table_new(n_rows+1, n_vars, FALSE);
 	gtk_container_add(GTK_CONTAINER(evbox), tab);

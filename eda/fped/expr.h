@@ -43,6 +43,7 @@ struct expr {
 	union {
 		struct num num;
 		const char *var;
+		char *str;
 		struct {
 			struct expr *a;
 			struct expr *b;
@@ -107,6 +108,7 @@ int to_unit(struct num *n);
 
 struct num op_num(const struct expr *self, const struct frame *frame);
 struct num op_var(const struct expr *self, const struct frame *frame);
+struct num op_string(const struct expr *self, const struct frame *frame);
 
 struct num op_minus(const struct expr *self, const struct frame *frame);
 

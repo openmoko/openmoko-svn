@@ -530,6 +530,11 @@ primary_expr:
 			$$ = new_op(op_var);
 			$$->u.var = $1;
 		}
+	| STRING
+		{
+			$$ = new_op(op_string);
+			$$->u.str = $1;
+		}
 	| '(' expr ')'
 		{
 			$$ = $2;
