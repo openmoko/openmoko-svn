@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	if (error)
 		return error;
 
-	dump(stdout);
+//	dump(stdout);
 
 	return 0;
 }

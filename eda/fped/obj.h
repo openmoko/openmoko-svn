@@ -165,6 +165,9 @@ struct obj {
 	struct vec *base;
 	struct obj *next;
 	int lineno;
+
+	/* for dumping */
+	int dumped;
 };
 
 

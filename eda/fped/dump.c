@@ -82,17 +82,11 @@ static void dump_loop(FILE *file, const struct loop *loop, const char *indent)
 /* ----- vectors and objects ----------------------------------------------- */
 
 
-static char *base_name(const struct vec *vec, const struct vec *base)
+static char *generate_name(const struct vec *base)
 {
 	const struct vec *walk;
 	int n;
 
-	if (!base)
-		return stralloc("@");
-	if (vec && base->next == vec)
-		return stralloc(".");
-	if (base->name)
-		return stralloc(base->name);
 	n = 0;
 	for (walk = base->frame->vecs; walk != base; walk = walk->next)
 		n++;
@@ -101,11 +95,23 @@ static char *base_name(const struct vec *vec, const struct vec *base)
 }
 
 
+static char *base_name(const struct vec *base, const struct vec *next)
+{
+	if (!base)
+		return stralloc("@");
+	if (next && base->next == next)
+		return stralloc(".");
+	if (base->name)
+		return stralloc(base->name);
+	return generate_name(base);
+}
+
+
 static char *obj_base_name(const struct vec *base, const struct vec *prev)
 {
 	if (base && base == prev)
 		return stralloc(".");
-	return base_name(NULL, base);
+	return base_name(base, NULL);
 }
 
 
@@ -150,40 +156,70 @@ static int need(const struct vec *base, const struct vec *prev)
 }
 
 
-static void dump_obj(FILE *file, const struct obj *obj, const char *indent,
-    const struct vec *prev)
+/*
+ * If we need a vector that's defined later, we have to defer dumping the
+ * object.
+ */
+
+static int later(const struct vec *base, const struct vec *prev)
 {
-	char *base, *s1, *s2, *s3;
-	int n;
+	while (prev) {
+		if (base == prev)
+			return 1;
+		prev = prev->next;
+	}
+	return 0;
+}
+
+
+static int may_dump_obj_now(const struct obj *obj, const struct vec *prev)
+{
+	int n, l;
 
 	n = need(obj->base, prev);
+	l = later(obj->base, prev);
 
 	switch (obj->type) {
 	case ot_frame:
 		break;
 	case ot_line:
 		n |= need(obj->u.line.other, prev);
+		l |= later(obj->u.line.other, prev);
 		break;
 	case ot_rect:
 		n |= need(obj->u.rect.other, prev);
+		l |= later(obj->u.rect.other, prev);
 		break;
 	case ot_pad:
 		n |= need(obj->u.pad.other, prev);
+		l |= later(obj->u.pad.other, prev);
 		break;
 	case ot_arc:
 		n |= need(obj->u.arc.start, prev);
 		n |= need(obj->u.arc.end, prev);
+		l |= later(obj->u.arc.start, prev);
+		l |= later(obj->u.arc.end, prev);
 		break;
 	case ot_meas:
 		n |= need(obj->u.meas.other, prev);
+		l |= later(obj->u.meas.other, prev);
 		break;
 	default:
 		abort();
 	}
 
-	if (prev ? !n : n)
-		return;
+	return n && !l;
+}
 
+
+static void dump_obj(FILE *file, struct obj *obj, const char *indent,
+    const struct vec *prev)
+{
+	char *base, *s1, *s2, *s3;
+
+	if (obj->dumped)
+		return;
+	obj->dumped = 1;
 	base = obj_base_name(obj->base, prev);
 	switch (obj->type) {
 	case ot_frame:
@@ -248,23 +284,27 @@ static void dump_obj(FILE *file, const struct obj *obj, const char *indent,
 static void recurse_vec(FILE *file, const struct vec *vec, const char *indent)
 {
 	const struct vec *next;
-	const struct obj *obj;
-	char *base, *x, *y;
+	struct obj *obj;
+	char *base, *x, *y, *s;
 
-	base = base_name(vec, vec->base);
+	base = base_name(vec->base, vec);
 	x = unparse(vec->x);
 	y = unparse(vec->y);
 	if (vec->name)
 		fprintf(file, "%s%s: vec %s(%s, %s)\n",
 		    indent, vec->name, base, x, y);
-	else
-		fprintf(file, "%svec %s(%s, %s)\n", indent, base, x, y);
+	else {
+		s = generate_name(vec);
+		fprintf(file, "%s%s: vec %s(%s, %s)\n", indent, s, base, x, y);
+		free(s);
+	}
 	free(base);
 	free(x);
 	free(y);
 
 	for (obj = vec->frame->objs; obj; obj = obj->next)
-		dump_obj(file, obj, indent, vec);
+		if (may_dump_obj_now(obj, vec))
+			dump_obj(file, obj, indent, vec);
 	if (n_vec_refs(vec) == 1) {
 		for (next = vec->next; next->base != vec; next = next->next);
 		recurse_vec(file, next, indent);
@@ -290,13 +330,17 @@ static void dump_frame(FILE *file, const struct frame *frame,
 {
 	const struct table *table;
 	const struct loop *loop;
-	const struct obj *obj;
+	struct obj *obj;
 
 	for (table = frame->tables; table; table = table->next)
 		dump_table(file, table, indent);
 	for (loop = frame->loops; loop; loop = loop->next)
 		dump_loop(file, loop, indent);
+	for (obj = frame->objs; obj; obj = obj->next)
+		obj->dumped = 0;
 	dump_vecs(file, frame->vecs, indent);
+
+	/* duh. do we need this ? */
 	for (obj = frame->objs; obj; obj = obj->next)
 		dump_obj(file, obj, indent, NULL);
 }
