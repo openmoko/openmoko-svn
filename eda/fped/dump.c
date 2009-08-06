@@ -355,9 +355,10 @@ int dump(FILE *file)
 
 	fprintf(file, "/* MACHINE-GENERATED ! */\n\n");
 	for (frame = frames; frame; frame = frame->next) {
-		if (!frame->name)
+		if (!frame->name) {
+			fprintf(file, "part \"%s\"\n", part_name);
 			dump_frame(file, frame, "");
-		else {
+		} else {
 			fprintf(file, "frame %s {\n", frame->name);
 			dump_frame(file, frame, "\t");
 			fprintf(file, "}\n\n");

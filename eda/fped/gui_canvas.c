@@ -172,6 +172,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 		}
 		if (res) {
 			inst_deselect();
+			redraw();
 			dragging = 1;
 			drag_escaped = 0;
 			drag_start = pos;

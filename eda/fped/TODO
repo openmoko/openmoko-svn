@@ -19,7 +19,6 @@ Style:
 
 Bugs:
 - default silk width has no business being hard-coded in obj.c
-- after moving, arc sometimes wrap the wrong way
 - undelete only works if not much has changed since the deletion
 
 Code cleanup:

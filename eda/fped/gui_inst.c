@@ -97,7 +97,12 @@ static void draw_arrow(struct draw_ctx *ctx, GdkGC *gc, int fill,
 	struct coord p[3];
 	struct coord side;
 
-	side = normalize(sub_vec(to, from), len);
+	if (from.x == to.x && from.y == to.y) {
+		side.x = 0;
+		side.y = -len;
+	} else {
+		side = normalize(sub_vec(to, from), len);
+	}
 	p[0] = add_vec(to, rotate(side, 180-angle));
 	p[1] = to;
 	p[2] = add_vec(to, rotate(side, 180+angle));
@@ -267,7 +272,7 @@ unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
 	struct coord c = self->base;
 	struct coord p;
 	unit_type r, d_min, d;
-	double angle, a2;
+	double angle, a1, a2;
 
 	r = self->u.arc.width/scale/2;
 	if (r < SELECT_R)
@@ -297,10 +302,15 @@ unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
 	/* see if we're close to the part that's actually drawn */
 
 	angle = theta(c, pos);
+	a1 = self->u.arc.a1;
 	a2 = self->u.arc.a2;
-	if (a2 < self->u.arc.a1)
-		a2 += 180;
-	return angle >= self->u.arc.a1 && angle <= a2 ? d : -1;
+	if (angle < 0)
+		angle += 360;
+	if (a2 < a1)
+		a2 += 360;
+	if (angle < a1)
+		angle += 360;
+	return angle >= a1 && angle <= a2 ? d : -1;
 }
 
 

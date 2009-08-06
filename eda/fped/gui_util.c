@@ -103,8 +103,13 @@ void restore_pix_buf(struct pix_buf *buf)
 void draw_arc(GdkDrawable *da, GdkGC *gc, int fill,
     int x, int y, int r, double a1, double a2)
 {
-        if (a1 == a2)
-                a2 = a1+360;
+	/*
+	 * This adjustment handles two distinct cases:
+	 * - if a1 == a2, we make sure we draw a full circle
+	 * - the end angle a2 must always be greater than the start angle a1
+	 */
+	if (a2 <= a1)
+		a2 += 360;
         gdk_draw_arc(da, gc, fill, x-r, y-r, 2*r, 2*r, a1*64, (a2-a1)*64);
 }
 
