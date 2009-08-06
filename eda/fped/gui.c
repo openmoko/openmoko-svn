@@ -37,6 +37,406 @@ GtkWidget *root;
 static GtkWidget *frames_box;
 
 
+/* ----- popup dispatcher -------------------------------------------------- */
+
+
+static void *popup_data;
+
+
+static void pop_up(GtkWidget *menu, GdkEventButton *event, void *data)
+{
+	popup_data = data;
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+	    event->button, event->time);
+}
+
+
+/* ----- popup: frame ------------------------------------------------------ */
+
+
+static GtkItemFactory *factory_frame;
+static GtkWidget *popup_frame_widget;
+
+
+static void select_frame(struct frame *frame);
+
+
+static void popup_add_frame(void)
+{
+	struct frame *parent = popup_data;
+	struct frame *new;
+
+	new = zalloc_type(struct frame);
+	new->name = unique("_");
+	new->next = parent;
+	new->prev = parent->prev;
+	if (parent->prev)
+		parent->prev->next = new;
+	else
+		frames = new;
+	parent->prev = new;
+	change_world();
+}
+
+
+static void popup_del_frame(void)
+{
+	struct frame *frame = popup_data;
+
+	assert(frame != root_frame);
+	delete_frame(frame);
+	if (active_frame == frame)
+		select_frame(root_frame);
+	change_world();
+}
+
+
+/* @@@ merge with fpd.y */
+
+static void popup_add_table(void)
+{
+	struct frame *frame = popup_data;
+	struct table *table, **walk;
+
+	table = zalloc_type(struct table);
+	table->vars = zalloc_type(struct var);
+	table->vars->name = unique("_");
+	table->vars->frame = frame;
+	table->vars->table = table;
+	table->rows = zalloc_type(struct row);
+	table->rows->table = table;
+	table->rows->values = zalloc_type(struct value);
+	table->rows->values->expr = parse_expr("0");
+	table->rows->values->row = table->rows;
+	table->active_row = table->rows;
+	for (walk = &frame->tables; *walk; walk = &(*walk)->next);
+	*walk = table;
+	change_world();
+}
+
+
+static void popup_add_loop(void)
+{
+	struct frame *frame = popup_data;
+	struct loop *loop, **walk;
+
+	loop = zalloc_type(struct loop);
+	loop->var.name = unique("_");
+	loop->var.frame = frame;
+	loop->from.expr = parse_expr("0");
+	loop->to.expr = parse_expr("0");
+	loop->next = NULL;
+	for (walk = &frame->loops; *walk; walk = &(*walk)->next);
+	*walk = loop;
+	change_world();
+}
+
+
+static GtkItemFactoryEntry popup_frame_entries[] = {
+	{ "/Add frame",		NULL,	popup_add_frame,	0, "<Item>" },
+	{ "/sep0",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Add variable",	NULL,	popup_add_table,	0, "<Item>" },
+	{ "/Add loop",		NULL,	popup_add_loop,		0, "<Item>" },
+	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Delete frame",	NULL,	popup_del_frame,	0, "<Item>" },
+	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,		0, "<Item>" },
+	{ NULL }
+};
+
+
+static void pop_up_frame(struct frame *frame, GdkEventButton *event)
+{
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_frame, "/Delete frame"),
+	    frame != root_frame);
+	pop_up(popup_frame_widget, event, frame);
+}
+
+
+/* ----- popup: single variable -------------------------------------------- */
+
+
+static GtkItemFactory *factory_single_var;
+static GtkWidget *popup_single_var_widget;
+
+
+
+static void add_row_here(struct table *table, struct row **anchor)
+{
+	struct row *row;
+	const struct value *walk;
+	struct value *value;
+
+	row = zalloc_type(struct row);
+	row->table = table;
+	/* @@@ future: adjust type */
+	for (walk = table->rows->values; walk; walk = walk->next) {
+		value = zalloc_type(struct value);
+		value->expr = parse_expr("0");
+		value->row = row;
+		value->next = row->values;
+		row->values = value;
+	}
+	row->next = *anchor;
+	*anchor = row;
+	change_world();
+}
+
+
+static void add_column_here(struct table *table, struct var **anchor)
+{
+	const struct var *walk;
+	struct var *var;
+	struct row *row;
+	struct value *value;
+	struct value **value_anchor;
+	int n = 0, i;
+
+	for (walk = table->vars; walk != *anchor; walk = walk->next)
+		n++;
+	var = zalloc_type(struct var);
+	var->name = unique("_");
+	var->frame = table->vars->frame;
+	var->table = table;
+	var->next = *anchor;
+	*anchor = var;
+	for (row = table->rows; row; row = row->next) {
+		value_anchor = &row->values;
+		for (i = 0; i != n; i++)
+			value_anchor = &(*value_anchor)->next;
+		value = zalloc_type(struct value);
+		value->expr = parse_expr("0");
+		value->row = row;
+		value->next = *value_anchor;
+		*value_anchor = value;
+	}
+	change_world();
+}
+
+
+static void popup_add_row(void)
+{
+	struct var *var = popup_data;
+
+	add_row_here(var->table, &var->table->rows);
+}
+
+
+static void popup_add_column(void)
+{
+	struct var *var = popup_data;
+
+	add_column_here(var->table, &var->next);
+}
+
+
+static void popup_del_table(void)
+{
+	struct var *var = popup_data;
+
+	delete_table(var->table);
+	change_world();
+}
+
+
+static GtkItemFactoryEntry popup_single_var_entries[] = {
+	{ "/Add row",		NULL,	popup_add_row,		0, "<Item>" },
+	{ "/Add column",	NULL,	popup_add_column,	0, "<Item>" },
+	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Delete variable",	NULL,	popup_del_table,	0, "<Item>" },
+	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,			0, "<Item>" },
+	{ NULL }
+};
+
+
+static void pop_up_single_var(struct var *var, GdkEventButton *event)
+{
+	pop_up(popup_single_var_widget, event, var);
+}
+
+
+/* ----- popup: table variable --------------------------------------------- */
+
+
+static GtkItemFactory *factory_table_var;
+static GtkWidget *popup_table_var_widget;
+
+
+static void popup_del_column(void)
+{
+	struct var *var = popup_data;
+	const struct var *walk;
+	int n = 0;
+
+	for (walk = var->table->vars; walk != var; walk = walk->next)
+		n++;
+	delete_column(var->table, n);
+	change_world();
+}
+
+
+static GtkItemFactoryEntry popup_table_var_entries[] = {
+	{ "/Add row",		NULL,	popup_add_row,		0, "<Item>" },
+	{ "/Add column",	NULL,	popup_add_column,	0, "<Item>" },
+	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Delete table",	NULL,	popup_del_table,	0, "<Item>" },
+	{ "/Delete column",	NULL,	popup_del_column,	0, "<Item>" },
+	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,		0, "<Item>" },
+	{ NULL }
+};
+
+
+static void pop_up_table_var(struct var *var, GdkEventButton *event)
+{
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_table_var, "/Delete column"),
+	    var->table->vars->next != NULL);
+	pop_up(popup_table_var_widget, event, var);
+}
+
+
+/* ----- popup: table value ------------------------------------------------ */
+
+
+static GtkItemFactory *factory_table_value;
+static GtkWidget *popup_table_value_widget;
+
+
+static void popup_add_column_by_value(void)
+{
+	struct value *value = popup_data;
+	const struct value *walk;
+	struct table *table = value->row->table;
+	struct var *var = table->vars;
+
+	for (walk = value->row->values; walk != value; walk = walk->next)
+		var = var->next;
+	add_column_here(table, &var->next);
+}
+
+
+static void popup_add_row_by_value(void)
+{
+	struct value *value = popup_data;
+
+	add_row_here(value->row->table, &value->row->next);
+}
+
+
+static void popup_del_row(void)
+{
+	struct value *value = popup_data;
+
+	delete_row(value->row);
+	change_world();
+}
+
+
+static void popup_del_column_by_value(void)
+{
+	struct value *value = popup_data;
+	const struct value *walk;
+	int n = 0;
+
+	for (walk = value->row->values; walk != value; walk = walk->next);
+	delete_column(value->row->table, n);
+	change_world();
+}
+
+
+static GtkItemFactoryEntry popup_table_value_entries[] = {
+	{ "/Add row",		NULL,	popup_add_row_by_value,	0, "<Item>" },
+	{ "/Add column",	NULL,	popup_add_column_by_value,
+							0, "<Item>" },
+	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Delete row",	NULL,	popup_del_row,		0, "<Item>" },
+	{ "/Delete column",	NULL,	popup_del_column_by_value,
+								0, "<Item>" },
+	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,		0, "<Item>" },
+	{ NULL }
+};
+
+
+static void pop_up_table_value(struct value *value, GdkEventButton *event)
+{
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_table_value, "/Delete row"),
+	    value->row->table->rows->next != NULL);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_table_value, "/Delete column"),
+	    value->row->table->vars->next != NULL);
+	pop_up(popup_table_value_widget, event, value);
+}
+
+
+/* ----- popup: loop ------------------------------------------------------- */
+
+
+static GtkItemFactory *factory_loop_var;
+static GtkWidget *popup_loop_var_widget;
+
+
+static void popup_del_loop(void)
+{
+	struct loop *loop = popup_data;
+
+	delete_loop(loop);
+	change_world();
+}
+
+
+static GtkItemFactoryEntry popup_loop_var_entries[] = {
+	{ "/Delete loop",	NULL,	popup_del_loop,		0, "<Item>" },
+	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,		0, "<Item>" },
+	{ NULL }
+};
+
+
+static void pop_up_loop_var(struct loop *loop, GdkEventButton *event)
+{
+	pop_up(popup_loop_var_widget, event, loop);
+}
+
+
+/* ----- make popups ------------------------------------------------------- */
+
+
+static GtkWidget *make_popup(const char *name, GtkItemFactory **factory,
+    GtkItemFactoryEntry *entries)
+{
+	GtkWidget *popup;
+	int n;
+
+	n = 0;
+	for (n = 0; entries[n].path; n++);
+
+	*factory = gtk_item_factory_new(GTK_TYPE_MENU, name, NULL);
+	gtk_item_factory_create_items(*factory, n, entries, NULL);
+	popup = gtk_item_factory_get_widget(*factory, name);
+	return popup;
+}
+
+
+static void make_popups(void)
+{
+	popup_frame_widget = make_popup("<FpedFramePopUp>",
+	    &factory_frame, popup_frame_entries);
+	popup_single_var_widget = make_popup("<FpedSingleVarPopUp>",
+	    &factory_single_var, popup_single_var_entries);
+	popup_table_var_widget = make_popup("<FpedTableVarPopUp>",
+	    &factory_table_var, popup_table_var_entries);
+	popup_table_value_widget = make_popup("<FpedTableValusPopUp>",
+	    &factory_table_value, popup_table_value_entries);
+	popup_loop_var_widget = make_popup("<FpedLoopVarPopUp>",
+	    &factory_loop_var, popup_loop_var_entries);
+}
+
+
 /* ----- menu bar ---------------------------------------------------------- */
 
 
@@ -188,7 +588,16 @@ static GtkWidget *add_activator(GtkWidget *hbox, int active,
 static gboolean assignment_var_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
-	edit_var(data);
+	struct var *var = data;
+
+	switch (event->button) {
+	case 1:
+		edit_var(var);
+		break;
+	case 3:
+		pop_up_single_var(var, event);
+		break;
+	}
 	return TRUE;
 }
 
@@ -196,7 +605,13 @@ static gboolean assignment_var_select_event(GtkWidget *widget,
 static gboolean assignment_value_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
-	edit_value(data);
+	struct value *value = data;
+
+	switch (event->button) {
+	case 1:
+		edit_value(value);
+		break;
+	}
 	return TRUE;
 }
 
@@ -257,7 +672,16 @@ static void select_row(struct row *row)
 static gboolean table_var_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
-	edit_var(data);
+	struct var *var = data;
+
+	switch (event->button) {
+	case 1:
+		edit_var(var);
+		break;
+	case 3:
+		pop_up_table_var(var, event);
+		break;
+	}
 	return TRUE;
 }
 
@@ -267,11 +691,18 @@ static gboolean table_value_select_event(GtkWidget *widget,
 {
 	struct value *value = data;
 
-	if (!value->row || value->row->table->active_row == value->row)
-		edit_value(value);
-	else {
-		select_row(value->row);
-		change_world();
+	switch (event->button) {
+	case 1:
+		if (!value->row || value->row->table->active_row == value->row)
+			edit_value(value);
+		else {
+			select_row(value->row);
+			change_world();
+		}
+		break;
+	case 3:
+		pop_up_table_value(value, event);
+		break;
 	}
 	return TRUE;
 }
@@ -353,7 +784,14 @@ static gboolean loop_var_select_event(GtkWidget *widget,
 {
 	struct loop *loop = data;
 
-	edit_var(&loop->var);
+	switch (event->button) {
+	case 1:
+		edit_var(&loop->var);
+		break;
+	case 3:
+		pop_up_loop_var(loop, event);
+		break;
+	}
 	return TRUE;
 }
 
@@ -363,7 +801,11 @@ static gboolean loop_from_select_event(GtkWidget *widget,
 {
 	struct loop *loop = data;
 
-	edit_value(&loop->from);
+	switch (event->button) {
+	case 1:
+		edit_value(&loop->from);
+		break;
+	}
 	return TRUE;
 }
 
@@ -373,7 +815,11 @@ static gboolean loop_to_select_event(GtkWidget *widget,
 {
 	struct loop *loop = data;
 
-	edit_value(&loop->to);
+	switch (event->button) {
+	case 1:
+		edit_value(&loop->to);
+		break;
+	}
 	return TRUE;
 }
 
@@ -383,8 +829,13 @@ static gboolean loop_select_event(GtkWidget *widget, GdkEventButton *event,
 {
 	struct loop *loop = data;
 
-	loop->active = (long) gtk_object_get_data(GTK_OBJECT(widget), "value");
-	change_world();
+	switch (event->button) {
+	case 1:
+		loop->active =
+		    (long) gtk_object_get_data(GTK_OBJECT(widget), "value");
+		change_world();
+		break;
+	}
 	return TRUE;
 }
 
@@ -495,11 +946,15 @@ static void unselect_part_name(void *data)
 static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
-	inst_select_outside(widget, unselect_part_name);
-	label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
-	status_set_type_entry("part =");
-	status_set_name("%s", part_name);
-	edit_name(&part_name, validate_part_name, NULL);
+	switch (event->button) {
+	case 1:
+		inst_select_outside(widget, unselect_part_name);
+		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
+		status_set_type_entry("part =");
+		status_set_name("%s", part_name);
+		edit_name(&part_name, validate_part_name, NULL);
+		break;
+	}
 	return TRUE;
 }
 
@@ -575,11 +1030,20 @@ static void select_frame(struct frame *frame)
 static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
-	if (active_frame != data)
-		select_frame(data);
-	else {
-		if (active_frame->name)
-			edit_frame(data);
+	struct frame *frame = data;
+
+	switch (event->button) {
+	case 1:
+		if (active_frame != frame)
+			select_frame(frame);
+		else {
+			if (active_frame->name)
+				edit_frame(frame);
+		}
+		break;
+	case 3:
+		pop_up_frame(frame, event);
+		break;
 	}
 	return TRUE;
 }
@@ -604,52 +1068,6 @@ static GtkWidget *build_frame_label(struct frame *frame)
 }
 
 
-/* ----- frame delete ------------------------------------------------------ */
-
-
-static gboolean frame_delete_event(GtkWidget *widget, GdkEventButton *event,
-    gpointer data)
-{
-	struct frame *frame = data;
-
-	switch (event->button) {
-	case 1:
-		if (frame == root_frame) {
-			fail("you cannot delete the root frame");
-			break;
-		}
-		delete_frame(frame);
-		if (active_frame == frame)
-			select_frame(root_frame);
-		change_world();
-		break;
-	}
-	return TRUE;
-}
-
-
-static GtkWidget *build_frame_delete(struct frame *frame)
-{
-	GtkWidget *evbox, *image;
-	GtkWidget *align;
-
-	evbox = gtk_event_box_new();
-	image = 
-	    gtk_image_new_from_stock(GTK_STOCK_CANCEL,
-	        GTK_ICON_SIZE_SMALL_TOOLBAR);
-	gtk_container_add(GTK_CONTAINER(evbox), image);
-
-	align = gtk_alignment_new(0.3, 0, 0, 0);
-	gtk_container_add(GTK_CONTAINER(align), evbox);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(align), 2, 0, 0, 0);
-
-	g_signal_connect(G_OBJECT(evbox),
-	    "button_press_event", G_CALLBACK(frame_delete_event), frame);
-
-	return align;
-}
-
-
 /* ----- frame references -------------------------------------------------- */
 
 
@@ -658,8 +1076,12 @@ static gboolean frame_ref_select_event(GtkWidget *widget, GdkEventButton *event,
 {
 	struct obj *obj = data;
 
-	obj->u.frame.ref->active_ref = data;
-	change_world();
+	switch (event->button) {
+	case 1:
+		obj->u.frame.ref->active_ref = data;
+		change_world();
+		break;
+	}
 	return TRUE;
 }
 
@@ -686,7 +1108,7 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 static void build_frames(GtkWidget *vbox)
 {
 	struct frame *frame;
-	GtkWidget *tab, *label, *delete, *refs, *vars;
+	GtkWidget *tab, *label, *refs, *vars;
 	int n = 0;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
@@ -706,10 +1128,6 @@ static void build_frames(GtkWidget *vbox)
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
 		    0, 1, n*2+1, n*2+2);
-
-		delete = build_frame_delete(frame);
-		gtk_table_attach_defaults(GTK_TABLE(tab), delete,
-                    0, 1, n*2+2, n*2+3);
 
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
@@ -818,6 +1236,7 @@ int gui_main(void)
 	init_canvas();
 	edit_nothing();
 	select_frame(root_frame);
+	make_popups();
 
 	gtk_main();
 

@@ -20,6 +20,10 @@
 
 void delete_vec(struct vec *vec);
 void delete_obj(struct obj *obj);
+void delete_row(struct row *row);
+void delete_column(struct table *table, int n);
+void delete_table(struct table *table);
+void delete_loop(struct loop *loop);
 void delete_frame(struct frame *frame);
 int destroy(void);
 int undelete(void);

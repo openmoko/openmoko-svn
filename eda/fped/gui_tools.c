@@ -386,8 +386,8 @@ static int end_new_circ(struct draw_ctx *ctx,
 struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i)
 {
-	struct coord c, from, to;
-	double r, a1, a2;
+	struct coord c, from, to, end;
+	double r, r_save, a1, a2;
 	struct pix_buf *buf;
 
 	c = translate(ctx, inst->base);
@@ -420,8 +420,21 @@ struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
 	a2 = -theta(c, to);
 	if (a2 < a1)
 		a2 += 360.0;
-	buf = save_pix_buf(DA, c.x-r, c.y-r, c.x+r, c.y+r, 1);
+
+	if (i != 2)
+		r_save = r;
+	else {
+		r_save = hypot(to.x-c.x, to.y-c.y);
+		if (r > r_save)
+			r_save = r;
+	}
+	buf = save_pix_buf(DA,
+	    c.x-r_save, c.y-r_save, c.x+r_save, c.y+r_save, 1);
 	draw_arc(DA, gc_drag, FALSE, c.x, c.y, r, a1, a2);
+	if (i == 2) {
+		end = rotate_r(c, r_save, -a2);
+		gdk_draw_line(DA, gc_drag, c.x, c.y, end.x, end.y);
+	}
 	return buf;
 }
 

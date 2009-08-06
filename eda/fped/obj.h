@@ -27,6 +27,7 @@ struct var {
 
 	/* back reference */
 	struct frame *frame;
+	struct table *table; /* NULL if loop */
 
 	/* for the GUI */
 	GtkWidget *widget;

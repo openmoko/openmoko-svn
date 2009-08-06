@@ -78,6 +78,7 @@ static void make_var(const char *id, struct expr *expr)
 	table->vars = zalloc_type(struct var);
 	table->vars->name = id;
 	table->vars->frame = curr_frame;
+	table->vars->table = table;
 	table->rows = zalloc_type(struct row);
 	table->rows->table = table;
 	table->rows->values = zalloc_type(struct value);
@@ -97,6 +98,7 @@ static void make_loop(const char *id, struct expr *from, struct expr *to)
 	loop->var.name = id;
 	loop->var.next = NULL;
 	loop->var.frame = curr_frame;
+	loop->var.table = NULL;
 	loop->from.expr = from;
 	loop->from.row = NULL;
 	loop->from.next = NULL;
@@ -296,6 +298,7 @@ var:
 			$$ = zalloc_type(struct var);
 			$$->name = $1;
 			$$->frame = curr_frame;
+			$$->table = curr_table;
 			$$->next = NULL;
 			n_vars++;
 		}

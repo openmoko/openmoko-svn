@@ -225,6 +225,31 @@ static void undelete_obj(struct obj *obj, struct obj *prev)
 	}
 }
 
+/* ----- tables ------------------------------------------------------------ */
+
+
+void delete_row(struct row *row)
+{
+}
+
+
+void delete_column(struct table *table, int n)
+{
+}
+
+
+void delete_table(struct table *table)
+{
+}
+
+
+/* ----- loops ------------------------------------------------------------- */
+
+
+void delete_loop(struct loop *loop)
+{
+}
+
 
 /* ----- frames ------------------------------------------------------------ */
 
