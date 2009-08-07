@@ -162,19 +162,13 @@ static struct obj *new_obj(enum obj_type type)
 %%
 
 all:
-	START_FPD fpd
-	| START_EXPR expr
-		{
-			expr_result = $2;
-		}
-	;
-
-fpd:
+	START_FPD
 		{
 			root_frame = zalloc_type(struct frame);
 			set_frame(root_frame);
 		}
-	frame_defs part_name frame_items
+
+	    fpd
 		{
 			root_frame->prev = last_frame;
 			if (last_frame)
@@ -182,6 +176,14 @@ fpd:
 			else
 				frames = root_frame;
 		}
+	| START_EXPR expr
+		{
+			expr_result = $2;
+		}
+	;
+
+fpd:
+	| frame_defs part_name frame_items
 	;
 
 part_name:

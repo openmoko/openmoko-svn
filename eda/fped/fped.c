@@ -13,6 +13,7 @@
 
 
 #include "cpp.h"
+#include "util.h"
 #include "error.h"
 #include "obj.h"
 #include "inst.h"
@@ -46,6 +47,10 @@ int main(int argc, char **argv)
 		argc--;
 		argv++;
 	}
+
+	if (!part_name)
+		part_name = stralloc("_");
+
 	reporter = report_to_stderr;
 	if (!instantiate())
 		return 1;

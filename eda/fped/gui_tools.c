@@ -168,8 +168,8 @@ static struct coord gridify(struct coord base, struct coord pos)
 	struct coord new;
 	unit_type unit = mm_to_units(0.1);
 
-	new.x = pos.x-(pos.x-base.x % unit);
-	new.y = pos.y-(pos.y-base.y % unit);
+	new.x = pos.x-((pos.x-base.x) % unit);
+	new.y = pos.y-((pos.y-base.y) % unit);
 	if (new.x != base.x || new.y != base.y)
 		return new;
 	if (fabs(pos.x-base.x) > fabs(pos.y-base.y))
@@ -494,7 +494,7 @@ static int end_new_meas(struct draw_ctx *ctx,
 
 
 static struct tool_ops meas_ops = {
-	.drag_new	= NULL,
+	.drag_new	= drag_new_line,
 	.end_new	= end_new_meas,
 };
 
@@ -588,6 +588,8 @@ static int end_new_frame(struct draw_ctx *ctx,
 	obj = new_obj(ot_frame, from);
 	obj->u.frame.ref = locked_frame;
 	obj->u.frame.lineno = 0;
+	if (!locked_frame->active_ref)
+		locked_frame->active_ref = obj;
 	locked_frame = NULL;
 	tool_frame_update();
 	return 1;

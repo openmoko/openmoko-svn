@@ -1,6 +1,5 @@
 Missing features:
 - populate input area (still needed: mm/mil, rezoom)
-- add table/var/loop editor (missing: add col/row, add/del var/table/loop)
 - add default unit (combine with grid unit selection ?)
 - consider adding auto/mm/mil selection for each dimension
 - add measurements (partly done. still needed: find out how to define
@@ -8,6 +7,10 @@ Missing features:
 - add KiCad output
 - add postscript output
 - add option to include/omit helper vecs and frames (display and postscript)
+- reorder frames (can use text editor)
+- reorder rows in a table (can use text editor)
+- reorder columns in a table
+- reorder variables in a frame (can use text editor)
 
 Error detection:
 - eliminate duplicate instances
@@ -16,10 +19,12 @@ Style:
 - make column of entry field greedily consume all unallocated space
 - status area looks awful
 - add button with GTK_STOCK_UNDELETE for "undelete" to menu bar
+- edit names/values/etc. in place if possible
 
 Bugs:
 - default silk width has no business being hard-coded in obj.c
 - undelete only works if not much has changed since the deletion
+- re-center while dragging confuses the save-under mechanism
 
 Code cleanup:
 - merge edit_unique with edit_name

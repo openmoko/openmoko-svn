@@ -52,7 +52,7 @@ static struct deletion {
 			struct row *ref;
 			struct row *prev;
 		} row;
-		struct {
+		struct column {
 			struct var *var;
 			struct value *values;
 			struct table *table;
@@ -187,7 +187,8 @@ static void destroy_obj(struct obj *obj)
 {
 	switch (obj->type) {
 	case ot_frame:
-		/* nothing */
+		if (obj->u.frame.ref->active_ref == obj)
+			obj->u.frame.ref->active_ref = NULL;
 		break;
 	case ot_pad:
 		free(obj->u.pad.name);
@@ -288,7 +289,62 @@ static void undelete_row(struct row *row, struct row *prev)
 
 void delete_column(struct table *table, int n)
 {
+	struct deletion *del;
+	struct column *col;
+	struct var **var;
+	struct row *row;
+	struct value **next, **value;
+	int i;
+
 	groups++;
+
+	del = new_deletion(dt_column);
+	col = &del->u.col;
+	col->table = table;
+	col->n = n;
+
+	var = &table->vars;
+	for (i = 0; i != n; i++)
+		var = &(*var)->next;
+	col->var = *var;
+	*var = (*var)->next;
+
+	next = &col->values;
+	for (row = table->rows; row; row = row->next) {
+		value = &row->values;
+		for (i = 0; i != n; i++)
+			value = &(*value)->next;
+		*next = *value;
+		*value = (*value)->next;
+		next = &(*next)->next;
+	}
+	*next = NULL;
+}
+
+
+static void undelete_column(const struct column *col)
+{
+	struct var **var;
+	struct row *row;
+	struct value **anchor, *value, *next;
+	int i;
+
+	var = &col->table->vars;
+	for (i = 0; i != col->n; i++)
+		var = &(*var)->next;
+	col->var->next = *var;
+	*var = col->var;
+
+	value = col->values;
+	for (row = col->table->rows; row; row = row->next) {
+		anchor = &row->values;
+		for (i = 0; i != col->n; i++)
+			anchor = &(*anchor)->next;
+		next = value->next;
+		value->next = *anchor;
+		*anchor = value;
+		value = next;
+	}
 }
 
 
@@ -470,6 +526,9 @@ static int undelete_one(void)
 		break;
 	case dt_row:
 		undelete_row(del->u.row.ref, del->u.row.prev);
+		break;
+	case dt_column:
+		undelete_column(&del->u.col);
 		break;
 	default:
 		abort();

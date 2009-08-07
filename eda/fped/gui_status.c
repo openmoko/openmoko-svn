@@ -110,10 +110,12 @@ static void entry_color(GtkWidget *widget, const char *color)
 
 
 static void setup_edit(GtkWidget *widget, const char *s,
-    struct edit_ops *ops, void *ctx)
+    struct edit_ops *ops, void *ctx, int focus)
 {
 	gtk_entry_set_text(GTK_ENTRY(widget), s);
 	entry_color(widget, COLOR_EDIT_ASIS);
+	if (focus)
+		gtk_widget_grab_focus(GTK_WIDGET(widget));
 	gtk_widget_show(widget);
 	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
 	gtk_object_set_data(GTK_OBJECT(widget), "edit-ctx", ctx);
@@ -165,14 +167,14 @@ static struct edit_ops edit_ops_unique = {
 
 
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx), 
-    void *ctx)
+    void *ctx, int focus)
 {
 	static struct edit_unique_ctx unique_ctx;
 
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	setup_edit(status_entry, *s, &edit_ops_unique, &unique_ctx);
+	setup_edit(status_entry, *s, &edit_ops_unique, &unique_ctx, focus);
 }
 
 
@@ -221,7 +223,7 @@ static struct edit_ops edit_ops_null_unique = {
 
 
 void edit_unique_null(const char **s,
-    int (*validate)(const char *s, void *ctx), void *ctx)
+    int (*validate)(const char *s, void *ctx), void *ctx, int focus)
 {
 	static struct edit_unique_ctx unique_ctx;
 
@@ -229,7 +231,7 @@ void edit_unique_null(const char **s,
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
 	setup_edit(status_entry, *s ? *s : "",
-	    &edit_ops_null_unique, &unique_ctx);
+	    &edit_ops_null_unique, &unique_ctx, focus);
 }
 
 
@@ -277,14 +279,15 @@ static struct edit_ops edit_ops_name = {
 };
 
 
-void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx)
+void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx,
+    int focus)
 {
 	static struct edit_name_ctx name_ctx;
 
 	name_ctx.s = s;
 	name_ctx.validate = validate;
 	name_ctx.ctx = ctx;
-	setup_edit(status_entry, *s, &edit_ops_name, &name_ctx);
+	setup_edit(status_entry, *s, &edit_ops_name, &name_ctx, focus);
 }
 
 
@@ -335,31 +338,31 @@ static struct edit_ops edit_ops_expr = {
 };
 
 
-static void edit_any_expr(GtkWidget *widget, struct expr **expr)
+static void edit_any_expr(GtkWidget *widget, struct expr **expr, int focus)
 {
 	char *s;
 
 	s = unparse(*expr);
-	setup_edit(widget, s, &edit_ops_expr, expr);
+	setup_edit(widget, s, &edit_ops_expr, expr, focus);
 	free(s);
 }
 
 
-void edit_expr(struct expr **expr)
+void edit_expr(struct expr **expr, int focus)
 {
-	edit_any_expr(status_entry, expr);
+	edit_any_expr(status_entry, expr, focus);
 }
 
 
 void edit_x(struct expr **expr)
 {
-	edit_any_expr(status_entry_x, expr);
+	edit_any_expr(status_entry_x, expr, 0);
 }
 
 
 void edit_y(struct expr **expr)
 {
-	edit_any_expr(status_entry_y, expr);
+	edit_any_expr(status_entry_y, expr, 0);
 }
 
 

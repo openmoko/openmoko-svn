@@ -329,8 +329,11 @@ static void popup_add_row_by_value(void)
 static void popup_del_row(void)
 {
 	struct value *value = popup_data;
+	struct table *table = value->row->table;
 
 	delete_row(value->row);
+	if (table->active_row == value->row)
+		table->active_row = table->rows;
 	change_world();
 }
 
@@ -341,7 +344,8 @@ static void popup_del_column_by_value(void)
 	const struct value *walk;
 	int n = 0;
 
-	for (walk = value->row->values; walk != value; walk = walk->next);
+	for (walk = value->row->values; walk != value; walk = walk->next)
+		n++;
 	delete_column(value->row->table, n);
 	change_world();
 }
@@ -530,7 +534,7 @@ static void edit_var(struct var *var)
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", var->name);
-	edit_unique(&var->name, validate_var_name, var);
+	edit_unique(&var->name, validate_var_name, var, 1);
 }
 
 
@@ -551,7 +555,7 @@ static void edit_value(struct value *value)
 {
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
-	edit_expr(&value->expr);
+	edit_expr(&value->expr, 1);
 }
 
 
@@ -954,7 +958,7 @@ static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
 		status_set_type_entry("part =");
 		status_set_name("%s", part_name);
-		edit_name(&part_name, validate_part_name, NULL);
+		edit_name(&part_name, validate_part_name, NULL, 1);
 		break;
 	}
 	return TRUE;
@@ -1015,7 +1019,7 @@ static void edit_frame(struct frame *frame)
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", frame->name);
-	edit_unique(&frame->name, validate_frame_name, frame);
+	edit_unique(&frame->name, validate_frame_name, frame, 1);
 }
 
 
