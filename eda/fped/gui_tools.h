@@ -42,6 +42,7 @@ int tool_consider_drag(struct draw_ctx *ctx, struct coord pos);
 void tool_drag(struct draw_ctx *ctx, struct coord to);
 void tool_cancel_drag(struct draw_ctx *ctx);
 int tool_end_drag(struct draw_ctx *ctx, struct coord to);
+void tool_redraw(struct draw_ctx *ctx);
 
 /*
  * Cache the frame and track it.

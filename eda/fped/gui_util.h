@@ -28,6 +28,7 @@ GdkColor get_color(const char *spec);
 
 void set_width(GdkGC *gc, int width);
 
+void free_pix_buf(struct pix_buf *buf);
 struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
     int border);
 void restore_pix_buf(struct pix_buf *buf);

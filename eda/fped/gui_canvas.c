@@ -104,6 +104,7 @@ void redraw(void)
 	gdk_draw_rectangle(ctx.widget->window, gc_bg, TRUE, 0, 0, aw, ah);
 
 	inst_draw(&ctx);
+	tool_redraw(&ctx);
 }
 
 
@@ -198,7 +199,10 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 {
 	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
 
-	if (dragging) {
+	switch (event->button) {
+	case 1:
+		if (!dragging)
+			break;
 		dragging = 0;
 		if (hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale < 
 		    DRAG_MIN_R)
@@ -207,6 +211,7 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 			if (tool_end_drag(&ctx, pos))
 				change_world();
 		}
+		break;
 	}
 	return TRUE;
 }
@@ -234,9 +239,10 @@ static void zoom_out(struct coord pos)
 	bbox = inst_get_bbox();
 	bbox.min = translate(&ctx, bbox.min);
 	bbox.max = translate(&ctx, bbox.max);
-	if (bbox.min.x >= 0 && bbox.max.y >= 0 &&
-	    bbox.max.x < ctx.widget->allocation.width &&
-	    bbox.min.y < ctx.widget->allocation.height)
+	if (bbox.min.x >= ZOOM_STOP_BORDER &&
+	    bbox.max.y >= ZOOM_STOP_BORDER &&
+	    bbox.max.x < ctx.widget->allocation.width-ZOOM_STOP_BORDER &&
+	    bbox.min.y < ctx.widget->allocation.height-ZOOM_STOP_BORDER)
 		return;
 	ctx.scale *= 2;
 	ctx.center.x = 2*ctx.center.x-pos.x;

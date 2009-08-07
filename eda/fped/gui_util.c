@@ -51,6 +51,13 @@ void set_width(GdkGC *gc, int width)
 /* ----- backing store ----------------------------------------------------- */
 
 
+void free_pix_buf(struct pix_buf *buf)
+{
+	g_object_unref(G_OBJECT(buf->buf));
+	free(buf);
+}
+
+
 struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
     int border)
 {
@@ -92,8 +99,7 @@ void restore_pix_buf(struct pix_buf *buf)
 {
 	gdk_draw_pixbuf(buf->da, NULL, buf->buf, 0, 0, buf->x, buf->y, -1, -1,
 	    GDK_RGB_DITHER_NORMAL, 0, 0);
-	g_object_unref(G_OBJECT(buf->buf));
-	free(buf);
+	free_pix_buf(buf);
 }
 
 

@@ -763,7 +763,7 @@ void inst_end_frame(const struct frame *frame)
 	curr_frame = curr_frame->outer;
 	if (curr_frame)
 		propagate_bbox(inst);
-	if (inst->active && frame == active_frame)
+	if (inst->u.frame.active && frame == active_frame)
 		active_frame_bbox = inst->bbox;
 }
 

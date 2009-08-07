@@ -59,7 +59,6 @@ static struct tool_ops *active_ops = NULL;
 static struct inst *hover_inst = NULL;
 static GtkWidget *frame_image, *frame_image_locked, *frame_image_ready;
 
-
 static struct drag_state {
 	struct inst *inst; /* non-NULL if dragging an existing object */
 	struct inst *new; /* non-NULL if dragging a new object */
@@ -72,6 +71,7 @@ static struct drag_state {
 };
 
 static struct pix_buf *pix_buf;
+static struct coord last_canvas_pos;
 
 
 static struct vec *new_vec(struct inst *base)
@@ -706,6 +706,7 @@ int tool_consider_drag(struct draw_ctx *ctx, struct coord pos)
 
 	assert(!drag.new);
 	assert(!drag.anchors_n);
+	last_canvas_pos = translate(ctx, pos);
 	curr = inst_find_point(ctx, pos);
 	if (!curr)
 		return 0;
@@ -736,6 +737,7 @@ void tool_drag(struct draw_ctx *ctx, struct coord to)
 {
 	if (pix_buf)
 		restore_pix_buf(pix_buf);
+	last_canvas_pos = translate(ctx, to);
 	tool_hover(ctx, to);
 	pix_buf = drag.new ? active_ops->drag_new(ctx, drag.new, to) :
 	    inst_draw_move(drag.inst, ctx, to, drag.anchor_i);
@@ -746,8 +748,10 @@ void tool_cancel_drag(struct draw_ctx *ctx)
 {
 	tool_dehover(ctx);
 	tool_reset();
-	if (pix_buf)
+	if (pix_buf) {
 		restore_pix_buf(pix_buf);
+		pix_buf = NULL;
+	}
 	drag.new = NULL;
 	active_ops = NULL;
 	drag.anchors_n = 0;
@@ -773,6 +777,18 @@ int tool_end_drag(struct draw_ctx *ctx, struct coord to)
 	if (!inst_do_move_to(drag.inst, inst_get_vec(end), state.anchor_i))
 		do_move_to(&state, end);
 	return 1;
+}
+
+
+void tool_redraw(struct draw_ctx *ctx)
+{
+	if (!drag.new && !drag.anchors_n)
+		return;
+	if (pix_buf)
+		free_pix_buf(pix_buf);
+	pix_buf = NULL;
+	tool_drag(ctx, canvas_to_coord(ctx,
+	    last_canvas_pos.x, last_canvas_pos.y));
 }
 
 

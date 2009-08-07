@@ -24,6 +24,9 @@
 
 #define	CANVAS_CLEARANCE	10
 
+#define	ZOOM_STOP_BORDER	50	/* stop zoom if we have at least a 50
+					   pixel border */
+
 #define	VEC_ARROW_LEN		10
 #define	VEC_ARROW_ANGLE		20
 #define	VEC_EYE_R		5
