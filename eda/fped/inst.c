@@ -291,8 +291,11 @@ static void update_bbox(struct bbox *bbox, struct coord coord)
 
 static void propagate_bbox(const struct inst *inst)
 {
-	update_bbox(&curr_frame->bbox, inst->bbox.min);
-	update_bbox(&curr_frame->bbox, inst->bbox.max);
+	/* @@@ for new-style measurements */
+	struct inst *frame = curr_frame ? curr_frame : insts[ip_frame];
+
+	update_bbox(&frame->bbox, inst->bbox.min);
+	update_bbox(&frame->bbox, inst->bbox.max);
 }
 
 
@@ -640,6 +643,8 @@ static void meas_op_select(struct inst *self)
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	status_set_type_entry("offset =");
 	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
+	if (!self->obj)
+		return; /* @@@ new-style measurements */
 	edit_expr(&self->obj->u.meas.offset, 0);
 }
 
@@ -648,6 +653,8 @@ static int meas_op_anchors(struct inst *inst, struct vec ***anchors)
 {
 	struct obj *obj = inst->obj;
 
+	if (!inst->obj)
+		return 0; /* @@@ new-style measurements */
 	anchors[0] = &obj->base;
 	anchors[1] = &obj->u.meas.other;
 	return 2;
@@ -664,8 +671,8 @@ static struct inst_ops meas_ops = {
 };
 
 
-int inst_meas(struct obj *obj, struct coord from, struct coord to,
-    unit_type offset)
+int inst_meas(struct obj *obj, struct meas *meas,
+    struct coord from, struct coord to, unit_type offset)
 {
 	struct inst *inst;
 
@@ -673,6 +680,9 @@ int inst_meas(struct obj *obj, struct coord from, struct coord to,
 	inst->obj = obj;
 	inst->u.meas.end = to;
 	inst->u.meas.offset = offset;
+	inst->u.meas.meas = meas;
+	if (!obj)
+		inst->active = 1; /* @@@ new-style measurements */
 	/* @@@ our bbox is actually a bit more complex than this */
 	update_bbox(&inst->bbox, to);
 	propagate_bbox(inst);

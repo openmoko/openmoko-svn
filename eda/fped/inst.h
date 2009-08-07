@@ -18,6 +18,7 @@
 
 #include "coord.h"
 #include "obj.h"
+#include "meas.h"
 
 
 enum mode {
@@ -70,6 +71,7 @@ struct inst {
 		struct {
 			struct coord end;
 			double offset;
+			struct meas *meas; /* new-style measurement */
 		} meas;
 	} u;
 	struct inst *next;
@@ -95,8 +97,8 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width);
 int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b);
 int inst_arc(struct obj *obj, struct coord center, struct coord start,
     struct coord stop, unit_type width);
-int inst_meas(struct obj *obj, struct coord from, struct coord to,
-    unit_type offset);
+int inst_meas(struct obj *obj, struct meas *meas,
+    struct coord from, struct coord to, unit_type offset);
 
 void inst_begin_active(int active);
 void inst_end_active(void);

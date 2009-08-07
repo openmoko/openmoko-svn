@@ -16,6 +16,7 @@
 #include <gtk/gtk.h>
 
 #include "util.h"
+#include "coord.h"
 #include "inst.h"
 #include "gui.h"
 #include "gui_util.h"
@@ -329,13 +330,12 @@ void gui_draw_arc(struct inst *self, struct draw_ctx *ctx)
 /* ----- meas -------------------------------------------------------------- */
 
 
-static struct coord offset_vec(const struct inst *self)
+static struct coord offset_vec(struct coord a, struct coord b,
+    const struct inst *self)
 {
-	struct coord a, b, res;
+	struct coord res;
 	double f;
 
-	a = self->base;
-	b = self->u.meas.end;
 	res.x = a.y-b.y;
 	res.y = b.x-a.x;
 	if (res.x == 0 && res.y == 0)
@@ -352,7 +352,7 @@ unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale)
 	struct coord a, b, off;
 	unit_type d;
 
-	off = offset_vec(self);
+	off = offset_vec(self->base, self->u.meas.end, self);
 	a = add_vec(self->base, off);
 	b = add_vec(self->u.meas.end, off);
 	d = dist_line(pos, a, b)/scale;
@@ -364,13 +364,34 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 {
 	struct coord a0, b0, a1, b1, off, c, d;
 	GdkGC *gc;
+	double len;
+	const char *label = self->u.meas.meas ?
+	    self->u.meas.meas->label ? self->u.meas.meas->label : "" : "";
 	char *s;
 
-	off = offset_vec(self);
 	a0 = translate(ctx, self->base);
 	b0 = translate(ctx, self->u.meas.end);
-	a1 = translate(ctx, add_vec(self->base, off));
-	b1 = translate(ctx, add_vec(self->u.meas.end, off));
+	a1 = self->base;
+	b1 = self->u.meas.end;
+	switch (self->u.meas.meas ? self->u.meas.meas->type : mt_xy_next) {
+	case mt_xy_next:
+	case mt_xy_max:
+		break;
+	case mt_x_next:
+	case mt_x_max:
+		b1.y = a1.y;
+		break;
+	case mt_y_next:
+	case mt_y_max:
+		b1.x = a1.x;
+		break;
+	default:
+		abort();
+	}
+	off = offset_vec(a1, b1, self);
+	len = units_to_mm(dist_point(a1, b1));
+	a1 = translate(ctx, add_vec(a1, off));
+	b1 = translate(ctx, add_vec(b1, off));
 	gc = gc_meas[get_mode(self)];
 	gdk_draw_line(DA, gc, a0.x, a0.y, a1.x, a1.y);
 	gdk_draw_line(DA, gc, b0.x, b0.y, b1.x, b1.y);
@@ -379,9 +400,8 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 	draw_arrow(ctx, gc, FALSE, b1, a1, MEAS_ARROW_LEN, MEAS_ARROW_ANGLE);
 
 	c = add_vec(a1, b1);
-	d = sub_vec(b0, a0);
-	s = stralloc_printf("%lgmm",
-	    units_to_mm(dist_point(self->base, self->u.meas.end)));
+	d = sub_vec(b1, a1);
+	s = stralloc_printf("%s%lgmm", label, len);
 	render_text(DA, gc, c.x/2, c.y/2, -atan2(d.y, d.x)/M_PI*180, s,
 	    MEAS_FONT, 0.5, -MEAS_BASELINE_OFFSET,
 	    dist_point(a1, b1)-1.5*MEAS_ARROW_LEN, 0);

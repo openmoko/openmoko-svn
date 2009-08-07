@@ -18,6 +18,7 @@
 #include "coord.h"
 #include "expr.h"
 #include "error.h"
+#include "meas.h"
 
 #include "y.tab.h"
 
@@ -94,6 +95,12 @@ SP	[\t ]*
 				  return TOK_ARC; }
 <INITIAL>"meas"			{ BEGIN(NOKEYWORD);
 				  return TOK_MEAS; }
+<INITIAL>"measxy"		{ BEGIN(NOKEYWORD);
+				  return TOK_MEASXY; }
+<INITIAL>"measx"		{ BEGIN(NOKEYWORD);
+				  return TOK_MEASX; }
+<INITIAL>"measy"		{ BEGIN(NOKEYWORD);
+				  return TOK_MEASY; }
 
 <INITIAL>[a-zA-Z_][a-zA-Z_0-9]*: { *strchr(yytext, ':') = 0;
 				  yylval.id = unique(yytext);
@@ -117,6 +124,11 @@ SP	[\t ]*
 \"(\\[^\n\t]|[^\\"\n\t])*\"	{ *strrchr(yytext, '"') = 0;
 				  yylval.str = stralloc(yytext+1);
 				  return STRING; }
+
+"->"				return TOK_NEXT;
+"<-"				return TOK_NEXT_INVERTED;
+">>"				return TOK_MAX;
+"<<"				return TOK_MAX_INVERTED;
 
 {SP}				;
 \n				{ if (!disable_keywords)

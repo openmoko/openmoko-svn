@@ -18,6 +18,7 @@
 #include "util.h"
 #include "error.h"
 #include "expr.h"
+#include "meas.h"
 #include "inst.h"
 #include "obj.h"
 
@@ -37,7 +38,8 @@ static int generate_frame(struct frame *frame, struct coord base,
     const struct frame *parent, struct obj *frame_ref, int active);
 
 
-static struct num eval_unit(const struct expr *expr, const struct frame *frame)
+struct num eval_unit(const struct expr *expr, const struct frame *frame);
+/*static*/ struct num eval_unit(const struct expr *expr, const struct frame *frame)
 {
 	struct num d;
 
@@ -78,6 +80,7 @@ static int generate_vecs(struct frame *frame, struct coord base)
 		vec->pos.y += y.n;
 		if (!inst_vec(vec, vec_base))
 			return 0;
+		meas_post(vec, vec->pos);
 	}
 	return 1;
 }
@@ -144,7 +147,8 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 			offset = eval_unit(obj->u.meas.offset, frame);
 			if (is_undef(offset))
 				return 0;
-			if (!inst_meas(obj, obj->base ? obj->base->pos : base,
+			if (!inst_meas(obj, NULL,
+			    obj->base ? obj->base->pos : base,
 			    obj->u.meas.other ? obj->u.meas.other->pos : base,
 			    offset.n))
 				return 0;
@@ -261,7 +265,10 @@ int instantiate(void)
 	int ok;
 
 	inst_start();
+	meas_start();
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
+	if (ok)
+		ok = instantiate_meas();
 	if (ok)
 		inst_commit();
 	else

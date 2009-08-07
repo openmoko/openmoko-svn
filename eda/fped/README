@@ -427,3 +427,45 @@ To delete an object, select it and press Delete. Deleted objects can
 be undeleted by pressing "u". If any other changes have been made
 since deletion, fped may misbehave. If deleting a vector, all items
 that reference it are deleted.
+
+
+Experimental: new-style measurements
+------------------------------------
+
+New-style measurements can measure the distance between various pairs
+of points, not only between points in the same instance and the same
+frame. They operate on the set of points produced during instantiation.
+
+New-style measurements are placed in the root frame after all other
+items.
+
+Known issues:
+- they are currently not dumped and they can't be entered or edited
+  through the GUI
+- 
+
+Syntax:
+
+<type> <from> <op> <to> <offset>
+
+Types:
+- measxy: measure diagonally
+- measx: measure along the X axis
+- measy: measure along the y axis
+
+Note that the type also affects the selection of the points. E.g.,
+measx will select maximum x values.
+
+Operators:
+- A -> B: smallest value of A and smallest B greater than A
+- A <- B: like A -> B, but normal (for offset and text) is inverted
+- A >> B: smallest value of A and greatest value of B
+- A << B: like A -> B, but normal (for offset and text) is inverted
+
+Operands are qualified vector names. Vectors in the root frame are
+referenced by their name. Vectors in other frames are prefixed with
+the name of the frame followed by a dot.
+
+Example:
+
+measx pad.sw -> pad.se 1mm

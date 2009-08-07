@@ -1,12 +1,12 @@
 /* MACHINE-GENERATED ! */
 
 frame pad {
-	_pad_0: vec @(-Px/2, -Py/2)
-	_pad_1: vec .(Px, 0mm)
-	_pad_2: vec _pad_0(0mm, Py)
-	pad "$pad" _pad_1 _pad_2
-	meas _pad_0 _pad_1 -0.1mm
-	meas _pad_0 _pad_2 0.1mm
+	sw: vec @(-Px/2, -Py/2)
+	se: vec sw(Px, 0mm)
+	nw: vec sw(0mm, Py)
+	pad "$pad" se nw
+//	meas sw se -0.1mm
+//	meas sw nw 0.1mm
 }
 
 frame pad_ne {
@@ -41,3 +41,5 @@ __2: vec @(Gx/2, -Gy/2)
 frame pad_sc __0
 frame pad_nw __1
 frame pad_ne __2
+
+measx pad.sw -> pad.se 1mm

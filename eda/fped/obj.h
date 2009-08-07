@@ -84,6 +84,8 @@ struct loop {
 	int initialized;
 };
 
+struct sample;
+
 struct vec {
 	const char *name; /* NULL if anonymous */
 	struct expr *x;
@@ -96,6 +98,9 @@ struct vec {
 
 	/* used when editing */
 	struct frame *frame;
+
+	/* samples for measurements */
+	struct sample *samples;
 };
 
 struct frame {
@@ -147,7 +152,7 @@ struct arc {
 	struct expr *width;
 };
 
-struct meas {
+struct old_meas {
 	struct vec *other; /* NULL if frame origin */
 	struct expr *offset;
 };
@@ -160,7 +165,7 @@ struct obj {
 		struct rect line;
 		struct pad pad;
 		struct arc arc;
-		struct meas meas;
+		struct old_meas meas;
 	} u;
 	struct frame *frame;
 	struct vec *base;

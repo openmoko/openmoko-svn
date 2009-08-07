@@ -18,6 +18,7 @@
 #include "error.h"
 #include "expr.h"
 #include "obj.h"
+#include "meas.h"
 
 
 extern struct expr *expr_result;
@@ -48,11 +49,11 @@ static struct frame *find_frame(const char *name)
 }
 
 
-static struct vec *find_vec(const char *name)
+static struct vec *find_vec(const struct frame *frame, const char *name)
 {
 	struct vec *v;
 
-	for (v = curr_frame->vecs; v; v = v->next)
+	for (v = frame->vecs; v; v = v->next)
 		if (v->name == name)
 			return v;
 	return NULL;
@@ -140,12 +141,20 @@ static struct obj *new_obj(enum obj_type type)
 	struct value *value;
 	struct vec *vec;
 	struct obj *obj;
+	struct meas *meas;
+	enum meas_type mt;
+	struct {
+		int inverted;
+		int max;
+	} mo;
 };
 
 
 %token		START_FPD START_EXPR
 %token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
-%token		TOK_PAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC TOK_MEAS
+%token		TOK_PAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
+%token		TOK_MEAS TOK_MEASXY TOK_MEASX TOK_MEASY
+%token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -155,9 +164,13 @@ static struct obj *new_obj(enum obj_type type)
 %type	<var>	vars var
 %type	<row>	rows
 %type	<value>	row value
-%type	<vec>	vec base
+%type	<vec>	vec base qbase
 %type	<obj>	obj
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
+%type	<meas>	measurements meas
+%type	<str>	opt_string
+%type	<mt>	meas_type
+%type	<mo>	meas_op
 
 %%
 
@@ -191,7 +204,7 @@ part_name:
 		{
 			const char *p;
 
-			if (!*p) {
+			if (!*$2) {
 				yyerrorf("invalid part name");
 				YYABORT;
 			}
@@ -232,6 +245,10 @@ frame_def:
 	;
 
 frame_items:
+	measurements
+		{
+			measurements = $1;
+		}
 	| frame_item frame_items
 	;
 
@@ -248,7 +265,7 @@ frame_item:
 	| vec
 	| LABEL vec
 		{
-			if (find_vec($1)) {
+			if (find_vec(curr_frame, $1)) {
 				yyerrorf("duplicate vector \"%s\"", $1);
 				YYABORT;
 			}
@@ -370,6 +387,7 @@ vec:
 			$$->y = $6;
 			$$->frame = curr_frame;
 			$$->next = NULL;
+			$$->samples = NULL;
 			last_vec = $$;
 			*next_vec = $$;
 			next_vec = &$$->next;
@@ -391,7 +409,7 @@ base:
 		}
 	| ID
 		{
-			$$ = find_vec($1);
+			$$ = find_vec(curr_frame, $1);
 			if (!$$) {
 				yyerrorf("unknown vector \"%s\"", $1);
 				YYABORT;
@@ -460,6 +478,101 @@ obj:
 			if (!$$->u.frame.ref->active_ref)
 				$$->u.frame.ref->active_ref = $$;
 			$$->u.frame.lineno = $<num>3.n;
+		}
+	;
+
+measurements:
+		{
+			$$ = NULL;
+		}
+	| meas measurements
+		{
+			$$ = $1;
+			$$->next = $2;
+		}
+	;
+
+meas:
+	meas_type opt_string qbase meas_op qbase expr
+		{
+			$$ = alloc_type(struct meas);
+			$$->type = $4.max ? $1+3 : $1;
+			$$->label = $2;
+			$$->low = $3;
+			$$->inverted = $4.inverted;
+			$$->high = $5;
+			$$->offset = $6;
+			$$->next = NULL;
+		}
+	;
+
+qbase:
+	ID
+		{
+			$$ = find_vec(root_frame, $1);
+			if (!$$) {
+				yyerrorf("unknown vector \"%s\"", $1);
+				YYABORT;
+			}
+		}
+	| ID '.' ID
+		{
+			const struct frame *frame;
+
+			frame = find_frame($1);
+			$$ = frame ? find_vec(frame, $3) : NULL;
+			if (!$$) {
+				yyerrorf("unknown vector \"%s.%s\"", $1, $3);
+				YYABORT;
+			}
+		}
+	;
+
+meas_type:
+	TOK_MEASXY
+		{
+			$$ = mt_xy_next;
+		}
+	| TOK_MEASX
+		{
+			$$ = mt_x_next;
+		}
+	| TOK_MEASY
+		{
+			$$ = mt_y_next;
+		}
+	;
+
+meas_op:
+	TOK_NEXT
+		{
+			$$.max = 0;
+			$$.inverted = 0;
+		}
+	| TOK_NEXT_INVERTED
+		{
+			$$.max = 0;
+			$$.inverted = 1;
+		}
+	| TOK_MAX
+		{
+			$$.max = 1;
+			$$.inverted = 0;
+		}
+	| TOK_MAX_INVERTED
+		{
+			$$.max = 1;
+			$$.inverted = 1;
+		}
+	;
+
+opt_string:
+		{
+			$$ = NULL;
+		}
+	| STRING
+		{
+			$$ = $1;
 		}
 	;
 
