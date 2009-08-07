@@ -358,7 +358,7 @@ static void vec_op_select(struct inst *self)
 	rect_status(self->base, self->u.rect.end, -1);
 	edit_x(&self->vec->x);
 	edit_y(&self->vec->y);
-	edit_unique_null(&self->vec->name, validate_vec_name, self->vec, 0);
+	edit_unique_null(&self->vec->name, validate_vec_name, self->vec);
 }
 
 
@@ -407,7 +407,7 @@ static void line_op_debug(struct inst *self)
 static void line_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
-	edit_expr(&self->obj->u.line.width, 0);
+	edit_expr(&self->obj->u.line.width);
 }
 
 
@@ -460,7 +460,7 @@ static void rect_op_debug(struct inst *self)
 static void rect_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
-	edit_expr(&self->obj->u.rect.width, 0);
+	edit_expr(&self->obj->u.rect.width);
 }
 
 
@@ -517,7 +517,7 @@ static void pad_op_select(struct inst *self)
 	status_set_type_entry("label =");
 	status_set_name("%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1);
-	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL, 0);
+	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL);
 }
 
 
@@ -575,7 +575,7 @@ static void arc_op_select(struct inst *self)
 	status_set_r("r = %5.2f mm", units_to_mm(self->u.arc.r));
 	status_set_type_entry("width =");
 	status_set_name("%5.2f mm", units_to_mm(self->u.arc.width));
-	edit_expr(&self->obj->u.arc.width, 0);
+	edit_expr(&self->obj->u.arc.width);
 }
 
 
@@ -645,7 +645,7 @@ static void meas_op_select(struct inst *self)
 	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
 	if (!self->obj)
 		return; /* @@@ new-style measurements */
-	edit_expr(&self->obj->u.meas.offset, 0);
+	edit_expr(&self->obj->u.meas.offset);
 }
 
 

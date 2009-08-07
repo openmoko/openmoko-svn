@@ -35,6 +35,7 @@
 #include "icons/meas.xpm"
 #include "icons/pad.xpm"
 #include "icons/point.xpm"
+#include "icons/delete.xpm"
 #include "icons/rect.xpm"
 #include "icons/vec.xpm"
 
@@ -44,6 +45,7 @@
 
 struct tool_ops {
 	void (*tool_selected)(void);
+	void (*click)(struct draw_ctx *ctx, struct coord pos);
 	struct pix_buf *(*drag_new)(struct draw_ctx *ctx, struct inst *from,
 	     struct coord to);
 	int (*end_new_raw)(struct draw_ctx *ctx, struct inst *from,
@@ -83,6 +85,7 @@ static struct vec *new_vec(struct inst *base)
 	vec->base = inst_get_vec(base);
 	vec->next = NULL;
 	vec->frame = active_frame;
+	vec->samples = NULL;
 	for (walk = &active_frame->vecs; *walk; walk = &(*walk)->next);
 	*walk = vec;
 	return vec;
@@ -158,6 +161,27 @@ static struct pix_buf *draw_move_rect_common(struct inst *inst,
 	    min.x, min.y, max.x-min.x, max.y-min.y);
 	return buf;
 }
+
+
+/* ----- delete ------------------------------------------------------------ */
+
+
+static void click_delete(struct draw_ctx *ctx, struct coord pos)
+{
+	inst_deselect();
+	inst_select(ctx, pos);
+	if (selected_inst) {
+		tool_dehover(ctx);
+		inst_delete(selected_inst);
+	}
+	change_world();
+	tool_reset();
+}
+
+
+static struct tool_ops delete_ops = {
+	.click		= click_delete,
+};
 
 
 /* ----- vec --------------------------------------------------------------- */
@@ -707,6 +731,10 @@ int tool_consider_drag(struct draw_ctx *ctx, struct coord pos)
 	assert(!drag.new);
 	assert(!drag.anchors_n);
 	last_canvas_pos = translate(ctx, pos);
+	if (active_ops && active_ops->click) {
+		active_ops->click(ctx, pos);
+		return 0;
+	}
 	curr = inst_find_point(ctx, pos);
 	if (!curr)
 		return 0;
@@ -882,6 +910,16 @@ static GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable,
 }
 
 
+static void tool_separator(GtkWidget *bar)
+{
+	GtkToolItem *item;
+
+	item = gtk_separator_tool_item_new();
+	gtk_separator_tool_item_set_draw(GTK_SEPARATOR_TOOL_ITEM(item), FALSE);
+	gtk_toolbar_insert(GTK_TOOLBAR(bar), item, -1);
+}
+
+
 GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 {
 	GtkWidget *bar;
@@ -893,7 +931,9 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	    GTK_ORIENTATION_VERTICAL);
 
 	ev_point = tool_button(bar, drawable, xpm_point, NULL, NULL);
-	last = tool_button(bar, drawable, xpm_vec, ev_point, &vec_ops);
+	last = tool_button(bar, drawable, xpm_delete, ev_point, &delete_ops);
+	tool_separator(bar);
+	last = tool_button(bar, drawable, xpm_vec, last, &vec_ops);
 	ev_frame = tool_button(bar, drawable, NULL, last, &frame_ops);
 	last = ev_frame;
 	last = tool_button(bar, drawable, xpm_pad, last, &pad_ops);

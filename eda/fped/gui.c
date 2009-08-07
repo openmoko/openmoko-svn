@@ -534,7 +534,7 @@ static void edit_var(struct var *var)
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", var->name);
-	edit_unique(&var->name, validate_var_name, var, 1);
+	edit_unique(&var->name, validate_var_name, var);
 }
 
 
@@ -555,7 +555,7 @@ static void edit_value(struct value *value)
 {
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
-	edit_expr(&value->expr, 1);
+	edit_expr(&value->expr);
 }
 
 
@@ -958,7 +958,7 @@ static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
 		status_set_type_entry("part =");
 		status_set_name("%s", part_name);
-		edit_name(&part_name, validate_part_name, NULL, 1);
+		edit_name(&part_name, validate_part_name, NULL);
 		break;
 	}
 	return TRUE;
@@ -1019,7 +1019,7 @@ static void edit_frame(struct frame *frame)
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", frame->name);
-	edit_unique(&frame->name, validate_frame_name, frame, 1);
+	edit_unique(&frame->name, validate_frame_name, frame);
 }
 
 

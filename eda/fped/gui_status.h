@@ -21,12 +21,11 @@
 
 
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
-    void *ctx, int focus);
+    void *ctx);
 void edit_unique_null(const char **s, int (*validate)(const char *s, void *ctx),
-    void *ctx, int focus);
-void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx,
-    int focus);
-void edit_expr(struct expr **expr, int focus);
+    void *ctx);
+void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx);
+void edit_expr(struct expr **expr);
 void edit_x(struct expr **expr);
 void edit_y(struct expr **expr);
 void edit_nothing(void);

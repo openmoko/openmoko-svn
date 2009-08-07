@@ -399,7 +399,6 @@ Space	reset user coordinates
 .	cursor position to screen center (like middle click)
 *	zoom and center to extents
 #	zoom and center to currently active frame instance
-Delete	delete the currently selected object
 U	undelete the previously deleted object
 
 
