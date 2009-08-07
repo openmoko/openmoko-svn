@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "util.h"
 #include "coord.h"
@@ -27,10 +28,21 @@
 #include "gui_status.h"
 
 
-struct edit_ops {
-	int (*changed)(GtkWidget *widget, const char *s, void *ctx);
-	int (*activate)(GtkWidget *widget, const char *s, void *ctx);
+enum edit_status {
+	es_unchanged,
+	es_good,
+	es_bad,
 };
+
+
+struct edit_ops {
+	char *(*retrieve)(void *ctx);
+	enum edit_status (*status)(const char *s, void *ctx);
+	void (*store)(const char *s, void *ctx);
+};
+
+static GtkWidget *open_edits = NULL;
+static GtkWidget *last_edit = NULL;
 
 
 /* ----- setter functions -------------------------------------------------- */
@@ -109,16 +121,74 @@ static void entry_color(GtkWidget *widget, const char *color)
 /* ----- helper functions -------------------------------------------------- */
 
 
-static void setup_edit(GtkWidget *widget, const char *s,
-    struct edit_ops *ops, void *ctx, int focus)
+static void reset_edit(GtkWidget *widget)
 {
+	struct edit_ops *ops;
+	void *ctx;
+	char *s;
+
+	ops = gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
+	ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+	assert(ops);
+	s = ops->retrieve(ctx);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", NULL);
 	gtk_entry_set_text(GTK_ENTRY(widget), s);
+	free(s);
 	entry_color(widget, COLOR_EDIT_ASIS);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
+}
+
+
+static void reset_edits(void)
+{
+	GtkWidget *edit;
+
+	for (edit = open_edits; edit;
+	    edit = gtk_object_get_data(GTK_OBJECT(edit), "edit-next"))
+		reset_edit(edit);
+	gtk_widget_grab_focus(GTK_WIDGET(open_edits));
+}
+
+
+static gboolean edit_key_press_event(GtkWidget *widget, GdkEventKey *event,
+    gpointer data)
+{
+	GtkWidget *next = gtk_object_get_data(GTK_OBJECT(widget), "edit-next");
+
+	switch (event->keyval) {
+	case GDK_Tab:
+		gtk_widget_grab_focus(GTK_WIDGET(next ? next : open_edits));
+		return TRUE;
+	case GDK_Escape:
+		reset_edits();
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+
+static void setup_edit(GtkWidget *widget, struct edit_ops *ops, void *ctx,
+    int focus)
+{
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-ctx", ctx);
+	gtk_object_set_data(GTK_OBJECT(widget), "edit-next", NULL);
+
+	reset_edit(widget);
+
 	if (focus)
 		gtk_widget_grab_focus(GTK_WIDGET(widget));
 	gtk_widget_show(widget);
-	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
-	gtk_object_set_data(GTK_OBJECT(widget), "edit-ctx", ctx);
+
+	g_signal_connect(G_OBJECT(widget), "key_press_event",
+	    G_CALLBACK(edit_key_press_event), open_edits);
+
+	if (last_edit)
+		gtk_object_set_data(GTK_OBJECT(last_edit), "edit-next", widget);
+	else
+		open_edits = widget;
+	last_edit = widget;
 }
 
 
@@ -132,37 +202,41 @@ struct edit_unique_ctx {
 };
 
 
-static int unique_changed(GtkWidget *widget, const char *s, void *ctx)
-{
-	const struct edit_unique_ctx *unique_ctx = ctx;
-	int ok;
+/*
+ * Handle NULL so that we can also use it for unique_null
+ */
 
-	if (!strcmp(s, *unique_ctx->s)) {
-		entry_color(widget, COLOR_EDIT_ASIS);
-		return 1;
-	}
-	ok = !unique_ctx->validate || unique_ctx->validate(s, unique_ctx->ctx);
-	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
-	return ok;
+static char *unique_retrieve(void *ctx)
+{
+	struct edit_unique_ctx *unique_ctx = ctx;
+
+	return stralloc(*unique_ctx->s ? *unique_ctx->s : "");
 }
 
 
-static int unique_activate(GtkWidget *widget, const char *s, void *ctx)
+static enum edit_status unique_status(const char *s, void *ctx)
 {
 	const struct edit_unique_ctx *unique_ctx = ctx;
 
-	if (strcmp(s, *unique_ctx->s) &&
-	     unique_ctx->validate && !unique_ctx->validate(s, unique_ctx->ctx))
-		return 0;
+	if (!strcmp(s, *unique_ctx->s))
+		return es_unchanged;
+	return !unique_ctx->validate ||
+	    unique_ctx->validate(s, unique_ctx->ctx) ? es_good : es_bad;
+}
+
+
+static void unique_store(const char *s, void *ctx)
+{
+	const struct edit_unique_ctx *unique_ctx = ctx;
+
 	*unique_ctx->s = unique(s);
-	entry_color(widget, COLOR_EDIT_ASIS);
-	return 1;
 }
 
 
 static struct edit_ops edit_ops_unique = {
-	.changed	= unique_changed,
-	.activate	= unique_activate,
+	.retrieve	= unique_retrieve,
+	.status		= unique_status,
+	.store		= unique_store,
 };
 
 
@@ -174,51 +248,41 @@ void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	setup_edit(status_entry, *s, &edit_ops_unique, &unique_ctx, focus);
+	setup_edit(status_entry, &edit_ops_unique, &unique_ctx, focus);
 }
 
 
 /* ----- identifier fields with NULL --------------------------------------- */
 
 
-static int unique_null_changed(GtkWidget *widget, const char *s, void *ctx)
+static enum edit_status unique_null_status(const char *s, void *ctx)
 {
 	const struct edit_unique_ctx *unique_ctx = ctx;
-	int ok;
 
-	if (!strcmp(s, *unique_ctx->s ? *unique_ctx->s : "")) {
-		entry_color(widget, COLOR_EDIT_ASIS);
-		return 1;
-	}
-	ok = !*s;
-	if (!ok)
-		ok = !unique_ctx->validate ||
-		     unique_ctx->validate(s, unique_ctx->ctx);
-	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
-	return ok;
+	if (!strcmp(s, *unique_ctx->s ? *unique_ctx->s : ""))
+		return es_unchanged;
+	if (!*s)
+		return es_good;
+	return !unique_ctx->validate ||
+	    unique_ctx->validate(s, unique_ctx->ctx) ? es_good : es_bad;
 }
 
 
-static int unique_null_activate(GtkWidget *widget, const char *s, void *ctx)
+static void unique_null_store(const char *s, void *ctx)
 {
 	const struct edit_unique_ctx *unique_ctx = ctx;
 
 	if (!*s)
-		 *unique_ctx->s = NULL;
-	else {
-		if (unique_ctx->validate &&
-		    !unique_ctx->validate(s, unique_ctx->ctx))
-			return 0;
+		*unique_ctx->s = NULL;
+	else
 		*unique_ctx->s = unique(s);
-	}
-	entry_color(widget, COLOR_EDIT_ASIS);
-	return 1;
 }
 
 
 static struct edit_ops edit_ops_null_unique = {
-	.changed	= unique_null_changed,
-	.activate	= unique_null_activate,
+	.retrieve	= unique_retrieve,
+	.status		= unique_null_status,
+	.store		= unique_null_store,
 };
 
 
@@ -230,8 +294,7 @@ void edit_unique_null(const char **s,
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	setup_edit(status_entry, *s ? *s : "",
-	    &edit_ops_null_unique, &unique_ctx, focus);
+	setup_edit(status_entry, &edit_ops_null_unique, &unique_ctx, focus);
 }
 
 
@@ -245,37 +308,38 @@ struct edit_name_ctx {
 };
 
 
-static int name_changed(GtkWidget *widget, const char *s, void *ctx)
+static char *name_retrieve(void *ctx)
 {
-	const struct edit_name_ctx *name_ctx = ctx;
-	int ok;
+	struct edit_name_ctx *name_ctx = ctx;
 
-	if (!strcmp(s, *name_ctx->s)) {
-		entry_color(widget, COLOR_EDIT_ASIS);
-		return 1;
-	}
-	ok = !name_ctx->validate || name_ctx->validate(s, name_ctx->ctx);
-	entry_color(widget, ok ? COLOR_EDIT_GOOD : COLOR_EDIT_BAD);
-	return ok;
+	return stralloc(*name_ctx->s ? *name_ctx->s : "");
 }
 
 
-static int name_activate(GtkWidget *widget, const char *s, void *ctx)
+static enum edit_status name_status(const char *s, void *ctx)
 {
 	const struct edit_name_ctx *name_ctx = ctx;
 
-	if (name_ctx->validate && !name_ctx->validate(s, name_ctx->ctx))
-		return 0;
+	if (!strcmp(s, *name_ctx->s))
+		return es_unchanged;
+	return !name_ctx->validate || name_ctx->validate(s, name_ctx->ctx) ?
+	    es_good : es_bad;
+}
+
+
+static void name_store(const char *s, void *ctx)
+{
+	const struct edit_name_ctx *name_ctx = ctx;
+
 	free(*name_ctx->s);
 	*name_ctx->s = stralloc(s);
-	entry_color(widget, COLOR_EDIT_ASIS);
-	return 1;
 }
 
 
 static struct edit_ops edit_ops_name = {
-	.changed	= name_changed,
-	.activate	= name_activate,
+	.retrieve	= name_retrieve,
+	.status		= name_status,
+	.store		= name_store,
 };
 
 
@@ -287,7 +351,7 @@ void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx,
 	name_ctx.s = s;
 	name_ctx.validate = validate;
 	name_ctx.ctx = ctx;
-	setup_edit(status_entry, *s, &edit_ops_name, &name_ctx, focus);
+	setup_edit(status_entry, &edit_ops_name, &name_ctx, focus);
 }
 
 
@@ -301,50 +365,49 @@ static struct expr *try_parse_expr(const char *s)
 }
 
 
-static int expr_changed(GtkWidget *widget, const char *s, void *ctx)
+static char *expr_retrieve(void *ctx)
+{
+	struct expr **expr = ctx;
+
+	return unparse(*expr);
+}
+
+
+static enum edit_status expr_status(const char *s, void *ctx)
 {
 	struct expr *expr;
 
 	expr = try_parse_expr(s);
-	if (!expr) {
-		entry_color(widget, COLOR_EDIT_BAD);
-		return 0;
-	}
-	entry_color(widget, COLOR_EDIT_GOOD);
+	if (!expr)
+		return es_bad;
 	free_expr(expr);
-	return 1;
+	return es_good;
 }
 
 
-static int expr_activate(GtkWidget *widget, const char *s, void *ctx)
+static void expr_store(const char *s, void *ctx)
 {
 	struct expr **anchor = ctx;
 	struct expr *expr;
 
 	expr = try_parse_expr(s);
-	if (!expr)
-		return 0;
+	assert(expr);
 	if (*anchor)
 		free_expr(*anchor);
 	*anchor = expr;
-	entry_color(widget, COLOR_EDIT_ASIS);
-	return 1;
 }
 
 
 static struct edit_ops edit_ops_expr = {
-	.changed	= expr_changed,
-	.activate	= expr_activate,
+	.retrieve	= expr_retrieve,
+	.status		= expr_status,
+	.store		= expr_store,
 };
 
 
 static void edit_any_expr(GtkWidget *widget, struct expr **expr, int focus)
 {
-	char *s;
-
-	s = unparse(*expr);
-	setup_edit(widget, s, &edit_ops_expr, expr, focus);
-	free(s);
+	setup_edit(widget, &edit_ops_expr, expr, focus);
 }
 
 
@@ -369,16 +432,53 @@ void edit_y(struct expr **expr)
 /* ----- text entry -------------------------------------------------------- */
 
 
+static enum edit_status get_status(GtkWidget *widget)
+{
+	struct edit_ops *ops;
+	void *ctx;
+	const char *s;
+
+	ops = gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
+	if (!ops)
+		return es_unchanged;
+	ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+	s = gtk_entry_get_text(GTK_ENTRY(widget));
+	return ops->status(s, ctx);
+}
+
+
+static void set_edit(GtkWidget *widget)
+{
+	struct edit_ops *ops;
+	void *ctx;
+	const char *s;
+
+	ops = gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
+	if (!ops)
+		return;
+	ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+	s = gtk_entry_get_text(GTK_ENTRY(widget));
+	if (ops->store)
+		ops->store(s, ctx);
+}
+
+
 static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
     gpointer data)
 {
-	struct edit_ops *ops =
-	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
-	void *ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
-
-	if (ops && ops->changed)
-		ops->changed(widget, gtk_entry_get_text(GTK_ENTRY(widget)),
-		    ctx);
+	switch (get_status(widget)) {
+	case es_unchanged:
+		entry_color(widget, COLOR_EDIT_ASIS);
+		break;
+	case es_good:
+		entry_color(widget, COLOR_EDIT_GOOD);
+		break;
+	case es_bad:
+		entry_color(widget, COLOR_EDIT_BAD);
+		break;
+	default:
+		abort();
+	}
 	return TRUE;
 }
 
@@ -386,16 +486,30 @@ static gboolean changed(GtkWidget *widget, GdkEventMotion *event,
 static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
     gpointer data)
 {
-	struct edit_ops *ops =
-	    gtk_object_get_data(GTK_OBJECT(widget), "edit-ops");
-	void *ctx = gtk_object_get_data(GTK_OBJECT(widget), "edit-ctx");
+	GtkWidget *edit;
+	enum edit_status status;
+	int unchanged = 1;
 
-	if (ops && ops->activate)
-		if (ops->activate(widget,
-		    gtk_entry_get_text(GTK_ENTRY(widget)), ctx)) {
-			inst_deselect();
-			change_world();
+	for (edit = open_edits; edit;
+	    edit = gtk_object_get_data(GTK_OBJECT(edit), "edit-next")) {
+		status = get_status(edit);
+		if (status == es_bad)
+			return TRUE;
+		if (status == es_good)
+			unchanged = 0;
+	}
+	if (unchanged)
+		return TRUE;
+	for (edit = open_edits; edit;
+	    edit = gtk_object_get_data(GTK_OBJECT(edit), "edit-next"))
+{
+		if (get_status(edit) == es_good) {
+			entry_color(edit, COLOR_EDIT_ASIS);
+			set_edit(edit);
 		}
+}
+	inst_deselect();
+	change_world();
 	return TRUE;
 }
 
@@ -405,6 +519,8 @@ void edit_nothing(void)
 	gtk_widget_hide(status_entry);
 	gtk_widget_hide(status_entry_x);
 	gtk_widget_hide(status_entry_y);
+	open_edits = NULL;
+	last_edit = NULL;
 }
 
 

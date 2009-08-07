@@ -356,9 +356,9 @@ static void vec_op_select(struct inst *self)
 	status_set_type_entry("ref =");
 	status_set_name("%s", self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.rect.end, -1);
-	edit_unique_null(&self->vec->name, validate_vec_name, self->vec, 0);
 	edit_x(&self->vec->x);
 	edit_y(&self->vec->y);
+	edit_unique_null(&self->vec->name, validate_vec_name, self->vec, 0);
 }
 
 
