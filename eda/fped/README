@@ -422,10 +422,10 @@ To change a point of an object, select the object, then drag the point
 to its new location. To edit the object's parameters, select it and
 make the changes in the input area at the bottom.
 
-To delete an object, select it and press Delete. Deleted objects can
-be undeleted by pressing "u". If any other changes have been made
-since deletion, fped may misbehave. If deleting a vector, all items
-that reference it are deleted.
+To delete an object, select the delete tool and click on the object.
+Deleted objects can be undeleted by pressing "u". If any other changes
+have been made since deletion, fped may misbehave. If deleting a vector,
+all items that reference it are deleted as well.
 
 
 Experimental: new-style measurements

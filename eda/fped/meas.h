@@ -17,6 +17,9 @@
 #include "obj.h"
 
 
+typedef int (*lt_op_type)(struct coord a, struct coord b);
+
+
 struct meas {
 	enum meas_type {
 		mt_xy_next,
@@ -35,9 +38,20 @@ struct meas {
 	struct meas *next;
 };
 
+struct sample;
+
 
 extern struct meas *measurements;
 
+
+int lt_x(struct coord a, struct coord b);
+int lt_y(struct coord a, struct coord b);
+int lt_xy(struct coord a, struct coord b);
+
+struct coord meas_find_min(lt_op_type lt, const struct sample *s);
+struct coord meas_find_next(lt_op_type lt, const struct sample *s,
+    struct coord ref);
+struct coord meas_find_max(lt_op_type lt, const struct sample *s);
 
 void meas_start(void);
 void meas_post(struct vec *vec, struct coord pos);

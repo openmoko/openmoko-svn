@@ -114,6 +114,8 @@ void inst_commit(void);
 void inst_revert(void);
 
 void inst_draw(struct draw_ctx *ctx);
+void inst_highlight_vecs(struct draw_ctx *ctx, 
+    int (*pick)(struct inst *inst, void *user), void *user);
 struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);

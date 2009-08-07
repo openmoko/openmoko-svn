@@ -22,6 +22,7 @@
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_inst.h"
+#include "gui_canvas.h"
 #include "gui_status.h"
 #include "gui.h"
 #include "gui_tools.h"
@@ -33,6 +34,8 @@
 #include "icons/frame_ready.xpm"
 #include "icons/line.xpm"
 #include "icons/meas.xpm"
+#include "icons/meas_x.xpm"
+#include "icons/meas_y.xpm"
 #include "icons/pad.xpm"
 #include "icons/point.xpm"
 #include "icons/delete.xpm"
@@ -45,6 +48,7 @@
 
 struct tool_ops {
 	void (*tool_selected)(void);
+	void (*tool_deselected)(void);
 	void (*click)(struct draw_ctx *ctx, struct coord pos);
 	struct pix_buf *(*drag_new)(struct draw_ctx *ctx, struct inst *from,
 	     struct coord to);
@@ -517,7 +521,59 @@ static int end_new_meas(struct draw_ctx *ctx,
 }
 
 
+static int meas_x_pick_vec(struct inst *inst, void *ctx)
+{
+	struct vec *vec = inst->vec;
+	struct coord min;
+
+	if (!vec->samples)
+		return 0;
+	min = meas_find_min(lt_xy, vec->samples);
+	return inst->u.rect.end.x == min.x && inst->u.rect.end.y == min.y;
+}
+
+
+static void highlight_vecs(struct draw_ctx *ctx)
+{
+	inst_highlight_vecs(ctx, meas_x_pick_vec, NULL);
+}
+
+
+static void tool_selected_meas_x(void)
+{
+	highlight = highlight_vecs;
+	redraw();
+}
+
+
+static void tool_selected_meas_y(void)
+{
+	highlight = NULL;
+	redraw();
+}
+
+
+static void tool_deselected_meas(void)
+{
+	highlight = NULL;
+	redraw();
+}
+
+
 static struct tool_ops meas_ops = {
+	.drag_new	= drag_new_line,
+	.end_new	= end_new_meas,
+};
+
+static struct tool_ops meas_ops_x = {
+	.tool_selected	= tool_selected_meas_x,
+	.tool_deselected= tool_deselected_meas,
+	.drag_new	= drag_new_line,
+	.end_new	= end_new_meas,
+};
+static struct tool_ops meas_ops_y = {
+	.tool_selected	= tool_selected_meas_y,
+	.tool_deselected= tool_deselected_meas,
 	.drag_new	= drag_new_line,
 	.end_new	= end_new_meas,
 };
@@ -828,6 +884,8 @@ static void tool_select(GtkWidget *evbox, struct tool_ops *ops)
 	GdkColor col;
 
 	if (active_tool) {
+		if (active_ops && active_ops->tool_deselected)
+			active_ops->tool_deselected();
 		col = get_color(TOOL_UNSELECTED);
 		gtk_widget_modify_bg(active_tool, GTK_STATE_NORMAL, &col);
 		active_tool = NULL;
@@ -940,7 +998,10 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	last = tool_button(bar, drawable, xpm_line, last, &line_ops);
 	last = tool_button(bar, drawable, xpm_rect, last, &rect_ops);
 	last = tool_button(bar, drawable, xpm_circ, last, &circ_ops);
+	tool_separator(bar);
 	last = tool_button(bar, drawable, xpm_meas, last, &meas_ops);
+	last = tool_button(bar, drawable, xpm_meas_x, last, &meas_ops_x);
+	last = tool_button(bar, drawable, xpm_meas_y, last, &meas_ops_y);
 
 	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame));
 	frame_image_locked =

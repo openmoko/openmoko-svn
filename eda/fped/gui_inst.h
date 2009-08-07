@@ -50,6 +50,7 @@ void gui_draw_arc(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_meas(struct inst *self, struct draw_ctx *ctx);
 void gui_draw_frame(struct inst *self, struct draw_ctx *ctx);
 
+void gui_highlight_vec(struct inst *self, struct draw_ctx *ctx);
 void gui_hover_vec(struct inst *self, struct draw_ctx *ctx);
 void gui_hover_frame(struct inst *self, struct draw_ctx *ctx);
 

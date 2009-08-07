@@ -75,25 +75,25 @@ void meas_post(struct vec *vec, struct coord pos)
 }
 
 
-static int lt_x(struct coord a, struct coord b)
+int lt_x(struct coord a, struct coord b)
 {
 	return a.x < b.x;
 }
 
 
-static int lt_y(struct coord a, struct coord b)
+int lt_y(struct coord a, struct coord b)
 {
 	return a.y < b.y;
 }
 
 
-static int lt_xy(struct coord a, struct coord b)
+int lt_xy(struct coord a, struct coord b)
 {
 	return a.y < b.y || (a.y == b.y && a.x < b.x);
 }
 
 
-static int (*lt_op[mt_n])(struct coord a, struct coord b) = {
+static lt_op_type lt_op[mt_n] = {
 	lt_xy,
 	lt_x,
 	lt_y,
@@ -109,7 +109,7 @@ static int is_next[mt_n] = {
 };
 
 
-static int better_next(int (*lt)(struct coord a, struct coord b),
+static int better_next(lt_op_type lt,
     struct coord a0, struct coord b0, struct coord b)
 {
 	/* if we don't have any suitable point A0 < B0 yet, use this one */
@@ -143,12 +143,64 @@ static int better_next(int (*lt)(struct coord a, struct coord b),
 }
 
 
+/*
+ * In order to obtain a stable order, we sort points equal on the measured
+ * coordinate also by xy:
+ *
+ * if (*a < a0) use *a
+ * else if (*a == a0 && *a <xy a0) use *a
+ */
+
+struct coord meas_find_min(lt_op_type lt, const struct sample *s)
+{
+	struct coord min;
+
+	min = s->pos;
+	while (s) {
+		if (lt(s->pos, min) ||
+		    (!lt(min, s->pos) && lt_xy(s->pos, min)))
+			min = s->pos;
+		s = s->next;
+	}
+	return min;
+}
+
+
+struct coord meas_find_next(lt_op_type lt, const struct sample *s,
+    struct coord ref)
+{
+	struct coord next;
+
+	next = s->pos;
+	while (s) {
+		if (better_next(lt, ref, next, s->pos))
+			next = s->pos;
+		s = s->next;
+	}
+	return next;
+}
+
+
+struct coord meas_find_max(lt_op_type lt, const struct sample *s)
+{
+	struct coord max;
+
+	max = s->pos;
+	while (s) {
+		if (lt(max, s->pos) ||
+		    (!lt(s->pos, max) && lt_xy(max, s->pos)))
+			max = s->pos;
+		s = s->next;
+	}
+	return max;
+}
+
+
 int instantiate_meas(void)
 {
 	struct meas *meas;
 	struct coord a0, b0;
-	const struct sample *a, *b;
-	int (*lt)(struct coord a, struct coord b);
+	lt_op_type lt;
 	struct num offset;
 
 	for (meas = measurements; meas; meas = meas->next) {
@@ -156,31 +208,11 @@ int instantiate_meas(void)
 			continue;
 
 		lt = lt_op[meas->type];
-
-		/*
-		 * In order to obtain a stable order, we sort points equal on
-		 * the measured coordinate also by xy:
-		 *
-		 * if (*a < a0) use *a
-		 * else if (*a == a0 && *a <xy a0) use *a
-		 */
-		a0 = meas->low->samples->pos;
-		for (a = meas->low->samples; a; a = a->next)
-			if (lt(a->pos, a0) ||
-			    (!lt(a0, a->pos) && lt_xy(a->pos, a0)))
-				a0 = a->pos;
-
-		b0 = meas->high->samples->pos;
-		for (b = meas->high->samples; b; b = b->next) {
-			if (is_next[meas->type]) {
-				if (better_next(lt, a0, b0, b->pos))
-					b0 = b->pos;
-			} else {
-				if (lt(b0, b->pos) ||
-				    (!lt(b->pos, b0) && lt_xy(b0, b->pos)))
-					b0 = b->pos;
-			}
-		}
+		a0 = meas_find_min(lt, meas->low->samples);
+		if (is_next[meas->type])
+			b0 = meas_find_next(lt, meas->high->samples, a0);
+		else
+			b0 = meas_find_max(lt, meas->high->samples);
 
 		offset = eval_unit(meas->offset, root_frame);
 		if (is_undef(offset))

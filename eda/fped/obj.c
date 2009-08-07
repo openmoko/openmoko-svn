@@ -32,6 +32,7 @@ char *part_name = NULL;
 struct frame *frames = NULL;
 struct frame *root_frame = NULL;
 struct frame *active_frame = NULL;
+int instantiation_ok;
 
 
 static int generate_frame(struct frame *frame, struct coord base,
@@ -273,5 +274,6 @@ int instantiate(void)
 		inst_commit();
 	else
 		inst_revert();
+	instantiation_ok = ok;
 	return ok;
 }

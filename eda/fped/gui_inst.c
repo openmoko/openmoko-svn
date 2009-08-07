@@ -159,6 +159,14 @@ void gui_hover_vec(struct inst *self, struct draw_ctx *ctx)
 }
 
 
+void gui_highlight_vec(struct inst *self, struct draw_ctx *ctx)
+{
+	struct coord center = translate(ctx, self->u.rect.end);
+
+	draw_circle(DA, gc_highlight, FALSE, center.x, center.y, VEC_EYE_R);
+}
+
+
 void gui_draw_vec(struct inst *self, struct draw_ctx *ctx)
 {
 	struct coord from = translate(ctx, self->base);

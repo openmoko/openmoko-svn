@@ -26,6 +26,8 @@
 #include "gui_canvas.h"
 
 
+void (*highlight)(struct draw_ctx *ctx) = NULL;
+
 static struct draw_ctx ctx;
 static struct coord curr_pos;
 static struct coord user_origin = { 0, 0 };
@@ -101,9 +103,12 @@ void redraw(void)
 
 	aw = ctx.widget->allocation.width;
 	ah = ctx.widget->allocation.height;
-	gdk_draw_rectangle(ctx.widget->window, gc_bg, TRUE, 0, 0, aw, ah);
+	gdk_draw_rectangle(ctx.widget->window,
+	    instantiation_ok ? gc_bg : gc_bg_error, TRUE, 0, 0, aw, ah);
 
 	inst_draw(&ctx);
+	if (highlight)
+		highlight(&ctx);
 	tool_redraw(&ctx);
 }
 

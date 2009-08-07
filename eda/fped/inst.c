@@ -841,6 +841,17 @@ void inst_draw(struct draw_ctx *ctx)
 }
 
 
+void inst_highlight_vecs(struct draw_ctx *ctx,
+    int (*pick)(struct inst *inst, void *user), void *user)
+{
+	struct inst *inst;
+
+	for (inst = insts[ip_vec]; inst; inst = inst->next)
+		if (pick(inst, user))
+			gui_highlight_vec(inst, ctx);
+}
+
+
 struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
     struct coord pos, int i)
 {

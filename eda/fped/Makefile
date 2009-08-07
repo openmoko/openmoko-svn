@@ -17,7 +17,7 @@ OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        gui_tools.o
 
 XPMS = point.xpm delete.xpm vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \
-       line.xpm rect.xpm pad.xpm circ.xpm meas.xpm
+       line.xpm rect.xpm pad.xpm circ.xpm meas.xpm meas_x.xpm meas_y.xpm
 
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
 LIBS_GTK = `pkg-config --libs gtk+-2.0`

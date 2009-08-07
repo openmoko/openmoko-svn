@@ -17,6 +17,14 @@
 #include <gtk/gtk.h>
 
 
+/*
+ * "highlight" is invoked at the end of each redraw, for optional highlighting
+ * of objects.
+ */
+
+extern void (*highlight)(struct draw_ctx *ctx);
+
+
 void redraw(void);
 
 GtkWidget *make_canvas(void);
