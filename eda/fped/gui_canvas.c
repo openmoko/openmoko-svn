@@ -22,7 +22,7 @@
 #include "gui_inst.h"
 #include "gui_style.h"
 #include "gui_status.h"
-#include "gui_tools.h"
+#include "gui_tool.h"
 #include "gui.h"
 #include "gui_canvas.h"
 

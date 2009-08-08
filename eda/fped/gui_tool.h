@@ -1,5 +1,5 @@
 /*
- * gui_tools.h - GUI, tool bar
+ * gui_tool.h - GUI, tool bar
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -11,8 +11,8 @@
  */
 
 
-#ifndef GUI_TOOLS_H
-#define	GUI_TOOLS_H
+#ifndef GUI_TOOL_H
+#define	GUI_TOOL_H
 
 #include <gtk/gtk.h>
 
@@ -75,4 +75,4 @@ void tool_reset(void);
 
 GtkWidget *gui_setup_tools(GdkDrawable *drawable);
 
-#endif /* !GUI_TOOLS_H */
+#endif /* !GUI_TOOL_H */

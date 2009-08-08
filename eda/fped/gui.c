@@ -20,7 +20,7 @@
 #include "gui_style.h"
 #include "gui_status.h"
 #include "gui_canvas.h"
-#include "gui_tools.h"
+#include "gui_tool.h"
 #include "gui_frame.h"
 #include "gui.h"
 

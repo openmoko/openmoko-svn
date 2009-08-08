@@ -1,5 +1,5 @@
 /*
- * gui_tools.c - GUI, tool bar
+ * gui_tool.c - GUI, tool bar
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -27,7 +27,7 @@
 #include "gui_status.h"
 #include "gui.h"
 #include "gui_meas.h"
-#include "gui_tools.h"
+#include "gui_tool.h"
 
 
 #include "icons/circ.xpm"

@@ -22,7 +22,7 @@
 #include "delete.h"
 #include "gui_util.h"
 #include "gui_status.h"
-#include "gui_tools.h"
+#include "gui_tool.h"
 #include "gui_inst.h"
 #include "inst.h"
 

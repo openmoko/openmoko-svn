@@ -14,7 +14,7 @@
 #include "util.h"
 #include "meas.h"
 #include "gui_canvas.h"
-#include "gui_tools.h"
+#include "gui_tool.h"
 #include "gui_meas.h"
 
 
