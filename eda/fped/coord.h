@@ -60,6 +60,12 @@ static inline double units_to_kicad(unit_type u)
 }
 
 
+static inline int coord_eq(struct coord a, struct coord b)
+{
+	return a.x == b.x && a.y == b.y;
+}
+
+
 double mm_to_mil(double mm, int exponent);
 double mil_to_mm(double mil, int exponent);
 

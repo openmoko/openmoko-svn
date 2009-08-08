@@ -445,7 +445,7 @@ Known issues:
 
 Syntax:
 
-<type> [<label>] <from> <op> <to> <offset>
+<type> [<label>] <from> <op> <to> [<offset>]
 
 Types:
 - measxy: measure diagonally

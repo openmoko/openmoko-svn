@@ -115,6 +115,10 @@ void inst_revert(void);
 void inst_draw(void);
 void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user),
      void *user);
+struct inst *inst_find_vec(struct coord pos, 
+    int (*pick)(struct inst *inst, void *user), void *user);
+struct inst *insts_ip_vec(void);
+
 struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
 struct pix_buf *inst_hover(struct inst *inst);

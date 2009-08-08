@@ -493,7 +493,7 @@ measurements:
 	;
 
 meas:
-	meas_type opt_string qbase meas_op qbase expr
+	meas_type opt_string qbase meas_op qbase opt_expr
 		{
 			$$ = alloc_type(struct meas);
 			$$->type = $4.max ? $1+3 : $1;

@@ -75,6 +75,9 @@ void meas_post(struct vec *vec, struct coord pos)
 }
 
 
+/* ----- lt operators ------------------------------------------------------ */
+
+
 int lt_x(struct coord a, struct coord b)
 {
 	return a.x < b.x;
@@ -93,6 +96,9 @@ int lt_xy(struct coord a, struct coord b)
 }
 
 
+/* ----- measurement type map ---------------------------------------------- */
+
+
 static lt_op_type lt_op[mt_n] = {
 	lt_xy,
 	lt_x,
@@ -109,8 +115,11 @@ static int is_next[mt_n] = {
 };
 
 
+/* ----- search functions -------------------------------------------------- */
+
+
 static int better_next(lt_op_type lt,
-    struct coord a0, struct coord b0, struct coord b)
+    struct coord a0, struct coord b0, struct coord b, int recursing)
 {
 	/* if we don't have any suitable point A0 < B0 yet, use this one */
 	if (!lt(a0, b0))
@@ -133,12 +142,12 @@ static int better_next(lt_op_type lt,
 	 * coordinate a chance. This gives us a stable sort order and it
 	 * makes meas/measx/measy usually select the same point.
 	 */
-	if (lt == lt_xy)
+	if (lt == lt_xy || recursing)
 		return 0;
 	if (lt == lt_x)
-		return better_next(lt_y, a0, b0, b);
+		return better_next(lt_y, a0, b0, b, 1);
 	if (lt == lt_y)
-		return better_next(lt_x, a0, b0, b);
+		return better_next(lt_x, a0, b0, b, 1);
 	abort();
 }
 
@@ -173,7 +182,7 @@ struct coord meas_find_next(lt_op_type lt, const struct sample *s,
 
 	next = s->pos;
 	while (s) {
-		if (better_next(lt, ref, next, s->pos))
+		if (better_next(lt, ref, next, s->pos, 0))
 			next = s->pos;
 		s = s->next;
 	}
@@ -196,6 +205,9 @@ struct coord meas_find_max(lt_op_type lt, const struct sample *s)
 }
 
 
+/* ----- instantiation ----------------------------------------------------- */
+
+
 int instantiate_meas(void)
 {
 	struct meas *meas;
@@ -214,9 +226,13 @@ int instantiate_meas(void)
 		else
 			b0 = meas_find_max(lt, meas->high->samples);
 
-		offset = eval_unit(meas->offset, root_frame);
-		if (is_undef(offset))
-			return 0;
+		if (!meas->offset)
+			offset.n = 0;
+		else {
+			offset = eval_unit(meas->offset, root_frame);
+			if (is_undef(offset))
+				return 0;
+		}
 		inst_meas(NULL, meas,
 		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0,
 		    offset.n);

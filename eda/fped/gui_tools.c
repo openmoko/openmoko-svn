@@ -26,6 +26,7 @@
 #include "gui_canvas.h"
 #include "gui_status.h"
 #include "gui.h"
+#include "gui_meas.h"
 #include "gui_tools.h"
 
 
@@ -42,16 +43,6 @@
 #include "icons/delete.xpm"
 #include "icons/rect.xpm"
 #include "icons/vec.xpm"
-
-
-struct tool_ops {
-	void (*tool_selected)(void);
-	void (*tool_deselected)(void);
-	void (*click)(struct coord pos);
-	struct pix_buf *(*drag_new)(struct inst *from, struct coord to);
-	int (*end_new_raw)(struct inst *from, struct coord to);
-	int (*end_new)(struct inst *from, struct inst *to);
-};
 
 
 static GtkWidget *ev_point, *ev_frame;
@@ -109,7 +100,7 @@ static struct obj *new_obj(enum obj_type type, struct inst *base)
 /* ----- shared functions -------------------------------------------------- */
 
 
-static struct pix_buf *draw_move_line_common(struct inst *inst,
+struct pix_buf *draw_move_line_common(struct inst *inst,
     struct coord end, struct coord pos, int i)
 {
 	struct coord from, to;
@@ -270,7 +261,7 @@ static struct tool_ops vec_ops = {
 /* ----- line -------------------------------------------------------------- */
 
 
-static struct pix_buf *drag_new_line(struct inst *from, struct coord to)
+struct pix_buf *drag_new_line(struct inst *from, struct coord to)
 {
 	struct coord pos;
 	struct pix_buf *buf;
@@ -496,86 +487,6 @@ static struct tool_ops circ_ops = {
 };
 
 
-/* ----- meas -------------------------------------------------------------- */
-
-
-struct pix_buf *draw_move_meas(struct inst *inst, struct coord pos, int i)
-{
-	return draw_move_line_common(inst, inst->u.meas.end, pos, i);
-}
-
-
-static int end_new_meas(struct inst *from, struct inst *to)
-{
-	struct obj *obj;
-
-	if (from == to)
-		return 0;
-	obj = new_obj(ot_meas, from);
-	obj->u.meas.other = inst_get_vec(to);
-	obj->u.meas.offset = parse_expr("0mm");
-	return 1;
-}
-
-
-static int meas_x_pick_vec(struct inst *inst, void *ctx)
-{
-	struct vec *vec = inst->vec;
-	struct coord min;
-
-	if (!vec->samples)
-		return 0;
-	min = meas_find_min(lt_xy, vec->samples);
-	return inst->u.rect.end.x == min.x && inst->u.rect.end.y == min.y;
-}
-
-
-static void highlight_vecs(void)
-{
-	inst_highlight_vecs(meas_x_pick_vec, NULL);
-}
-
-
-static void tool_selected_meas_x(void)
-{
-	highlight = highlight_vecs;
-	redraw();
-}
-
-
-static void tool_selected_meas_y(void)
-{
-	highlight = NULL;
-	redraw();
-}
-
-
-static void tool_deselected_meas(void)
-{
-	highlight = NULL;
-	redraw();
-}
-
-
-static struct tool_ops meas_ops = {
-	.drag_new	= drag_new_line,
-	.end_new	= end_new_meas,
-};
-
-static struct tool_ops meas_ops_x = {
-	.tool_selected	= tool_selected_meas_x,
-	.tool_deselected= tool_deselected_meas,
-	.drag_new	= drag_new_line,
-	.end_new	= end_new_meas,
-};
-static struct tool_ops meas_ops_y = {
-	.tool_selected	= tool_selected_meas_y,
-	.tool_deselected= tool_deselected_meas,
-	.drag_new	= drag_new_line,
-	.end_new	= end_new_meas,
-};
-
-
 /* ----- frame helper ------------------------------------------------------ */
 
 
@@ -766,7 +677,10 @@ void tool_hover(struct coord pos)
 {
 	struct inst *curr;
 
-	curr = inst_find_point(pos);
+	if (active_ops && active_ops->find_point)
+		curr = active_ops->find_point(pos);
+	else
+		curr = inst_find_point(pos);
 	if ((drag.new && curr == drag.new) || (drag.inst && curr == drag.inst))
 		return;
 	if (curr && !active_ops) {
@@ -817,12 +731,17 @@ int tool_consider_drag(struct coord pos)
 		active_ops->click(pos);
 		return 0;
 	}
-	curr = inst_find_point(pos);
+	if (active_ops && active_ops->find_point)
+		curr = active_ops->find_point(pos);
+	else
+		curr = inst_find_point(pos);
 	if (!curr)
 		return 0;
 	tool_dehover();
 	if (active_ops) {
 		if (active_ops->drag_new) {
+			if (active_ops->begin_drag_new)
+				active_ops->begin_drag_new(curr);
 			drag.inst = NULL;
 			drag.new = curr;
 			over_begin(drag_save_and_draw, NULL, pos);
@@ -872,7 +791,10 @@ int tool_end_drag(struct coord to)
 	tool_cancel_drag();
 	if (state.new && ops->end_new_raw)
 		return ops->end_new_raw(state.new, to);
-	end = inst_find_point(to);
+	if (ops->find_point)
+		end = ops->find_point(to);
+	else
+		end = inst_find_point(to);
 	if (!end)
 		return 0;
 	if (state.new)

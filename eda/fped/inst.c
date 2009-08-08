@@ -852,6 +852,35 @@ void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user), void *user)
 }
 
 
+struct inst *inst_find_vec(struct coord pos,
+    int (*pick)(struct inst *inst, void *user), void *user)
+{
+	struct inst *inst, *found;
+	int best_dist = 0; /* keep gcc happy */
+	int dist;
+
+	found = NULL;
+	for (inst = insts[ip_vec]; inst; inst = inst->next) {
+		if (!inst->ops->distance)
+			continue;
+		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
+		if (dist < 0 || (found && best_dist <= dist))
+			continue;
+		if (!pick(inst, user))
+			continue;
+		found = inst;
+		best_dist = dist;
+	}
+	return found;
+}
+
+
+struct inst *insts_ip_vec(void)
+{
+	return insts[ip_vec];
+}
+
+
 struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i)
 {
 	return inst->ops->draw_move(inst, pos, i);
