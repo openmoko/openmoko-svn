@@ -190,8 +190,10 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			redraw();
 		break;
 	case 2:
+		tool_dehover();
 		draw_ctx.center = pos;
 		redraw();
+		tool_hover(canvas_to_coord(event->x, event->y));
 		break;
 	}
 	return TRUE;
@@ -228,11 +230,13 @@ static void zoom_in(struct coord pos)
 {
 	if (draw_ctx.scale < 2)
 		return;
+	tool_dehover();
 	draw_ctx.scale /= 2;
 	draw_ctx.center.x = (draw_ctx.center.x+pos.x)/2;
 	draw_ctx.center.y = (draw_ctx.center.y+pos.y)/2;
 	update_zoom();
 	redraw();
+	tool_hover(pos);
 }
 
 
@@ -248,11 +252,13 @@ static void zoom_out(struct coord pos)
 	    bbox.max.x < draw_ctx.widget->allocation.width-ZOOM_STOP_BORDER &&
 	    bbox.min.y < draw_ctx.widget->allocation.height-ZOOM_STOP_BORDER)
 		return;
+	tool_dehover();
 	draw_ctx.scale *= 2;
 	draw_ctx.center.x = 2*draw_ctx.center.x-pos.x;
 	draw_ctx.center.y = 2*draw_ctx.center.y-pos.y;
 	update_zoom();
 	redraw();
+	tool_hover(pos);
 }
 
 
@@ -296,18 +302,24 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		zoom_out(pos);
 		break;
 	case '*':
+		tool_dehover();
 		center(NULL);
 		auto_scale(NULL);
 		redraw();
+		tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
 		break;
 	case '#':
+		tool_dehover();
 		center(&active_frame_bbox);
 		auto_scale(&active_frame_bbox);
 		redraw();
+		tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
 		break;
 	case '.':
+		tool_dehover();
 		draw_ctx.center = pos;
 		redraw();
+		tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
 		break;
 	case GDK_BackSpace:
 	case GDK_Delete:
