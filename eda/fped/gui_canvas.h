@@ -22,7 +22,7 @@
  * of objects.
  */
 
-extern void (*highlight)(struct draw_ctx *ctx);
+extern void (*highlight)(void);
 
 
 void redraw(void);

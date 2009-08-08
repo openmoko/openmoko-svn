@@ -18,6 +18,7 @@
 #include "obj.h"
 #include "delete.h"
 #include "inst.h"
+#include "gui_util.h"
 #include "gui_inst.h"
 #include "gui_style.h"
 #include "gui_status.h"
@@ -26,9 +27,8 @@
 #include "gui_canvas.h"
 
 
-void (*highlight)(struct draw_ctx *ctx) = NULL;
+void (*highlight)(void) = NULL;
 
-static struct draw_ctx ctx;
 static struct coord curr_pos;
 static struct coord user_origin = { 0, 0 };
 
@@ -42,7 +42,7 @@ static struct coord drag_start;
 
 static void update_zoom(void)
 {
-	status_set_zoom("x%d", ctx.scale);
+	status_set_zoom("x%d", draw_ctx.scale);
 }
 
 
@@ -63,8 +63,8 @@ static void center(const struct bbox *this_bbox)
 	struct bbox bbox;
 
 	bbox = this_bbox ? *this_bbox : inst_get_bbox();
-	ctx.center.x = (bbox.min.x+bbox.max.x)/2;
-	ctx.center.y = (bbox.min.y+bbox.max.y)/2;
+	draw_ctx.center.x = (bbox.min.x+bbox.max.x)/2;
+	draw_ctx.center.y = (bbox.min.y+bbox.max.y)/2;
 }
 
 
@@ -76,8 +76,8 @@ static void auto_scale(const struct bbox *this_bbox)
 	float aw, ah;
 
 	bbox = this_bbox ? *this_bbox : inst_get_bbox();
-	aw = ctx.widget->allocation.width;
-	ah = ctx.widget->allocation.height;
+	aw = draw_ctx.widget->allocation.width;
+	ah = draw_ctx.widget->allocation.height;
 	h = bbox.max.x-bbox.min.x;
 	w = bbox.max.y-bbox.min.y;
 	aw -= 2*CANVAS_CLEARANCE;
@@ -88,7 +88,7 @@ static void auto_scale(const struct bbox *this_bbox)
 		ah = 1;
 	sx = ceil(h/aw);
 	sy = ceil(w/ah);
-	ctx.scale = sx > sy ? sx : sy > 0 ? sy : 1;
+	draw_ctx.scale = sx > sy ? sx : sy > 0 ? sy : 1;
 
 	update_zoom();
 }
@@ -101,15 +101,15 @@ void redraw(void)
 {
 	float aw, ah;
 
-	aw = ctx.widget->allocation.width;
-	ah = ctx.widget->allocation.height;
-	gdk_draw_rectangle(ctx.widget->window,
+	aw = draw_ctx.widget->allocation.width;
+	ah = draw_ctx.widget->allocation.height;
+	gdk_draw_rectangle(draw_ctx.widget->window,
 	    instantiation_ok ? gc_bg : gc_bg_error, TRUE, 0, 0, aw, ah);
 
-	inst_draw(&ctx);
+	inst_draw();
 	if (highlight)
-		highlight(&ctx);
-	tool_redraw(&ctx);
+		highlight();
+	tool_redraw();
 }
 
 
@@ -121,11 +121,11 @@ static void drag_left(struct coord pos)
 	if (!dragging)
 		return;
 	if (!drag_escaped &&
-	    hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale <
+	    hypot(pos.x-drag_start.x, pos.y-drag_start.y)/draw_ctx.scale <
 	    DRAG_MIN_R)
 		return;
 	drag_escaped = 1;
-	tool_drag(&ctx, pos);
+	tool_drag(pos);
 }
 
 
@@ -137,14 +137,13 @@ static void drag_middle(struct coord pos)
 static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
     gpointer data)
 {
-	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
+	struct coord pos = canvas_to_coord(event->x, event->y);
 
 	curr_pos.x = event->x;
 	curr_pos.y = event->y;
+	tool_hover(pos);
 	if (event->state & GDK_BUTTON1_MASK)
 		drag_left(pos);
-	else
-		tool_hover(&ctx, pos);
 	if (event->state & GDK_BUTTON2_MASK)
 		drag_middle(pos);
 	update_pos(pos);
@@ -158,7 +157,7 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
-	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
+	struct coord pos = canvas_to_coord(event->x, event->y);
 	const struct inst *prev;
 	int res;
 
@@ -166,10 +165,10 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		if (dragging) {
 			fprintf(stderr, "HUH ?!?\n");
-			tool_cancel_drag(&ctx);
+			tool_cancel_drag();
 			dragging = 0;
 		}
-		res = tool_consider_drag(&ctx, pos);
+		res = tool_consider_drag(pos);
 		/* tool doesn't do drag */
 		if (res < 0) {
 			change_world();
@@ -186,12 +185,12 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 		}
 		prev = selected_inst;
 		inst_deselect();
-		inst_select(&ctx, pos);
+		inst_select(pos);
 		if (prev != selected_inst)
 			redraw();
 		break;
 	case 2:
-		ctx.center = pos;
+		draw_ctx.center = pos;
 		redraw();
 		break;
 	}
@@ -202,18 +201,18 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
-	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
+	struct coord pos = canvas_to_coord(event->x, event->y);
 
 	switch (event->button) {
 	case 1:
 		if (!dragging)
 			break;
 		dragging = 0;
-		if (hypot(pos.x-drag_start.x, pos.y-drag_start.y)/ctx.scale < 
-		    DRAG_MIN_R)
-			tool_cancel_drag(&ctx);
+		if (hypot(pos.x-drag_start.x,
+		    pos.y-drag_start.y)/draw_ctx.scale < DRAG_MIN_R)
+			tool_cancel_drag();
 		else {
-			if (tool_end_drag(&ctx, pos))
+			if (tool_end_drag(pos))
 				change_world();
 		}
 		break;
@@ -227,11 +226,11 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 
 static void zoom_in(struct coord pos)
 {
-	if (ctx.scale < 2)
+	if (draw_ctx.scale < 2)
 		return;
-	ctx.scale /= 2;
-	ctx.center.x = (ctx.center.x+pos.x)/2;
-	ctx.center.y = (ctx.center.y+pos.y)/2;
+	draw_ctx.scale /= 2;
+	draw_ctx.center.x = (draw_ctx.center.x+pos.x)/2;
+	draw_ctx.center.y = (draw_ctx.center.y+pos.y)/2;
 	update_zoom();
 	redraw();
 }
@@ -242,16 +241,16 @@ static void zoom_out(struct coord pos)
 	struct bbox bbox;
 
 	bbox = inst_get_bbox();
-	bbox.min = translate(&ctx, bbox.min);
-	bbox.max = translate(&ctx, bbox.max);
+	bbox.min = translate(bbox.min);
+	bbox.max = translate(bbox.max);
 	if (bbox.min.x >= ZOOM_STOP_BORDER &&
 	    bbox.max.y >= ZOOM_STOP_BORDER &&
-	    bbox.max.x < ctx.widget->allocation.width-ZOOM_STOP_BORDER &&
-	    bbox.min.y < ctx.widget->allocation.height-ZOOM_STOP_BORDER)
+	    bbox.max.x < draw_ctx.widget->allocation.width-ZOOM_STOP_BORDER &&
+	    bbox.min.y < draw_ctx.widget->allocation.height-ZOOM_STOP_BORDER)
 		return;
-	ctx.scale *= 2;
-	ctx.center.x = 2*ctx.center.x-pos.x;
-	ctx.center.y = 2*ctx.center.y-pos.y;
+	draw_ctx.scale *= 2;
+	draw_ctx.center.x = 2*draw_ctx.center.x-pos.x;
+	draw_ctx.center.y = 2*draw_ctx.center.y-pos.y;
 	update_zoom();
 	redraw();
 }
@@ -260,7 +259,7 @@ static void zoom_out(struct coord pos)
 static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
     gpointer data)
 {
-	struct coord pos = canvas_to_coord(&ctx, event->x, event->y);
+	struct coord pos = canvas_to_coord(event->x, event->y);
 
 	switch (event->direction) {
 	case GDK_SCROLL_UP:
@@ -282,7 +281,7 @@ static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
 static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
     gpointer data)
 {
-	struct coord pos = canvas_to_coord(&ctx, curr_pos.x, curr_pos.y);
+	struct coord pos = canvas_to_coord(curr_pos.x, curr_pos.y);
 
 	switch (event->keyval) {
 	case ' ':
@@ -307,7 +306,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		redraw();
 		break;
 	case '.':
-		ctx.center = pos;
+		draw_ctx.center = pos;
 		redraw();
 		break;
 	case GDK_BackSpace:
@@ -361,8 +360,8 @@ static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
     gpointer data)
 {
 	if (dragging)
-		tool_cancel_drag(&ctx);
-	tool_dehover(&ctx);
+		tool_cancel_drag();
+	tool_dehover();
 	dragging = 0;
 	return TRUE;
 }
@@ -422,7 +421,7 @@ GtkWidget *make_canvas(void)
 	    GDK_SCROLL |
 	    GDK_POINTER_MOTION_MASK);
 
-	ctx.widget = canvas;
+	draw_ctx.widget = canvas;
 
 	return canvas;
 }

@@ -22,6 +22,7 @@
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_inst.h"
+#include "gui_over.h"
 #include "gui_canvas.h"
 #include "gui_status.h"
 #include "gui.h"
@@ -43,19 +44,13 @@
 #include "icons/vec.xpm"
 
 
-#define DA	GDK_DRAWABLE(ctx->widget->window)
-
-
 struct tool_ops {
 	void (*tool_selected)(void);
 	void (*tool_deselected)(void);
-	void (*click)(struct draw_ctx *ctx, struct coord pos);
-	struct pix_buf *(*drag_new)(struct draw_ctx *ctx, struct inst *from,
-	     struct coord to);
-	int (*end_new_raw)(struct draw_ctx *ctx, struct inst *from,
-	    struct coord to);
-	int (*end_new)(struct draw_ctx *ctx, struct inst *from,
-	    struct inst *to);
+	void (*click)(struct coord pos);
+	struct pix_buf *(*drag_new)(struct inst *from, struct coord to);
+	int (*end_new_raw)(struct inst *from, struct coord to);
+	int (*end_new)(struct inst *from, struct inst *to);
 };
 
 
@@ -76,7 +71,6 @@ static struct drag_state {
 	.anchors_n = 0,
 };
 
-static struct pix_buf *pix_buf;
 static struct coord last_canvas_pos;
 
 
@@ -116,14 +110,14 @@ static struct obj *new_obj(enum obj_type type, struct inst *base)
 
 
 static struct pix_buf *draw_move_line_common(struct inst *inst,
-    struct coord end, struct draw_ctx *ctx, struct coord pos, int i)
+    struct coord end, struct coord pos, int i)
 {
 	struct coord from, to;
 	struct pix_buf *buf;
 
-	from = translate(ctx, inst->base);
-	to = translate(ctx, end);
-	pos = translate(ctx, pos);
+	from = translate(inst->base);
+	to = translate(end);
+	pos = translate(pos);
 	switch (i) {
 	case 0:
 		from = pos;
@@ -141,14 +135,14 @@ static struct pix_buf *draw_move_line_common(struct inst *inst,
 
 
 static struct pix_buf *draw_move_rect_common(struct inst *inst,
-    struct coord other, struct draw_ctx *ctx, struct coord pos, int i)
+    struct coord other, struct coord pos, int i)
 {
 	struct coord min, max;
 	struct pix_buf *buf;
 
-	min = translate(ctx, inst->base);
-	max = translate(ctx, other);
-	pos = translate(ctx, pos);
+	min = translate(inst->base);
+	max = translate(other);
+	pos = translate(pos);
 	switch (i) {
 	case 0:
 		min = pos;
@@ -167,15 +161,27 @@ static struct pix_buf *draw_move_rect_common(struct inst *inst,
 }
 
 
+static struct pix_buf *hover_common(GdkGC *gc, struct coord center, unit_type r)
+{
+	struct pix_buf *buf;
+
+	center = translate(center);
+	buf = save_pix_buf(DA,
+	    center.x-r, center.y-r, center.x+r, center.y+r, 2);
+	draw_circle(DA, gc, FALSE, center.x, center.y, VEC_EYE_R);
+	return buf;
+}
+
+
 /* ----- delete ------------------------------------------------------------ */
 
 
-static void click_delete(struct draw_ctx *ctx, struct coord pos)
+static void click_delete(struct coord pos)
 {
 	inst_deselect();
-	inst_select(ctx, pos);
+	inst_select(pos);
 	if (selected_inst) {
-		tool_dehover(ctx);
+		tool_dehover();
 		inst_delete(selected_inst);
 	}
 	change_world();
@@ -208,8 +214,7 @@ static struct coord gridify(struct coord base, struct coord pos)
 }
 
 
-static struct pix_buf *drag_new_vec(struct draw_ctx *ctx,
-    struct inst *from, struct coord to)
+static struct pix_buf *drag_new_vec(struct inst *from, struct coord to)
 {
 	struct coord pos;
 	struct pix_buf *buf;
@@ -220,24 +225,29 @@ static struct pix_buf *drag_new_vec(struct draw_ctx *ctx,
 	status_set_type_y("dX =");
 	status_set_x("%lg mm", units_to_mm(to.x-pos.x));
 	status_set_y("%lg mm", units_to_mm(to.y-pos.y));
-	pos = translate(ctx, pos);
-	to = translate(ctx, to);
+	pos = translate(pos);
+	to = translate(to);
 	buf = save_pix_buf(DA, pos.x, pos.y, to.x, to.y, 1);
 	gdk_draw_line(DA, gc_drag, pos.x, pos.y, to.x, to.y);
 	return buf;
 }
 
 
-struct pix_buf *draw_move_vec(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_vec(struct inst *inst, struct coord pos, int i)
 {
 	return draw_move_line_common(inst,
-	    add_vec(sub_vec(inst->u.rect.end, inst->base), pos), ctx, pos, i);
+	    add_vec(sub_vec(inst->u.rect.end, inst->base), pos), pos, i);
 }
 
 
-static int end_new_raw_vec(struct draw_ctx *ctx,
-    struct inst *from, struct coord to)
+struct pix_buf *gui_hover_vec(struct inst *self)
+{
+	return hover_common(gc_vec[mode_hover],
+	    self->u.rect.end, VEC_EYE_R);
+}
+
+
+static int end_new_raw_vec(struct inst *from, struct coord to)
 {
 	struct vec *vec;
 	struct coord pos;
@@ -260,29 +270,26 @@ static struct tool_ops vec_ops = {
 /* ----- line -------------------------------------------------------------- */
 
 
-static struct pix_buf *drag_new_line(struct draw_ctx *ctx,
-    struct inst *from, struct coord to)
+static struct pix_buf *drag_new_line(struct inst *from, struct coord to)
 {
 	struct coord pos;
 	struct pix_buf *buf;
 
-	pos = translate(ctx, inst_get_point(from));
-	to = translate(ctx, to);
+	pos = translate(inst_get_point(from));
+	to = translate(to);
 	buf = save_pix_buf(DA, pos.x, pos.y, to.x, to.y, 1);
 	gdk_draw_line(DA, gc_drag, pos.x, pos.y, to.x, to.y);
 	return buf;
 }
 
 
-struct pix_buf *draw_move_line(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_line(struct inst *inst, struct coord pos, int i)
 {
-	return draw_move_line_common(inst, inst->u.rect.end, ctx, pos, i);
+	return draw_move_line_common(inst, inst->u.rect.end, pos, i);
 }
 
 
-static int end_new_line(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+static int end_new_line(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -304,14 +311,13 @@ static struct tool_ops line_ops = {
 /* ----- rect -------------------------------------------------------------- */
 
 
-static struct pix_buf *drag_new_rect(struct draw_ctx *ctx,
-    struct inst *from, struct coord to)
+static struct pix_buf *drag_new_rect(struct inst *from, struct coord to)
 {
 	struct coord pos;
 	struct pix_buf *buf;
 
-	pos = translate(ctx, inst_get_point(from));
-	to = translate(ctx, to);
+	pos = translate(inst_get_point(from));
+	to = translate(to);
 	sort_coord(&pos, &to);
 	buf = save_pix_buf(DA, pos.x, pos.y, to.x, to.y, 1);
 	gdk_draw_rectangle(DA, gc_drag, FALSE,
@@ -320,15 +326,13 @@ static struct pix_buf *drag_new_rect(struct draw_ctx *ctx,
 }
 
 
-struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_rect(struct inst *inst, struct coord pos, int i)
 {
-	return draw_move_rect_common(inst, inst->u.rect.end, ctx, pos, i);
+	return draw_move_rect_common(inst, inst->u.rect.end, pos, i);
 }
 
 
-static int end_new_rect(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+static int end_new_rect(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -350,8 +354,7 @@ static struct tool_ops rect_ops = {
 /* ----- pad --------------------------------------------------------------- */
 
 
-static int end_new_pad(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+static int end_new_pad(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -364,10 +367,9 @@ static int end_new_pad(struct draw_ctx *ctx,
 }
 
 
-struct pix_buf *draw_move_pad(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_pad(struct inst *inst, struct coord pos, int i)
 {
-	return draw_move_rect_common(inst, inst->u.pad.other, ctx, pos, i);
+	return draw_move_rect_common(inst, inst->u.pad.other, pos, i);
 }
 
 
@@ -380,15 +382,14 @@ static struct tool_ops pad_ops = {
 /* ----- circ -------------------------------------------------------------- */
 
 
-static struct pix_buf *drag_new_circ(struct draw_ctx *ctx,
-    struct inst *from, struct coord to)
+static struct pix_buf *drag_new_circ(struct inst *from, struct coord to)
 {
 	struct coord pos;
 	struct pix_buf *buf;
 	double r;
 
-	pos = translate(ctx, inst_get_point(from));
-	to = translate(ctx, to);
+	pos = translate(inst_get_point(from));
+	to = translate(to);
 	r = hypot(to.x-pos.x, to.y-pos.y);
 	buf = save_pix_buf(DA, pos.x-r, pos.y-r, pos.x+r, pos.y+r, 1);
 	draw_circle(DA, gc_drag, FALSE, pos.x, pos.y, r);
@@ -396,8 +397,7 @@ static struct pix_buf *drag_new_circ(struct draw_ctx *ctx,
 }
 
 
-static int end_new_circ(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+static int end_new_circ(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -411,19 +411,18 @@ static int end_new_circ(struct draw_ctx *ctx,
 }
 
 
-struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i)
 {
 	struct coord c, from, to, end;
 	double r, r_save, a1, a2;
 	struct pix_buf *buf;
 
-	c = translate(ctx, inst->base);
+	c = translate(inst->base);
 	from =
-	    translate(ctx, rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a1));
+	    translate(rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a1));
 	to =
-	    translate(ctx, rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a2));
-	pos = translate(ctx, pos);
+	    translate(rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a2));
+	pos = translate(pos);
 	switch (i) {
 	case 0:
 		c = pos;
@@ -500,15 +499,13 @@ static struct tool_ops circ_ops = {
 /* ----- meas -------------------------------------------------------------- */
 
 
-struct pix_buf *draw_move_meas(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_meas(struct inst *inst, struct coord pos, int i)
 {
-	return draw_move_line_common(inst, inst->u.meas.end, ctx, pos, i);
+	return draw_move_line_common(inst, inst->u.meas.end, pos, i);
 }
 
 
-static int end_new_meas(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+static int end_new_meas(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -533,9 +530,9 @@ static int meas_x_pick_vec(struct inst *inst, void *ctx)
 }
 
 
-static void highlight_vecs(struct draw_ctx *ctx)
+static void highlight_vecs(void)
 {
-	inst_highlight_vecs(ctx, meas_x_pick_vec, NULL);
+	inst_highlight_vecs(meas_x_pick_vec, NULL);
 }
 
 
@@ -645,21 +642,26 @@ static void tool_selected_frame(void)
 /* ----- frame ------------------------------------------------------------- */
 
 
-struct pix_buf *draw_move_frame(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *draw_move_frame(struct inst *inst, struct coord pos, int i)
 {
 	struct pix_buf *buf;
 	int r = FRAME_EYE_R2;
 
-	pos = translate(ctx, pos);
+	pos = translate(pos);
 	buf = save_pix_buf(DA, pos.x-r, pos.y-r, pos.x+r, pos.y+r, 1);
 	draw_arc(DA, gc_drag, FALSE, pos.x, pos.y, r, 0, 360);
 	return buf;
 }
 
 
-static int end_new_frame(struct draw_ctx *ctx,
-    struct inst *from, struct inst *to)
+struct pix_buf *gui_hover_frame(struct inst *self)
+{
+	return hover_common(gc_frame[mode_hover],
+	    self->base, FRAME_EYE_R2);
+}
+
+
+static int end_new_frame(struct inst *from, struct inst *to)
 {
 	struct obj *obj;
 
@@ -745,19 +747,28 @@ static void do_move_to(struct drag_state *state, struct inst *curr)
 /* ----- hover ------------------------------------------------------------- */
 
 
-void tool_dehover(struct draw_ctx *ctx)
+static struct pix_buf *hover_save_and_draw(void *user)
 {
-	if (hover_inst)
-		inst_hover(hover_inst, ctx, 0);
+	return inst_hover(hover_inst);
+}
+
+
+void tool_dehover(void)
+{
+	if (!hover_inst)
+		return;
+	over_leave();
 	hover_inst = NULL;
 }
 
 
-void tool_hover(struct draw_ctx *ctx, struct coord pos)
+void tool_hover(struct coord pos)
 {
 	struct inst *curr;
 
-	curr = inst_find_point(ctx, pos);
+	curr = inst_find_point(pos);
+	if ((drag.new && curr == drag.new) || (drag.inst && curr == drag.inst))
+		return;
 	if (curr && !active_ops) {
 		if (drag.anchors_n) {
 			if (!may_move_to(&drag, curr))
@@ -768,42 +779,58 @@ void tool_hover(struct draw_ctx *ctx, struct coord pos)
 			drag.anchors_n = 0;
 		}
 	}
-	if (curr != hover_inst)
-		tool_dehover(ctx);
-	if (curr) {
-		inst_hover(curr, ctx, 1);
-		hover_inst = curr;
+	if (curr == hover_inst)
+		return;
+	if (hover_inst) {
+		over_leave();
+		hover_inst = NULL;
 	}
+	if (!curr)
+		return;
+	hover_inst = curr;
+	over_enter(hover_save_and_draw, NULL);
 }
 
 
 /* ----- mouse actions ----------------------------------------------------- */
 
 
-int tool_consider_drag(struct draw_ctx *ctx, struct coord pos)
+static struct pix_buf *drag_save_and_draw(void *user, struct coord to)
+{
+	if (drag.new) {
+		assert(active_ops);
+		return active_ops->drag_new(drag.new, to);
+	} else {
+		return inst_draw_move(drag.inst, to, drag.anchor_i);
+	}
+}
+
+
+int tool_consider_drag(struct coord pos)
 {
 	struct inst *curr;
 
 	assert(!drag.new);
 	assert(!drag.anchors_n);
-	last_canvas_pos = translate(ctx, pos);
+	last_canvas_pos = translate(pos);
 	if (active_ops && active_ops->click) {
-		active_ops->click(ctx, pos);
+		active_ops->click(pos);
 		return 0;
 	}
-	curr = inst_find_point(ctx, pos);
+	curr = inst_find_point(pos);
 	if (!curr)
 		return 0;
-	pix_buf = NULL;
+	tool_dehover();
 	if (active_ops) {
 		if (active_ops->drag_new) {
 			drag.inst = NULL;
 			drag.new = curr;
+			over_begin(drag_save_and_draw, NULL, pos);
 			return 1;
 		} else {
 			/* object is created without dragging */
-			if (active_ops->end_new(ctx, curr, NULL)) {
-				tool_cancel_drag(ctx);
+			if (active_ops->end_new(curr, NULL)) {
+				tool_cancel_drag();
 				return -1;
 			}
 			return 0;
@@ -813,49 +840,43 @@ int tool_consider_drag(struct draw_ctx *ctx, struct coord pos)
 		return 0;
 	drag.inst = selected_inst;
 	drag.new = NULL;
+	over_begin(drag_save_and_draw, NULL, pos);
 	return 1;
 }
 
 
-void tool_drag(struct draw_ctx *ctx, struct coord to)
+void tool_drag(struct coord to)
 {
-	if (pix_buf)
-		restore_pix_buf(pix_buf);
-	last_canvas_pos = translate(ctx, to);
-	tool_hover(ctx, to);
-	pix_buf = drag.new ? active_ops->drag_new(ctx, drag.new, to) :
-	    inst_draw_move(drag.inst, ctx, to, drag.anchor_i);
+	last_canvas_pos = translate(to);
+	over_move(to);
 }
 
 
-void tool_cancel_drag(struct draw_ctx *ctx)
+void tool_cancel_drag(void)
 {
-	tool_dehover(ctx);
+	over_end();
+	tool_dehover();
 	tool_reset();
-	if (pix_buf) {
-		restore_pix_buf(pix_buf);
-		pix_buf = NULL;
-	}
 	drag.new = NULL;
 	active_ops = NULL;
 	drag.anchors_n = 0;
 }
 
 
-int tool_end_drag(struct draw_ctx *ctx, struct coord to)
+int tool_end_drag(struct coord to)
 {
 	struct drag_state state = drag;
 	struct inst *end;
 	struct tool_ops *ops = active_ops;
 
-	tool_cancel_drag(ctx);
+	tool_cancel_drag();
 	if (state.new && ops->end_new_raw)
-		return ops->end_new_raw(ctx, state.new, to);
-	end = inst_find_point(ctx, to);
+		return ops->end_new_raw(state.new, to);
+	end = inst_find_point(to);
 	if (!end)
 		return 0;
 	if (state.new)
-		return ops->end_new(ctx, state.new, end);
+		return ops->end_new(state.new, end);
 	if (!may_move_to(&state, end))
 		return 0;
 	if (!inst_do_move_to(drag.inst, inst_get_vec(end), state.anchor_i))
@@ -864,15 +885,14 @@ int tool_end_drag(struct draw_ctx *ctx, struct coord to)
 }
 
 
-void tool_redraw(struct draw_ctx *ctx)
+void tool_redraw(void)
 {
+	over_reset();
 	if (!drag.new && !drag.anchors_n)
 		return;
-	if (pix_buf)
-		free_pix_buf(pix_buf);
-	pix_buf = NULL;
-	tool_drag(ctx, canvas_to_coord(ctx,
-	    last_canvas_pos.x, last_canvas_pos.y));
+	tool_hover(last_canvas_pos);
+	over_begin(drag_save_and_draw, NULL,
+	    canvas_to_coord(last_canvas_pos.x, last_canvas_pos.y));
 }
 
 
@@ -901,6 +921,7 @@ static void tool_select(GtkWidget *evbox, struct tool_ops *ops)
 
 void tool_reset(void)
 {
+	over_reset();
 	tool_select(ev_point, NULL);
 }
 

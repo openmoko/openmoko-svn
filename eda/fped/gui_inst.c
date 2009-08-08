@@ -24,35 +24,31 @@
 #include "gui_inst.h"
 
 
-#define DA	GDK_DRAWABLE(ctx->widget->window)
-
-
 /* ----- coordinate translation -------------------------------------------- */
 
 
-struct coord translate(const struct draw_ctx *ctx, struct coord pos)
+struct coord translate(struct coord pos)
 {
-	pos.x -= ctx->center.x;
-	pos.y -= ctx->center.y;
-	pos.x /= ctx->scale;
-	pos.y /= ctx->scale;
+	pos.x -= draw_ctx.center.x;
+	pos.y -= draw_ctx.center.y;
+	pos.x /= draw_ctx.scale;
+	pos.y /= draw_ctx.scale;
 	pos.y = -pos.y;
-	pos.x += ctx->widget->allocation.width/2;
-	pos.y += ctx->widget->allocation.height/2;
-//fprintf(stderr, "%d %d\n", (int) pos.x, (int) pos.y);
+	pos.x += draw_ctx.widget->allocation.width/2;
+	pos.y += draw_ctx.widget->allocation.height/2;
 	return pos;
 }
 
 
-struct coord canvas_to_coord(const struct draw_ctx *ctx, int x, int y)
+struct coord canvas_to_coord(int x, int y)
 {
 	struct coord pos;
 
-	x -= ctx->widget->allocation.width/2;
-	y -= ctx->widget->allocation.height/2;
+	x -= draw_ctx.widget->allocation.width/2;
+	y -= draw_ctx.widget->allocation.height/2;
 	y = -y;
-	pos.x = x*ctx->scale+ctx->center.x;
-	pos.y = y*ctx->scale+ctx->center.y;
+	pos.x = x*draw_ctx.scale+draw_ctx.center.x;
+	pos.y = y*draw_ctx.scale+draw_ctx.center.y;
 	return pos;
 }
 
@@ -60,8 +56,7 @@ struct coord canvas_to_coord(const struct draw_ctx *ctx, int x, int y)
 /* ----- drawing primitives ------------------------------------------------ */
 
 
-static void draw_eye(struct draw_ctx *ctx, GdkGC *gc, struct coord center,
-    int r1, int r2)
+static void draw_eye(GdkGC *gc, struct coord center, int r1, int r2)
 {
 	draw_circle(DA, gc, TRUE, center.x, center.y, r1);
 	draw_circle(DA, gc, FALSE, center.x, center.y, r2);
@@ -71,7 +66,7 @@ static void draw_eye(struct draw_ctx *ctx, GdkGC *gc, struct coord center,
 #define MAX_POINTS	10
 
 
-static void draw_poly(struct draw_ctx *ctx, GdkGC *gc, int fill,
+static void draw_poly(GdkGC *gc, int fill,
     const struct coord *points, int n_points)
 {
 	GdkPoint gp[MAX_POINTS];
@@ -92,7 +87,7 @@ static void draw_poly(struct draw_ctx *ctx, GdkGC *gc, int fill,
 }
 
 
-static void draw_arrow(struct draw_ctx *ctx, GdkGC *gc, int fill,
+static void draw_arrow(GdkGC *gc, int fill,
     struct coord from, struct coord to, int len, double angle)
 {
 	struct coord p[3];
@@ -107,7 +102,7 @@ static void draw_arrow(struct draw_ctx *ctx, GdkGC *gc, int fill,
 	p[0] = add_vec(to, rotate(side, 180-angle));
 	p[1] = to;
 	p[2] = add_vec(to, rotate(side, 180+angle));
-	draw_poly(ctx, gc, fill, p, 3);
+	draw_poly(gc, fill, p, 3);
 }
 
 
@@ -149,32 +144,22 @@ unit_type gui_dist_vec_fallback(struct inst *self, struct coord pos,
 }
 
 
-void gui_hover_vec(struct inst *self, struct draw_ctx *ctx)
+void gui_highlight_vec(struct inst *self)
 {
-	struct coord center = translate(ctx, self->u.rect.end);
-	GdkGC *gc;
-
-	gc = gc_vec[mode_hover];
-	draw_circle(DA, gc, FALSE, center.x, center.y, VEC_EYE_R);
-}
-
-
-void gui_highlight_vec(struct inst *self, struct draw_ctx *ctx)
-{
-	struct coord center = translate(ctx, self->u.rect.end);
+	struct coord center = translate(self->u.rect.end);
 
 	draw_circle(DA, gc_highlight, FALSE, center.x, center.y, VEC_EYE_R);
 }
 
 
-void gui_draw_vec(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_vec(struct inst *self)
 {
-	struct coord from = translate(ctx, self->base);
-	struct coord to = translate(ctx, self->u.rect.end);
+	struct coord from = translate(self->base);
+	struct coord to = translate(self->u.rect.end);
 	GdkGC *gc;
 
 	gc = gc_vec[get_mode(self)];
-	draw_arrow(ctx, gc, TRUE, from, to, VEC_ARROW_LEN, VEC_ARROW_ANGLE);
+	draw_arrow(gc, TRUE, from, to, VEC_ARROW_LEN, VEC_ARROW_ANGLE);
 	gdk_draw_line(DA, gc, from.x, from.y, to.x, to.y);
 	draw_circle(DA, gc, FALSE, to.x, to.y, VEC_EYE_R);
 }
@@ -195,14 +180,14 @@ unit_type gui_dist_line(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_line(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_line(struct inst *self)
 {
-	struct coord min = translate(ctx, self->base);
-	struct coord max = translate(ctx, self->u.rect.end);
+	struct coord min = translate(self->base);
+	struct coord max = translate(self->u.rect.end);
 	GdkGC *gc;
 
 	gc = gc_obj[get_mode(self)];
-	set_width(gc, self->u.rect.width/ctx->scale);
+	set_width(gc, self->u.rect.width/draw_ctx.scale);
 	gdk_draw_line(DA, gc, min.x, min.y, max.x, max.y);
 }
 
@@ -222,15 +207,15 @@ unit_type gui_dist_rect(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_rect(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_rect(struct inst *self)
 {
-	struct coord min = translate(ctx, self->base);
-	struct coord max = translate(ctx, self->u.rect.end);
+	struct coord min = translate(self->base);
+	struct coord max = translate(self->u.rect.end);
 	GdkGC *gc;
 
 	sort_coord(&min, &max);
 	gc = gc_obj[get_mode(self)];
-	set_width(gc, self->u.rect.width/ctx->scale);
+	set_width(gc, self->u.rect.width/draw_ctx.scale);
 	gdk_draw_rectangle(DA, gc, FALSE,
 	    min.x, min.y, max.x-min.x, max.y-min.y);
 }
@@ -250,10 +235,10 @@ unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_pad(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_pad(struct inst *self)
 {
-	struct coord min = translate(ctx, self->base);
-	struct coord max = translate(ctx, self->u.pad.other);
+	struct coord min = translate(self->base);
+	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
 	struct coord c;
 	unit_type h, w;
@@ -323,15 +308,15 @@ unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_arc(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_arc(struct inst *self)
 {
-	struct coord center = translate(ctx, self->base);
+	struct coord center = translate(self->base);
 	GdkGC *gc;
 
 	gc = gc_obj[get_mode(self)];
-	set_width(gc, self->u.arc.width/ctx->scale);
+	set_width(gc, self->u.arc.width/draw_ctx.scale);
 	draw_arc(DA, gc, FALSE, center.x, center.y,
-	    self->u.arc.r/ctx->scale, self->u.arc.a1, self->u.arc.a2);
+	    self->u.arc.r/draw_ctx.scale, self->u.arc.a1, self->u.arc.a2);
 }
 
 
@@ -368,7 +353,7 @@ unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_meas(struct inst *self)
 {
 	struct coord a0, b0, a1, b1, off, c, d;
 	GdkGC *gc;
@@ -377,8 +362,8 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 	    self->u.meas.meas->label ? self->u.meas.meas->label : "" : "";
 	char *s;
 
-	a0 = translate(ctx, self->base);
-	b0 = translate(ctx, self->u.meas.end);
+	a0 = translate(self->base);
+	b0 = translate(self->u.meas.end);
 	a1 = self->base;
 	b1 = self->u.meas.end;
 	switch (self->u.meas.meas ? self->u.meas.meas->type : mt_xy_next) {
@@ -398,14 +383,14 @@ void gui_draw_meas(struct inst *self, struct draw_ctx *ctx)
 	}
 	off = offset_vec(a1, b1, self);
 	len = units_to_mm(dist_point(a1, b1));
-	a1 = translate(ctx, add_vec(a1, off));
-	b1 = translate(ctx, add_vec(b1, off));
+	a1 = translate(add_vec(a1, off));
+	b1 = translate(add_vec(b1, off));
 	gc = gc_meas[get_mode(self)];
 	gdk_draw_line(DA, gc, a0.x, a0.y, a1.x, a1.y);
 	gdk_draw_line(DA, gc, b0.x, b0.y, b1.x, b1.y);
 	gdk_draw_line(DA, gc, a1.x, a1.y, b1.x, b1.y);
-	draw_arrow(ctx, gc, FALSE, a1, b1, MEAS_ARROW_LEN, MEAS_ARROW_ANGLE);
-	draw_arrow(ctx, gc, FALSE, b1, a1, MEAS_ARROW_LEN, MEAS_ARROW_ANGLE);
+	draw_arrow(gc, FALSE, a1, b1, MEAS_ARROW_LEN, MEAS_ARROW_ANGLE);
+	draw_arrow(gc, FALSE, b1, a1, MEAS_ARROW_LEN, MEAS_ARROW_ANGLE);
 
 	c = add_vec(a1, b1);
 	d = sub_vec(b1, a1);
@@ -464,27 +449,17 @@ unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_hover_frame(struct inst *self, struct draw_ctx *ctx)
+void gui_draw_frame(struct inst *self)
 {
-	struct coord center = translate(ctx, self->base);
-	GdkGC *gc;
-
-	gc = gc_frame[mode_hover];
-	draw_circle(DA, gc, FALSE, center.x, center.y, FRAME_EYE_R2);
-}
-
-
-void gui_draw_frame(struct inst *self, struct draw_ctx *ctx)
-{
-	struct coord center = translate(ctx, self->base);
+	struct coord center = translate(self->base);
 	struct coord corner = { self->bbox.min.x, self->bbox.max.y };
 	GdkGC *gc;
 
 	gc = self->u.frame.active ? gc_active_frame : gc_frame[get_mode(self)];
-	draw_eye(ctx, gc, center, FRAME_EYE_R1, FRAME_EYE_R2);
+	draw_eye(gc, center, FRAME_EYE_R1, FRAME_EYE_R2);
 	if (!self->u.frame.ref->name)
 		return;
-	corner = translate(ctx, corner);
+	corner = translate(corner);
 	corner.x -= FRAME_CLEARANCE;
 	corner.y -= FRAME_CLEARANCE;
 	gdk_draw_line(DA, gc, corner.x, corner.y,

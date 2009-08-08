@@ -20,15 +20,8 @@
 #include "inst.h"
 
 
-struct draw_ctx {
-	GtkWidget *widget;
-	int scale;
-	struct coord center;
-};
-
-
-struct coord translate(const struct draw_ctx *ctx, struct coord pos);
-struct coord canvas_to_coord(const struct draw_ctx *ctx, int x, int y);
+struct coord translate(struct coord pos);
+struct coord canvas_to_coord(int x, int y);
 
 unit_type gui_dist_vec(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_vec_fallback(struct inst *self, struct coord pos,
@@ -42,16 +35,14 @@ unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_frame_eye(struct inst *self, struct coord pos,
     unit_type scale);
 
-void gui_draw_vec(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_line(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_rect(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_pad(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_arc(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_meas(struct inst *self, struct draw_ctx *ctx);
-void gui_draw_frame(struct inst *self, struct draw_ctx *ctx);
+void gui_draw_vec(struct inst *self);
+void gui_draw_line(struct inst *self);
+void gui_draw_rect(struct inst *self);
+void gui_draw_pad(struct inst *self);
+void gui_draw_arc(struct inst *self);
+void gui_draw_meas(struct inst *self);
+void gui_draw_frame(struct inst *self);
 
-void gui_highlight_vec(struct inst *self, struct draw_ctx *ctx);
-void gui_hover_vec(struct inst *self, struct draw_ctx *ctx);
-void gui_hover_frame(struct inst *self, struct draw_ctx *ctx);
+void gui_highlight_vec(struct inst *self);
 
 #endif /* !GUI_INST_H */

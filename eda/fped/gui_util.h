@@ -16,12 +16,26 @@
 
 #include <gtk/gtk.h>
 
+#include "coord.h"
+
+
+struct draw_ctx {
+	GtkWidget *widget;
+	int scale;
+	struct coord center;
+};
 
 struct pix_buf {
 	GdkDrawable *da;
 	int x, y;
 	GdkPixbuf *buf;
 };
+
+
+extern struct draw_ctx draw_ctx;
+
+
+#define DA      GDK_DRAWABLE(draw_ctx.widget->window)
 
 
 GdkColor get_color(const char *spec);

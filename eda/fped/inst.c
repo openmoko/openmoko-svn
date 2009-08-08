@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "obj.h"
 #include "delete.h"
+#include "gui_util.h"
 #include "gui_status.h"
 #include "gui_tools.h"
 #include "gui_inst.h"
@@ -29,13 +30,13 @@
 struct inst_ops {
 	void (*debug)(struct inst *self);
 	void (*save)(FILE *file, struct inst *self);
-	void (*draw)(struct inst *self, struct draw_ctx *ctx);
-	void (*hover)(struct inst *self, struct draw_ctx *ctx);
+	void (*draw)(struct inst *self);
+	struct pix_buf *(*hover)(struct inst *self);
 	unit_type (*distance)(struct inst *self, struct coord pos, 
 	    unit_type scale);
 	void (*select)(struct inst *self);
 	int (*anchors)(struct inst *self, struct vec ***anchors);
-	struct pix_buf *(*draw_move)(struct inst *inst, struct draw_ctx *ctx,
+	struct pix_buf *(*draw_move)(struct inst *inst,
 	    struct coord pos, int i);
 	/* arcs need this special override */
 	void (*do_move_to)(struct inst *inst, struct vec *vec, int i);
@@ -130,7 +131,7 @@ return;
 }
 
 
-int inst_select(const struct draw_ctx *ctx, struct coord pos)
+int inst_select(struct coord pos)
 {
 	enum inst_prio prio;
 	struct inst *inst;
@@ -144,7 +145,7 @@ int inst_select(const struct draw_ctx *ctx, struct coord pos)
 		for (inst = insts[prio]; inst; inst = inst->next) {
 			if (!inst->active || !inst->ops->distance)
 				continue;
-			dist = inst->ops->distance(inst, pos, ctx->scale);
+			dist = inst->ops->distance(inst, pos, draw_ctx.scale);
 			if (dist >= 0 && (!selected_inst || best_dist > dist)) {
 				selected_inst = inst;
 				best_dist = dist;
@@ -159,7 +160,7 @@ int inst_select(const struct draw_ctx *ctx, struct coord pos)
 	for (inst = insts[ip_vec]; inst; inst = inst->next) {
 		if (!inst->active)
 			continue;
-		dist = gui_dist_vec_fallback(inst, pos, ctx->scale);
+		dist = gui_dist_vec_fallback(inst, pos, draw_ctx.scale);
 		if (dist >= 0 && (!selected_inst || best_dist > dist)) {
 			selected_inst = inst;
 			best_dist = dist;
@@ -177,7 +178,7 @@ selected:
 }
 
 
-struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
+struct inst *inst_find_point(struct coord pos)
 {
 	struct inst *inst, *found;
 	int best_dist = 0; /* keep gcc happy */
@@ -187,7 +188,7 @@ struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
 	for (inst = insts[ip_frame]; inst; inst = inst->next) {
 		if (!inst->u.frame.active)
 			continue;
-		dist = gui_dist_frame_eye(inst, pos, ctx->scale);
+		dist = gui_dist_frame_eye(inst, pos, draw_ctx.scale);
 		if (dist >= 0 && (!found || best_dist > dist)) {
 			found = inst;
 			best_dist = dist;
@@ -199,7 +200,7 @@ struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos)
 	for (inst = insts[ip_vec]; inst; inst = inst->next) {
 		if (!inst->active || !inst->ops->distance)
 			continue;
-		dist = inst->ops->distance(inst, pos, ctx->scale);
+		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
 		if (dist >= 0 && (!found || best_dist > dist)) {
 			found = inst;
 			best_dist = dist;
@@ -821,41 +822,39 @@ void inst_revert(void)
 }
 
 
-void inst_draw(struct draw_ctx *ctx)
+void inst_draw(void)
 {
 	enum inst_prio prio;
 	struct inst *inst;
 
 	FOR_INSTS_UP(prio, inst)
 		if (!inst->active && inst->ops->draw)
-			inst->ops->draw(inst, ctx);
+			inst->ops->draw(inst);
 	FOR_INSTS_UP(prio, inst)
 		if (prio != ip_frame && inst->active &&
 		    inst != selected_inst && inst->ops->draw)
-			inst->ops->draw(inst, ctx);
+			inst->ops->draw(inst);
 	for (inst = insts[ip_frame]; inst; inst = inst->next)
 		if (inst->active && inst != selected_inst && inst->ops->draw)
-			inst->ops->draw(inst, ctx);
+			inst->ops->draw(inst);
 	if (selected_inst && selected_inst->ops->draw)
-		selected_inst->ops->draw(selected_inst, ctx);
+		selected_inst->ops->draw(selected_inst);
 }
 
 
-void inst_highlight_vecs(struct draw_ctx *ctx,
-    int (*pick)(struct inst *inst, void *user), void *user)
+void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user), void *user)
 {
 	struct inst *inst;
 
 	for (inst = insts[ip_vec]; inst; inst = inst->next)
 		if (pick(inst, user))
-			gui_highlight_vec(inst, ctx);
+			gui_highlight_vec(inst);
 }
 
 
-struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i)
+struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i)
 {
-	return inst->ops->draw_move(inst, ctx, pos, i);
+	return inst->ops->draw_move(inst, pos, i);
 }
 
 
@@ -868,14 +867,11 @@ int inst_do_move_to(struct inst *inst, struct vec *vec, int i)
 }
 
 
-void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on)
+struct pix_buf *inst_hover(struct inst *inst)
 {
 	if (!inst->ops->hover)
-		return;
-	if (on)
-		inst->ops->hover(inst, ctx);
-	else
-		inst->ops->draw(inst, ctx);
+		return NULL;
+	return inst->ops->hover(inst);
 }
 
 

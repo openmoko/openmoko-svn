@@ -74,5 +74,5 @@ void gui_setup_style(GdkDrawable *drawable)
 	gc_active_frame = gc("#00ff00", 2);
 //	gc_highlight = gc("#ff8020", 2);
 	gc_highlight = gc("#ff90d0", 2);
-	gc_frame[mode_hover] = gc_vec[mode_hover] = gc("#c00000", 1);
+	gc_frame[mode_hover] = gc_vec[mode_hover] = gc("#c00000", 2);
 }

@@ -14,7 +14,7 @@ OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        unparse.o dump.o meas.o \
        cpp.o lex.yy.o y.tab.o \
        gui.o gui_util.o gui_style.o gui_inst.o gui_status.o gui_canvas.o \
-       gui_tools.o
+       gui_tools.o gui_over.o
 
 XPMS = point.xpm delete.xpm vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \
        line.xpm rect.xpm pad.xpm circ.xpm meas.xpm meas_x.xpm meas_y.xpm

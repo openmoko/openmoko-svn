@@ -21,6 +21,9 @@
 #include "gui_util.h"
 
 
+struct draw_ctx draw_ctx;
+
+
 /* ----- look up a color --------------------------------------------------- */
 
 

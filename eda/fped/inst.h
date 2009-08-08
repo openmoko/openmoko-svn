@@ -37,7 +37,6 @@ struct bbox {
 };
 
 struct inst_ops;
-struct draw_ctx;
 
 struct inst {
 	const struct inst_ops *ops;
@@ -83,10 +82,10 @@ extern struct bbox active_frame_bbox;
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));
-int inst_select(const struct draw_ctx *ctx, struct coord pos);
+int inst_select(struct coord pos);
 void inst_deselect(void);
 
-struct inst *inst_find_point(const struct draw_ctx *ctx, struct coord pos);
+struct inst *inst_find_point(struct coord pos);
 struct coord inst_get_point(const struct inst *inst);
 int inst_anchors(struct inst *inst, struct vec ***anchors);
 struct vec *inst_get_vec(const struct inst *inst);
@@ -113,13 +112,12 @@ void inst_start(void);
 void inst_commit(void);
 void inst_revert(void);
 
-void inst_draw(struct draw_ctx *ctx);
-void inst_highlight_vecs(struct draw_ctx *ctx, 
-    int (*pick)(struct inst *inst, void *user), void *user);
-struct pix_buf *inst_draw_move(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
+void inst_draw(void);
+void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user),
+     void *user);
+struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
-void inst_hover(struct inst *inst, struct draw_ctx *ctx, int on);
+struct pix_buf *inst_hover(struct inst *inst);
 void inst_delete(struct inst *inst);
 void inst_debug(void);
 

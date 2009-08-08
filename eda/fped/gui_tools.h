@@ -19,30 +19,28 @@
 #include "inst.h"
 
 
-struct pix_buf *draw_move_vec(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_line(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_rect(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_pad(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_arc(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_meas(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
-struct pix_buf *draw_move_frame(struct inst *inst, struct draw_ctx *ctx,
-    struct coord pos, int i);
+struct pix_buf *draw_move_vec(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_line(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_rect(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_pad(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_meas(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_frame(struct inst *inst, struct coord pos, int i);
+
+struct pix_buf *gui_hover_vec(struct inst *self);
+struct pix_buf *gui_hover_frame(struct inst *self);
 
 void do_move_to_arc(struct inst *inst, struct vec *vec, int i);
 
-void tool_dehover(struct draw_ctx *ctx);
-void tool_hover(struct draw_ctx *ctx, struct coord pos);
-int tool_consider_drag(struct draw_ctx *ctx, struct coord pos);
-void tool_drag(struct draw_ctx *ctx, struct coord to);
-void tool_cancel_drag(struct draw_ctx *ctx);
-int tool_end_drag(struct draw_ctx *ctx, struct coord to);
-void tool_redraw(struct draw_ctx *ctx);
+void tool_dehover(void);
+void tool_hover(struct coord pos);
+int tool_consider_drag(struct coord pos);
+void tool_drag(struct coord to);
+void tool_cancel_drag(void);
+int tool_end_drag(struct coord to);
+void tool_redraw(void);
+
+struct pix_buf *tool_drag_new(struct inst *inst, struct coord pos);
 
 /*
  * Cache the frame and track it.
