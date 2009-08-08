@@ -24,6 +24,7 @@
 #include "gui_status.h"
 #include "gui_tool.h"
 #include "gui_inst.h"
+#include "gui.h"
 #include "inst.h"
 
 
@@ -81,6 +82,23 @@ static unsigned long active_set = 0;
 
 
 #define	IS_ACTIVE	((active_set & 1))
+
+
+/* ----- selective visibility ---------------------------------------------- */
+
+
+static int show(enum inst_prio prio)
+{
+	switch (prio) {
+	case ip_vec:
+	case ip_frame:
+		return show_stuff;
+	case ip_meas:
+		return show_meas;
+	default:
+		return 1;
+	}
+}
 
 
 /* ----- selection of items not on the canvas ------------------------------ */
@@ -142,6 +160,8 @@ int inst_select(struct coord pos)
 	edit_nothing();
 	selected_inst = NULL;
 	FOR_INST_PRIOS_DOWN(prio) {
+		if (!show(prio))
+			continue;
 		for (inst = insts[prio]; inst; inst = inst->next) {
 			if (!inst->active || !inst->ops->distance)
 				continue;
@@ -154,6 +174,9 @@ int inst_select(struct coord pos)
 		if (selected_inst)
 			goto selected;
 	}
+
+	if (!show_stuff)
+		return 0;
 
 	/* give vectors a second chance */
 
@@ -828,15 +851,17 @@ void inst_draw(void)
 	struct inst *inst;
 
 	FOR_INSTS_UP(prio, inst)
-		if (!inst->active && inst->ops->draw)
+		if (show(prio) && !inst->active && inst->ops->draw)
 			inst->ops->draw(inst);
 	FOR_INSTS_UP(prio, inst)
-		if (prio != ip_frame && inst->active &&
+		if (show(prio) && prio != ip_frame && inst->active &&
 		    inst != selected_inst && inst->ops->draw)
 			inst->ops->draw(inst);
-	for (inst = insts[ip_frame]; inst; inst = inst->next)
-		if (inst->active && inst != selected_inst && inst->ops->draw)
-			inst->ops->draw(inst);
+	if (show_stuff)
+		for (inst = insts[ip_frame]; inst; inst = inst->next)
+			if (inst->active && inst != selected_inst &&
+			    inst->ops->draw)
+				inst->ops->draw(inst);
 	if (selected_inst && selected_inst->ops->draw)
 		selected_inst->ops->draw(selected_inst);
 }

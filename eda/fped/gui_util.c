@@ -161,6 +161,67 @@ void label_in_box_bg(GtkWidget *label, const char *color)
 }
 
 
+/* ----- generate a tool button with an XPM image -------------------------- */
+
+
+GtkWidget *make_image(GdkDrawable *drawable, char **xpm)
+{
+	GdkPixmap *pixmap;
+	GtkWidget *image;
+
+	pixmap = gdk_pixmap_create_from_xpm_d(drawable, NULL, NULL, xpm);
+	image = gtk_image_new_from_pixmap(pixmap, NULL);
+	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
+	return image;
+}
+
+
+static void remove_child(GtkWidget *widget, gpointer data)
+{
+	gtk_container_remove(GTK_CONTAINER(data), widget);
+}
+
+
+void set_image(GtkWidget *widget, GtkWidget *image)
+{
+	gtk_container_foreach(GTK_CONTAINER(widget), remove_child, widget);
+	gtk_container_add(GTK_CONTAINER(widget), image);
+	gtk_widget_show_all(widget);
+}
+
+
+GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,
+    gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
+    gpointer data)
+{
+	GtkWidget *image, *evbox;	
+	GtkToolItem *item;
+
+	/*
+	 * gtk_radio_tool_button_new_from_widget is *huge*. We try to do things
+	 * in a
+	 * more compact way.
+	 */
+
+	evbox = gtk_event_box_new();
+	if (xpm) {
+		image = make_image(drawable, xpm);
+		gtk_container_add(GTK_CONTAINER(evbox), image);
+	}
+	g_signal_connect(G_OBJECT(evbox), "button_press_event",
+            G_CALLBACK(cb), data);
+
+	item = gtk_tool_item_new();
+	gtk_container_add(GTK_CONTAINER(item), evbox);
+
+	gtk_container_set_border_width(GTK_CONTAINER(item), 0);
+
+	gtk_toolbar_insert(GTK_TOOLBAR(bar), item, -1);
+
+	return evbox;
+}
+
+
 /* ----- render a text string ---------------------------------------------- */
 
 

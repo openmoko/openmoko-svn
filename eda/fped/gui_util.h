@@ -56,6 +56,12 @@ GtkWidget *label_in_box_new(const char *s);
 GtkWidget *box_of_label(GtkWidget *label);
 void label_in_box_bg(GtkWidget *box, const char *color);
 
+GtkWidget *make_image(GdkDrawable *drawable, char **xpm);
+void set_image(GtkWidget *widget, GtkWidget *image);
+GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,
+    gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
+    gpointer data);
+
 void render_text(GdkDrawable *da, GdkGC *gc, int x, int y, double angle,
     const char *s, const char *font, double xalign, double yalign,
     int xmax, int ymax);

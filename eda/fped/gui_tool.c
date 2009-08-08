@@ -510,17 +510,9 @@ static int is_parent_of(const struct frame *p, const struct frame *c)
 static struct frame *locked_frame = NULL;
 
 
-static void remove_child(GtkWidget *widget, gpointer data)
-{
-	gtk_container_remove(GTK_CONTAINER(data), widget);
-}
-
-
 static void set_frame_image(GtkWidget *image)
 {
-	gtk_container_foreach(GTK_CONTAINER(ev_frame), remove_child, ev_frame);
-	gtk_container_add(GTK_CONTAINER(ev_frame), image);
-	gtk_widget_show_all(ev_frame);
+	set_image(ev_frame, image);
 }
 
 
@@ -851,63 +843,12 @@ void tool_reset(void)
 static gboolean tool_button_press_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
-	tool_select(widget, data);
-	return TRUE;
-}
-
-
-static GtkWidget *make_image(GdkDrawable *drawable,  char **xpm)
-{
-	GdkPixmap *pixmap;
-	GtkWidget *image;
-
-	pixmap = gdk_pixmap_create_from_xpm_d(drawable, NULL, NULL, xpm);
-	image = gtk_image_new_from_pixmap(pixmap, NULL);
-	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
-	return image;
-}
-
-
-static GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable,
-    char **xpm, GtkWidget *last_evbox, struct tool_ops *ops)
-{
-	GtkWidget *image, *evbox;	
-	GtkToolItem *item;
-	GtkToolItem *last = NULL;
-
-	if (last_evbox)
-		last = GTK_TOOL_ITEM(gtk_widget_get_ancestor(last_evbox,
-		    GTK_TYPE_TOOL_ITEM));
-
-/*
- * gtk_radio_tool_button_new_from_widget is *huge*. we try to do things in a
- * more compact way.
- */
-#if 0
-	if (last)
-		item = gtk_radio_tool_button_new_from_widget(
-		    GTK_RADIO_TOOL_BUTTON(last));
-	else
-		item = gtk_radio_tool_button_new(NULL);
-	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(item), image);
-#else
-	evbox = gtk_event_box_new();
-	if (xpm) {
-		image = make_image(drawable, xpm);
-		gtk_container_add(GTK_CONTAINER(evbox), image);
+	switch (event->button) {
+	case 1:
+		tool_select(widget, data);
+		break;
 	}
-	g_signal_connect(G_OBJECT(evbox), "button_press_event",
-            G_CALLBACK(tool_button_press_event), ops);
-
-	item = gtk_tool_item_new();
-	gtk_container_add(GTK_CONTAINER(item), evbox);
-
-	gtk_container_set_border_width(GTK_CONTAINER(item), 0);
-#endif
-
-	gtk_toolbar_insert(GTK_TOOLBAR(bar), item, -1);
-
-	return evbox;
+	return TRUE;
 }
 
 
@@ -924,27 +865,36 @@ static void tool_separator(GtkWidget *bar)
 GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 {
 	GtkWidget *bar;
-	GtkWidget *last;
 
 	bar = gtk_toolbar_new();
 	gtk_toolbar_set_style(GTK_TOOLBAR(bar), GTK_TOOLBAR_ICONS);
 	gtk_toolbar_set_orientation(GTK_TOOLBAR(bar),
 	    GTK_ORIENTATION_VERTICAL);
 
-	ev_point = tool_button(bar, drawable, xpm_point, NULL, NULL);
-	last = tool_button(bar, drawable, xpm_delete, ev_point, &delete_ops);
+	ev_point = tool_button(bar, drawable, xpm_point,
+	    tool_button_press_event, NULL);
+	tool_button(bar, drawable, xpm_delete,
+	    tool_button_press_event, &delete_ops);
 	tool_separator(bar);
-	last = tool_button(bar, drawable, xpm_vec, last, &vec_ops);
-	ev_frame = tool_button(bar, drawable, NULL, last, &frame_ops);
-	last = ev_frame;
-	last = tool_button(bar, drawable, xpm_pad, last, &pad_ops);
-	last = tool_button(bar, drawable, xpm_line, last, &line_ops);
-	last = tool_button(bar, drawable, xpm_rect, last, &rect_ops);
-	last = tool_button(bar, drawable, xpm_circ, last, &circ_ops);
+	tool_button(bar, drawable, xpm_vec,
+	    tool_button_press_event, &vec_ops);
+	ev_frame = tool_button(bar, drawable, NULL,
+	    tool_button_press_event, &frame_ops);
+	tool_button(bar, drawable, xpm_pad,
+	    tool_button_press_event, &pad_ops);
+	tool_button(bar, drawable, xpm_line,
+	    tool_button_press_event, &line_ops);
+	tool_button(bar, drawable, xpm_rect,
+	    tool_button_press_event, &rect_ops);
+	tool_button(bar, drawable, xpm_circ,
+	    tool_button_press_event, &circ_ops);
 	tool_separator(bar);
-	last = tool_button(bar, drawable, xpm_meas, last, &meas_ops);
-	last = tool_button(bar, drawable, xpm_meas_x, last, &meas_ops_x);
-	last = tool_button(bar, drawable, xpm_meas_y, last, &meas_ops_y);
+	tool_button(bar, drawable, xpm_meas,
+	    tool_button_press_event, &meas_ops);
+	tool_button(bar, drawable, xpm_meas_x,
+	    tool_button_press_event, &meas_ops_x);
+	tool_button(bar, drawable, xpm_meas_y,
+	    tool_button_press_event, &meas_ops_y);
 
 	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame));
 	frame_image_locked =

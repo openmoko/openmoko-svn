@@ -286,8 +286,10 @@ static int end_new_meas(struct inst *from, struct inst *to)
 	default:
 		abort();
 	}
-	meas->inverted = meas_dsc->lt(from->u.rect.end, to->u.rect.end) !=
-	    (mode == min_to_next_or_max);
+	meas->inverted =
+	  mode == min_to_next_or_max && is_min(meas_dsc->lt, to) ? 0 :
+	  meas_dsc->lt(from->u.rect.end, to->u.rect.end) !=
+	  (mode == min_to_next_or_max);
 {
 char *sm[] = { "min_to", "max_to", "next_to" };
 char *st[] = { "nxy", "nx", "ny", "mxy", "mx", "my" };

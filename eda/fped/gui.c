@@ -24,10 +24,20 @@
 #include "gui_frame.h"
 #include "gui.h"
 
+#include "icons/stuff.xpm"
+#include "icons/stuff_off.xpm"
+#include "icons/meas.xpm"
+#include "icons/meas_off.xpm"
+
 
 GtkWidget *root;
+int show_stuff = 1;
+int show_meas = 1;
+
 
 static GtkWidget *frames_box;
+static GtkWidget *ev_stuff, *ev_meas;
+static GtkWidget *stuff_image[2], *meas_image[2];
 
 
 /* ----- menu bar ---------------------------------------------------------- */
@@ -39,13 +49,13 @@ static void menu_save(GtkWidget *widget, gpointer user)
 }
 
 
-static void make_menu_bar(GtkWidget *vbox)
+static void make_menu_bar(GtkWidget *hbox)
 {
 	GtkWidget *bar;
 	GtkWidget *file_menu, *file, *quit, *save;
 
 	bar = gtk_menu_bar_new();
-	gtk_box_pack_start(GTK_BOX(vbox), bar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), bar, TRUE, TRUE, 0);
 
 	file_menu = gtk_menu_new();
 
@@ -62,6 +72,67 @@ static void make_menu_bar(GtkWidget *vbox)
 	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), quit);
 	g_signal_connect(G_OBJECT(quit), "activate",
 	    G_CALLBACK(gtk_main_quit), NULL);
+}
+
+
+static gboolean toggle_stuff(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		show_stuff = !show_stuff;
+		set_image(ev_stuff, stuff_image[show_stuff]);
+		redraw();
+		break;
+	}
+        return TRUE;
+}
+
+
+static gboolean toggle_meas(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		show_meas = !show_meas;
+		set_image(ev_meas, meas_image[show_meas]);
+		redraw();
+		break;
+	}
+        return TRUE;
+}
+
+
+static void make_tool_bar(GtkWidget *hbox, GdkDrawable *drawable)
+{
+	GtkWidget *bar;
+
+	bar = gtk_toolbar_new();
+	gtk_box_pack_end(GTK_BOX(hbox), bar, TRUE, TRUE, 0);
+	//gtk_box_pack_end(GTK_BOX(hbox), bar, FALSE, FALSE, 0);
+	gtk_toolbar_set_style(GTK_TOOLBAR(bar), GTK_TOOLBAR_ICONS);
+
+	ev_stuff = tool_button(bar, drawable, NULL, toggle_stuff, NULL);
+	ev_meas = tool_button(bar, drawable, NULL, toggle_meas, NULL);
+
+	stuff_image[0] = gtk_widget_ref(make_image(drawable, xpm_stuff_off));
+	stuff_image[1] = gtk_widget_ref(make_image(drawable, xpm_stuff));
+	meas_image[0] = gtk_widget_ref(make_image(drawable, xpm_meas_off));
+	meas_image[1] = gtk_widget_ref(make_image(drawable, xpm_meas));
+
+	set_image(ev_stuff, stuff_image[show_stuff]);
+	set_image(ev_meas, meas_image[show_meas]);
+}
+
+
+static void make_top_bar(GtkWidget *vbox)
+{
+	GtkWidget *hbox;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	make_menu_bar(hbox);
+	make_tool_bar(hbox, root->window);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 }
 
 
@@ -125,7 +196,7 @@ static void make_screen(GtkWidget *window)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
-	make_menu_bar(vbox);
+	make_top_bar(vbox);
 	make_center_area(vbox);
 	make_status_area(vbox);
 }
