@@ -445,7 +445,7 @@ Known issues:
 
 Syntax:
 
-<type> <from> <op> <to> <offset>
+<type> [<label>] <from> <op> <to> <offset>
 
 Types:
 - measxy: measure diagonally
@@ -468,3 +468,11 @@ the name of the frame followed by a dot.
 Example:
 
 measx pad.sw -> pad.se 1mm
+
+The optional label is printed directly before the distance. Example:
+
+a: vec @(0mm, 0mm)
+b: vec @(1mm, 0mm)
+measx "width = " a >> b 0mm
+
+would print "width = 1mm"
