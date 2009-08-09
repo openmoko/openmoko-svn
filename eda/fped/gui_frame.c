@@ -799,6 +799,31 @@ static gboolean loop_select_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 
+static gboolean loop_scroll_event(GtkWidget *widget, GdkEventScroll *event,
+    gpointer data)
+{
+	struct loop *loop = data;
+
+	switch (event->direction) {
+	case GDK_SCROLL_UP:
+		if (loop->active < loop->iterations-1) {
+			loop->active++;
+			change_world();
+		}
+		break;
+	case GDK_SCROLL_DOWN:
+		if (loop->active) {
+			loop->active--;
+			change_world();
+		}
+		break;
+	default:
+		/* ignore */;
+	}
+	return TRUE;
+}
+
+
 static void build_loop(GtkWidget *vbox, struct frame *frame,
     struct loop *loop)
 {
@@ -851,6 +876,10 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 		    loop_select_event, loop, "%d", i);
 		gtk_object_set_data(GTK_OBJECT(box_of_label(label)), "value",
 		    (gpointer) (long) i);
+
+		g_signal_connect(G_OBJECT(box_of_label(label)),
+		    "scroll_event",
+		    G_CALLBACK(loop_scroll_event), loop);
 	}
 
 	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(")"),

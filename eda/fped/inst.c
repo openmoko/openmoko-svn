@@ -23,6 +23,7 @@
 #include "gui_util.h"
 #include "gui_status.h"
 #include "gui_tool.h"
+#include "gui_meas.h"
 #include "gui_inst.h"
 #include "gui.h"
 #include "inst.h"
@@ -37,9 +38,10 @@ struct inst_ops {
 	    unit_type scale);
 	void (*select)(struct inst *self);
 	int (*anchors)(struct inst *self, struct vec ***anchors);
+	void (*begin_drag_move)(struct inst *from, int i);
 	struct pix_buf *(*draw_move)(struct inst *inst,
 	    struct coord pos, int i);
-	/* arcs need this special override */
+	/* arcs and measurements need this special override */
 	void (*do_move_to)(struct inst *inst, struct vec *vec, int i);
 };
 
@@ -689,6 +691,7 @@ static struct inst_ops meas_ops = {
 	.distance	= gui_dist_meas,
 	.select		= meas_op_select,
 	.anchors	= meas_op_anchors,
+	.begin_drag_move= begin_drag_move_meas,
 	.draw_move	= draw_move_meas,
 };
 
@@ -922,6 +925,13 @@ struct pix_buf *inst_hover(struct inst *inst)
 	if (!inst->ops->hover)
 		return NULL;
 	return inst->ops->hover(inst);
+}
+
+
+void inst_begin_drag_move(struct inst *inst, int i)
+{
+	if (inst->ops->begin_drag_move)
+		inst->ops->begin_drag_move(inst, i);
 }
 
 

@@ -161,6 +161,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 	const struct inst *prev;
 	int res;
 
+	gtk_widget_grab_focus(widget);
 	switch (event->button) {
 	case 1:
 		if (dragging) {
@@ -267,6 +268,7 @@ static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
 {
 	struct coord pos = canvas_to_coord(event->x, event->y);
 
+	gtk_widget_grab_focus(widget);
 	switch (event->direction) {
 	case GDK_SCROLL_UP:
 		zoom_in(pos);

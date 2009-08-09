@@ -751,6 +751,7 @@ int tool_consider_drag(struct coord pos)
 		return 0;
 	drag.inst = selected_inst;
 	drag.new = NULL;
+	inst_begin_drag_move(selected_inst, drag.anchor_i);
 	over_begin(drag_save_and_draw, NULL, pos);
 	return 1;
 }
@@ -890,11 +891,11 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	    tool_button_press_event, &circ_ops);
 	tool_separator(bar);
 	tool_button(bar, drawable, xpm_meas,
-	    tool_button_press_event, &meas_ops);
+	    tool_button_press_event, &tool_meas_ops);
 	tool_button(bar, drawable, xpm_meas_x,
-	    tool_button_press_event, &meas_ops_x);
+	    tool_button_press_event, &tool_meas_ops_x);
 	tool_button(bar, drawable, xpm_meas_y,
-	    tool_button_press_event, &meas_ops_y);
+	    tool_button_press_event, &tool_meas_ops_y);
 
 	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame));
 	frame_image_locked =

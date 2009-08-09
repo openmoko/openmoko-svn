@@ -25,8 +25,6 @@ struct tool_ops {
 	struct inst *(*find_point)(struct coord pos);
 	void (*click)(struct coord pos);
 	void (*begin_drag_new)(struct inst *from);
-// in inst
-//	void (*begin_drag_move)struct inst *from, int anchor_i);
 	struct pix_buf *(*drag_new)(struct inst *from, struct coord to);
 	int (*end_new_raw)(struct inst *from, struct coord to);
 	int (*end_new)(struct inst *from, struct inst *to);

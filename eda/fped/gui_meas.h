@@ -1,5 +1,5 @@
 /*
- * gui_meas.c - GUI, canvas overlays
+ * gui_meas.c - GUI, measurements
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -14,9 +14,14 @@
 #ifndef GUI_MEAS_H
 #define GUI_MEAS_H
 
+#include "gui_tool.h"
 
-struct tool_ops meas_ops;
-struct tool_ops meas_ops_x;
-struct tool_ops meas_ops_y;
+
+extern struct tool_ops tool_meas_ops;
+extern struct tool_ops tool_meas_ops_x;
+extern struct tool_ops tool_meas_ops_y;
+
+
+void begin_drag_move_meas(struct inst *inst, int i);
 
 #endif /* !GUI_MEAS_H */

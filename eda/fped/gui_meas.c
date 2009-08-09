@@ -1,5 +1,5 @@
 /*
- * gui_meas.c - GUI, canvas overlays
+ * gui_meas.c - GUI, measurements
  *
  * Written 2009 by Werner Almesberger
  * Copyright 2009 by Werner Almesberger
@@ -308,10 +308,46 @@ sm[mode], st[meas->type], meas->inverted);
 /* ----- begin dragging existing measurement ------------------------------- */
 
 
+void begin_drag_move_meas(struct inst *inst, int i)
+{
+	const struct meas *meas = &inst->obj->u.meas;
+
+	switch (meas->type) {
+	case mt_xy_next:
+	case mt_xy_max:
+		meas_dsc = &meas_dsc_xy;
+		break;
+	case mt_x_next:
+	case mt_x_max:
+		meas_dsc = &meas_dsc_x;
+		break;
+	case mt_y_next:
+	case mt_y_max:
+		meas_dsc = &meas_dsc_y;
+		break;
+	default:
+		abort();
+	}
+	switch (i) {
+	case 0:
+		highlight = meas_highlight_a;
+		mode = meas->type < 3 ? next_to_min : max_to_min;
+		break;
+	case 1:
+		highlight = meas_highlight_b;
+		mode = min_to_next_or_max;
+		break;
+	default:
+		abort();
+	}
+	redraw();
+}
+
+
 /* ----- operations ------------------------------------------------------- */
 
 
-struct tool_ops meas_ops = {
+struct tool_ops tool_meas_ops = {
 	.tool_selected	= tool_selected_meas_xy,
 	.tool_deselected= tool_deselected_meas,
 	.find_point	= find_point_meas,
@@ -320,7 +356,7 @@ struct tool_ops meas_ops = {
 	.end_new	= end_new_meas,
 };
 
-struct tool_ops meas_ops_x = {
+struct tool_ops tool_meas_ops_x = {
 	.tool_selected	= tool_selected_meas_x,
 	.tool_deselected= tool_deselected_meas,
 	.find_point	= find_point_meas,
@@ -330,7 +366,7 @@ struct tool_ops meas_ops_x = {
 };
 
 
-struct tool_ops meas_ops_y = {
+struct tool_ops tool_meas_ops_y = {
 	.tool_selected	= tool_selected_meas_y,
 	.tool_deselected= tool_deselected_meas,
 	.find_point	= find_point_meas,

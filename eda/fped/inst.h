@@ -121,6 +121,7 @@ struct inst *insts_ip_vec(void);
 struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i);
 int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
 struct pix_buf *inst_hover(struct inst *inst);
+void inst_begin_drag_move(struct inst *inst, int i);
 void inst_delete(struct inst *inst);
 void inst_debug(void);
 

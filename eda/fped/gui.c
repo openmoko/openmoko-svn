@@ -82,6 +82,7 @@ static gboolean toggle_stuff(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		show_stuff = !show_stuff;
 		set_image(ev_stuff, stuff_image[show_stuff]);
+		inst_deselect();
 		redraw();
 		break;
 	}
@@ -96,6 +97,7 @@ static gboolean toggle_meas(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		show_meas = !show_meas;
 		set_image(ev_meas, meas_image[show_meas]);
+		inst_deselect();
 		redraw();
 		break;
 	}

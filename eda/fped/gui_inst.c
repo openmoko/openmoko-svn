@@ -340,50 +340,60 @@ static struct coord offset_vec(struct coord a, struct coord b,
 }
 
 
-unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale)
+static void project_meas(struct inst *inst, struct coord *a1, struct coord *b1)
 {
-	struct coord a, b, off;
-	unit_type d;
+	const struct meas *meas = &inst->obj->u.meas;
+	struct coord off;
 
-	off = offset_vec(self->base, self->u.meas.end, self);
-	a = add_vec(self->base, off);
-	b = add_vec(self->u.meas.end, off);
-	d = dist_line(pos, a, b)/scale;
-	return d > SELECT_R ? -1 : d;
-}
-
-
-void gui_draw_meas(struct inst *self)
-{
-	struct coord a0, b0, a1, b1, off, c, d;
-	GdkGC *gc;
-	double len;
-	const struct meas *meas = &self->obj->u.meas;
-	char *s;
-
-	a0 = translate(self->base);
-	b0 = translate(self->u.meas.end);
-	a1 = self->base;
-	b1 = self->u.meas.end;
+	*a1 = inst->base;
+	*b1 = inst->u.meas.end;
 	switch (meas->type) {
 	case mt_xy_next:
 	case mt_xy_max:
 		break;
 	case mt_x_next:
 	case mt_x_max:
-		b1.y = a1.y;
+		b1->y = a1->y;
 		break;
 	case mt_y_next:
 	case mt_y_max:
-		b1.x = a1.x;
+		b1->x = a1->x;
 		break;
 	default:
 		abort();
 	}
-	off = offset_vec(a1, b1, self);
+	off = offset_vec(*a1, *b1, inst);
+	*a1 = add_vec(*a1, off);
+	*b1 = add_vec(*b1, off);
+}
+
+
+unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale)
+{
+	struct coord a1, b1;
+	unit_type d;
+
+	project_meas(self, &a1, &b1);
+	d = dist_line(pos, a1, b1)/scale;
+	return d > SELECT_R ? -1 : d;
+}
+
+
+void gui_draw_meas(struct inst *self)
+{
+	const struct meas *meas = &self->obj->u.meas;
+	struct coord a0, b0, a1, b1, c, d;
+	GdkGC *gc;
+	double len;
+	char *s;
+
+	a0 = translate(self->base);
+	b0 = translate(self->u.meas.end);
+	project_meas(self, &a1, &b1);
+
 	len = units_to_mm(dist_point(a1, b1));
-	a1 = translate(add_vec(a1, off));
-	b1 = translate(add_vec(b1, off));
+	a1 = translate(a1);
+	b1 = translate(b1);
 	gc = gc_meas[get_mode(self)];
 	gdk_draw_line(DA, gc, a0.x, a0.y, a1.x, a1.y);
 	gdk_draw_line(DA, gc, b0.x, b0.y, b1.x, b1.y);

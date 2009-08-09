@@ -116,8 +116,26 @@ static int is_next[mt_n] = {
 /* ----- search functions -------------------------------------------------- */
 
 
+static int closer(int da, int db)
+{
+	int abs_a, abs_b;
+
+	abs_a = da < 0 ? -da : da;
+	abs_b = db < 0 ? -db : db;
+	if (abs_a < abs_b)
+		return 1;
+	if (abs_a > abs_b)
+		return 0;
+	/*
+	 * Really *all* other things being equal, pick the one that protrudes
+	 * in the positive direction.
+	 */
+	return da > db;
+}
+
+
 static int better_next(lt_op_type lt,
-    struct coord a0, struct coord b0, struct coord b, int recursing)
+    struct coord a0, struct coord b0, struct coord b)
 {
 	/* if we don't have any suitable point A0 < B0 yet, use this one */
 	if (!lt(a0, b0))
@@ -140,12 +158,12 @@ static int better_next(lt_op_type lt,
 	 * coordinate a chance. This gives us a stable sort order and it
 	 * makes meas/measx/measy usually select the same point.
 	 */
-	if (lt == lt_xy || recursing)
+	if (lt == lt_xy)
 		return 0;
 	if (lt == lt_x)
-		return better_next(lt_y, a0, b0, b, 1);
+		return closer(b.y-a0.y, b0.y-a0.y);
 	if (lt == lt_y)
-		return better_next(lt_x, a0, b0, b, 1);
+		return closer(b.x-a0.x, b0.x-a0.x);
 	abort();
 }
 
@@ -180,7 +198,7 @@ struct coord meas_find_next(lt_op_type lt, const struct sample *s,
 
 	next = s->pos;
 	while (s) {
-		if (better_next(lt, ref, next, s->pos, 0))
+		if (better_next(lt, ref, next, s->pos))
 			next = s->pos;
 		s = s->next;
 	}
