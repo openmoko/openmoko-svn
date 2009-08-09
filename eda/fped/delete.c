@@ -124,6 +124,7 @@ static int obj_has_ref(const struct obj *obj, const struct vec *ref)
 	case ot_arc:
 		return obj->u.arc.start == ref || obj->u.arc.end == ref;
 	case ot_meas:
+		return obj->u.meas.high == ref;
 	default:
 		abort();
 	}
@@ -203,7 +204,8 @@ static void destroy_obj(struct obj *obj)
 		free_expr(obj->u.arc.width);
 		break;
 	case ot_meas:
-		free_expr(obj->u.meas.offset);
+		if (obj->u.meas.offset)
+			free_expr(obj->u.meas.offset);
 		break;
 	default:
 		abort();

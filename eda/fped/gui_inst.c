@@ -358,15 +358,14 @@ void gui_draw_meas(struct inst *self)
 	struct coord a0, b0, a1, b1, off, c, d;
 	GdkGC *gc;
 	double len;
-	const char *label = self->u.meas.meas ?
-	    self->u.meas.meas->label ? self->u.meas.meas->label : "" : "";
+	const struct meas *meas = &self->obj->u.meas;
 	char *s;
 
 	a0 = translate(self->base);
 	b0 = translate(self->u.meas.end);
 	a1 = self->base;
 	b1 = self->u.meas.end;
-	switch (self->u.meas.meas ? self->u.meas.meas->type : mt_xy_next) {
+	switch (meas->type) {
 	case mt_xy_next:
 	case mt_xy_max:
 		break;
@@ -394,7 +393,7 @@ void gui_draw_meas(struct inst *self)
 
 	c = add_vec(a1, b1);
 	d = sub_vec(b1, a1);
-	s = stralloc_printf("%s%lgmm", label, len);
+	s = stralloc_printf("%s%lgmm", meas->label ? meas->label : "", len);
 	render_text(DA, gc, c.x/2, c.y/2, -atan2(d.y, d.x)/M_PI*180, s,
 	    MEAS_FONT, 0.5, -MEAS_BASELINE_OFFSET,
 	    dist_point(a1, b1)-1.5*MEAS_ARROW_LEN, 0);

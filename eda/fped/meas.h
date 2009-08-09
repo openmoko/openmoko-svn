@@ -14,11 +14,15 @@
 #ifndef MEAS_H
 #define MEAS_H
 
-#include "obj.h"
+
+#include "coord.h"
+#include "expr.h"
 
 
 typedef int (*lt_op_type)(struct coord a, struct coord b);
 
+struct vec;
+struct obj;
 
 struct meas {
 	enum meas_type {
@@ -32,16 +36,12 @@ struct meas {
 	} type;
 	char *label; /* or NULL */
 	int inverted;
-	struct vec *low;
+	/* low is obj->base */
 	struct vec *high;
 	struct expr *offset;
-	struct meas *next;
 };
 
 struct sample;
-
-
-extern struct meas *measurements;
 
 
 int lt_x(struct coord a, struct coord b);

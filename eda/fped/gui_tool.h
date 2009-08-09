@@ -59,6 +59,7 @@ void tool_redraw(void);
  * compilation unit.
  */
 
+struct obj *new_obj(enum obj_type type, struct inst *base);
 struct pix_buf *draw_move_line_common(struct inst *inst,
     struct coord end, struct coord pos, int i);
 struct pix_buf *drag_new_line(struct inst *from, struct coord to);

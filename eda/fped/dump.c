@@ -201,14 +201,27 @@ static int may_dump_obj_now(const struct obj *obj, const struct vec *prev)
 		l |= later(obj->u.arc.end, prev);
 		break;
 	case ot_meas:
-		n |= need(obj->u.meas.other, prev);
-		l |= later(obj->u.meas.other, prev);
-		break;
+		return 0;
 	default:
 		abort();
 	}
 
 	return n && !l;
+}
+
+
+static const char *meas_type_name[mt_n] = {
+	"meas", "measx", "measy",
+	"meas", "measx", "measy",
+};
+
+
+
+static void print_meas_base(FILE *file, struct vec *base)
+{
+	if (base->frame != root_frame)
+		fprintf(file, "%s.", base->frame->name);
+	fprintf(file, "%s", base->name);
 }
 
 
@@ -262,11 +275,22 @@ static void dump_obj(FILE *file, struct obj *obj, const char *indent,
 		free(s3);
 		break;
 	case ot_meas:
-		s1 = obj_base_name(obj->u.meas.other, prev);
-		s2 = unparse(obj->u.meas.offset);
-		fprintf(file, "%smeas %s %s %s\n", indent, base, s1, s2);
-		free(s1);
-		free(s2);
+		fprintf(file, "%s%s ", indent,
+		    meas_type_name[obj->u.meas.type]);
+		if (obj->u.meas.label)
+			fprintf(file, "\"%s\" ", obj->u.meas.label);
+		print_meas_base(file, obj->base);
+		fprintf(file, " %s ",
+		    obj->u.meas.type < 3 ? obj->u.meas.inverted ? "<-" : "->" :
+		    obj->u.meas.inverted ? "<<" : ">>");
+		print_meas_base(file, obj->u.meas.high);
+		if (!obj->u.meas.offset)
+			fprintf(file, "\n");
+		else {
+			s1 = unparse(obj->u.meas.offset);
+			fprintf(file, " %s\n", s1);
+			free(s1);
+		}
 		break;
 	default:
 		abort();
@@ -340,7 +364,7 @@ static void dump_frame(FILE *file, const struct frame *frame,
 		obj->dumped = 0;
 	dump_vecs(file, frame->vecs, indent);
 
-	/* duh. do we need this ? */
+	/* do we need this for anything but measurements ? */
 	for (obj = frame->objs; obj; obj = obj->next)
 		dump_obj(file, obj, indent, NULL);
 }

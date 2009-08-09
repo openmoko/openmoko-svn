@@ -19,6 +19,7 @@
 
 #include "expr.h"
 #include "coord.h"
+#include "meas.h"
 
 
 struct var {
@@ -152,11 +153,6 @@ struct arc {
 	struct expr *width;
 };
 
-struct old_meas {
-	struct vec *other; /* NULL if frame origin */
-	struct expr *offset;
-};
-
 struct obj {
 	enum obj_type type;
 	union {
@@ -165,7 +161,7 @@ struct obj {
 		struct rect line;
 		struct pad pad;
 		struct arc arc;
-		struct old_meas meas;
+		struct meas meas;
 	} u;
 	struct frame *frame;
 	struct vec *base;

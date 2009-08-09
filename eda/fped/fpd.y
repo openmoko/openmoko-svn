@@ -141,7 +141,6 @@ static struct obj *new_obj(enum obj_type type)
 	struct value *value;
 	struct vec *vec;
 	struct obj *obj;
-	struct meas *meas;
 	enum meas_type mt;
 	struct {
 		int inverted;
@@ -153,7 +152,7 @@ static struct obj *new_obj(enum obj_type type)
 %token		START_FPD START_EXPR
 %token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
-%token		TOK_MEAS TOK_MEASXY TOK_MEASX TOK_MEASY
+%token		TOK_MEAS TOK_MEASX TOK_MEASY
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 
 %token	<num>	NUMBER
@@ -165,9 +164,8 @@ static struct obj *new_obj(enum obj_type type)
 %type	<row>	rows
 %type	<value>	row value
 %type	<vec>	vec base qbase
-%type	<obj>	obj
+%type	<obj>	obj meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
-%type	<meas>	measurements meas
 %type	<str>	opt_string
 %type	<mt>	meas_type
 %type	<mo>	meas_op
@@ -246,9 +244,6 @@ frame_def:
 
 frame_items:
 	measurements
-		{
-			measurements = $1;
-		}
 	| frame_item frame_items
 	;
 
@@ -455,13 +450,6 @@ obj:
 			$$->u.arc.end = $4;
 			$$->u.arc.width = $5;
 		}
-	| TOK_MEAS base base expr
-		{
-			$$ = new_obj(ot_meas);
-			$$->base = $2;
-			$$->u.meas.other = $3;
-			$$->u.meas.offset = $4;
-		}
 	| TOK_FRAME ID 
 		{ 
 		    $<num>$.n = lineno;
@@ -482,26 +470,26 @@ obj:
 	;
 
 measurements:
+	| measurements meas
 		{
-			$$ = NULL;
-		}
-	| meas measurements
-		{
-			$$ = $1;
-			$$->next = $2;
+			*next_obj = $2;
+			next_obj = &$2->next;
 		}
 	;
 
 meas:
 	meas_type opt_string qbase meas_op qbase opt_expr
 		{
-			$$ = alloc_type(struct meas);
-			$$->type = $4.max ? $1+3 : $1;
-			$$->label = $2;
-			$$->low = $3;
-			$$->inverted = $4.inverted;
-			$$->high = $5;
-			$$->offset = $6;
+			struct meas *meas;
+
+			$$ = new_obj(ot_meas);
+			meas = &$$->u.meas;
+			meas->type = $4.max ? $1+3 : $1;
+			meas->label = $2;
+			$$->base = $3;
+			meas->inverted = $4.inverted;
+			meas->high = $5;
+			meas->offset = $6;
 			$$->next = NULL;
 		}
 	;
@@ -529,7 +517,7 @@ qbase:
 	;
 
 meas_type:
-	TOK_MEASXY
+	TOK_MEAS
 		{
 			$$ = mt_xy_next;
 		}

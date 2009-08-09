@@ -5,8 +5,6 @@ frame pad {
 	se: vec sw(Px, 0mm)
 	nw: vec sw(0mm, Py)
 	pad "$pad" se nw
-//	meas sw se -0.1mm
-//	meas sw nw 0.1mm
 }
 
 frame pad_ne {

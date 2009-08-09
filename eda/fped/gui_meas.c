@@ -256,12 +256,15 @@ static void begin_drag_new_meas(struct inst *inst)
 
 static int end_new_meas(struct inst *from, struct inst *to)
 {
+	struct obj *obj;
 	struct meas *meas;
 
 	meas_inst = NULL;
 	if (from == to)
 		return 0;
-	meas = alloc_type(struct meas);
+	/* it's safe to pass "from" here, but we may change it later */
+	obj = new_obj(ot_meas, from);
+	meas = &obj->u.meas;
 	meas->label = NULL;
 	switch (mode) {
 	case min_to_next_or_max:
@@ -270,17 +273,17 @@ static int end_new_meas(struct inst *from, struct inst *to)
 		} else {
 			meas->type = meas_dsc->type+3;
 		}
-		meas->low = from->vec;
+		obj->base = from->vec;
 		meas->high = to->vec;
 		break;
 	case next_to_min:
 		meas->type = meas_dsc->type;
-		meas->low = to->vec;
+		obj->base = to->vec;
 		meas->high = from->vec;
 		break;
 	case max_to_min:
 		meas->type = meas_dsc->type+3;
-		meas->low = to->vec;
+		obj->base = to->vec;
 		meas->high = from->vec;
 		break;
 	default:
@@ -296,9 +299,7 @@ char *st[] = { "nxy", "nx", "ny", "mxy", "mx", "my" };
 fprintf(stderr, "mode %s type %s, inverted %d\n",
 sm[mode], st[meas->type], meas->inverted);
 }
-	meas->offset = parse_expr("0mm");
-	meas->next = measurements;
-	measurements = meas;
+	meas->offset = NULL;
 	meas_dsc = NULL;
 	return 1;
 }

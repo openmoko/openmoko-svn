@@ -11,14 +11,14 @@ C: vec @(0mm, 4mm)
 /*
  * If we measure (x, y), y trumps x
  */
-measxy "A -> B = " A -> B 0.2mm
-measxy "A <- B = " A <- B 0.5mm
+meas "A -> B = " A -> B 0.2mm
+meas "A <- B = " A <- B 0.5mm
 
-measxy "A >> B = " A >> B 1.5mm
+meas "A >> B = " A >> B 1.5mm
 
 measx "x(A -> B) = " A -> B -0.5mm
 measx "x(A >> B) = " A >> B -1mm
 measy "y(A -> B) = " A -> B -2mm
 measy "y(A >> B) = " A >> B -4.5mm
 
-measxy "B -> C = " B -> C 0.5mm
+meas "B -> C = " B -> C 0.5mm

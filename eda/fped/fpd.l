@@ -95,8 +95,6 @@ SP	[\t ]*
 				  return TOK_ARC; }
 <INITIAL>"meas"			{ BEGIN(NOKEYWORD);
 				  return TOK_MEAS; }
-<INITIAL>"measxy"		{ BEGIN(NOKEYWORD);
-				  return TOK_MEASXY; }
 <INITIAL>"measx"		{ BEGIN(NOKEYWORD);
 				  return TOK_MEASX; }
 <INITIAL>"measy"		{ BEGIN(NOKEYWORD);

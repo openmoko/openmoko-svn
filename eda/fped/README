@@ -202,6 +202,8 @@ pad "1" @ .
 Measurements
 - - - - - -
 
+*** This is obsolete - see the section on new-style mesurements at the end. ***
+
 Measurements show the distance between two points:
 
 meas <point-a> <point-b> <offset>
@@ -439,16 +441,15 @@ New-style measurements are placed in the root frame after all other
 items.
 
 Known issues:
-- they are currently not dumped and they can't be entered or edited
-  through the GUI
-- 
+- they currently can't be edited through the GUI
+- tie-breaking heuristics don't always do what one expects
 
 Syntax:
 
 <type> [<label>] <from> <op> <to> [<offset>]
 
 Types:
-- measxy: measure diagonally
+- meas: measure diagonally
 - measx: measure along the X axis
 - measy: measure along the y axis
 

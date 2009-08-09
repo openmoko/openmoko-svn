@@ -1,4 +1,4 @@
-Missing features:
+Major missing features:
 - populate input area (still needed: mm/mil, rezoom)
 - add default unit (combine with grid unit selection ?)
 - consider adding auto/mm/mil selection for each dimension
@@ -6,7 +6,10 @@ Missing features:
   non-trivial endpoints, e.g., some vector in last iteration of loop)
 - add KiCad output
 - add postscript output
-- add option to include/omit helper vecs and frames (display and postscript)
+- add option to include/omit helper vecs and frames (done for display, still
+  need postscript)
+
+Minor missing features:
 - reorder frames (can use text editor)
 - reorder rows in a table (can use text editor)
 - reorder columns in a table
@@ -17,6 +20,8 @@ Error detection:
 
 Style:
 - make column of entry field greedily consume all unallocated space
+- make menu bar consume all unallocated space instead of sharing it evenly with
+  upper toolbar
 - status area looks awful
 - add button with GTK_STOCK_UNDELETE for "undelete" to menu bar
 - edit names/values/etc. in place if possible

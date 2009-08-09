@@ -677,10 +677,8 @@ static int meas_op_anchors(struct inst *inst, struct vec ***anchors)
 {
 	struct obj *obj = inst->obj;
 
-	if (!inst->obj)
-		return 0; /* @@@ new-style measurements */
 	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.meas.other;
+	anchors[1] = &obj->u.meas.high;
 	return 2;
 }
 
@@ -695,7 +693,7 @@ static struct inst_ops meas_ops = {
 };
 
 
-int inst_meas(struct obj *obj, struct meas *meas,
+int inst_meas(struct obj *obj,
     struct coord from, struct coord to, unit_type offset)
 {
 	struct inst *inst;
@@ -704,9 +702,7 @@ int inst_meas(struct obj *obj, struct meas *meas,
 	inst->obj = obj;
 	inst->u.meas.end = to;
 	inst->u.meas.offset = offset;
-	inst->u.meas.meas = meas;
-	if (!obj)
-		inst->active = 1; /* @@@ new-style measurements */
+	inst->active = 1; /* measurements are always active */
 	/* @@@ our bbox is actually a bit more complex than this */
 	update_bbox(&inst->bbox, to);
 	propagate_bbox(inst);

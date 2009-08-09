@@ -28,8 +28,6 @@ struct sample {
 	struct sample *next;
 };
 
-struct meas *measurements = NULL;
-
 
 static void reset_samples(struct sample **samples)
 {
@@ -210,17 +208,21 @@ struct coord meas_find_max(lt_op_type lt, const struct sample *s)
 
 int instantiate_meas(void)
 {
-	struct meas *meas;
+	struct obj *obj;
+	const struct meas *meas;
 	struct coord a0, b0;
 	lt_op_type lt;
 	struct num offset;
 
-	for (meas = measurements; meas; meas = meas->next) {
-		if (!meas->low->samples || !meas->high->samples)
+	for (obj = root_frame->objs; obj; obj = obj->next) {
+		if (obj->type != ot_meas)
 			continue;
+		meas = &obj->u.meas;
+		if (!obj->base->samples || !meas->high->samples)
+			return 1;
 
 		lt = lt_op[meas->type];
-		a0 = meas_find_min(lt, meas->low->samples);
+		a0 = meas_find_min(lt, obj->base->samples);
 		if (is_next[meas->type])
 			b0 = meas_find_next(lt, meas->high->samples, a0);
 		else
@@ -233,7 +235,7 @@ int instantiate_meas(void)
 			if (is_undef(offset))
 				return 0;
 		}
-		inst_meas(NULL, meas,
+		inst_meas(obj,
 		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0,
 		    offset.n);
 	}

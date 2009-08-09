@@ -92,7 +92,7 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 	struct obj *obj;
 	char *name;
 	int ok;
-	struct num width, offset;
+	struct num width;
 
 	for (obj = frame->objs; obj; obj = obj->next)
 		switch (obj->type) {
@@ -145,14 +145,6 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 				return 0;
 			break;
 		case ot_meas:
-			offset = eval_unit(obj->u.meas.offset, frame);
-			if (is_undef(offset))
-				return 0;
-			if (!inst_meas(obj, NULL,
-			    obj->base ? obj->base->pos : base,
-			    obj->u.meas.other ? obj->u.meas.other->pos : base,
-			    offset.n))
-				return 0;
 			break;
 		default:
 			abort();

@@ -81,7 +81,7 @@ static struct vec *new_vec(struct inst *base)
 }
 
 
-static struct obj *new_obj(enum obj_type type, struct inst *base)
+struct obj *new_obj(enum obj_type type, struct inst *base)
 {
 	struct obj *obj, **walk;
 
