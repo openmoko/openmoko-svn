@@ -12,11 +12,16 @@
 
 
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
 #include <gtk/gtk.h>
 
+#include "util.h"
 #include "inst.h"
 #include "obj.h"
 #include "dump.h"
+#include "kicad.h"
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_status.h"
@@ -46,24 +51,95 @@ static GtkWidget *stuff_image[2], *meas_image[2];
 /* ----- menu bar ---------------------------------------------------------- */
 
 
-static void menu_save(GtkWidget *widget, gpointer user)
+static char *set_extension(const char *name, const char *ext)
+{
+	char *s = stralloc(name);
+	char *slash, *dot;
+	char *res;
+
+	slash = strrchr(s, '/');
+	dot = strrchr(slash ? slash : s, '.');
+	if (dot)
+		*dot = 0;
+	res = stralloc_printf("%s.%s", s, ext);
+	free(s);
+	return res;
+}
+
+
+static void save_with_backup(const char *name, int (*fn)(FILE *file))
 {
 	FILE *file;
+	char *s = stralloc(name);
+	char *slash, *dot, *tmp;
+	int n;
+	struct stat st;
 
-	if (!save_file) {
+	slash = strrchr(s, '/');
+	dot = strrchr(slash ? slash : s, '.');
+	if (dot)
+		*dot = 0;
+	n = 0;
+	while (1) {
+		tmp = stralloc_printf("%s~%d%s%s",
+		    s, n, dot ? "." : "", dot ? dot+1 : "");
+		if (stat(tmp, &st) < 0) {
+			if (errno == ENOENT)
+				break;
+			perror(tmp);
+			free(tmp);
+			return;
+		}
+		free(tmp);
+		n++;
+	}
+	if (rename(name, tmp) < 0) {
+		if (errno != ENOENT) {
+			perror(name);
+			free(tmp);
+			return;
+		}
+	} else {
+		fprintf(stderr, "renamed %s to %s\n", name, tmp);
+	}
+	free(tmp);
+
+	file = fopen(name, "w");
+	if (!file) {
+		perror(name);
+		return;
+	}
+	if (!fn(file))
+		perror(name);
+	if (fclose(file) == EOF)
+		perror(name);
+	fprintf(stderr, "saved to %s\n", name);
+}
+
+
+static void menu_save(GtkWidget *widget, gpointer user)
+{
+	if (save_file)
+		save_with_backup(save_file, dump);
+	else {
 		if (!dump(stdout))
 			perror("stdout");
-		return;
 	}
-	file = fopen(save_file, "w");
-	if (!file) {
-		perror(save_file);
-		return;
+}
+
+
+static void menu_save_kicad(GtkWidget *widget, gpointer user)
+{
+	char *name;
+
+	if (save_file) {
+		name = set_extension(save_file, "mod");
+		save_with_backup(name, kicad);
+		free(name);
+	} else {
+		if (!kicad(stdout))
+			perror("stdout");
 	}
-	if (!dump(file))
-		perror(save_file);
-	if (fclose(file) == EOF)
-		perror(save_file);
 }
 
 
@@ -85,6 +161,11 @@ static void make_menu_bar(GtkWidget *hbox)
 	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), save);
 	g_signal_connect(G_OBJECT(save), "activate",
 	    G_CALLBACK(menu_save), NULL);
+
+	save = gtk_menu_item_new_with_label("Save as KiCad");
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), save);
+	g_signal_connect(G_OBJECT(save), "activate",
+	    G_CALLBACK(menu_save_kicad), NULL);
 
 	quit = gtk_menu_item_new_with_label("Quit");
 	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), quit);

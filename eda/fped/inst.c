@@ -29,39 +29,12 @@
 #include "inst.h"
 
 
-enum inst_prio {
-	ip_frame,	/* frames have their own selection */
-	ip_pad,		/* pads also accept clicks inside */
-	ip_circ,	/* circles don't overlap easily */
-	ip_arc,		/* arc are like circles, just shorter */
-	ip_rect,	/* rectangles have plenty of sides */
-	ip_meas,	/* mesurements are like lines but set a bit apart */
-	ip_line,	/* lines are easly overlapped by other things */
-	ip_vec,		/* vectors only have the end point */
-	ip_n,		/* number of priorities */
-};
-
-
-#define FOR_INST_PRIOS_UP(prio)					\
-	for (prio = 0; prio != ip_n; prio++)
-
-#define FOR_INST_PRIOS_DOWN(prio)				\
-	for (prio = ip_n-1; prio != (enum inst_prio) -1; prio--)
-
-#define	FOR_INSTS_UP(prio, inst)				\
-	FOR_INST_PRIOS_UP(prio)					\
-		for (inst = insts[prio]; inst; inst = inst->next)
-
-#define	FOR_INSTS_DOWN(prio, inst)				\
-	FOR_INST_PRIOS_DOWN(prio)				\
-		for (inst = insts[prio]; inst; inst = inst->next)
-
-
 struct inst *selected_inst = NULL;
+struct inst *insts[ip_n];
 struct bbox active_frame_bbox;
 
 static struct inst *curr_frame = NULL;
-static struct inst *insts[ip_n], **next_inst[ip_n];
+static struct inst **next_inst[ip_n];
 static struct inst *prev_insts[ip_n];
 
 static unsigned long active_set = 0;

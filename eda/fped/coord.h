@@ -20,7 +20,7 @@
 #define MICRON_UNITS	10
 #define	MIL_UNITS	(25.4*MICRON_UNITS)
 #define	MM_UNITS	(1000.0*MICRON_UNITS)
-#define	KICAD_UNIT	(10.0*MIL_UNITS)
+#define	KICAD_UNIT	(MIL_UNITS/10.0)
 
 #define	MIL_IN_MM	0.0254
 
@@ -54,7 +54,7 @@ static inline double units_to_mm(unit_type u)
 }
 
 
-static inline double units_to_kicad(unit_type u)
+static inline int units_to_kicad(unit_type u)
 {
 	return (double) u/KICAD_UNIT;
 }

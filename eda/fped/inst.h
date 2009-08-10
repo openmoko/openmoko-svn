@@ -36,7 +36,22 @@ struct bbox {
 	struct coord max;
 };
 
+
+enum inst_prio {
+	ip_frame,	/* frames have their own selection */
+	ip_pad,		/* pads also accept clicks inside */
+	ip_circ,	/* circles don't overlap easily */
+	ip_arc,		/* arc are like circles, just shorter */
+	ip_rect,	/* rectangles have plenty of sides */
+	ip_meas,	/* mesurements are like lines but set a bit apart */
+	ip_line,	/* lines are easly overlapped by other things */
+	ip_vec,		/* vectors only have the end point */
+	ip_n,		/* number of priorities */
+};
+
+
 struct inst;
+
 
 struct inst_ops {
 	void (*debug)(struct inst *self);
@@ -95,7 +110,23 @@ struct inst {
 
 
 extern struct inst *selected_inst;
+extern struct inst *insts[ip_n];
 extern struct bbox active_frame_bbox;
+
+
+#define FOR_INST_PRIOS_UP(prio)					\
+	for (prio = 0; prio != ip_n; prio++)
+
+#define FOR_INST_PRIOS_DOWN(prio)				\
+	for (prio = ip_n-1; prio != (enum inst_prio) -1; prio--)
+
+#define	FOR_INSTS_UP(prio, inst)				\
+	FOR_INST_PRIOS_UP(prio)					\
+		for (inst = insts[prio]; inst; inst = inst->next)
+
+#define	FOR_INSTS_DOWN(prio, inst)				\
+	FOR_INST_PRIOS_DOWN(prio)				\
+		for (inst = insts[prio]; inst; inst = inst->next)
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));

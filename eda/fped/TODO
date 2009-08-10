@@ -2,7 +2,6 @@ Major missing features:
 - populate input area (still needed: mm/mil, rezoom)
 - add default unit (combine with grid unit selection ?)
 - consider adding auto/mm/mil selection for each dimension
-- add KiCad output
 - add postscript output
 - add option to include/omit helper vecs and frames (done for display, still
   need postscript)
