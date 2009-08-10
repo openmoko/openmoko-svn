@@ -11,6 +11,8 @@
  */
 
 
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "cpp.h"
 #include "util.h"
@@ -23,6 +25,8 @@
 extern void scan_empty(void);
 extern int yyparse(void);
 
+char *save_file = NULL;
+
 
 static void load_file(const char *name)
 {
@@ -32,20 +36,34 @@ static void load_file(const char *name)
 }
 
 
+static void usage(const char *name)
+{
+	fprintf(stderr, "usage: %s [in_file [out_file]]\n", name);
+	exit(1);
+}
+
+
 int main(int argc, char **argv)
 {
+	const char *name = *argv;
 	int error;
 
 	error = gui_init(&argc, &argv);
 	if (error)
 		return error;
-	if (argc == 1) {
+	switch (argc) {
+	case 1:
 		scan_empty();
 		(void) yyparse();
-	} else {
+		break;
+	case 3:
+		save_file = argv[2];
+		/* fall through */
+	case 2:
 		load_file(argv[1]);
-		argc--;
-		argv++;
+		break;
+	default:
+		usage(name);
 	}
 
 	if (!part_name)

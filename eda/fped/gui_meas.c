@@ -12,7 +12,9 @@
 
 
 #include "util.h"
+#include "coord.h"
 #include "meas.h"
+#include "inst.h"
 #include "gui_canvas.h"
 #include "gui_tool.h"
 #include "gui_meas.h"
@@ -153,7 +155,10 @@ static int meas_pick_vec_b(struct inst *inst, void *ctx)
 	case max_to_min:
 		return is_min(meas_dsc->lt, inst);
 	case next_to_min:
-		return is_min_of_next(meas_dsc->lt, inst, a);
+		if (!is_min(meas_dsc->lt, inst))
+			return 0;
+		return is_next(meas_dsc->lt, a, inst);
+//		return is_min_of_next(meas_dsc->lt, inst, a);
 	default:
 		abort();
 	}
@@ -222,10 +227,10 @@ static void tool_deselected_meas(void)
 }
 
 
-/* ----- find point ------------------------------------------------------- */
+/* ----- find start point (new measurement) -------------------------------- */
 
 
-static struct inst *find_point_meas(struct coord pos)
+static struct inst *find_point_meas_new(struct coord pos)
 {
 	if (meas_inst)
 		return inst_find_vec(pos, meas_pick_vec_b, meas_inst);
@@ -260,6 +265,7 @@ static int end_new_meas(struct inst *from, struct inst *to)
 	struct meas *meas;
 
 	meas_inst = NULL;
+	highlight = NULL;
 	if (from == to)
 		return 0;
 	/* it's safe to pass "from" here, but we may change it later */
@@ -290,9 +296,9 @@ static int end_new_meas(struct inst *from, struct inst *to)
 		abort();
 	}
 	meas->inverted =
-	  mode == min_to_next_or_max && is_min(meas_dsc->lt, to) ? 0 :
-	  meas_dsc->lt(from->u.rect.end, to->u.rect.end) !=
-	  (mode == min_to_next_or_max);
+	    mode == min_to_next_or_max && is_min(meas_dsc->lt, to) ? 0 :
+	    meas_dsc->lt(from->u.rect.end, to->u.rect.end) !=
+	    (mode == min_to_next_or_max);
 {
 char *sm[] = { "min_to", "max_to", "next_to" };
 char *st[] = { "nxy", "nx", "ny", "mxy", "mx", "my" };
@@ -305,7 +311,34 @@ sm[mode], st[meas->type], meas->inverted);
 }
 
 
+static void cancel_drag_new_meas(void)
+{
+	meas_inst = NULL;
+	highlight = NULL;
+	redraw();
+}
+
+
 /* ----- begin dragging existing measurement ------------------------------- */
+
+
+/*
+ * We didn't record which instance provided the vector we're using here, so we
+ * have to search for it now.
+ */
+
+static struct inst *vec_at(const struct vec *vec, struct coord pos)
+{
+	struct inst *inst;
+	const struct sample *s;
+
+	for (inst = insts_ip_vec(); inst; inst = inst->next)
+		if (inst->vec == vec)
+			for (s = vec->samples; s; s = s->next)
+				if (coord_eq(s->pos, pos))
+					return inst;
+	abort();
+}
 
 
 void begin_drag_move_meas(struct inst *inst, int i)
@@ -328,49 +361,93 @@ void begin_drag_move_meas(struct inst *inst, int i)
 	default:
 		abort();
 	}
+	highlight = meas_highlight_b;
 	switch (i) {
 	case 0:
-		highlight = meas_highlight_a;
 		mode = meas->type < 3 ? next_to_min : max_to_min;
+		meas_inst = vec_at(inst->obj->u.meas.high, inst->u.meas.end);
 		break;
 	case 1:
-		highlight = meas_highlight_b;
 		mode = min_to_next_or_max;
+		meas_inst = vec_at(inst->obj->base, inst->base);
 		break;
 	default:
 		abort();
 	}
+//	redraw();
+}
+
+
+/* ----- find end point (existing measurement) ----------------------------- */
+
+
+struct inst *find_point_meas_move(struct inst *inst, struct coord pos)
+{
+	return inst_find_vec(pos, meas_pick_vec_b, meas_inst);
+}
+
+
+/* ----- end dragging existing measurements -------------------------------- */
+
+
+void end_drag_move_meas(void)
+{
+	highlight = NULL;
 	redraw();
 }
 
 
-/* ----- operations ------------------------------------------------------- */
+void do_move_to_meas(struct inst *inst, struct inst *to, int i)
+{
+	struct meas *meas = &inst->obj->u.meas;
+
+	switch (i) {
+	case 0:
+		inst->obj->base = inst_get_vec(to);
+		break;
+	case 1:
+		meas->high = inst_get_vec(to);
+		if (is_max(meas_dsc->lt, to))
+			meas->type = (meas->type % 3)+3;
+		else
+			meas->type = (meas->type % 3);
+		break;
+	default:
+		abort();
+	}
+}
+
+
+/* ----- operations -------------------------------------------------------- */
 
 
 struct tool_ops tool_meas_ops = {
 	.tool_selected	= tool_selected_meas_xy,
 	.tool_deselected= tool_deselected_meas,
-	.find_point	= find_point_meas,
+	.find_point	= find_point_meas_new,
 	.begin_drag_new	= begin_drag_new_meas,
 	.drag_new	= drag_new_line,
 	.end_new	= end_new_meas,
+	.cancel_drag_new= cancel_drag_new_meas,
 };
 
 struct tool_ops tool_meas_ops_x = {
 	.tool_selected	= tool_selected_meas_x,
 	.tool_deselected= tool_deselected_meas,
-	.find_point	= find_point_meas,
+	.find_point	= find_point_meas_new,
 	.begin_drag_new	= begin_drag_new_meas,
 	.drag_new	= drag_new_line,
 	.end_new	= end_new_meas,
+	.cancel_drag_new= cancel_drag_new_meas,
 };
 
 
 struct tool_ops tool_meas_ops_y = {
 	.tool_selected	= tool_selected_meas_y,
 	.tool_deselected= tool_deselected_meas,
-	.find_point	= find_point_meas,
+	.find_point	= find_point_meas_new,
 	.begin_drag_new	= begin_drag_new_meas,
 	.drag_new	= drag_new_line,
 	.end_new	= end_new_meas,
+	.cancel_drag_new= cancel_drag_new_meas,
 };

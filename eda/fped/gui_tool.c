@@ -457,8 +457,9 @@ struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i)
 }
 
 
-void do_move_to_arc(struct inst *inst, struct vec *vec, int i)
+void do_move_to_arc(struct inst *inst, struct inst *to, int i)
 {
+	struct vec *vec = inst_get_vec(to);
 	struct obj *obj = inst->obj;
 	int is_circle;
 
@@ -591,6 +592,7 @@ static struct tool_ops frame_ops = {
 /* ----- moving references ------------------------------------------------- */
 
 
+#if 0
 static int may_move(struct inst *curr)
 {
 	if (!selected_inst)
@@ -605,6 +607,7 @@ static int may_move(struct inst *curr)
 	drag.anchors_n = 0;
 	return 0;
 }
+#endif
 
 
 static int would_be_equal(const struct drag_state *state,
@@ -642,7 +645,7 @@ static int may_move_to(const struct drag_state *state, struct inst *curr)
 
 static void do_move_to(struct drag_state *state, struct inst *curr)
 {
-	assert(may_move_to(state, curr));
+	assert(state->inst->ops->find_point || may_move_to(state, curr));
 	*state->anchors[state->anchor_i] = inst_get_vec(curr);
 }
 
@@ -665,14 +668,60 @@ void tool_dehover(void)
 }
 
 
+/*
+ * When hovering, we have to consider the following states:
+ *
+ * selected (selected_inst != NULL)
+ * |  dragging new (drag.new != NULL)
+ * |  |  dragging existing (drag.anchors_n != 0)
+ * |  |  |  tool selected (active_ops)
+ * |  |  |  |
+ * Y  N  N  N  highlight if inst_find_point_selected else don't
+ * Y  N  N  Y  highlight if inst_find_point_selected else fall over to tool
+ * -  Y  N  -  highlight if inst_find_point / active_ops->find_point else don't
+ * -  N  Y  -  highlight if may_move_to else don't
+ * -  Y  Y  -  invalid state
+ * N  N  N  Y  highlight if inst_find_point / active_ops->find_point else don't
+ * N  N  N  N  don't highlight
+ */
+
+static struct inst *get_hover_inst(struct coord pos)
+{
+	struct inst *inst;
+	int i;
+
+	if (drag.new) {
+		if (active_ops->find_point)
+			return active_ops->find_point(pos);
+		return inst_find_point(pos);
+	}
+	if (drag.anchors_n) {
+		if (drag.inst->ops->find_point)
+			return drag.inst->ops->find_point(drag.inst, pos);
+		inst = inst_find_point(pos);
+		if (!inst)
+			return NULL;
+		return may_move_to(&drag, inst) ? inst : NULL;
+	}
+	if (selected_inst) {
+		i = inst_find_point_selected(pos, &inst);
+		if (i != -1)
+			return inst;
+	}
+	if (!active_ops)
+		return NULL;
+	if (active_ops->find_point)
+		return active_ops->find_point(pos);
+	return inst_find_point(pos);
+}
+
+
 void tool_hover(struct coord pos)
 {
-	struct inst *curr;
+	struct inst *curr = NULL;
 
-	if (active_ops && active_ops->find_point)
-		curr = active_ops->find_point(pos);
-	else
-		curr = inst_find_point(pos);
+	curr = get_hover_inst(pos);
+#if 0
 	if ((drag.new && curr == drag.new) || (drag.inst && curr == drag.inst))
 		return;
 	if (curr && !active_ops) {
@@ -685,6 +734,9 @@ void tool_hover(struct coord pos)
 			drag.anchors_n = 0;
 		}
 	}
+got:
+#endif
+
 	if (curr == hover_inst)
 		return;
 	if (hover_inst) {
@@ -712,6 +764,17 @@ static struct pix_buf *drag_save_and_draw(void *user, struct coord to)
 }
 
 
+/*
+ * When considering dragging, we have the following states:
+ *
+ * selected (selected_inst != NULL)
+ * |  tool selected (active_ops)
+ * |  |
+ * N  N  don't
+ * Y  -  if we could drag, drag_new/end_new, else fall over to tool
+ * N  Y  click, else single-click creation, else drag_new/end_new
+ */
+
 int tool_consider_drag(struct coord pos)
 {
 	struct inst *curr;
@@ -719,41 +782,51 @@ int tool_consider_drag(struct coord pos)
 	assert(!drag.new);
 	assert(!drag.anchors_n);
 	last_canvas_pos = translate(pos);
-	if (active_ops && active_ops->click) {
+
+	if (!selected_inst && !active_ops)
+		return 0;
+	if (selected_inst) {
+		drag.anchor_i = inst_find_point_selected(pos, NULL);
+		if (drag.anchor_i != -1) {
+			tool_dehover();
+			drag.inst = selected_inst;
+			drag.new = NULL;
+			drag.anchors_n =
+			    inst_anchors(selected_inst, drag.anchors);
+			over_begin(drag_save_and_draw, NULL, pos);
+			inst_begin_drag_move(selected_inst, drag.anchor_i);
+			return 1;
+		}
+	}
+	if (!active_ops)
+		return 0;
+	if (active_ops->click) {
 		active_ops->click(pos);
 		return 0;
 	}
-	if (active_ops && active_ops->find_point)
-		curr = active_ops->find_point(pos);
-	else
-		curr = inst_find_point(pos);
+
+	curr = get_hover_inst(pos);
 	if (!curr)
 		return 0;
+
 	tool_dehover();
-	if (active_ops) {
-		if (active_ops->drag_new) {
-			if (active_ops->begin_drag_new)
-				active_ops->begin_drag_new(curr);
-			drag.inst = NULL;
-			drag.new = curr;
-			over_begin(drag_save_and_draw, NULL, pos);
-			return 1;
-		} else {
-			/* object is created without dragging */
-			if (active_ops->end_new(curr, NULL)) {
-				tool_cancel_drag();
-				return -1;
-			}
-			return 0;
-		}
+
+	if (active_ops->drag_new) {
+		if (active_ops->begin_drag_new)
+			active_ops->begin_drag_new(curr);
+		drag.inst = NULL;
+		drag.new = curr;
+		over_begin(drag_save_and_draw, NULL, pos);
+		return 1;
 	}
-	if (!may_move(curr))
-		return 0;
-	drag.inst = selected_inst;
-	drag.new = NULL;
-	inst_begin_drag_move(selected_inst, drag.anchor_i);
-	over_begin(drag_save_and_draw, NULL, pos);
-	return 1;
+
+	/* object is created without dragging */
+	if (active_ops->end_new(curr, NULL)) {
+		tool_cancel_drag();
+		return -1;
+	}
+	return 0;
+
 }
 
 
@@ -766,12 +839,15 @@ void tool_drag(struct coord to)
 
 void tool_cancel_drag(void)
 {
-	over_end();
-	tool_dehover();
-	tool_reset();
+	if (drag.anchors_n && drag.inst->ops->end_drag_move)
+	if (drag.anchors_n && drag.inst->ops->end_drag_move)
+		drag.inst->ops->end_drag_move();
 	drag.new = NULL;
 	active_ops = NULL;
 	drag.anchors_n = 0;
+	over_end();
+	tool_dehover();
+	tool_reset();
 }
 
 
@@ -784,17 +860,26 @@ int tool_end_drag(struct coord to)
 	tool_cancel_drag();
 	if (state.new && ops->end_new_raw)
 		return ops->end_new_raw(state.new, to);
-	if (ops->find_point)
+	if (state.new && ops->find_point)
 		end = ops->find_point(to);
-	else
-		end = inst_find_point(to);
-	if (!end)
+	else {
+		if (state.inst && state.inst->ops->find_point)
+			end = state.inst->ops->find_point(state.inst, to);
+		else
+			end = inst_find_point(to);
+	}
+	if (!end) {
+		if (state.new && ops->cancel_drag_new)
+			ops->cancel_drag_new();
 		return 0;
+	}
 	if (state.new)
 		return ops->end_new(state.new, end);
-	if (!may_move_to(&state, end))
+
+	/* if we got the point from find_point, it's authoritative */
+	if (!state.inst->ops->find_point && !may_move_to(&state, end))
 		return 0;
-	if (!inst_do_move_to(drag.inst, inst_get_vec(end), state.anchor_i))
+	if (!inst_do_move_to(state.inst, end, state.anchor_i))
 		do_move_to(&state, end);
 	return 1;
 }
@@ -802,12 +887,15 @@ int tool_end_drag(struct coord to)
 
 void tool_redraw(void)
 {
+	struct coord pos;
+
 	over_reset();
+	hover_inst = NULL;
 	if (!drag.new && !drag.anchors_n)
 		return;
-	tool_hover(last_canvas_pos);
-	over_begin(drag_save_and_draw, NULL,
-	    canvas_to_coord(last_canvas_pos.x, last_canvas_pos.y));
+	pos = canvas_to_coord(last_canvas_pos.x, last_canvas_pos.y);
+	tool_hover(pos);
+	over_begin(drag_save_and_draw, NULL, pos);
 }
 
 
@@ -837,6 +925,7 @@ static void tool_select(GtkWidget *evbox, struct tool_ops *ops)
 void tool_reset(void)
 {
 	over_reset();
+	hover_inst = NULL;
 	tool_select(ev_point, NULL);
 }
 

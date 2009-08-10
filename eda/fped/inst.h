@@ -36,7 +36,25 @@ struct bbox {
 	struct coord max;
 };
 
-struct inst_ops;
+struct inst;
+
+struct inst_ops {
+	void (*debug)(struct inst *self);
+	void (*save)(FILE *file, struct inst *self);
+	void (*draw)(struct inst *self);
+	struct pix_buf *(*hover)(struct inst *self);
+	unit_type (*distance)(struct inst *self, struct coord pos, 
+	    unit_type scale);
+	void (*select)(struct inst *self);
+	int (*anchors)(struct inst *self, struct vec ***anchors);
+	void (*begin_drag_move)(struct inst *from, int i);
+	struct inst *(*find_point)(struct inst *self, struct coord pos);
+	struct pix_buf *(*draw_move)(struct inst *inst,
+	    struct coord pos, int i);
+	void (*end_drag_move)(void);
+	/* arcs and measurements need this special override */
+	void (*do_move_to)(struct inst *inst, struct inst *to, int i);
+};
 
 struct inst {
 	const struct inst_ops *ops;
@@ -85,6 +103,7 @@ int inst_select(struct coord pos);
 void inst_deselect(void);
 
 struct inst *inst_find_point(struct coord pos);
+int inst_find_point_selected(struct coord pos, struct inst **res);
 struct coord inst_get_point(const struct inst *inst);
 int inst_anchors(struct inst *inst, struct vec ***anchors);
 struct vec *inst_get_vec(const struct inst *inst);
@@ -119,7 +138,7 @@ struct inst *inst_find_vec(struct coord pos,
 struct inst *insts_ip_vec(void);
 
 struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i);
-int inst_do_move_to(struct inst *inst, struct vec *vec, int i);
+int inst_do_move_to(struct inst *inst, struct inst *to, int i);
 struct pix_buf *inst_hover(struct inst *inst);
 void inst_begin_drag_move(struct inst *inst, int i);
 void inst_delete(struct inst *inst);

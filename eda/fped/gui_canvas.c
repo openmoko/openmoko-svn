@@ -27,6 +27,13 @@
 #include "gui_canvas.h"
 
 
+#if 0
+#define	DPRINTF(fmt, ...)	fprintf(stderr, fmt "\n", ##__VA_ARGS__)
+#else
+#define	DPRINTF(fmt, ...)
+#endif
+
+
 void (*highlight)(void) = NULL;
 
 static struct coord curr_pos;
@@ -139,6 +146,7 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 {
 	struct coord pos = canvas_to_coord(event->x, event->y);
 
+	DPRINTF("--- motion ---");
 	curr_pos.x = event->x;
 	curr_pos.y = event->y;
 	tool_hover(pos);
@@ -161,6 +169,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 	const struct inst *prev;
 	int res;
 
+	DPRINTF("--- button press ---");
 	gtk_widget_grab_focus(widget);
 	switch (event->button) {
 	case 1:
@@ -206,6 +215,7 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 {
 	struct coord pos = canvas_to_coord(event->x, event->y);
 
+	DPRINTF("--- button release ---");
 	switch (event->button) {
 	case 1:
 		if (!dragging)
@@ -291,6 +301,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 {
 	struct coord pos = canvas_to_coord(curr_pos.x, curr_pos.y);
 
+	DPRINTF("--- key press ---");
 	switch (event->keyval) {
 	case ' ':
 		user_origin = pos;
@@ -350,10 +361,13 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event,
     gpointer data)
 {
 	static int first = 1;
+
+	DPRINTF("--- expose ---");
 	if (first) {
 		init_canvas();
 		first = 0;
 	}
+	tool_dehover();
 	redraw();
 	return TRUE;
 }
@@ -373,6 +387,7 @@ static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event,
 static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
     gpointer data)
 {
+	DPRINTF("--- leave ---");
 	if (dragging)
 		tool_cancel_drag();
 	tool_dehover();

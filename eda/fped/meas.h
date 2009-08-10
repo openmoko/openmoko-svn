@@ -41,7 +41,10 @@ struct meas {
 	struct expr *offset;
 };
 
-struct sample;
+struct sample {
+	struct coord pos;
+	struct sample *next;
+};
 
 
 int lt_x(struct coord a, struct coord b);

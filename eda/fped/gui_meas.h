@@ -23,5 +23,8 @@ extern struct tool_ops tool_meas_ops_y;
 
 
 void begin_drag_move_meas(struct inst *inst, int i);
+struct inst *find_point_meas_move(struct inst *inst, struct coord pos);
+void end_drag_move_meas(void);
+void do_move_to_meas(struct inst *inst, struct inst *to, int i);
 
 #endif /* !GUI_MEAS_H */

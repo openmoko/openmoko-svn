@@ -11,6 +11,7 @@
  */
 
 
+#include <stdio.h>
 #include <gtk/gtk.h>
 
 #include "inst.h"
@@ -30,6 +31,8 @@
 #include "icons/meas_off.xpm"
 
 
+extern char *save_file;
+
 GtkWidget *root;
 int show_stuff = 1;
 int show_meas = 1;
@@ -45,7 +48,22 @@ static GtkWidget *stuff_image[2], *meas_image[2];
 
 static void menu_save(GtkWidget *widget, gpointer user)
 {
-	dump(stdout);
+	FILE *file;
+
+	if (!save_file) {
+		if (!dump(stdout))
+			perror("stdout");
+		return;
+	}
+	file = fopen(save_file, "w");
+	if (!file) {
+		perror(save_file);
+		return;
+	}
+	if (!dump(file))
+		perror(save_file);
+	if (fclose(file) == EOF)
+		perror(save_file);
 }
 
 

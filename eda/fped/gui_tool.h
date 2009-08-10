@@ -28,6 +28,7 @@ struct tool_ops {
 	struct pix_buf *(*drag_new)(struct inst *from, struct coord to);
 	int (*end_new_raw)(struct inst *from, struct coord to);
 	int (*end_new)(struct inst *from, struct inst *to);
+	void (*cancel_drag_new)(void);
 };
 
 
@@ -42,7 +43,7 @@ struct pix_buf *draw_move_frame(struct inst *inst, struct coord pos, int i);
 struct pix_buf *gui_hover_vec(struct inst *self);
 struct pix_buf *gui_hover_frame(struct inst *self);
 
-void do_move_to_arc(struct inst *inst, struct vec *vec, int i);
+void do_move_to_arc(struct inst *inst, struct inst *to, int i);
 
 void tool_dehover(void);
 void tool_hover(struct coord pos);

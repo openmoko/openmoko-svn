@@ -29,22 +29,6 @@
 #include "inst.h"
 
 
-struct inst_ops {
-	void (*debug)(struct inst *self);
-	void (*save)(FILE *file, struct inst *self);
-	void (*draw)(struct inst *self);
-	struct pix_buf *(*hover)(struct inst *self);
-	unit_type (*distance)(struct inst *self, struct coord pos, 
-	    unit_type scale);
-	void (*select)(struct inst *self);
-	int (*anchors)(struct inst *self, struct vec ***anchors);
-	void (*begin_drag_move)(struct inst *from, int i);
-	struct pix_buf *(*draw_move)(struct inst *inst,
-	    struct coord pos, int i);
-	/* arcs and measurements need this special override */
-	void (*do_move_to)(struct inst *inst, struct vec *vec, int i);
-};
-
 enum inst_prio {
 	ip_frame,	/* frames have their own selection */
 	ip_pad,		/* pads also accept clicks inside */
@@ -235,6 +219,49 @@ struct inst *inst_find_point(struct coord pos)
 }
 
 
+int inst_find_point_selected(struct coord pos, struct inst **res)
+{
+	struct vec **anchors[3];
+	int n, best_i, i;
+	struct inst *best = NULL;
+	struct inst *inst;
+	int d_min, d;
+
+	assert(selected_inst);
+	n = inst_anchors(selected_inst, anchors);
+	for (i = 0; i != n; i++) {
+		if (*anchors[i]) {
+			for (inst = insts[ip_vec]; inst; inst = inst->next) {
+				if (inst->vec != *anchors[i])
+					continue;
+				d = gui_dist_vec(inst, pos, draw_ctx.scale);
+				if (d != -1 && (!best || d < d_min)) {
+					best = inst;
+					best_i = i;
+					d_min = d;
+				}
+			}
+		} else {
+			for (inst = insts[ip_frame]; inst; inst = inst->next) {
+				if (inst != selected_inst->outer)
+					continue;
+				d = gui_dist_frame(inst, pos, draw_ctx.scale);
+				if (d != -1 && (!best || d < d_min)) {
+					best = inst;
+					best_i = i;
+					d_min = d;
+				}
+			}
+		}
+	}
+	if (!best)
+		return -1;
+	if (res)
+		*res = best;
+	return best_i;
+}
+
+
 struct coord inst_get_point(const struct inst *inst)
 {
 	if (inst->ops == &vec_ops)
@@ -317,7 +344,6 @@ static void update_bbox(struct bbox *bbox, struct coord coord)
 
 static void propagate_bbox(const struct inst *inst)
 {
-	/* @@@ for new-style measurements */
 	struct inst *frame = curr_frame ? curr_frame : insts[ip_frame];
 
 	update_bbox(&frame->bbox, inst->bbox.min);
@@ -388,6 +414,30 @@ static void vec_op_select(struct inst *self)
 }
 
 
+/*
+ * @@@ The logic of gui_find_point_vec isn't great. Instead of selecting a
+ * point and then filtering, we should filter the candidates, so that a point
+ * that's close end eligible can win against one that's closer but not
+ * eligible.
+ */
+
+static struct inst *find_point_vec(struct inst *self, struct coord pos)
+{
+	struct inst *inst;
+	const struct vec *vec;
+
+	inst = inst_find_point(pos);
+	if (!inst)
+		return NULL;
+	if (inst->ops == &frame_ops)
+		return inst;
+	for (vec = inst->vec; vec; vec = vec->base)
+		if (vec == self->vec)
+		return NULL;
+	return inst;
+}
+
+
 static int vec_op_anchors(struct inst *inst, struct vec ***anchors)
 {
 	anchors[0] = &inst->vec->base;
@@ -401,6 +451,7 @@ static struct inst_ops vec_ops = {
 	.hover		= gui_hover_vec,
 	.distance	= gui_dist_vec,
 	.select		= vec_op_select,
+	.find_point	= find_point_vec,
 	.anchors	= vec_op_anchors,
 	.draw_move	= draw_move_vec,
 };
@@ -669,8 +720,6 @@ static void meas_op_select(struct inst *self)
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	status_set_type_entry("offset =");
 	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
-	if (!self->obj)
-		return; /* @@@ new-style measurements */
 	edit_expr(&self->obj->u.meas.offset);
 }
 
@@ -692,7 +741,10 @@ static struct inst_ops meas_ops = {
 	.select		= meas_op_select,
 	.anchors	= meas_op_anchors,
 	.begin_drag_move= begin_drag_move_meas,
+	.find_point	= find_point_meas_move,
 	.draw_move	= draw_move_meas,
+	.end_drag_move	= end_drag_move_meas,
+	.do_move_to	= do_move_to_meas,
 };
 
 
@@ -911,11 +963,11 @@ struct pix_buf *inst_draw_move(struct inst *inst, struct coord pos, int i)
 }
 
 
-int inst_do_move_to(struct inst *inst, struct vec *vec, int i)
+int inst_do_move_to(struct inst *inst, struct inst *to, int i)
 {
 	if (!inst->ops->do_move_to)
 		return 0;
-	inst->ops->do_move_to(inst, vec, i);
+	inst->ops->do_move_to(inst, to, i);
 	return 1;
 }
 

@@ -23,11 +23,6 @@
 
 struct num eval_unit(const struct expr *expr, const struct frame *frame);
 
-struct sample {
-	struct coord pos;
-	struct sample *next;
-};
-
 
 static void reset_samples(struct sample **samples)
 {

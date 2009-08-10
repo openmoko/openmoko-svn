@@ -2,8 +2,6 @@ Major missing features:
 - populate input area (still needed: mm/mil, rezoom)
 - add default unit (combine with grid unit selection ?)
 - consider adding auto/mm/mil selection for each dimension
-- add measurements (partly done. still needed: find out how to define
-  non-trivial endpoints, e.g., some vector in last iteration of loop)
 - add KiCad output
 - add postscript output
 - add option to include/omit helper vecs and frames (done for display, still
@@ -35,6 +33,9 @@ Code cleanup:
 - merge edit_unique with edit_name
 - merge find_var_in_frame with similar mechanisms in expr.c and fpd.y
 - add regression tests
+- the drag logic is too complex. Better: let tool/instance just generate the
+  list of points at each stage, then handle the highlighting and hovering
+  inside a dragging module.
 
 Open decisions:
 - Q: should loop be (start, last) or (start, iterations) ? or start ... last ?
