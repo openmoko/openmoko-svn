@@ -1,10 +1,10 @@
 /* MACHINE-GENERATED ! */
 
 frame pad {
-	sw: vec @(-Px/2, -Py/2)
-	se: vec sw(Px, 0mm)
-	nw: vec sw(0mm, Py)
-	pad "$pad" se nw
+	_pad_0: vec @(-Px/2, -Py/2)
+	_pad_1: vec .(Px, 0mm)
+	_pad_2: vec _pad_0(0mm, Py)
+	pad "$pad" _pad_2 _pad_1
 }
 
 frame pad_ne {
@@ -28,16 +28,53 @@ frame pad_sc {
 	frame pad _pad_sc_0
 }
 
-part "SC_89"
+frame outline {
+	__4: vec @(0mm, Oy/2)
+	__5: vec @(0mm, -Oy/2)
+	__6: vec .(Ox/2, 0mm)
+	__7: vec __5(-Ox/2, 0mm)
+	__8: vec __4(Ow/2, 0mm)
+	__9: vec __4(-Ow/2, 0mm)
+	_outline_6: vec @(0mm, Oh)
+	_outline_7: vec .(Ox/2, 0mm)
+	_outline_8: vec _outline_6(-Ox/2, 0mm)
+	_outline_9: vec _outline_6(Ow/2, 0mm)
+	_outline_10: vec _outline_6(-Ow/2, 0mm)
+	line __7 __6 5mil
+	line _outline_7 __6 5mil
+	line _outline_8 __7 5mil
+	line _outline_8 _outline_10 5mil
+	line __9 _outline_10 5mil
+	line __9 __8 5mil
+	line __8 _outline_9 5mil
+	line _outline_9 _outline_7 5mil
+}
+
+part "SC89"
 table
-    { Gx, Gy, Px, Py }
-    { 1.5mm, 0.7mm, 0.5mm, 0.6mm }
+    { Px, Py, Gy, Wx }
+    { 0.5mm, 0.6mm, 0.7mm, 1.5mm }
+
+table
+    { Ox, Oy, Oh, Ow }
+    { 2mm, 2.2mm, 0.6mm, 0.85mm }
 
 __0: vec @(0mm, Gy/2)
-__1: vec @(-Gx/2, -Gy/2)
-__2: vec @(Gx/2, -Gy/2)
+__1: vec @(0mm, -Gy/2)
+__2: vec .(Wx/2, 0mm)
+__3: vec __1(-Wx/2, 0mm)
+dummy: vec @(0.2mm, 0mm)
 frame pad_sc __0
-frame pad_nw __1
+frame pad_nw __3
 frame pad_ne __2
-
-measx pad.sw -> pad.se 1mm
+frame outline @
+measx pad._pad_0 >> pad._pad_1 -0.6mm
+measy pad._pad_0 >> pad._pad_2 0.8mm
+measy __3 >> pad._pad_0 0.5mm
+measx pad._pad_0 -> pad._pad_1 -0.3mm
+measy pad._pad_0 >> __3 0.5mm
+measy dummy >> outline.__6 1.1mm
+measy outline._outline_7 >> dummy 0.3mm
+measy outline.__8 >> outline.__6 1.2mm
+measx outline.__9 >> outline.__8 0.3mm
+measx outline.__7 >> outline.__6 -0.8mm

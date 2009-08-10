@@ -364,7 +364,10 @@ static void dump_frame(FILE *file, const struct frame *frame,
 		obj->dumped = 0;
 	dump_vecs(file, frame->vecs, indent);
 
-	/* do we need this for anything but measurements ? */
+	/* frames based on @ (anything else ?) */
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type != ot_meas)
+			dump_obj(file, obj, indent, NULL);
 	for (obj = frame->objs; obj; obj = obj->next)
 		dump_obj(file, obj, indent, NULL);
 }

@@ -821,10 +821,8 @@ int tool_consider_drag(struct coord pos)
 	}
 
 	/* object is created without dragging */
-	if (active_ops->end_new(curr, NULL)) {
-		tool_cancel_drag();
+	if (active_ops->end_new(curr, NULL))
 		return -1;
-	}
 	return 0;
 
 }
