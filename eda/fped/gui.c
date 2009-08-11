@@ -11,18 +11,10 @@
  */
 
 
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/stat.h>
 #include <gtk/gtk.h>
 
-#include "util.h"
 #include "inst.h"
-#include "obj.h"
-#include "dump.h"
-#include "kicad.h"
-#include "postscript.h"
+#include "file.h"
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_status.h"
@@ -37,8 +29,6 @@
 #include "icons/meas_off.xpm"
 
 
-extern char *save_file;
-
 GtkWidget *root;
 int show_stuff = 1;
 int show_meas = 1;
@@ -49,162 +39,16 @@ static GtkWidget *ev_stuff, *ev_meas;
 static GtkWidget *stuff_image[2], *meas_image[2];
 
 
-/* ----- save/write operations --------------------------------------------- */
-
-
-static char *set_extension(const char *name, const char *ext)
-{
-	char *s = stralloc(name);
-	char *slash, *dot;
-	char *res;
-
-	slash = strrchr(s, '/');
-	dot = strrchr(slash ? slash : s, '.');
-	if (dot)
-		*dot = 0;
-	res = stralloc_printf("%s.%s", s, ext);
-	free(s);
-	return res;
-}
-
-
-static int save_to(const char *name, int (*fn)(FILE *file))
-{
-	FILE *file;
-
-	file = fopen(name, "w");
-	if (!file) {
-		perror(name);
-		return 0;
-	}
-	if (!fn(file)) {
-		perror(name);
-		return 0;
-	}
-	if (fclose(file) == EOF) {
-		perror(name);
-		return 0;
-	}
-	return 1;
-}
-
-
-static void save_with_backup(const char *name, int (*fn)(FILE *file))
-{
-	char *s = stralloc(name);
-	char *back, *tmp;
-	char *slash, *dot;
-	int n;
-	struct stat st;
-
-	/* save to temporary file */
-
-	slash = strrchr(s, '/');
-	if (!slash)
-		tmp = stralloc_printf("~%s", s);
-	else {
-		*slash = 0;
-		tmp = stralloc_printf("%s/~%s", s, slash+1);
-		*slash = '/';
-	}
-
-	if (!save_to(tmp, fn))
-		return;
-
-	/* move existing file out of harm's way */
-
-	dot = strrchr(slash ? slash : s, '.');
-	if (dot)
-		*dot = 0;
-	n = 0;
-	while (1) {
-		back = stralloc_printf("%s~%d%s%s",
-		    s, n, dot ? "." : "", dot ? dot+1 : "");
-		if (stat(back, &st) < 0) {
-			if (errno == ENOENT)
-				break;
-			perror(back);
-			free(back);
-			return;
-		}
-		free(back);
-		n++;
-	}
-	if (rename(name, back) < 0) {
-		if (errno != ENOENT) {
-			perror(name);
-			free(back);
-			return;
-		}
-	} else {
-		fprintf(stderr, "renamed %s to %s\n", name, back);
-	}
-	free(back);
-
-	/* rename to final name */
-
-	if (rename(tmp, name) < 0) {
-		perror(name);
-		free(tmp);
-		return;
-	}
-	free(tmp);
-
-	fprintf(stderr, "saved to %s\n", name);
-}
-
-
-static void menu_save(void)
-{
-	if (save_file)
-		save_with_backup(save_file, dump);
-	else {
-		if (!dump(stdout))
-			perror("stdout");
-	}
-}
-
-
-static void menu_write_kicad(void)
-{
-	char *name;
-
-	if (save_file) {
-		name = set_extension(save_file, "mod");
-		save_to(name, kicad);
-		free(name);
-	} else {
-		if (!kicad(stdout))
-			perror("stdout");
-	}
-}
-
-
-static void menu_write_ps(void)
-{
-	char *name;
-
-	if (save_file) {
-		name = set_extension(save_file, "ps");
-		save_to(name, postscript);
-		free(name);
-	} else {
-		if (!postscript(stdout))
-			perror("stdout");
-	}
-}
-
-
 /* ----- menu bar ---------------------------------------------------------- */
 
 
 static GtkItemFactoryEntry menu_entries[] = {
 	{ "/File",		NULL,	NULL,	 	0, "<Branch>" },
-	{ "/File/Save",		NULL,	menu_save,	0, "<Item>" },
+	{ "/File/Save",		NULL,	save_fpd,	0, "<Item>" },
         { "/File/sep0",		NULL,	NULL,		0, "<Separator>" },
-        { "/File/Write KiCad",	NULL,	menu_write_kicad, 0, "<Item>" },
+        { "/File/Write KiCad",	NULL,	write_kicad,	0, "<Item>" },
         { "/File/Write Postscript",
-				NULL,	menu_write_ps,	0, "<Item>" },
+				NULL,	write_ps,	0, "<Item>" },
         { "/File/sep2",		NULL,	NULL,		0, "<Separator>" },
         { "/File/Quit",		NULL,	gtk_main_quit,	0, "<Item>" },
 };

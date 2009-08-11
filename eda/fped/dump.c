@@ -90,8 +90,7 @@ static char *generate_name(const struct vec *base)
 	n = 0;
 	for (walk = base->frame->vecs; walk != base; walk = walk->next)
 		n++;
-	return stralloc_printf("_%s_%d",
-	    base->frame->name ? base->frame->name : "", n);
+	return stralloc_printf("__%d", n);
 }
 
 

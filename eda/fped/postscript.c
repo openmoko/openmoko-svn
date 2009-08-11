@@ -51,7 +51,7 @@ static void ps_pad(FILE *file, const struct inst *inst)
 static void ps_line(FILE *file, const struct inst *inst)
 {
 	struct coord a = inst->base;
-	struct coord b = inst->u.pad.other;
+	struct coord b = inst->u.rect.end;
 
 	fprintf(file, "1 setlinecap 0.5 setgray %d setlinewidth\n",
 	    inst->u.rect.width);
