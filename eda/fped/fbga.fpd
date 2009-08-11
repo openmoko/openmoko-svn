@@ -7,7 +7,9 @@ frame pad {
 
 	set cname = col+1
 
-	__0: vec @(col*1mm-Px/2, row*-1mm-Py/2)
+	set e = 1mm
+
+	__0: vec @(col*e-Px/2, row*-e-Py/2)
 	__1: vec .(0mm, Py)
 	__2: vec __0(Px, 0mm)
 	pad "$rname$cname" __1 __2
