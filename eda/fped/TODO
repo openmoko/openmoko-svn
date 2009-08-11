@@ -2,9 +2,10 @@ Major missing features:
 - populate input area (still needed: mm/mil, rezoom)
 - add default unit (combine with grid unit selection ?)
 - consider adding auto/mm/mil selection for each dimension
-- add postscript output
+- add postscript output (partially done)
 - add option to include/omit helper vecs and frames (done for display, still
-  need postscript)
+  need postscript). Better idea: in PS, print the component 10x, 1x, and then
+  each individual frame 10x.
 
 Minor missing features:
 - reorder frames (can use text editor)
@@ -35,6 +36,9 @@ Code cleanup:
 - the drag logic is too complex. Better: let tool/instance just generate the
   list of points at each stage, then handle the highlighting and hovering
   inside a dragging module.
+- code organization is very poor. E.g., functions belonging to the different
+  items (pads, silk objects, vectors, etc.) should be grouped by item, not by
+  type of function, similar to how some things are now with gui_meas.c
 
 Open decisions:
 - Q: should loop be (start, last) or (start, iterations) ? or start ... last ?
@@ -60,5 +64,8 @@ Future directions:
 - advanced: silk line width
 - future: when encountering an error after a change, we could try to find the
   same element in the old instance, and select it
-- future: consider editing off-canvas items in place
+- idea: run the sort algorithm of dump.c to generate a list of objects per
+  frame, then show the list per frame in the GUI, e.g., as an alternative to
+  the variables. Allow selection.
+- future: consider editing non-canvas items in place
 - near future: treat part name as pattern

@@ -118,6 +118,8 @@ int inst_select(struct coord pos)
 	deselect_outside();
 	edit_nothing();
 	selected_inst = NULL;
+	if (selected_inst)
+		tool_selected_inst(NULL);
 	FOR_INST_PRIOS_DOWN(prio) {
 		if (!show(prio))
 			continue;
@@ -154,6 +156,7 @@ int inst_select(struct coord pos)
 
 selected:
 	set_path(1);
+	tool_selected_inst(selected_inst);
 	if (selected_inst->ops->select)
 		selected_inst->ops->select(selected_inst);
 	return 1;
@@ -263,8 +266,10 @@ int inst_anchors(struct inst *inst, struct vec ***anchors)
 
 void inst_deselect(void)
 {
-	if (selected_inst)
+	if (selected_inst) {
 		set_path(0);
+		tool_selected_inst(NULL);
+	}
 	deselect_outside();
 	status_set_type_x("");
 	status_set_type_y("");

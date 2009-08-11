@@ -41,15 +41,17 @@
 #include "icons/pad.xpm"
 #include "icons/point.xpm"
 #include "icons/delete.xpm"
+#include "icons/delete_off.xpm"
 #include "icons/rect.xpm"
 #include "icons/vec.xpm"
 
 
-static GtkWidget *ev_point, *ev_frame;
+static GtkWidget *ev_point, *ev_delete, *ev_frame;
 static GtkWidget *active_tool;
 static struct tool_ops *active_ops = NULL;
 static struct inst *hover_inst = NULL;
 static GtkWidget *frame_image, *frame_image_locked, *frame_image_ready;
+static GtkWidget *delete_image[2];
 
 static struct drag_state {
 	struct inst *inst; /* non-NULL if dragging an existing object */
@@ -167,22 +169,26 @@ static struct pix_buf *hover_common(GdkGC *gc, struct coord center, unit_type r)
 /* ----- delete ------------------------------------------------------------ */
 
 
-static void click_delete(struct coord pos)
+static void tool_selected_delete(void)
 {
-	inst_deselect();
-	inst_select(pos);
 	if (selected_inst) {
 		tool_dehover();
 		inst_delete(selected_inst);
+		change_world();
 	}
-	change_world();
 	tool_reset();
 }
 
 
 static struct tool_ops delete_ops = {
-	.click		= click_delete,
+	.tool_selected	= tool_selected_delete,
 };
+
+
+void tool_selected_inst(struct inst *inst)
+{
+	set_image(ev_delete, delete_image[inst != NULL]);
+}
 
 
 /* ----- vec --------------------------------------------------------------- */
@@ -772,7 +778,7 @@ static struct pix_buf *drag_save_and_draw(void *user, struct coord to)
  * |  |
  * N  N  don't
  * Y  -  if we could drag, drag_new/end_new, else fall over to tool
- * N  Y  click, else single-click creation, else drag_new/end_new
+ * N  Y  else single-click creation, else drag_new/end_new
  */
 
 int tool_consider_drag(struct coord pos)
@@ -800,10 +806,6 @@ int tool_consider_drag(struct coord pos)
 	}
 	if (!active_ops)
 		return 0;
-	if (active_ops->click) {
-		active_ops->click(pos);
-		return 0;
-	}
 
 	curr = get_hover_inst(pos);
 	if (!curr)
@@ -961,8 +963,8 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 
 	ev_point = tool_button(bar, drawable, xpm_point,
 	    tool_button_press_event, NULL);
-	tool_button(bar, drawable, xpm_delete,
-	    tool_button_press_event, &delete_ops);
+	ev_delete = tool_button(bar, drawable, NULL,
+	     tool_button_press_event, &delete_ops);
 	tool_separator(bar);
 	tool_button(bar, drawable, xpm_vec,
 	    tool_button_press_event, &vec_ops);
@@ -990,6 +992,10 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	frame_image_ready =
 	    gtk_widget_ref(make_image(drawable, xpm_frame_ready));
 	set_frame_image(frame_image);
+
+	delete_image[0] = gtk_widget_ref(make_image(drawable, xpm_delete_off));
+	delete_image[1] = gtk_widget_ref(make_image(drawable, xpm_delete));
+	set_image(ev_delete, delete_image[0]);
 
 	tool_reset();
 

@@ -23,7 +23,6 @@ struct tool_ops {
 	void (*tool_selected)(void);
 	void (*tool_deselected)(void);
 	struct inst *(*find_point)(struct coord pos);
-	void (*click)(struct coord pos);
 	void (*begin_drag_new)(struct inst *from);
 	struct pix_buf *(*drag_new)(struct inst *from, struct coord to);
 	int (*end_new_raw)(struct inst *from, struct coord to);
@@ -70,6 +69,8 @@ struct pix_buf *drag_new_line(struct inst *from, struct coord to);
 
 void tool_frame_update(void);
 void tool_frame_deleted(const struct frame *frame);
+
+void tool_selected_inst(struct inst *inst);
 
 void tool_reset(void);
 
