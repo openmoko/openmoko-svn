@@ -83,9 +83,9 @@ static struct vec *new_vec(struct inst *base)
 }
 
 
-struct obj *new_obj(enum obj_type type, struct inst *base)
+struct obj *new_obj_unconnected(enum obj_type type, struct inst *base)
 {
-	struct obj *obj, **walk;
+	struct obj *obj;
 
 	obj = alloc_type(struct obj);
 	obj->type = type;
@@ -93,8 +93,25 @@ struct obj *new_obj(enum obj_type type, struct inst *base)
 	obj->base = inst_get_vec(base);
 	obj->next = NULL;
 	obj->lineno = 0;
-	for (walk = &active_frame->objs; *walk; walk = &(*walk)->next);
+	return obj;
+}
+
+
+void connect_obj(struct frame *frame, struct obj *obj)
+{
+	struct obj **walk;
+
+	for (walk = &frame->objs; *walk; walk = &(*walk)->next);
 	*walk = obj;
+}
+
+
+static struct obj *new_obj(enum obj_type type, struct inst *base)
+{
+	struct obj *obj;
+
+	obj = new_obj_unconnected(type, base);
+	connect_obj(active_frame, obj);
 	return obj;
 }
 
