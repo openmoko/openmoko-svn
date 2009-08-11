@@ -22,6 +22,7 @@
 #include "obj.h"
 #include "dump.h"
 #include "kicad.h"
+#include "postscript.h"
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_status.h"
@@ -48,7 +49,7 @@ static GtkWidget *ev_stuff, *ev_meas;
 static GtkWidget *stuff_image[2], *meas_image[2];
 
 
-/* ----- menu bar ---------------------------------------------------------- */
+/* ----- save/write operations --------------------------------------------- */
 
 
 static char *set_extension(const char *name, const char *ext)
@@ -67,57 +68,93 @@ static char *set_extension(const char *name, const char *ext)
 }
 
 
-static void save_with_backup(const char *name, int (*fn)(FILE *file))
+static int save_to(const char *name, int (*fn)(FILE *file))
 {
 	FILE *file;
+
+	file = fopen(name, "w");
+	if (!file) {
+		perror(name);
+		return 0;
+	}
+	if (!fn(file)) {
+		perror(name);
+		return 0;
+	}
+	if (fclose(file) == EOF) {
+		perror(name);
+		return 0;
+	}
+	return 1;
+}
+
+
+static void save_with_backup(const char *name, int (*fn)(FILE *file))
+{
 	char *s = stralloc(name);
-	char *slash, *dot, *tmp;
+	char *back, *tmp;
+	char *slash, *dot;
 	int n;
 	struct stat st;
 
+	/* save to temporary file */
+
 	slash = strrchr(s, '/');
+	if (!slash)
+		tmp = stralloc_printf("~%s", s);
+	else {
+		*slash = 0;
+		tmp = stralloc_printf("%s/~%s", s, slash+1);
+		*slash = '/';
+	}
+
+	if (!save_to(tmp, fn))
+		return;
+
+	/* move existing file out of harm's way */
+
 	dot = strrchr(slash ? slash : s, '.');
 	if (dot)
 		*dot = 0;
 	n = 0;
 	while (1) {
-		tmp = stralloc_printf("%s~%d%s%s",
+		back = stralloc_printf("%s~%d%s%s",
 		    s, n, dot ? "." : "", dot ? dot+1 : "");
-		if (stat(tmp, &st) < 0) {
+		if (stat(back, &st) < 0) {
 			if (errno == ENOENT)
 				break;
-			perror(tmp);
-			free(tmp);
+			perror(back);
+			free(back);
 			return;
 		}
-		free(tmp);
+		free(back);
 		n++;
 	}
-	if (rename(name, tmp) < 0) {
+	if (rename(name, back) < 0) {
 		if (errno != ENOENT) {
 			perror(name);
-			free(tmp);
+			free(back);
 			return;
 		}
 	} else {
-		fprintf(stderr, "renamed %s to %s\n", name, tmp);
+		fprintf(stderr, "renamed %s to %s\n", name, back);
+	}
+	free(back);
+
+	/* rename to final name */
+
+	if (rename(tmp, name) < 0) {
+		perror(name);
+		free(tmp);
+		return;
 	}
 	free(tmp);
 
-	file = fopen(name, "w");
-	if (!file) {
-		perror(name);
-		return;
-	}
-	if (!fn(file))
-		perror(name);
-	if (fclose(file) == EOF)
-		perror(name);
 	fprintf(stderr, "saved to %s\n", name);
 }
 
 
-static void menu_save(GtkWidget *widget, gpointer user)
+static void menu_save(void)
 {
 	if (save_file)
 		save_with_backup(save_file, dump);
@@ -128,13 +165,13 @@ static void menu_save(GtkWidget *widget, gpointer user)
 }
 
 
-static void menu_save_kicad(GtkWidget *widget, gpointer user)
+static void menu_write_kicad(void)
 {
 	char *name;
 
 	if (save_file) {
 		name = set_extension(save_file, "mod");
-		save_with_backup(name, kicad);
+		save_to(name, kicad);
 		free(name);
 	} else {
 		if (!kicad(stdout))
@@ -143,34 +180,47 @@ static void menu_save_kicad(GtkWidget *widget, gpointer user)
 }
 
 
+static void menu_write_ps(void)
+{
+	char *name;
+
+	if (save_file) {
+		name = set_extension(save_file, "ps");
+		save_to(name, postscript);
+		free(name);
+	} else {
+		if (!postscript(stdout))
+			perror("stdout");
+	}
+}
+
+
+/* ----- menu bar ---------------------------------------------------------- */
+
+
+static GtkItemFactoryEntry menu_entries[] = {
+	{ "/File",		NULL,	NULL,	 	0, "<Branch>" },
+	{ "/File/Save",		NULL,	menu_save,	0, "<Item>" },
+        { "/File/sep0",		NULL,	NULL,		0, "<Separator>" },
+        { "/File/Write KiCad",	NULL,	menu_write_kicad, 0, "<Item>" },
+        { "/File/Write Postscript",
+				NULL,	menu_write_ps,	0, "<Item>" },
+        { "/File/sep2",		NULL,	NULL,		0, "<Separator>" },
+        { "/File/Quit",		NULL,	gtk_main_quit,	0, "<Item>" },
+};
+
+
 static void make_menu_bar(GtkWidget *hbox)
 {
+	GtkItemFactory *factory;
 	GtkWidget *bar;
-	GtkWidget *file_menu, *file, *quit, *save;
 
-	bar = gtk_menu_bar_new();
+	factory = gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<FpedMenu>", NULL);
+        gtk_item_factory_create_items(factory,
+	    sizeof(menu_entries)/sizeof(*menu_entries), menu_entries, NULL);
+
+	bar = gtk_item_factory_get_widget(factory, "<FpedMenu>");
 	gtk_box_pack_start(GTK_BOX(hbox), bar, TRUE, TRUE, 0);
-
-	file_menu = gtk_menu_new();
-
-	file = gtk_menu_item_new_with_label("File");
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), file_menu);
-	gtk_menu_shell_append(GTK_MENU_SHELL(bar), file);
-
-	save = gtk_menu_item_new_with_label("Save");
-	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), save);
-	g_signal_connect(G_OBJECT(save), "activate",
-	    G_CALLBACK(menu_save), NULL);
-
-	save = gtk_menu_item_new_with_label("Save as KiCad");
-	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), save);
-	g_signal_connect(G_OBJECT(save), "activate",
-	    G_CALLBACK(menu_save_kicad), NULL);
-
-	quit = gtk_menu_item_new_with_label("Quit");
-	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), quit);
-	g_signal_connect(G_OBJECT(quit), "activate",
-	    G_CALLBACK(gtk_main_quit), NULL);
 }
 
 
