@@ -154,6 +154,38 @@ struct num eval_var(const struct frame *frame, const char *name)
 }
 
 
+static const char *eval_string_var(const struct frame *frame, const char *name)
+{
+	const struct table *table;
+	const struct loop *loop;
+	const struct value *value;
+	struct var *var;
+	const char *res;
+
+	for (table = frame->tables; table; table = table->next) {
+		value = table->curr_row->values;
+		for (var = table->vars; var; var = var->next) {
+			if (var->name == name) {
+				if (var->visited)
+					return NULL;
+				var->visited = 1;
+				res = eval_str(value->expr, frame);
+				var->visited = 0;
+				return res;
+				
+			}
+			value = value->next;
+		}
+	}
+	for (loop = frame->loops; loop; loop = loop->next)
+		if (loop->var.name == name)
+			return NULL;
+	if (frame->curr_parent)
+		return eval_string_var(frame->curr_parent, name);
+	return NULL;
+}
+
+
 struct num op_var(const struct expr *self, const struct frame *frame)
 {
 	struct num res;
@@ -307,9 +339,13 @@ struct expr *binary_op(op_type op, struct expr *a, struct expr *b)
 }
 
 
-char *eval_str(const struct frame *frame, const struct expr *expr)
+const char *eval_str(const struct expr *expr, const struct frame *frame)
 {
-	abort();
+	if (expr->op == op_string)
+		return expr->u.str;
+	if (expr->op == op_var)
+		return eval_string_var(frame, expr->u.var);
+	return NULL;
 }
 
 
@@ -329,7 +365,7 @@ char *expand(const char *name, const struct frame *frame)
 	char num_buf[100]; /* enough :-) */
 	const char *s, *s0;
 	char *var;
-	const char *var_unique;
+	const char *var_unique, *value_string;
 	struct num value;
 	int i, value_len;
 
@@ -366,18 +402,24 @@ char *expand(const char *name, const struct frame *frame)
 			continue;
 		var_unique = unique(var);
 		free(var);
-		value = eval_var(frame, var_unique);
-		if (is_undef(value)) {
-			fail("undefined variable \"%s\"", var_unique);
-			goto fail;
+		value_string = eval_string_var(frame, var_unique);
+		if (value_string)
+			value_len = strlen(value_string);
+		else {
+			value = eval_var(frame, var_unique);
+			if (is_undef(value)) {
+				fail("undefined variable \"%s\"", var_unique);
+				goto fail;
+			}
+			value_len = snprintf(num_buf, sizeof(num_buf), "%lg%s",
+			    value.n, str_unit(value));
+			value_string = num_buf;
 		}
-		value_len = snprintf(num_buf, sizeof(num_buf), "%lg%s",
-		    value.n, str_unit(value));
 		len += value_len;
 		buf = realloc(buf, len+1);
 		if (!buf)
 			abort();
-		strcpy(buf+i, num_buf);
+		strcpy(buf+i, value_string);
 		i += value_len;
 	}
 	buf[i] = 0;
@@ -410,6 +452,7 @@ struct expr *new_num(struct num num)
 void scan_expr(const char *s);
 int yyparse(void);
 
+
 struct expr *expr_result;
 
 
@@ -422,14 +465,15 @@ struct expr *parse_expr(const char *s)
 
 static void vacate_op(struct expr *expr)
 {
-	if (expr->op == &op_num || expr->op == &op_var)
+	if (expr->op == op_num || expr->op == op_string ||
+	    expr->op == op_var)
 		return;
-	if (expr->op == &op_minus) {
+	if (expr->op == op_minus) {
 		free_expr(expr->u.op.a);
 		return;
 	}
-	if (expr->op == &op_add || expr->op == &op_sub ||
-	    expr->op == &op_mult || expr->op == &op_div) {
+	if (expr->op == op_add || expr->op == op_sub ||
+	    expr->op == op_mult || expr->op == op_div) {
 		free_expr(expr->u.op.a);
 		free_expr(expr->u.op.b);
 		return;

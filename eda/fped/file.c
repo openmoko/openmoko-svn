@@ -47,6 +47,19 @@ char *set_extension(const char *name, const char *ext)
 }
 
 
+int file_exists(const char *name)
+{
+	struct stat st;
+
+	if (stat(name, &st) >= 0)
+		return 1;
+	if (errno == ENOENT)
+		return 0;
+	perror(name);
+	return -1;
+}
+
+
 int save_to(const char *name, int (*fn)(FILE *file))
 {
 	FILE *file;
@@ -73,8 +86,7 @@ void save_with_backup(const char *name, int (*fn)(FILE *file))
 	char *s = stralloc(name);
 	char *back, *tmp;
 	char *slash, *dot;
-	int n;
-	struct stat st;
+	int n, res;
 
 	/* save to temporary file */
 
@@ -99,14 +111,12 @@ void save_with_backup(const char *name, int (*fn)(FILE *file))
 	while (1) {
 		back = stralloc_printf("%s~%d%s%s",
 		    s, n, dot ? "." : "", dot ? dot+1 : "");
-		if (stat(back, &st) < 0) {
-			if (errno == ENOENT)
-				break;
-			perror(back);
-			free(back);
-			return;
-		}
+		res = file_exists(back);
+		if (!res)
+			break;
 		free(back);
+		if (res < 0)
+			return;
 		n++;
 	}
 	if (rename(name, back) < 0) {

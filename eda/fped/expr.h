@@ -121,7 +121,13 @@ struct expr *new_op(op_type op);
 struct expr *binary_op(op_type op, struct expr *a, struct expr *b);
 
 struct num eval_var(const struct frame *frame, const char *name);
-char *eval_str(const struct frame *frame, const struct expr *expr);
+
+/*
+ * eval_str returns NULL if the result isn't a string. Evaluation may then
+ * be attempted with eval_num, and the result can be converted accordingly.
+ */
+const char *eval_str(const struct expr *expr, const struct frame *frame);
+
 struct num eval_num(const struct expr *expr, const struct frame *frame);
 
 /* if frame == NULL, we only check the syntax without expanding */

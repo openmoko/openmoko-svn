@@ -1,0 +1,52 @@
+/* MACHINE-GENERATED ! */
+
+frame pad {
+	set Px = 0.5mm
+
+	set Py = 0.5mm
+
+	set cname = col+1
+
+	__0: vec @(col*1mm-Px/2, row*-1mm-Py/2)
+	__1: vec .(0mm, Py)
+	__2: vec __0(Px, 0mm)
+	pad "$rname$cname" __1 __2
+}
+
+frame inner {
+	loop col = c0, c1
+
+	frame pad @
+}
+
+frame last {
+	loop col = 4, 5
+
+	frame pad @
+}
+
+frame first {
+	loop col = 0, 1
+
+	frame pad @
+}
+
+part "Fake_BGA"
+table
+    { row, rname, c0, c1 }
+    { 0, "A", 2, 3 }
+    { 1, "B", 2, 3 }
+    { 2, "C", 9, 0 }
+    { 3, "D", 9, 0 }
+    { 4, "E", 2, 3 }
+    { 5, "F", 2, 3 }
+
+frame last @
+frame first @
+frame inner @
+measy pad.__0 -> pad.__1 0.2mm
+measy pad.__0 -> pad.__0 0.5mm
+measx pad.__0 -> pad.__2 -0.3mm
+measx pad.__0 -> pad.__0 -0.6mm
+measy pad.__0 >> pad.__1 0.8mm
+measx pad.__0 >> pad.__2 -0.9mm

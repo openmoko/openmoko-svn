@@ -38,7 +38,7 @@ static int precedence(op_type op)
 		return prec_mult;
 	if (op == op_minus)
 		return prec_unary;
-	if (op == op_num || op == op_var)
+	if (op == op_num || op == op_string || op == op_var)
 		return prec_primary;
 	abort();
 }
@@ -85,6 +85,8 @@ static char *unparse_op(const struct expr *expr, enum prec prec)
 		    expr->u.num.n, str_unit(expr->u.num));
 		return stralloc(tmp);
 	}
+	if (expr->op == op_string)
+		return stralloc_printf("\"%s\"", expr->u.str);
 	if (expr->op == op_var)
 		return stralloc(expr->u.var);
 	if (expr->op == op_minus)

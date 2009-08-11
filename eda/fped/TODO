@@ -39,6 +39,9 @@ Code cleanup:
 - code organization is very poor. E.g., functions belonging to the different
   items (pads, silk objects, vectors, etc.) should be grouped by item, not by
   type of function, similar to how some things are now with gui_meas.c
+- eval_string_var should be merged into eval_var and the result should be a
+  struct num (?) that can contain both types. This also means changing all the
+  ops to handle/reject strings.
 
 Open decisions:
 - Q: should loop be (start, last) or (start, iterations) ? or start ... last ?

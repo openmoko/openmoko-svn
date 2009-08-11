@@ -32,8 +32,12 @@ char *save_file_name = NULL;
 
 static void load_file(const char *name)
 {
-	reporter = report_parse_error;
-	run_cpp_on_file(name);
+	if (file_exists(name) == 1) {
+		reporter = report_parse_error;
+		run_cpp_on_file(name);
+	} else {
+		scan_empty();
+	}
 	(void) yyparse();
 }
 

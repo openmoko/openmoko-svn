@@ -487,6 +487,7 @@ static void edit_var(struct var *var)
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", var->name);
+	edit_nothing();
 	edit_unique(&var->name, validate_var_name, var);
 }
 
@@ -508,6 +509,7 @@ static void edit_value(struct value *value)
 {
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
+	edit_nothing();
 	edit_expr(&value->expr);
 }
 
@@ -549,6 +551,7 @@ static gboolean assignment_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_var(var);
 		break;
 	case 3:
@@ -566,6 +569,7 @@ static gboolean assignment_value_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_value(value);
 		break;
 	}
@@ -633,6 +637,7 @@ static gboolean table_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_var(var);
 		break;
 	case 3:
@@ -650,9 +655,11 @@ static gboolean table_value_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
-		if (!value->row || value->row->table->active_row == value->row)
+		if (!value->row ||
+		    value->row->table->active_row == value->row) {
+			edit_nothing();
 			edit_value(value);
-		else {
+		} else {
 			select_row(value->row);
 			change_world();
 		}
@@ -745,6 +752,7 @@ static gboolean loop_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_var(&loop->var);
 		break;
 	case 3:
@@ -762,6 +770,7 @@ static gboolean loop_from_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_value(&loop->from);
 		break;
 	}
@@ -776,6 +785,7 @@ static gboolean loop_to_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
+		edit_nothing();
 		edit_value(&loop->to);
 		break;
 	}
@@ -940,6 +950,7 @@ static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
 		status_set_type_entry("part =");
 		status_set_name("%s", part_name);
+		edit_nothing();
 		edit_name(&part_name, validate_part_name, NULL);
 		break;
 	}
@@ -1001,6 +1012,7 @@ static void edit_frame(struct frame *frame)
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", frame->name);
+	edit_nothing();
 	edit_unique(&frame->name, validate_frame_name, frame);
 }
 
@@ -1025,8 +1037,10 @@ static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
 		if (active_frame != frame)
 			select_frame(frame);
 		else {
-			if (active_frame->name)
+			if (active_frame->name) {
+				edit_nothing();
 				edit_frame(frame);
+			}
 		}
 		break;
 	case 3:

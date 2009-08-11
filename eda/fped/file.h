@@ -17,6 +17,11 @@
 #include <stdio.h>
 
 
+/*
+ * Returns -1 on error.
+ */
+int file_exists(const char *name);
+
 char *set_extension(const char *name, const char *ext);
 int save_to(const char *name, int (*fn)(FILE *file));
 void save_with_backup(const char *name, int (*fn)(FILE *file));
