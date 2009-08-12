@@ -989,6 +989,7 @@ static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row,
 	GtkWidget *label;
 
 	label = label_in_box_new(s);
+	gtk_misc_set_padding(GTK_MISC(label), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	gtk_widget_modify_font(label, item_list_font);
 	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),

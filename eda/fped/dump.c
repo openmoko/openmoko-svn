@@ -45,27 +45,22 @@ static int n_vec_refs(const struct vec *vec)
 
 
 /*
- * "need" operates in two modes:
+ * If "prev" is non-NULL, we're looking for objects that need to be put after
+ * the current vector (in "prev"). Only those objects need to be put there
+ * that have at least one base that isn't the frame's origin.
  *
- * - if "prev" is non-NULL, we're looking for objects that need to be put after
- *   the current vector (in "prev"). Only those objects need to be put there
- *   that have at least one base that isn't the frame's origin or already has a
- *   name.
- *
- * - if "prev" is NULL, we're at the end of the frame. We have already used all
- *   the . references we could, so now we have to find out which objects
- *   haven't been dumped yet. "need" still returns the ones that had a need to
- *   be dumped. Again, that's those that have at least one possible "." base.
- *   Since this "." base will have been used by now, the object must have been
- *   dumped.
+ * We could also make an exception for manually named vectors, but we get
+ * better clustering without.
  */
 
 static int need(const struct vec *base, const struct vec *prev)
 {
 	if (!base)
 		return 0;
-	if (base->name)
+#if 0
+	if (base->name && *base->name != '_')
 		return 0;
+#endif
 	if (prev)
 		return base == prev;
 	return 1;
@@ -79,10 +74,12 @@ static int need(const struct vec *base, const struct vec *prev)
 
 static int later(const struct vec *base, const struct vec *prev)
 {
-	while (prev) {
+	while (1) {
+		prev = prev->next;
+		if (!prev)
+			break;
 		if (base == prev)
 			return 1;
-		prev = prev->next;
 	}
 	return 0;
 }
