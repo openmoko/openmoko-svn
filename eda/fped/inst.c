@@ -109,6 +109,17 @@ return;
 }
 
 
+static void inst_select_inst(struct inst *inst)
+{
+	selected_inst = inst;
+	set_path(1);
+	tool_selected_inst(inst);
+	gui_frame_select_inst(inst);
+	if (inst->ops->select)
+		selected_inst->ops->select(inst);
+}
+
+
 int inst_select(struct coord pos)
 {
 	enum inst_prio prio;
@@ -158,11 +169,7 @@ int inst_select(struct coord pos)
 		return 0;
 
 selected:
-	set_path(1);
-	tool_selected_inst(selected_inst);
-	gui_frame_select_inst(selected_inst);
-	if (selected_inst->ops->select)
-		selected_inst->ops->select(selected_inst);
+	inst_select_inst(selected_inst);
 	return 1;
 }
 
@@ -287,6 +294,40 @@ void inst_deselect(void)
 	selected_inst = NULL;
 	edit_nothing();
 }
+
+
+/* ----- select instance by vector/object ---------------------------------- */
+
+
+void inst_select_vec(const struct vec *vec)
+{
+	struct inst *inst;
+
+	for (inst = insts[ip_vec]; inst; inst = inst->next)
+		if (inst->vec == vec && inst->active) {
+			inst_deselect();
+			inst_select_inst(inst);
+			return;
+		}
+	
+}
+
+
+void inst_select_obj(const struct obj *obj)
+{
+	enum inst_prio prio;
+	struct inst *inst;
+
+	FOR_INSTS_DOWN(prio, inst)
+		if (inst->obj && inst->obj == obj && inst->active) {
+			inst_deselect();
+			inst_select_inst(inst);
+			return;
+		}
+}
+
+
+/* ----- common status reporting ------------------------------------------- */
 
 
 static void rect_status(struct coord a, struct coord b, unit_type width)

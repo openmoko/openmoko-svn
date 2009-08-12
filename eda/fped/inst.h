@@ -133,6 +133,9 @@ void inst_select_outside(void *item, void (*deselect)(void *item));
 int inst_select(struct coord pos);
 void inst_deselect(void);
 
+void inst_select_vec(const struct vec *vec);
+void inst_select_obj(const struct obj *obj);
+
 struct inst *inst_find_point(struct coord pos);
 int inst_find_point_selected(struct coord pos, struct inst **res);
 struct coord inst_get_point(const struct inst *inst);

@@ -25,6 +25,7 @@
 #include "gui_style.h"
 #include "gui_status.h"
 #include "gui_tool.h"
+#include "gui_canvas.h"
 #include "gui.h"
 #include "gui_frame.h"
 
@@ -948,7 +949,39 @@ void gui_frame_deselect_inst(struct inst *inst)
 }
 
 
-static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row)
+static gboolean item_select_vec(GtkWidget *widget, GdkEventButton *event,
+     gpointer data)
+{
+	const struct vec *vec = data;
+
+	switch (event->button) {
+	case 1:
+		inst_select_vec(vec);
+		redraw();
+		break;
+	}
+	return TRUE;
+}
+
+
+static gboolean item_select_obj(GtkWidget *widget, GdkEventButton *event,
+     gpointer data)
+{
+	const struct obj *obj = data;
+
+	switch (event->button) {
+	case 1:
+		inst_select_obj(obj);
+		redraw();
+		break;
+	}
+	return TRUE;
+}
+
+
+static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row,
+    gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
+    gpointer data)
 {
 	GtkWidget *label;
 
@@ -958,6 +991,11 @@ static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row)
 	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),
 	    col, col+1, row, row+1);
 	label_in_box_bg(box_of_label(label), COLOR_ITEM_NORMAL);
+
+	if (cb)
+		g_signal_connect(G_OBJECT(box_of_label(label)),
+		    "button_press_event", G_CALLBACK(cb), data);
+
 	free(s);
 	return label;
 }
@@ -989,15 +1027,17 @@ static GtkWidget *build_items(struct frame *frame)
 	for (item = order; item->vec || item->obj; item++) {
 		if (item->obj) {
 			s = print_obj(item->obj, item->vec);
-			item->obj->list_widget = item_label(tab, s, 1, n);
+			item->obj->list_widget = item_label(tab, s, 1, n,
+			    item_select_obj, item->obj);
 		} else {
 			s = print_label(item->vec);
 			t = stralloc_printf("%s: ", s);
 			free(s);
-			item_label(tab, t, 0, n);
+			item_label(tab, t, 0, n, NULL, NULL);
 
 			s = print_vec(item->vec);
-			item->vec->list_widget = item_label(tab, s, 1, n);
+			item->vec->list_widget = item_label(tab, s, 1, n,
+			    item_select_vec, item->vec);
 		}
 		n++;
         }
@@ -1029,7 +1069,8 @@ static GtkWidget *build_meas(struct frame *frame)
 		if (obj->type != ot_meas)
 			continue;
 		s = print_meas(obj);
-		obj->list_widget = item_label(tab, s, 0, n);
+		obj->list_widget = item_label(tab, s, 0, n,
+		    item_select_obj, obj);
 		n++;
         }
 
