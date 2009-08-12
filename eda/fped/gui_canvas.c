@@ -349,6 +349,13 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		if (undelete())
 			change_world();
 		break;
+	case '/':
+{
+/* @@@ find a better place for this */
+extern int show_vars;
+		show_vars = !show_vars;
+change_world();
+}
 	}
 	return TRUE;
 }

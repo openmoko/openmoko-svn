@@ -30,6 +30,9 @@
 #include "gui_frame.h"
 
 
+int show_vars = 1;
+
+
 /* ----- popup dispatcher -------------------------------------------------- */
 
 
@@ -1003,7 +1006,7 @@ static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row,
 
 static GtkWidget *build_items(struct frame *frame)
 {
-	GtkWidget *hbox, *tab;
+	GtkWidget *vbox, *hbox, *tab;
 	struct order *order, *item;
 	struct vec *vec;
 	struct obj *obj;
@@ -1017,7 +1020,11 @@ static GtkWidget *build_items(struct frame *frame)
 		if (obj->type != ot_meas)
 			n++;
 
+	vbox = gtk_vbox_new(FALSE, 0);
+	add_sep(vbox, 3);
+
 	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 	tab = gtk_table_new(n, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
@@ -1043,13 +1050,13 @@ static GtkWidget *build_items(struct frame *frame)
         }
         free(order);
 
-	return hbox;
+	return vbox;
 }
 
 
 static GtkWidget *build_meas(struct frame *frame)
 {
-	GtkWidget *hbox, *tab;
+	GtkWidget *vbox, *hbox, *tab;
 	struct obj *obj;
 	int n;
 	char *s;
@@ -1059,7 +1066,11 @@ static GtkWidget *build_meas(struct frame *frame)
 		if (obj->type == ot_meas)
 			n++;
 
+	vbox = gtk_vbox_new(FALSE, 0);
+	add_sep(vbox, 3);
+
 	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 	tab = gtk_table_new(n, 2, FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
@@ -1074,7 +1085,7 @@ static GtkWidget *build_meas(struct frame *frame)
 		n++;
         }
 
-	return hbox;
+	return vbox;
 }
 
 
@@ -1277,7 +1288,7 @@ void build_frames(GtkWidget *vbox)
 
 	hbox = gtk_hbox_new(FALSE, 0);
 
-	tab = gtk_table_new(n*2+3, 3, FALSE);
+	tab = gtk_table_new(n*2+3, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
 
@@ -1297,24 +1308,24 @@ void build_frames(GtkWidget *vbox)
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
 		    1, 2, n*2+1, n*2+2);
 
-		vars = build_vars(frame);
-		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
-		    1, 2, n*2+2, n*2+3);
-
-		items = build_items(frame);
-		gtk_table_attach_defaults(GTK_TABLE(tab), items,
-		    2, 3, n*2+2, n*2+3);
+		if (show_vars) {
+			vars = build_vars(frame);
+			gtk_table_attach_defaults(GTK_TABLE(tab), vars,
+			    1, 2, n*2+2, n*2+3);
+		} else {
+			items = build_items(frame);
+			gtk_table_attach_defaults(GTK_TABLE(tab), items,
+			    1, 2, n*2+2, n*2+3);
+		}
 
 		n++;
 	}
 
-	label = label_in_box_new(" ");
-	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),
-	    2, 3, n*2+1, n*2+2);
-	
-	meas = build_meas(root_frame);
-	gtk_table_attach_defaults(GTK_TABLE(tab), meas,
-	    2, 3, n*2+2, n*2+3);
+	if (!show_vars) {
+		meas = build_meas(root_frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), meas,
+		    1, 2, n*2+2, n*2+3);
+	}
 
 	gtk_widget_show_all(hbox);
 }

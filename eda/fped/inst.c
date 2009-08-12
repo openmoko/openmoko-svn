@@ -303,6 +303,8 @@ void inst_select_vec(const struct vec *vec)
 {
 	struct inst *inst;
 
+	if (vec->frame != active_frame)
+		select_frame(vec->frame);
 	for (inst = insts[ip_vec]; inst; inst = inst->next)
 		if (inst->vec == vec && inst->active) {
 			inst_deselect();
@@ -318,6 +320,8 @@ void inst_select_obj(const struct obj *obj)
 	enum inst_prio prio;
 	struct inst *inst;
 
+	if (obj->frame != active_frame)
+		select_frame(obj->frame);
 	FOR_INSTS_DOWN(prio, inst)
 		if (inst->obj && inst->obj == obj && inst->active) {
 			inst_deselect();

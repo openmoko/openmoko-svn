@@ -402,6 +402,7 @@ Space	reset user coordinates
 *	zoom and center to extents
 #	zoom and center to currently active frame instance
 U	undelete the previously deleted object
+/	Switch between variable and item display.
 
 
 Canvas

@@ -17,6 +17,9 @@
 #include <gtk/gtk.h>
 
 
+extern int show_vars;
+
+
 void make_popups(void);
 
 void select_frame(struct frame *frame);
