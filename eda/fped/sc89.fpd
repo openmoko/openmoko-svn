@@ -1,10 +1,10 @@
 /* MACHINE-GENERATED ! */
 
 frame pad {
-	_pad_0: vec @(-Px/2, -Py/2)
-	_pad_1: vec .(Px, 0mm)
-	_pad_2: vec _pad_0(0mm, Py)
-	pad "$pad" . _pad_1
+	corner: vec @(-Px/2, -Py/2)
+	x: vec .(Px, 0mm)
+	y: vec corner(0mm, Py)
+	pad "$pad" . x
 }
 
 frame pad_ne {
@@ -29,25 +29,25 @@ frame pad_sc {
 }
 
 frame outline {
-	__4: vec @(0mm, Oy/2)
-	__5: vec @(0mm, -Oy/2)
-	__6: vec .(Ox/2, 0mm)
-	__7: vec __5(-Ox/2, 0mm)
-	line . __6 5mil
-	__8: vec __4(Ow/2, 0mm)
-	__9: vec __4(-Ow/2, 0mm)
-	line . __8 5mil
-	_outline_6: vec @(0mm, Oh)
-	_outline_7: vec .(Ox/2, 0mm)
-	line . __6 5mil
-	_outline_8: vec _outline_6(-Ox/2, 0mm)
-	line . __7 5mil
-	_outline_9: vec _outline_6(Ow/2, 0mm)
-	line __8 . 5mil
-	line . _outline_7 5mil
-	_outline_10: vec _outline_6(-Ow/2, 0mm)
-	line _outline_8 . 5mil
-	line __9 . 5mil
+	top: vec @(0mm, Oy/2)
+	bottom: vec @(0mm, -Oy/2)
+	bot_right: vec .(Ox/2, 0mm)
+	bot_left: vec bottom(-Ox/2, 0mm)
+	line . bot_right 5mil
+	top_right: vec top(Ow/2, 0mm)
+	top_left: vec top(-Ow/2, 0mm)
+	line . top_right 5mil
+	middle: vec @(0mm, Oh)
+	mid_rightmost: vec .(Ox/2, 0mm)
+	line . bot_right 5mil
+	mid_leftmost: vec middle(-Ox/2, 0mm)
+	line . bot_left 5mil
+	mid_right: vec middle(Ow/2, 0mm)
+	line top_right . 5mil
+	line . mid_rightmost 5mil
+	mid_left: vec middle(-Ow/2, 0mm)
+	line mid_leftmost . 5mil
+	line top_left . 5mil
 }
 
 part "SC89"
@@ -59,22 +59,22 @@ table
     { Ox, Oy, Oh, Ow }
     { 2mm, 2.2mm, 0.6mm, 0.85mm }
 
-__0: vec @(0mm, Gy/2)
+ref_up: vec @(0mm, Gy/2)
 frame pad_sc .
-__1: vec @(0mm, -Gy/2)
-__2: vec .(Wx/2, 0mm)
+ref_down_c: vec @(0mm, -Gy/2)
+ref_down_r: vec .(Wx/2, 0mm)
 frame pad_ne .
-__3: vec __1(-Wx/2, 0mm)
+ref_down_l: vec ref_down_c(-Wx/2, 0mm)
 frame pad_nw .
 dummy: vec @(0.2mm, 0mm)
 frame outline @
-measx pad._pad_0 >> pad._pad_1 -0.6mm
-measy pad._pad_0 >> pad._pad_2 0.8mm
-measy __3 >> pad._pad_0 0.5mm
-measx pad._pad_0 -> pad._pad_1 -0.3mm
-measy pad._pad_0 >> __3 0.5mm
-measy dummy >> outline.__6 1.1mm
-measy outline._outline_7 >> dummy 0.3mm
-measy outline.__8 >> outline.__6 1.2mm
-measx outline.__9 >> outline.__8 0.3mm
-measx outline.__7 >> outline.__6 -0.8mm
+measx pad.corner >> pad.x -0.6mm
+measy pad.corner >> pad.y 0.8mm
+measy ref_down_l >> pad.corner 0.5mm
+measx pad.corner -> pad.x -0.3mm
+measy pad.corner >> ref_down_l 0.5mm
+measy dummy >> outline.bot_right 1.1mm
+measy outline.mid_rightmost >> dummy 0.3mm
+measy outline.top_right >> outline.bot_right 1.2mm
+measx outline.top_left >> outline.top_right 0.3mm
+measx outline.bot_left >> outline.bot_right -0.8mm

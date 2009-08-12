@@ -331,6 +331,15 @@ following loop would not execute at all:
 
 loop n = 1, 0
 
+This can be used to implement conditional execution. For example,
+the items in the following frame would be instantiated if the
+variable "enable" is set to 1 but not it is set to 0:
+
+frame ... {
+    loop dummy = 1, enable
+    ...
+}
+
 When a loop is executed, the objects contained in the body of the
 enclosing frame are generated for each value of the variable. If
 a frame contains multiple loops, all possible combinations of the
