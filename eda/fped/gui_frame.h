@@ -21,6 +21,9 @@ void make_popups(void);
 
 void select_frame(struct frame *frame);
 
+void gui_frame_select_inst(struct inst *inst);
+void gui_frame_deselect_inst(struct inst *inst);
+
 void build_frames(GtkWidget *vbox);
 
 #endif /* !GUI_FRAME_H */

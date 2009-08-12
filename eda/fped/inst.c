@@ -25,6 +25,7 @@
 #include "gui_tool.h"
 #include "gui_meas.h"
 #include "gui_inst.h"
+#include "gui_frame.h"
 #include "gui.h"
 #include "inst.h"
 
@@ -117,9 +118,11 @@ int inst_select(struct coord pos)
 
 	deselect_outside();
 	edit_nothing();
-	selected_inst = NULL;
-	if (selected_inst)
+	if (selected_inst) {
+		gui_frame_deselect_inst(selected_inst);
 		tool_selected_inst(NULL);
+	}
+	selected_inst = NULL;
 	FOR_INST_PRIOS_DOWN(prio) {
 		if (!show(prio))
 			continue;
@@ -157,6 +160,7 @@ int inst_select(struct coord pos)
 selected:
 	set_path(1);
 	tool_selected_inst(selected_inst);
+	gui_frame_select_inst(selected_inst);
 	if (selected_inst->ops->select)
 		selected_inst->ops->select(selected_inst);
 	return 1;
@@ -269,6 +273,7 @@ void inst_deselect(void)
 	if (selected_inst) {
 		set_path(0);
 		tool_selected_inst(NULL);
+		gui_frame_deselect_inst(selected_inst);
 	}
 	deselect_outside();
 	status_set_type_x("");
@@ -345,6 +350,8 @@ static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
 
 	inst = alloc_type(struct inst);
 	inst->ops = ops;
+	inst->vec = NULL;
+	inst->obj = NULL;
 	inst->base = inst->bbox.min = inst->bbox.max = base;
 	inst->outer = curr_frame;
 	inst->active = IS_ACTIVE;

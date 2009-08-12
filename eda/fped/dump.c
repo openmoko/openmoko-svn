@@ -20,6 +20,186 @@
 #include "dump.h"
 
 
+/* ----- order items ------------------------------------------------------- */
+
+
+static void add_item(struct order **curr, struct vec *vec, struct obj *obj)
+{
+	(*curr)->vec = vec;
+	(*curr)->obj = obj;
+	(*curr)++;
+}
+
+
+static int n_vec_refs(const struct vec *vec)
+{
+	const struct vec *walk;
+	int n;
+
+	n = 0;
+	for (walk = vec->frame->vecs; walk; walk = walk->next)
+		if (walk->base == vec)
+			n++;
+	return n;
+}
+
+
+/*
+ * "need" operates in two modes:
+ *
+ * - if "prev" is non-NULL, we're looking for objects that need to be put after
+ *   the current vector (in "prev"). Only those objects need to be put there
+ *   that have at least one base that isn't the frame's origin or already has a
+ *   name.
+ *
+ * - if "prev" is NULL, we're at the end of the frame. We have already used all
+ *   the . references we could, so now we have to find out which objects
+ *   haven't been dumped yet. "need" still returns the ones that had a need to
+ *   be dumped. Again, that's those that have at least one possible "." base.
+ *   Since this "." base will have been used by now, the object must have been
+ *   dumped.
+ */
+
+static int need(const struct vec *base, const struct vec *prev)
+{
+	if (!base)
+		return 0;
+	if (base->name)
+		return 0;
+	if (prev)
+		return base == prev;
+	return 1;
+}
+
+
+/*
+ * If we need a vector that's defined later, we have to defer dumping the
+ * object.
+ */
+
+static int later(const struct vec *base, const struct vec *prev)
+{
+	while (prev) {
+		if (base == prev)
+			return 1;
+		prev = prev->next;
+	}
+	return 0;
+}
+
+
+static int may_put_obj_now(const struct obj *obj, const struct vec *prev)
+{
+	int n, l;
+
+	n = need(obj->base, prev);
+	l = later(obj->base, prev);
+
+	switch (obj->type) {
+	case ot_frame:
+		break;
+	case ot_line:
+		n |= need(obj->u.line.other, prev);
+		l |= later(obj->u.line.other, prev);
+		break;
+	case ot_rect:
+		n |= need(obj->u.rect.other, prev);
+		l |= later(obj->u.rect.other, prev);
+		break;
+	case ot_pad:
+		n |= need(obj->u.pad.other, prev);
+		l |= later(obj->u.pad.other, prev);
+		break;
+	case ot_arc:
+		n |= need(obj->u.arc.start, prev);
+		n |= need(obj->u.arc.end, prev);
+		l |= later(obj->u.arc.start, prev);
+		l |= later(obj->u.arc.end, prev);
+		break;
+	case ot_meas:
+		return 0;
+	default:
+		abort();
+	}
+
+	return n && !l;
+}
+
+
+static void put_obj(struct order **curr, struct obj *obj,
+    struct vec *prev)
+{
+	if (obj->dumped)
+		return;
+	obj->dumped = 1;
+	add_item(curr, prev, obj);
+}
+
+/*
+ * Tricky logic ahead: when dumping a vector, we search for a vectors that
+ * depends on that vector for ".". If we find one, we dump it immediately after
+ * this vector.
+ */
+
+static void recurse_vec(struct order **curr, struct vec *vec)
+{
+	struct vec *next;
+	struct obj *obj;
+
+	add_item(curr, vec, NULL);
+	for (obj = vec->frame->objs; obj; obj = obj->next)
+		if (may_put_obj_now(obj, vec))
+			put_obj(curr, obj, vec);
+	if (n_vec_refs(vec) == 1) {
+		for (next = vec->next; next->base != vec; next = next->next);
+		recurse_vec(curr, next);
+	}
+}
+
+
+static void order_vecs(struct order **curr, struct vec *vecs)
+{
+	struct vec *vec;
+
+	for (vec = vecs; vec; vec = vec->next)
+		if (!vec->base || n_vec_refs(vec->base) != 1)
+			recurse_vec(curr, vec);
+}
+
+
+struct order *order_frame(const struct frame *frame)
+{
+	struct order *order, *curr;
+	struct vec *vec;
+	struct obj *obj;
+	int n = 0;
+
+	for (vec = frame->vecs; vec; vec = vec->next)
+		n++;
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type != ot_meas)
+			n++;
+
+	for (obj = frame->objs; obj; obj = obj->next)
+		obj->dumped = 0;
+
+	order = alloc_size(sizeof(*order)*(n+1));
+	curr = order;
+
+	order_vecs(&curr, frame->vecs);
+
+	/* frames based on @ (anything else ?) */
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type != ot_meas)
+			put_obj(&curr, obj, NULL);
+
+	assert(curr == order+n);
+	add_item(&curr, NULL, NULL);
+
+	return order;
+}
+
+
 /* ----- variables --------------------------------------------------------- */
 
 
@@ -114,99 +294,59 @@ static char *obj_base_name(const struct vec *base, const struct vec *prev)
 }
 
 
-static int n_vec_refs(const struct vec *vec)
+char *print_obj(const struct obj *obj, const struct vec *prev)
 {
-	const struct vec *walk;
-	int n;
+	char *base, *s, *s1, *s2, *s3;
 
-	n = 0;
-	for (walk = vec->frame->vecs; walk; walk = walk->next)
-		if (walk->base == vec)
-			n++;
-	return n;
-}
-
-
-/*
- * "need" operates in two modes:
- *
- * - if "prev" is non-NULL, we're looking for objects that need to be put after
- *   the current vector (in "prev"). Only those objects need to be put there
- *   that have at least one base that isn't the frame's origin or already has a
- *   name.
- *
- * - if "prev" is NULL, we're at the end of the frame. We have already used all
- *   the . references we could, so now we have to find out which objects
- *   haven't been dumped yet. "need" still returns the ones that had a need to
- *   be dumped. Again, that's those that have at least one possible "." base.
- *   Since this "." base will have been used by now, the object must have been
- *   dumped.
- */
-
-static int need(const struct vec *base, const struct vec *prev)
-{
-	if (!base)
-		return 0;
-	if (base->name)
-		return 0;
-	if (prev)
-		return base == prev;
-	return 1;
-}
-
-
-/*
- * If we need a vector that's defined later, we have to defer dumping the
- * object.
- */
-
-static int later(const struct vec *base, const struct vec *prev)
-{
-	while (prev) {
-		if (base == prev)
-			return 1;
-		prev = prev->next;
-	}
-	return 0;
-}
-
-
-static int may_dump_obj_now(const struct obj *obj, const struct vec *prev)
-{
-	int n, l;
-
-	n = need(obj->base, prev);
-	l = later(obj->base, prev);
-
+	base = obj_base_name(obj->base, prev);
 	switch (obj->type) {
 	case ot_frame:
+		s = stralloc_printf("frame %s %s",
+		    obj->u.frame.ref->name, base);
 		break;
 	case ot_line:
-		n |= need(obj->u.line.other, prev);
-		l |= later(obj->u.line.other, prev);
+		s1 = obj_base_name(obj->u.line.other, prev);
+		s2 = unparse(obj->u.line.width);
+		s = stralloc_printf("line %s %s %s", base, s1, s2);
+		free(s1);
+		free(s2);
 		break;
 	case ot_rect:
-		n |= need(obj->u.rect.other, prev);
-		l |= later(obj->u.rect.other, prev);
+		s1 = obj_base_name(obj->u.rect.other, prev);
+		s2 = unparse(obj->u.rect.width);
+		s = stralloc_printf("rect %s %s %s", base, s1, s2);
+		free(s1);
+		free(s2);
 		break;
 	case ot_pad:
-		n |= need(obj->u.pad.other, prev);
-		l |= later(obj->u.pad.other, prev);
+		s1 = obj_base_name(obj->u.pad.other, prev);
+		s = stralloc_printf("pad \"%s\" %s %s",
+		    obj->u.pad.name, base, s1);
+		free(s1);
 		break;
 	case ot_arc:
-		n |= need(obj->u.arc.start, prev);
-		n |= need(obj->u.arc.end, prev);
-		l |= later(obj->u.arc.start, prev);
-		l |= later(obj->u.arc.end, prev);
+		s1 = obj_base_name(obj->u.arc.start, prev);
+		s3 = unparse(obj->u.arc.width);
+		if (obj->u.arc.start == obj->u.arc.end) {
+			s = stralloc_printf("circ %s %s %s", base, s1, s3);
+		} else {
+			s2 = obj_base_name(obj->u.arc.end, prev);
+			s = stralloc_printf("arc %s %s %s %s",
+			    base, s1, s2, s3);
+			free(s2);
+		}
+		free(s1);
+		free(s3);
 		break;
-	case ot_meas:
-		return 0;
 	default:
 		abort();
 	}
-
-	return n && !l;
+	free(base);
+	return s;
 }
+
+
+/* ----- print measurement ------------------------------------------------- */
 
 
 static const char *meas_type_name[mt_n] = {
@@ -216,132 +356,79 @@ static const char *meas_type_name[mt_n] = {
 
 
 
-static void print_meas_base(FILE *file, struct vec *base)
+static char *print_meas_base(struct vec *base)
 {
-	if (base->frame != root_frame)
-		fprintf(file, "%s.", base->frame->name);
-	fprintf(file, "%s", base->name);
+	if (base->frame == root_frame)
+		return stralloc_printf("%s", base->name);
+	else
+		return stralloc_printf("%s.%s", base->frame->name, base->name);
 }
 
 
-static void dump_obj(FILE *file, struct obj *obj, const char *indent,
-    const struct vec *prev)
+char *print_meas(const struct obj *obj)
 {
-	char *base, *s1, *s2, *s3;
+	char *s, *t;
+	char *s1, *s2, *s3;
 
-	if (obj->dumped)
-		return;
-	obj->dumped = 1;
-	base = obj_base_name(obj->base, prev);
-	switch (obj->type) {
-	case ot_frame:
-		fprintf(file, "%sframe %s %s\n",
-		    indent, obj->u.frame.ref->name, base);
-		break;
-	case ot_line:
-		s1 = obj_base_name(obj->u.line.other, prev);
-		s2 = unparse(obj->u.line.width);
-		fprintf(file, "%sline %s %s %s\n", indent, base, s1, s2);
-		free(s1);
-		free(s2);
-		break;
-	case ot_rect:
-		s1 = obj_base_name(obj->u.rect.other, prev);
-		s2 = unparse(obj->u.rect.width);
-		fprintf(file, "%srect %s %s %s\n", indent, base, s1, s2);
-		free(s1);
-		free(s2);
-		break;
-	case ot_pad:
-		s1 = obj_base_name(obj->u.pad.other, prev);
-		fprintf(file, "%spad \"%s\" %s %s\n", indent,
-		    obj->u.pad.name, base, s1);
-		free(s1);
-		break;
-	case ot_arc:
-		s1 = obj_base_name(obj->u.arc.start, prev);
-		s3 = unparse(obj->u.arc.width);
-		if (obj->u.arc.start == obj->u.arc.end) {
-			fprintf(file, "%scirc %s %s %s\n",
-			    indent, base, s1, s3);
-		} else {
-			s2 = obj_base_name(obj->u.arc.end, prev);
-			fprintf(file, "%sarc %s %s %s %s\n", indent,
-			    base, s1, s2, s3);
-			free(s2);
-		}
-		free(s1);
-		free(s3);
-		break;
-	case ot_meas:
-		fprintf(file, "%s%s ", indent,
-		    meas_type_name[obj->u.meas.type]);
-		if (obj->u.meas.label)
-			fprintf(file, "\"%s\" ", obj->u.meas.label);
-		print_meas_base(file, obj->base);
-		fprintf(file, " %s ",
+	assert(obj->type == ot_meas);
+
+	s = stralloc_printf("%s ", meas_type_name[obj->u.meas.type]);
+	if (obj->u.meas.label) {
+		t = stralloc_printf("%s\"%s\" ", s, obj->u.meas.label);
+		free(s);
+		s = t;
+	}
+	s1 = print_meas_base(obj->base);
+	s2 = stralloc_printf(" %s ",
 		    obj->u.meas.type < 3 ? obj->u.meas.inverted ? "<-" : "->" :
 		    obj->u.meas.inverted ? "<<" : ">>");
-		print_meas_base(file, obj->u.meas.high);
-		if (!obj->u.meas.offset)
-			fprintf(file, "\n");
-		else {
-			s1 = unparse(obj->u.meas.offset);
-			fprintf(file, " %s\n", s1);
-			free(s1);
-		}
-		break;
-	default:
-		abort();
-	}
-	free(base);
+	s3 = print_meas_base(obj->u.meas.high);
+	t = stralloc_printf("%s%s%s%s", s, s1, s2, s3);
+	free(s);
+	free(s1);
+	free(s2);
+	free(s3);
+	s = t;
+
+	if (!obj->u.meas.offset)
+		return s;
+
+	s1 = unparse(obj->u.meas.offset);
+	t = stralloc_printf("%s %s", s, s1);
+	free(s);
+	free(s1);
+	return t;
 }
 
 
-/*
- * Tricky logic ahead: when dumping a vector, we search for a vectors that
- * depends on that vector for ".". If we find one, we dump it immediately after
- * this vector.
- */
+/* ----- print vector ------------------------------------------------------ */
 
-static void recurse_vec(FILE *file, const struct vec *vec, const char *indent)
+
+char *print_label(const struct vec *vec)
 {
-	const struct vec *next;
-	struct obj *obj;
+	if (vec->name)
+		return stralloc(vec->name);
+	else
+		return generate_name(vec);
+}
+
+
+char *print_vec(const struct vec *vec)
+{
 	char *base, *x, *y, *s;
 
 	base = base_name(vec->base, vec);
 	x = unparse(vec->x);
 	y = unparse(vec->y);
 	if (vec->name)
-		fprintf(file, "%s%s: vec %s(%s, %s)\n",
-		    indent, vec->name, base, x, y);
+		s = stralloc_printf("vec %s(%s, %s)", base, x, y);
 	else {
-		s = generate_name(vec);
-		fprintf(file, "%s%s: vec %s(%s, %s)\n", indent, s, base, x, y);
-		free(s);
+		s = stralloc_printf("vec %s(%s, %s)", base, x, y);
 	}
 	free(base);
 	free(x);
 	free(y);
-
-	for (obj = vec->frame->objs; obj; obj = obj->next)
-		if (may_dump_obj_now(obj, vec))
-			dump_obj(file, obj, indent, vec);
-	if (n_vec_refs(vec) == 1) {
-		for (next = vec->next; next->base != vec; next = next->next);
-		recurse_vec(file, next, indent);
-	}
-}
-
-
-static void dump_vecs(FILE *file, const struct vec *vecs, const char *indent)
-{
-	const struct vec *vec;
-
-	for (vec = vecs; vec; vec = vec->next)
-		if (!vec->base || n_vec_refs(vec->base) != 1)
-			recurse_vec(file, vec, indent);
+	return s;
 }
 
 
@@ -354,21 +441,36 @@ static void dump_frame(FILE *file, const struct frame *frame,
 	const struct table *table;
 	const struct loop *loop;
 	struct obj *obj;
+	struct order *order;
+	const struct order *item;
+	char *s, *s1;
 
 	for (table = frame->tables; table; table = table->next)
 		dump_table(file, table, indent);
 	for (loop = frame->loops; loop; loop = loop->next)
 		dump_loop(file, loop, indent);
-	for (obj = frame->objs; obj; obj = obj->next)
-		obj->dumped = 0;
-	dump_vecs(file, frame->vecs, indent);
 
-	/* frames based on @ (anything else ?) */
-	for (obj = frame->objs; obj; obj = obj->next)
-		if (obj->type != ot_meas)
-			dump_obj(file, obj, indent, NULL);
-	for (obj = frame->objs; obj; obj = obj->next)
-		dump_obj(file, obj, indent, NULL);
+	order = order_frame(frame);
+	for (item = order; item->vec || item->obj; item++) {
+		if (item->obj) {
+			s = print_obj(item->obj, item->vec);
+			fprintf(file, "%s%s\n", indent, s);
+		} else {
+			s1 = print_label(item->vec);
+			s = print_vec(item->vec);
+			fprintf(file, "%s%s: %s\n", indent, s1, s);
+		}
+		free(s);
+	}
+	free(order);
+
+	for (obj = frame->objs; obj; obj = obj->next) {
+		if (obj->dumped)
+			continue;
+		s = print_meas(obj);
+		fprintf(file, "%s%s\n", indent, s);
+		free(s);
+	}
 }
 
 

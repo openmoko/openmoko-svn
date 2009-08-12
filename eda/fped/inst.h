@@ -76,8 +76,8 @@ struct inst {
 	struct coord base;
 //	struct inst *base_inst; /* frame or vector leading to this item */
 	struct bbox bbox;
-	struct vec *vec; /* undefined if not vector */
-	struct obj *obj; /* undefined if not object */
+	struct vec *vec; /* NULL if not vector */
+	struct obj *obj; /* NULL if not object */
 	struct inst *outer; /* frame containing this item */
 	int active;
 	int in_path;

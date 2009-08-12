@@ -16,6 +16,30 @@
 
 #include <stdio.h>
 
+#include "obj.h"
+
+
+/*
+ * vec       obj
+ * --------------------------------------------------------------
+ * NULL	     NULL	end of list
+ * non-NULL  NULL	vector
+ * NULL      non-NULL	object, no previous vector
+ * non-NULL  non-NULL	object, with previous vector
+ */
+
+struct order {
+	struct vec *vec;
+	struct obj *obj;
+};
+
+
+char *print_label(const struct vec *vec);
+char *print_vec(const struct vec *vec);
+char *print_obj(const struct obj *obj, const struct vec *prev);
+char *print_meas(const struct obj *obj);
+
+struct order *order_frame(const struct frame *frame);
 
 int dump(FILE *file);
 

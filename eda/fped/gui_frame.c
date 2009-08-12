@@ -16,6 +16,7 @@
 
 #include "util.h"
 #include "error.h"
+#include "dump.h"
 #include "inst.h"
 #include "obj.h"
 #include "delete.h"
@@ -906,7 +907,7 @@ static GtkWidget *build_vars(struct frame *frame)
 	struct table *table;
 	struct loop *loop;
 
-	vbox= gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 0);
 	for (table = frame->tables; table; table = table->next) {
 		add_sep(vbox, 3);
 		build_assignment(vbox, frame, table);
@@ -917,6 +918,122 @@ static GtkWidget *build_vars(struct frame *frame)
 		build_loop(vbox, frame, loop);
 	}
 	return vbox;
+}
+
+
+/* ----- items ------------------------------------------------------------- */
+
+
+static void set_item_color(struct inst *inst, const char *color)
+{
+	GtkWidget *label;
+
+	if (inst->vec)
+		label = inst->vec->list_widget;
+	else
+		label = inst->obj->list_widget;
+	label_in_box_bg(box_of_label(label), color);
+}
+
+
+void gui_frame_select_inst(struct inst *inst)
+{
+	set_item_color(inst, COLOR_ITEM_SELECTED);
+}
+
+
+void gui_frame_deselect_inst(struct inst *inst)
+{
+	set_item_color(inst, COLOR_ITEM_NORMAL);
+}
+
+
+static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row)
+{
+	GtkWidget *label;
+
+	label = label_in_box_new(s);
+	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+	gtk_widget_modify_font(label, item_list_font);
+	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),
+	    col, col+1, row, row+1);
+	label_in_box_bg(box_of_label(label), COLOR_ITEM_NORMAL);
+	free(s);
+	return label;
+}
+
+
+static GtkWidget *build_items(struct frame *frame)
+{
+	GtkWidget *hbox, *tab;
+	struct order *order, *item;
+	struct vec *vec;
+	struct obj *obj;
+	int n;
+	char *s, *t;
+
+	n = 0;
+	for (vec = frame->vecs; vec; vec = vec->next)
+		n++;
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type != ot_meas)
+			n++;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+
+	tab = gtk_table_new(n, 2, FALSE);
+	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
+
+	order = order_frame(frame);
+	n = 0;
+	for (item = order; item->vec || item->obj; item++) {
+		if (item->obj) {
+			s = print_obj(item->obj, item->vec);
+			item->obj->list_widget = item_label(tab, s, 1, n);
+		} else {
+			s = print_label(item->vec);
+			t = stralloc_printf("%s: ", s);
+			free(s);
+			item_label(tab, t, 0, n);
+
+			s = print_vec(item->vec);
+			item->vec->list_widget = item_label(tab, s, 1, n);
+		}
+		n++;
+        }
+        free(order);
+
+	return hbox;
+}
+
+
+static GtkWidget *build_meas(struct frame *frame)
+{
+	GtkWidget *hbox, *tab;
+	struct obj *obj;
+	int n;
+	char *s;
+
+	n = 0;
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type == ot_meas)
+			n++;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+
+	tab = gtk_table_new(n, 2, FALSE);
+	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
+
+	n = 0;
+	for (obj = frame->objs; obj; obj = obj->next) {
+		if (obj->type != ot_meas)
+			continue;
+		s = print_meas(obj);
+		obj->list_widget = item_label(tab, s, 0, n);
+		n++;
+        }
+
+	return hbox;
 }
 
 
@@ -1110,17 +1227,21 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 void build_frames(GtkWidget *vbox)
 {
 	struct frame *frame;
-	GtkWidget *tab, *label, *refs, *vars;
+	GtkWidget *hbox, *tab, *label, *refs, *vars, *items, *meas;
 	int n = 0;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
 	for (frame = frames; frame; frame = frame->next)
 		n++;
 
-	tab = gtk_table_new(n*2+1, 2, FALSE);
+	hbox = gtk_hbox_new(FALSE, 0);
+
+	tab = gtk_table_new(n*2+3, 3, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
-	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, FALSE, 0);
+
+	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
 	label = build_part_name();
 	gtk_table_attach_defaults(GTK_TABLE(tab), label, 0, 1, 0, 1);
@@ -1138,7 +1259,21 @@ void build_frames(GtkWidget *vbox)
 		vars = build_vars(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), vars,
 		    1, 2, n*2+2, n*2+3);
+
+		items = build_items(frame);
+		gtk_table_attach_defaults(GTK_TABLE(tab), items,
+		    2, 3, n*2+2, n*2+3);
+
 		n++;
 	}
-	gtk_widget_show_all(tab);
+
+	label = label_in_box_new(" ");
+	gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(label),
+	    2, 3, n*2+1, n*2+2);
+	
+	meas = build_meas(root_frame);
+	gtk_table_attach_defaults(GTK_TABLE(tab), meas,
+	    2, 3, n*2+2, n*2+3);
+
+	gtk_widget_show_all(hbox);
 }

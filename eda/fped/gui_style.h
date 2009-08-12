@@ -47,6 +47,8 @@
 #define	FRAME_EYE_R1		3
 #define	FRAME_EYE_R2		5
 
+#define	ITEM_LIST_FONT		"Sans 8"
+
 #define	SELECT_R		6	/* pixels within which we select */
 
 #define	DRAG_MIN_R		5
@@ -84,6 +86,9 @@
 #define	TOOL_UNSELECTED		"#dcdad5"
 #define	TOOL_SELECTED		"red"
 
+#define	COLOR_ITEM_NORMAL	"#dcdad5"
+#define	COLOR_ITEM_SELECTED	COLOR_FRAME_SELECTED
+
 
 /* ----- canvas drawing styles --------------------------------------------- */
 
@@ -99,6 +104,7 @@ extern GdkGC *gc_ptext[mode_n];
 extern GdkGC *gc_meas[mode_n];
 extern GdkGC *gc_frame[mode_n];
 
+extern PangoFontDescription *item_list_font;
 
 void gui_setup_style(GdkDrawable *drawable);
 

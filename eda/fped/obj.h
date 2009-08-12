@@ -102,6 +102,9 @@ struct vec {
 
 	/* samples for measurements */
 	struct sample *samples;
+
+	/* for the GUI */
+	GtkWidget *list_widget;
 };
 
 struct frame {
@@ -170,6 +173,9 @@ struct obj {
 
 	/* for dumping */
 	int dumped;
+
+	/* for the GUI */
+	GtkWidget *list_widget;
 };
 
 

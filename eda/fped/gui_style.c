@@ -32,6 +32,8 @@ GdkGC *gc_ptext[mode_n];
 GdkGC *gc_meas[mode_n];
 GdkGC *gc_frame[mode_n];
 
+PangoFontDescription *item_list_font;
+
 
 static GdkGC *gc(const char *spec, int width)
 {
@@ -75,4 +77,6 @@ void gui_setup_style(GdkDrawable *drawable)
 //	gc_highlight = gc("#ff8020", 2);
 	gc_highlight = gc("#ff90d0", 2);
 	gc_frame[mode_hover] = gc_vec[mode_hover] = gc("#c00000", 2);
+
+	item_list_font = pango_font_description_from_string(ITEM_LIST_FONT);
 }
