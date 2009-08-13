@@ -24,15 +24,27 @@ streamlining patch.
 
 - Werner
 
+Updated to rev 1923
+
+- Nathael
+
 ---
 
 Index: kicad/eeschema/erc.cpp
 ===================================================================
---- kicad.orig/eeschema/erc.cpp	2009-07-03 10:05:43.000000000 -0300
-+++ kicad/eeschema/erc.cpp	2009-07-03 12:50:34.000000000 -0300
-@@ -267,6 +267,188 @@
- }
+--- kicad.orig/eeschema/erc.cpp	2009-08-13 16:48:27.000000000 +0200
++++ kicad/eeschema/erc.cpp	2009-08-13 16:49:08.000000000 +0200
+@@ -4,6 +4,7 @@
  
+ #include "fctsys.h"
+ #include "common.h"
++#include "confirm.h"
+ #include "class_drawpanel.h"
+ #include "kicad_string.h"
+ #include "gestfich.h"
+@@ -212,6 +213,187 @@
+     return err_count;
+ }
  
 +static struct exception
 +{
@@ -54,10 +66,10 @@ Index: kicad/eeschema/erc.cpp
 +
 +    while( exceptions )
 +    {
-+	next = exceptions->next;
-+	MyFree( exceptions->line );
-+	MyFree( exceptions );
-+	exceptions = next;
++        next = exceptions->next;
++        MyFree( exceptions->line );
++        MyFree( exceptions );
++        exceptions = next;
 +    }
 +}
 +
@@ -68,14 +80,14 @@ Index: kicad/eeschema/erc.cpp
 +{
 +    *field = *s;
 +    if( ! **s )
-+	return FALSE;
++        return FALSE;
 +    while( **s && ! isspace( **s ) )
-+	(*s)++;
++        (*s)++;
 +    if( ! **s )
-+	return TRUE;
++        return TRUE;
 +    *(*s)++ = 0;
 +    while( **s && isspace( **s ) )
-+	(*s)++;
++        (*s)++;
 +    return TRUE;
 +}
 +
@@ -90,13 +102,13 @@ Index: kicad/eeschema/erc.cpp
 +    tmp.line = s;
 +
 +    if( ! ParseField( &s, &tmp.a_ref))
-+	return FALSE;
++        return FALSE;
 +    if( ! ParseField( &s, &tmp.a_pin ))
-+	return FALSE;
++        return FALSE;
 +    if( ! ParseField( &s, &tmp.b_ref))
-+	return FALSE;
++        return FALSE;
 +    if( ! ParseField( &s, &tmp.b_pin ))
-+	return FALSE;
++        return FALSE;
 +
 +    e = (struct exception*) MyMalloc( sizeof( *e ));
 +    *e = tmp;
@@ -121,40 +133,39 @@ Index: kicad/eeschema/erc.cpp
 +    FreeExceptions();
 +    file = wxFopen( file_name, wxT( "r" ) );
 +    if( ! file )
-+	return FALSE;
++        return FALSE;
 +
 +    while( 1 )
 +    {
-+	s = fgets( buf, sizeof( buf ), file );
-+	if( ! s )
-+	    break;
++        s = fgets( buf, sizeof( buf ), file );
++        if( ! s )
++            break;
 +
-+	n++;
++        n++;
 +
-+	// remove comments
-+	hash = strchr( s, '#' );
-+	if( hash )
-+	    *hash = 0;
-+
-+	// skip leading whitespace
-+	while( *s && isspace( *s ) )
-+	    s++;
-+	if( ! *s )
-+	    continue;
-+
-+	tmp = (char*) MyMalloc( strlen( s ) + 1 );
-+	strcpy( tmp, s );
-+
-+	if( ! ParseException( tmp ) )
-+	{
-+	    wxString msg;
-+
-+	    msg.Printf( wxT( "Parse error at %s:%d" ),
-+	      CONV_TO_UTF8( file_name ), n );
-+	    DisplayError( NULL, msg );
-+	    MyFree( tmp );
-+	    break;
-+	}
++        // remove comments
++        hash = strchr( s, '#' );
++        if( hash )
++            *hash = 0;
++        
++        // skip leading whitespace
++        while( *s && isspace( *s ) )
++            s++;
++        if( ! *s )
++            continue;
++        
++        tmp = (char*) MyMalloc( strlen( s ) + 1 );
++        strcpy( tmp, s );
++        
++        if( ! ParseException( tmp ) )
++        {
++            wxString msg;
++        
++            msg.Printf( wxT( "Parse error at %s:%d" ), CONV_TO_UTF8(file_name), n );
++            DisplayError( NULL, msg );
++            MyFree( tmp );
++            break;
++        }
 +    }
 +
 +    fclose( file );
@@ -172,12 +183,12 @@ Index: kicad/eeschema/erc.cpp
 +    fn = g_RootSheet->m_AssociatedScreen->m_FileName;
 +    fn.SetExt( wxT( "erx" ) );
 +    if ( LoadExceptionsByName( fn.GetFullPath() ) )
-+	g_EESchemaVar.NbExceptionErc = 0;
++        g_EESchemaVar.NbExceptionErc = 0;
 +}
 +
 +
 +/********************************************************************/
-+static bool FindException( ObjetNetListStruct* a, ObjetNetListStruct* b )
++static bool FindException( NETLIST_OBJECT* a, NETLIST_OBJECT* b )
 +/********************************************************************/
 +{
 +    SCH_COMPONENT* a_comp = (SCH_COMPONENT*) a->m_Link;
@@ -194,22 +205,22 @@ Index: kicad/eeschema/erc.cpp
 +fprintf(stderr, "a) %s %4.4s =? %s %4.4s\n", e->a_ref, e->a_pin, a_ref, a_pin);
 +fprintf(stderr, "b) %s %4.4s =? %s %4.4s\n", e->b_ref, e->b_pin, b_ref, b_pin);
 +#endif
-+	if( strcmp( e->a_ref, a_ref ) )
-+	    continue;
-+	if( strncmp( e->a_pin, a_pin, 4 ) )
-+	    continue;
-+	if( strcmp( e->b_ref, b_ref ) )
-+	    continue;
-+	if( strncmp( e->b_pin, b_pin, 4 ) )
-+	    continue;
-+	return TRUE;
++        if( strcmp( e->a_ref, a_ref ) )
++            continue;
++        if( strncmp( e->a_pin, a_pin, 4 ) )
++            continue;
++        if( strcmp( e->b_ref, b_ref ) )
++            continue;
++        if( strncmp( e->b_pin, b_pin, 4 ) )
++            continue;
++        return TRUE;
 +    }
 +    return FALSE;
 +}
 +
 +
 +/********************************************************************/
-+static bool IsException( ObjetNetListStruct* a, ObjetNetListStruct* b )
++static bool IsException( NETLIST_OBJECT* a, NETLIST_OBJECT* b )
 +/********************************************************************/
 +{
 +    return FindException( a, b ) || FindException( b, a);
@@ -217,9 +228,9 @@ Index: kicad/eeschema/erc.cpp
 +
 +
  /**************************************************/
- void WinEDA_ErcFrame::TestErc( wxCommandEvent& event )
+ void DIALOG_ERC::TestErc( wxArrayString* aMessagesList )
  /**************************************************/
-@@ -303,6 +485,7 @@
+@@ -248,6 +430,7 @@
  
      g_EESchemaVar.NbErrorErc   = 0;
      g_EESchemaVar.NbWarningErc = 0;
@@ -227,47 +238,47 @@ Index: kicad/eeschema/erc.cpp
  
      /* Cleanup the entire hierarchy */
      EDA_ScreenList ScreenList;
-@@ -320,6 +503,8 @@
+@@ -272,6 +455,8 @@
  
      m_Parent->BuildNetListBase();
  
 +    LoadExceptions();
 +
-     /* Analyse de la table des connexions : */
-     Lim = g_TabObjNet + g_NbrObjNet;
+     /* Reset the flag m_FlagOfConnection, that will be used next, in calculations */
+     for( unsigned ii = 0;  ii < g_NetObjectslist.size(); ii++ )
+        g_NetObjectslist[ii]->m_FlagOfConnection = UNCONNECTED;
+@@ -339,7 +524,13 @@
  
-@@ -379,7 +564,13 @@
-     FreeTabNetList( g_TabObjNet, g_NbrObjNet );
- 
+     // Displays global results:
      wxString num;
 -    num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc );
 +
 +    if( g_EESchemaVar.NbExceptionErc >= 0)
-+	num.Printf( wxT( "%d (%d exception%s)" ), g_EESchemaVar.NbErrorErc,
-+	  g_EESchemaVar.NbExceptionErc,
-+	  g_EESchemaVar.NbExceptionErc == 1 ? wxT( "" ) : wxT( "s" ) );
++        num.Printf( wxT( "%d (%d exception%s)" ), g_EESchemaVar.NbErrorErc,
++          g_EESchemaVar.NbExceptionErc,
++          g_EESchemaVar.NbExceptionErc == 1 ? wxT( "" ) : wxT( "s" ) );
 +    else
-+	num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc );
++        num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc );
      m_TotalErrCount->SetLabel( num );
  
      num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc - g_EESchemaVar.NbWarningErc );
-@@ -693,6 +884,12 @@
-             if( NetItemTst->m_FlagOfConnection > 0 )
- 		break;
+@@ -619,6 +810,12 @@
+             if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection > 0 )
+                 break;
  
-+	    if( IsException( NetItemRef, NetItemTst ) )
-+	    {
-+		g_EESchemaVar.NbExceptionErc++;
-+		break;
-+	    }
++            if( IsException( g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst] ) )
++            {
++                g_EESchemaVar.NbExceptionErc++;
++                break;
++            }
 +
-             Diagnose( panel, DC, NetItemRef, NetItemTst, 0, erc );
-             NetItemTst->m_FlagOfConnection = NOCONNECT;
+             Diagnose( panel, g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst], 0, erc );
+             g_NetObjectslist[NetItemTst]->m_FlagOfConnection = NOCONNECT_SYMBOL_PRESENT;
              break;
 Index: kicad/eeschema/general.h
 ===================================================================
---- kicad.orig/eeschema/general.h	2009-07-03 10:04:40.000000000 -0300
-+++ kicad/eeschema/general.h	2009-07-03 10:05:43.000000000 -0300
+--- kicad.orig/eeschema/general.h	2009-08-13 16:48:08.000000000 +0200
++++ kicad/eeschema/general.h	2009-08-13 16:49:08.000000000 +0200
 @@ -123,6 +123,7 @@
  {
      int NbErrorErc;
