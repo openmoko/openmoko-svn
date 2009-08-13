@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Thu Jun 11 11:02:04 2009
-LIBS:,powerdeviceconngta02-core-expandedgta02-core-expanded-cache
+EESchema Schematic File Version 2  date Wed Aug 12 21:10:04 2009
+LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
 $Descr A4 11700 8267
@@ -13,6 +13,17 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 7500 1250 0    120  ~ 24
+WLAN
+$Comp
+L XGTA02_WLAN_S CON?
+U 1 1 4A8359B6
+P 8850 2800
+F 0 "CON?" H 8850 3400 60  0000 C CNN
+F 1 "XGTA02_WLAN_S" H 8850 2200 60  0000 C CNN
+	1    8850 2800
+	1    0    0    -1  
+$EndComp
 $Comp
 L XANTENNA ANT?
 U 1 1 4A310E59

@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri Jun 19 18:37:09 2009
+EESchema Schematic File Version 2  date Wed Aug 12 21:12:21 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,14 +13,14 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 8400 5800 2000 1150
+U 4A835A26
+F0 "MODEM" 60
+F1 "modem.sch" 60
+$EndSheet
 Text Notes 750  1300 0    300  ~ 60
 EXPANDED VIEW - FOR COMPONENT REVIEW
-$Sheet
-S 8400 5800 1850 1050
-U 4A2ED3B1
-F0 "WLAN" 60
-F1 "wlan.sch" 60
-$EndSheet
 $Sheet
 S 6000 5800 1850 1150
 U 4A2ED395
