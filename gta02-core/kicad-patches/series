@@ -1,25 +1,14 @@
 # Based on SVN revision 1857
 
-# tentative fix for making command-line invocation with relative paths work
-# functionality has been added into 1857
-#eeschema-fix-relative-path.patch
-
 # eeschema --plot extension, pending
 eeschema-plot-only-mode.patch
 
 # under discussion
 fix-pinedit-collision.patch
 
-# accepted as of r1783
-##gerbview-export-arcs.patch
-
 # Work in progress
 #drag-override.patch
 #pcbnew-plot-only-mode.patch
-
-# accepted as of r1854
-#make-junctions-larger-in-plots.patch
-#make-junctions-larger-on-plotps.patch
 
 # ERC pin exceptions
 streamline-erc.patch
