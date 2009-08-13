@@ -183,7 +183,7 @@ extern char *part_name;
 extern struct frame *frames;
 extern struct frame *root_frame;
 extern struct frame *active_frame;
-extern int instantiation_ok;
+extern void *instantiation_error;
 
 
 int instantiate(void);

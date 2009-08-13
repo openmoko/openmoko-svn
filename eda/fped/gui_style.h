@@ -83,11 +83,12 @@
 
 #define	COLOR_VAR_TABLE_SEP	"black"
 
-#define	TOOL_UNSELECTED		"#dcdad5"
-#define	TOOL_SELECTED		"red"
+#define	COLOR_TOOL_UNSELECTED	"#dcdad5"
+#define	COLOR_TOOL_SELECTED	"red"
 
 #define	COLOR_ITEM_NORMAL	"#dcdad5"
 #define	COLOR_ITEM_SELECTED	COLOR_FRAME_SELECTED
+#define	COLOR_ITEM_ERROR	"red"
 
 
 /* ----- canvas drawing styles --------------------------------------------- */

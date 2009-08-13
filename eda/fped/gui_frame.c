@@ -852,6 +852,8 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 	field = label_in_box_new(loop->var.name);
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_VAR_PASSIVE);
+	if (instantiation_error == loop)
+		label_in_box_fg(field, COLOR_ITEM_ERROR);
 	g_signal_connect(G_OBJECT(box_of_label(field)),
 	    "button_press_event",
 	    G_CALLBACK(loop_var_select_event), loop);
@@ -1037,6 +1039,9 @@ static GtkWidget *build_items(struct frame *frame)
 			s = print_obj(item->obj, item->vec);
 			item->obj->list_widget = item_label(tab, s, 1, n,
 			    item_select_obj, item->obj);
+			if (item->obj == instantiation_error)
+				label_in_box_fg(item->obj->list_widget,
+				    COLOR_ITEM_ERROR);
 		} else {
 			s = print_label(item->vec);
 			t = stralloc_printf("%s: ", s);
@@ -1046,6 +1051,9 @@ static GtkWidget *build_items(struct frame *frame)
 			s = print_vec(item->vec);
 			item->vec->list_widget = item_label(tab, s, 1, n,
 			    item_select_vec, item->vec);
+			if (item->vec == instantiation_error)
+				label_in_box_fg(item->vec->list_widget,
+				    COLOR_ITEM_ERROR);
 		}
 		n++;
         }
@@ -1083,6 +1091,8 @@ static GtkWidget *build_meas(struct frame *frame)
 		s = print_meas(obj);
 		obj->list_widget = item_label(tab, s, 0, n,
 		    item_select_obj, obj);
+		if (obj == instantiation_error)
+			label_in_box_fg(obj->list_widget, COLOR_ITEM_ERROR);
 		n++;
         }
 

@@ -151,6 +151,14 @@ GtkWidget *box_of_label(GtkWidget *label)
 }
 
 
+void label_in_box_fg(GtkWidget *label, const char *color)
+{
+	GdkColor col = get_color(color);
+
+	gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &col);
+}
+
+
 void label_in_box_bg(GtkWidget *label, const char *color)
 {
 	GtkWidget *box;

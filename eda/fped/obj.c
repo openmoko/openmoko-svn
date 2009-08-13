@@ -32,7 +32,7 @@ char *part_name = NULL;
 struct frame *frames = NULL;
 struct frame *root_frame = NULL;
 struct frame *active_frame = NULL;
-int instantiation_ok;
+void *instantiation_error = NULL;
 
 
 static int generate_frame(struct frame *frame, struct coord base,
@@ -71,19 +71,23 @@ static int generate_vecs(struct frame *frame, struct coord base)
 	for (vec = frame->vecs; vec; vec = vec->next) {
 		x = eval_unit(vec->x, frame);
 		if (is_undef(x))
-			return 0;
+			goto error;
 		y = eval_unit(vec->y, frame);
 		if (is_undef(y))
-			return 0;
+			goto error;
 		vec_base = vec->base ? vec->base->pos : base;
 		vec->pos = vec_base;
 		vec->pos.x += x.n;
 		vec->pos.y += y.n;
 		if (!inst_vec(vec, vec_base))
-			return 0;
+			goto error;
 		meas_post(vec, vec->pos);
 	}
 	return 1;
+
+error:
+	instantiation_error = vec;
+	return 0;
 }
 
 
@@ -106,43 +110,43 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 			width = eval_unit_default(obj->u.line.width, frame,
 			    DEFAULT_SILK_WIDTH);
 			if (is_undef(width))
-				return 0;
+				goto error;
 			if (!inst_line(obj, obj->base ? obj->base->pos : base,
 			    obj->u.line.other ? obj->u.line.other->pos : base,
 			    width.n))
-				return 0;
+				goto error;
 			break;
 		case ot_rect:
 			width = eval_unit_default(obj->u.rect.width, frame,
 			    DEFAULT_SILK_WIDTH);
 			if (is_undef(width))
-				return 0;
+				goto error;
 			if (!inst_rect(obj, obj->base ? obj->base->pos : base,
 			    obj->u.rect.other ? obj->u.rect.other->pos : base,
 			    width.n))
-				return 0;
+				goto error;
 			break;
 		case ot_pad:
 			name = expand(obj->u.pad.name, frame);
 			if (!name)
-				return 0;
+				goto error;
 			ok = inst_pad(obj, name,
 			    obj->base ? obj->base->pos : base,
 			    obj->u.pad.other ? obj->u.pad.other->pos : base);
 			free(name);
 			if (!ok)
-				return 0;
+				goto error;
 			break;
 		case ot_arc:
 			width = eval_unit_default(obj->u.arc.width, frame,
 			    DEFAULT_SILK_WIDTH);
 			if (is_undef(width))
-				return 0;
+				goto error;
 			if (!inst_arc(obj, obj->base ? obj->base->pos : base,
 			    obj->u.arc.start ? obj->u.arc.start->pos : base,
 			    obj->u.arc.end ? obj->u.arc.end->pos : base,
 			    width.n))
-				return 0;
+				goto error;
 			break;
 		case ot_meas:
 			break;
@@ -150,6 +154,10 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 			abort();
 		}
 	return 1;
+
+error:
+	instantiation_error = obj;
+	return 0;
 }
 
 
@@ -175,22 +183,26 @@ static int run_loops(struct frame *frame, struct loop *loop,
 	from = eval_num(loop->from.expr, frame);
 	if (is_undef(from)) {
 		fail_expr(loop->from.expr);
+		instantiation_error = loop;
 		return 0;
 	}
 	if (!is_dimensionless(from)) {
 		fail("incompatible type for start value");
 		fail_expr(loop->from.expr);
+		instantiation_error = loop;
 		return 0;
 	}
 
 	to = eval_num(loop->to.expr, frame);
 	if (is_undef(to)) {
 		fail_expr(loop->to.expr);
+		instantiation_error = loop;
 		return 0;
 	}
 	if (!is_dimensionless(to)) {
 		fail("incompatible type for end value");
 		fail_expr(loop->to.expr);
+		instantiation_error = loop;
 		return 0;
 	}
 
@@ -203,6 +215,7 @@ static int run_loops(struct frame *frame, struct loop *loop,
 		if (n >= MAX_ITERATIONS) {
 			fail("%s: too many iterations (%d)", loop->var.name,
 			    MAX_ITERATIONS);
+			instantiation_error = loop;
 			goto fail;
 		}
 		if (!run_loops(frame, loop->next, base,
@@ -259,6 +272,7 @@ int instantiate(void)
 
 	inst_start();
 	meas_start();
+	instantiation_error = NULL;
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
 	if (ok)
 		ok = instantiate_meas();
@@ -266,6 +280,5 @@ int instantiate(void)
 		inst_commit();
 	else
 		inst_revert();
-	instantiation_ok = ok;
 	return ok;
 }

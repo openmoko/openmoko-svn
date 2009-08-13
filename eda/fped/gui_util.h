@@ -54,6 +54,7 @@ void draw_circle(GdkDrawable *da, GdkGC *gc, int fill,
 
 GtkWidget *label_in_box_new(const char *s);
 GtkWidget *box_of_label(GtkWidget *label);
+void label_in_box_fg(GtkWidget *box, const char *color);
 void label_in_box_bg(GtkWidget *box, const char *color);
 
 GtkWidget *make_image(GdkDrawable *drawable, char **xpm);

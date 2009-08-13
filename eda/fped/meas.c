@@ -232,7 +232,7 @@ int instantiate_meas(void)
 			continue;
 		meas = &obj->u.meas;
 		if (!obj->base->samples || !meas->high->samples)
-			return 1;
+			continue;
 
 		lt = lt_op[meas->type];
 		a0 = meas_find_min(lt, obj->base->samples);
@@ -245,8 +245,10 @@ int instantiate_meas(void)
 			offset.n = 0;
 		else {
 			offset = eval_unit(meas->offset, root_frame);
-			if (is_undef(offset))
+			if (is_undef(offset)) {
+				instantiation_error = obj;
 				return 0;
+			}
 		}
 		inst_meas(obj,
 		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0,

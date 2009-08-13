@@ -111,7 +111,7 @@ void redraw(void)
 	aw = draw_ctx.widget->allocation.width;
 	ah = draw_ctx.widget->allocation.height;
 	gdk_draw_rectangle(draw_ctx.widget->window,
-	    instantiation_ok ? gc_bg : gc_bg_error, TRUE, 0, 0, aw, ah);
+	    instantiation_error ? gc_bg_error : gc_bg, TRUE, 0, 0, aw, ah);
 
 	inst_draw();
 	if (highlight)

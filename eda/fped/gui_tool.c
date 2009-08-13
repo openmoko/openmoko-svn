@@ -926,11 +926,11 @@ static void tool_select(GtkWidget *evbox, struct tool_ops *ops)
 	if (active_tool) {
 		if (active_ops && active_ops->tool_deselected)
 			active_ops->tool_deselected();
-		col = get_color(TOOL_UNSELECTED);
+		col = get_color(COLOR_TOOL_UNSELECTED);
 		gtk_widget_modify_bg(active_tool, GTK_STATE_NORMAL, &col);
 		active_tool = NULL;
 	}
-	col = get_color(TOOL_SELECTED);
+	col = get_color(COLOR_TOOL_SELECTED);
 	gtk_widget_modify_bg(evbox, GTK_STATE_NORMAL, &col);
 	active_tool = evbox;
 	active_ops = ops;
