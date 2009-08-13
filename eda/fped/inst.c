@@ -299,7 +299,11 @@ void inst_deselect(void)
 /* ----- select instance by vector/object ---------------------------------- */
 
 
-void inst_select_vec(const struct vec *vec)
+static void vec_edit(struct vec *vec);
+static void obj_edit(struct obj *obj);
+
+
+void inst_select_vec(struct vec *vec)
 {
 	struct inst *inst;
 
@@ -311,11 +315,11 @@ void inst_select_vec(const struct vec *vec)
 			inst_select_inst(inst);
 			return;
 		}
-	
+	vec_edit(vec);
 }
 
 
-void inst_select_obj(const struct obj *obj)
+void inst_select_obj(struct obj *obj)
 {
 	enum inst_prio prio;
 	struct inst *inst;
@@ -328,6 +332,7 @@ void inst_select_obj(const struct obj *obj)
 			inst_select_inst(inst);
 			return;
 		}
+	obj_edit(obj);
 }
 
 
@@ -433,14 +438,20 @@ static int validate_vec_name(const char *s, void *ctx)
 }
 
 
+static void vec_edit(struct vec *vec)
+{
+	edit_x(&vec->x);
+	edit_y(&vec->y);
+	edit_unique_null(&vec->name, validate_vec_name, vec);
+}
+
+
 static void vec_op_select(struct inst *self)
 {
 	status_set_type_entry("ref =");
 	status_set_name("%s", self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.rect.end, -1);
-	edit_x(&self->vec->x);
-	edit_y(&self->vec->y);
-	edit_unique_null(&self->vec->name, validate_vec_name, self->vec);
+	vec_edit(self->vec);
 }
 
 
@@ -511,10 +522,16 @@ static void line_op_debug(struct inst *self)
 }
 
 
+static void obj_line_edit(struct obj *obj)
+{
+	edit_expr(&obj->u.line.width);
+}
+
+
 static void line_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
-	edit_expr(&self->obj->u.line.width);
+	obj_line_edit(self->obj);
 }
 
 
@@ -564,10 +581,16 @@ static void rect_op_debug(struct inst *self)
 }
 
 
+static void obj_rect_edit(struct obj *obj)
+{
+	edit_expr(&obj->u.rect.width);
+}
+
+
 static void rect_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
-	edit_expr(&self->obj->u.rect.width);
+	obj_rect_edit(self->obj);
 }
 
 
@@ -619,12 +642,18 @@ static int validate_pad_name(const char *s, void *ctx)
 }
 
 
+static void obj_pad_edit(struct obj *obj)
+{
+	edit_name(&obj->u.pad.name, validate_pad_name, NULL);
+}
+
+
 static void pad_op_select(struct inst *self)
 {
 	status_set_type_entry("label =");
 	status_set_name("%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1);
-	edit_name(&self->obj->u.pad.name, validate_pad_name, NULL);
+	obj_pad_edit(self->obj);
 }
 
 
@@ -673,6 +702,12 @@ static void arc_op_debug(struct inst *self)
 }
 
 
+static void obj_arc_edit(struct obj *obj)
+{
+	edit_expr(&obj->u.arc.width);
+}
+
+
 static void arc_op_select(struct inst *self)
 {
 	status_set_xy(self->base);
@@ -682,7 +717,7 @@ static void arc_op_select(struct inst *self)
 	status_set_r("r = %5.2f mm", units_to_mm(self->u.arc.r));
 	status_set_type_entry("width =");
 	status_set_name("%5.2f mm", units_to_mm(self->u.arc.width));
-	edit_expr(&self->obj->u.arc.width);
+	obj_arc_edit(self->obj);
 }
 
 
@@ -745,12 +780,18 @@ static void meas_op_debug(struct inst *self)
 }
 
 
+static void obj_meas_edit(struct obj *obj)
+{
+	edit_expr(&obj->u.meas.offset);
+}
+
+
 static void meas_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	status_set_type_entry("offset =");
 	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
-	edit_expr(&self->obj->u.meas.offset);
+	obj_meas_edit(self->obj);
 }
 
 
@@ -792,6 +833,35 @@ int inst_meas(struct obj *obj,
 	update_bbox(&inst->bbox, to);
 	propagate_bbox(inst);
 	return 1;
+}
+
+
+/* ----- direct editing of objects ----------------------------------------- */
+
+
+static void obj_edit(struct obj *obj)
+{
+	switch (obj->type) {
+	case ot_frame:
+		break;
+	case ot_line:
+		obj_line_edit(obj);
+		break;
+	case ot_rect:
+		obj_rect_edit(obj);
+		break;
+	case ot_arc:
+		obj_arc_edit(obj);
+		break;
+	case ot_pad:
+		obj_pad_edit(obj);
+		break;
+	case ot_meas:
+		obj_meas_edit(obj);
+		break;
+	default:
+		abort();
+	}
 }
 
 

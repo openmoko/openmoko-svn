@@ -957,7 +957,7 @@ void gui_frame_deselect_inst(struct inst *inst)
 static gboolean item_select_vec(GtkWidget *widget, GdkEventButton *event,
      gpointer data)
 {
-	const struct vec *vec = data;
+	struct vec *vec = data;
 
 	switch (event->button) {
 	case 1:
@@ -972,7 +972,7 @@ static gboolean item_select_vec(GtkWidget *widget, GdkEventButton *event,
 static gboolean item_select_obj(GtkWidget *widget, GdkEventButton *event,
      gpointer data)
 {
-	const struct obj *obj = data;
+	struct obj *obj = data;
 
 	switch (event->button) {
 	case 1:
