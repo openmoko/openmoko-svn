@@ -1,0 +1,158 @@
+Getting started in gta02-core
+=============================
+
+This is a brief guide to help new participants of the gta02-core project
+to get their bearings, and to help veterans to prop up their memory.
+
+
+Setting things up
+-----------------
+
+- Subscribe to the gta02-core list:
+
+  http://lists.openmoko.org/pipermail/gta02-core/
+
+- Consider joining the #gta02-core channel on irc.freenode.net
+
+- Check out the project:
+
+  svn co https://svn.openmoko.org/trunk/gta02-core/
+  cd gta02-core
+
+- You will need a recent version of KiCad. Many distributions come
+  with truly ancient versions. To build KiCad,
+
+  - download KiCad:
+
+    svn checkout https://kicad.svn.sourceforge.net/svnroot/kicad/trunk/kicad
+    cd kicad
+
+  - you need a recent development version of libboost (1.36 or higher)
+
+  - you need a recent development version of wxWindows (libwxgtk-2.8)
+
+  - Make a link to the patches of the gta02-core project:
+
+    ln -s ../kicad-patches patches
+
+  - Apply the patches:
+
+    quilt push -a
+
+  - Compile and install KiCad:
+
+    cmake .
+    make
+    make install
+
+  - we're done here, go back
+
+    cd ..
+
+- Build your local copy of the component (schematics symbol) library:
+
+  make update
+
+  (This also updates everything to the latest SVN revision.)
+
+- We keep a list of data sheet URLs and you can download and cache
+  them locally. To do so, decide on a location for the cache, e.g.,
+  /home/moko/dsv (dsv is "Data Sheet Viewer"), then
+
+  DSV_HOME=/home/moko/dsv make -C scripts dsv
+
+  Then add $DSV_HOME/bin to your PATH, and you'll be able to view
+  data sheets with commands like dsv-sc32442, dsv-cpu, etc. See
+  $DSV_HOME/bin/ and components/INFO for the complete collection.
+
+- Things to see and do:
+
+  - (re)view and edit components (schematics symbols)
+
+  - (re)view and edit the schematics
+
+  - (re)view and edit the ECNs (Engineering Change Notices)
+
+  - (re)view and edit footprints (coming soon)
+
+  - (re)view and edit the layout (coming soon)
+
+
+(Re)viewing and editing components
+----------------------------------
+
+Feeling lazy ? Then use the pre-built PDF link for the "expanded view"
+on http://people.openmoko.org/werner/gta02-core.html
+
+To view and edit the components, you can run eeschema in the components/
+directory:
+
+  cd components
+  eeschema gta02-core-comp.sch
+
+A shorthand for this is
+
+  cd components
+  make sch
+
+The invoke the "Library Viewer" or the "Library Editor".
+
+Components are kept in *.lib files in components/, one component per
+library. They are merged in a combined library with the script "mkloe"
+in the same directory. You usually don't invoke "mkloe" directly, but
+run
+
+  make update
+
+in the project's top-level directory.
+
+The review status of components is recorded in components/STATUS
+
+Additional information, specifically links to data sheets, is in the
+file components/INFO
+
+
+(Re)viewing and editing schematics
+----------------------------------
+
+Feeling lazy ? Then use the pre-built PDF link for the schematics on
+http://people.openmoko.org/werner/gta02-core.html
+
+To view and edit the schematics, run KiCad on them:
+
+  eeschema gta02-core.sch
+
+or, if this doesn't work (older versions of KiCad),
+
+  eeschema `pwd`/gta02-core.sch
+
+A shorthand for this is "make sch".
+
+The schematics are kept in the top-level directory, in files called
+*.sch. Their review status is tracked in the file STATUS.
+
+Note: when saving schematics, don't use "Save Project" but save the
+page(s) you've changed with "Save". Otherwise, the timestamp on all
+pages changes, which may create conflicts when submitting things or
+when pulling updates.
+
+
+(Re)viewing and editing ECNs
+----------------------------
+
+The ECNs are keps in docs/ecn/. Their structure is described in
+docs/ecn/README. Their status is tracked in docs/ecn/STATUS.
+
+Wherever possible and remotely useful, ECNs should be referenced in
+the schematics.
+
+
+Making changes
+--------------
+
+When making changes, please mail a patch to the gta02-core list. After
+a while, once you've made a few patches, you'll usually be given direct
+commit access.
+
+When making a major contribution, please add your name to AUTHORS.
+If you do a review, please add your name to the respective STATUS file.
