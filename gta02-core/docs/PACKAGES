@@ -1,0 +1,34 @@
+Leads	Pitch	Size		NXP	Names
+3	0.5 mm	1.6 x 0.8 mm	SOT416	SC-75
+3	0.5 mm	1.6 x 0.85mm	SOT490	SC-89
+3	0.5 mm	1.6 x 1.2 mm	SOT663	SOT3
+3	0.65mm	2.0 x 1.25mm	SOT323	SC-70
+3	0.95mm	2.9 x 1.5 mm	SOT23	TO-236AB
+3	0.95mm	2.9 x 1.5 mm	SOT346	SC-59A, SMT3, MPAK, TO-236
+
+5	0.5 mm	1.6 x 1.2 mm	SOT665	SOT5
+5	0.65mm	2.0 x 1.25mm	SOT353	SC-88A, UMT5
+5	0.65mm	2.05x 1.25mm	SOT353-1 SC-88A, TSSOP5
+5	0.95mm	2.9 x 1.5 mm	SOT753	SC-74A, SO5
+5	0.95mm	2.9 x 1.6 mm	SOT680-1 SO5, MO-178
+
+6	0.5 mm	1.6 x 1.2 mm	SOT666	SS-Mini, SOT-563
+6	0.65mm	2.0 x 1.25mm	SOT363	SC-88, SC-70-6
+6	0.95mm	2.9 x 1.5 mm	SOT457	SC-74
+
+SOT23:	http://www.nxp.com/#/page/content=[f=/packages/SOT23.xml]
+SOT323:	http://www.nxp.com/#/page/content=[f=/packages/SOT323.xml]
+SOT346:	http://www.nxp.com/#/page/content=[f=/packages/SOT346.xml]
+SOT353:	http://www.nxp.com/#/page/content=[f=/packages/SOT353.xml]
+SOT353-1: http://www.nxp.com/#/page/content=[f=/packages/SOT353-1.xml]
+SOT363:	http://www.nxp.com/#/page/content=[f=/packages/SOT363.xml]
+SOT416:	http://www.nxp.com/#/page/content=[f=/packages/SOT416.xml]
+SOT457:	http://www.nxp.com/#/page/content=[f=/packages/SOT457.xml]
+SOT490:	http://www.nxp.com/#/page/content=[f=/packages/SOT490.xml]
+SOT663:	http://www.nxp.com/#/page/content=[f=/packages/SOT663.xml]
+SOT665:	http://www.nxp.com/#/page/content=[f=/packages/SOT665.xml]
+SOT666:	http://www.nxp.com/#/page/content=[f=/packages/SOT666.xml]
+SOT680-1: http://www.nxp.com/#/page/content=[f=/packages/SOT680-1.xml]
+SOT753:	http://www.nxp.com/#/page/content=[f=/packages/SOT753.xml]
+
+* SOT23 =? SOT346
