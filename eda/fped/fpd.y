@@ -207,7 +207,7 @@ part_name:
 				YYABORT;
 			}
 			for (p = $2; *p; *p++)
-				if (!is_id_char(*p, 0)) {
+				if (*p < 32 || *p > 126) {
 					yyerrorf("invalid part name");
 					YYABORT;
 				}

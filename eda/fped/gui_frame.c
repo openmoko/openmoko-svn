@@ -1120,9 +1120,11 @@ static int validate_part_name(const char *s, void *ctx)
 {
 	if (!*s)
 		return 0;
-	while (*s)
-		if (!is_id_char(*s++, 0))
+	while (*s) {
+		if (*s < 32 || *s > 126)
 			return 0;
+		s++;
+	}
 	return 1;
 }
 
