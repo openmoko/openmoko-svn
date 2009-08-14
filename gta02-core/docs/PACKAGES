@@ -1,4 +1,5 @@
 Leads	Pitch	Size		NXP	Names
+3	0.45mm	1.4 x 0.8 mm	-	SON1408-3, MFPAK
 3	0.5 mm	1.6 x 0.8 mm	SOT416	SC-75
 3	0.5 mm	1.6 x 0.85mm	SOT490	SC-89
 3	0.5 mm	1.6 x 1.2 mm	SOT663	SOT3
@@ -16,6 +17,8 @@ Leads	Pitch	Size		NXP	Names
 6	0.65mm	2.0 x 1.25mm	SOT363	SC-88, SC-70-6
 6	0.95mm	2.9 x 1.5 mm	SOT457	SC-74
 
+SON1408-3: http://www.ricoh.com/LSI/product_power/pkg/son-1408-3.pdf
+	http://sg.renesas.com/media/products/common_info/package/pdf/transistor/code/pusf0003za_a.pdf
 SOT23:	http://www.nxp.com/#/page/content=[f=/packages/SOT23.xml]
 SOT323:	http://www.nxp.com/#/page/content=[f=/packages/SOT323.xml]
 SOT346:	http://www.nxp.com/#/page/content=[f=/packages/SOT346.xml]
