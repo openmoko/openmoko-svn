@@ -40,6 +40,9 @@ static struct inst *prev_insts[ip_n];
 
 static unsigned long active_set = 0;
 
+static struct inst_ops vec_ops;
+static struct inst_ops frame_ops;
+
 
 #define	IS_ACTIVE	((active_set & 1))
 
@@ -87,11 +90,42 @@ void inst_select_outside(void *item, void (*deselect)(void *item))
 }
 
 
+/* ----- check connectedness ----------------------------------------------- */
+
+
+/*
+ * After an instantiation failure, the instances can get out of sync with the
+ * object tree, and attempts to select an item on the canvas can cause accesses
+ * to objects that aren't there anymore. So we need to check if we can still
+ * reach the corresponding object.
+ *
+ * Note: even this isn't bullet-proof. Theoretically, we may get a new object
+ * in the old place. However, this probably doesn't do any serious damage.
+ */
+
+
+static int inst_connected(const struct inst *inst)
+{
+	const struct frame *frame;
+	const struct vec *vec;
+	const struct obj *obj;
+
+	for (frame = frames; frame; frame = frame->next) {
+		if (inst->ops == &vec_ops) {
+			for (vec = frame->vecs; vec; vec = vec->next)
+				if (vec == inst->vec)
+					return 1;
+		} else {
+			for (obj = frame->objs; obj; obj = obj->next)
+				if (obj == inst->obj)
+					return 1;
+		}
+	}
+	return 0;
+}
+
+
 /* ----- selection --------------------------------------------------------- */
-
-
-static struct inst_ops vec_ops;
-static struct inst_ops frame_ops;
 
 
 static void set_path(int on)
@@ -140,6 +174,8 @@ int inst_select(struct coord pos)
 		for (inst = insts[prio]; inst; inst = inst->next) {
 			if (!inst->active || !inst->ops->distance)
 				continue;
+			if (!inst_connected(inst))
+				continue;
 			dist = inst->ops->distance(inst, pos, draw_ctx.scale);
 			if (dist >= 0 && (!selected_inst || best_dist > dist)) {
 				selected_inst = inst;
@@ -157,6 +193,8 @@ int inst_select(struct coord pos)
 
 	for (inst = insts[ip_vec]; inst; inst = inst->next) {
 		if (!inst->active)
+			continue;
+		if (!inst_connected(inst))
 			continue;
 		dist = gui_dist_vec_fallback(inst, pos, draw_ctx.scale);
 		if (dist >= 0 && (!selected_inst || best_dist > dist)) {
