@@ -938,7 +938,8 @@ static void set_item_color(struct inst *inst, const char *color)
 		label = inst->vec->list_widget;
 	else
 		label = inst->obj->list_widget;
-	label_in_box_bg(box_of_label(label), color);
+	if (label)
+		label_in_box_bg(box_of_label(label), color);
 }
 
 
@@ -1097,6 +1098,18 @@ static GtkWidget *build_meas(struct frame *frame)
         }
 
 	return vbox;
+}
+
+
+static void dont_build_items(struct frame *frame)
+{
+	struct vec *vec;
+	struct obj *obj;
+
+	for (vec = frame->vecs; vec; vec = vec->next)
+		vec->list_widget = NULL;
+	for (obj = frame->objs; obj; obj = obj->next)
+		obj->list_widget = NULL;
 }
 
 
@@ -1323,6 +1336,7 @@ void build_frames(GtkWidget *vbox)
 			vars = build_vars(frame);
 			gtk_table_attach_defaults(GTK_TABLE(tab), vars,
 			    1, 2, n*2+2, n*2+3);
+			dont_build_items(frame);
 		} else {
 			items = build_items(frame);
 			gtk_table_attach_defaults(GTK_TABLE(tab), items,

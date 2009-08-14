@@ -619,7 +619,7 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width)
 }
 
 
-/* ----- pad --------------------------------------------------------------- */
+/* ----- pad / rpad -------------------------------------------------------- */
 
 
 static void pad_op_debug(struct inst *self)
@@ -627,6 +627,13 @@ static void pad_op_debug(struct inst *self)
 	printf("pad \"%s\" %lg, %lg / %lg, %lg\n", self->u.name,
 	    units_to_mm(self->base.x), units_to_mm(self->base.y),
 	    units_to_mm(self->u.pad.other.x), units_to_mm(self->u.pad.other.y));
+}
+
+
+static void rpad_op_debug(struct inst *self)
+{
+	printf("r");
+	pad_op_debug(self);
 }
 
 
@@ -677,11 +684,21 @@ static struct inst_ops pad_ops = {
 };
 
 
+static struct inst_ops rpad_ops = {
+	.debug		= rpad_op_debug,
+	.draw		= gui_draw_rpad,
+	.distance	= gui_dist_pad, /* @@@ */
+	.select		= pad_op_select,
+	.anchors	= pad_op_anchors,
+	.draw_move	= draw_move_rpad,
+};
+
+
 int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 {
 	struct inst *inst;
 
-	inst = add_inst(&pad_ops, ip_pad, a);
+	inst = add_inst(obj->u.pad.rounded ? &rpad_ops : &pad_ops, ip_pad, a);
 	inst->obj = obj;
 	inst->u.pad.name = stralloc(name);
 	inst->u.pad.other = b;

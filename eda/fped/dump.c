@@ -317,8 +317,8 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		break;
 	case ot_pad:
 		s1 = obj_base_name(obj->u.pad.other, prev);
-		s = stralloc_printf("pad \"%s\" %s %s",
-		    obj->u.pad.name, base, s1);
+		s = stralloc_printf("%spad \"%s\" %s %s",
+		    obj->u.pad.rounded ? "r" : "", obj->u.pad.name, base, s1);
 		free(s1);
 		break;
 	case ot_arc:

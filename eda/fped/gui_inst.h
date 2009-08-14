@@ -39,6 +39,7 @@ void gui_draw_vec(struct inst *self);
 void gui_draw_line(struct inst *self);
 void gui_draw_rect(struct inst *self);
 void gui_draw_pad(struct inst *self);
+void gui_draw_rpad(struct inst *self);
 void gui_draw_arc(struct inst *self);
 void gui_draw_meas(struct inst *self);
 void gui_draw_frame(struct inst *self);

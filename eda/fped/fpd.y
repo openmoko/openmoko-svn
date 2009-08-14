@@ -151,7 +151,7 @@ static struct obj *new_obj(enum obj_type type)
 
 %token		START_FPD START_EXPR
 %token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
-%token		TOK_PAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
+%token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 
@@ -419,6 +419,15 @@ obj:
 			$$->base = $3;
 			$$->u.pad.name = $2;
 			$$->u.pad.other = $4;
+			$$->u.pad.rounded = 0;
+		}
+	| TOK_RPAD STRING base base
+		{
+			$$ = new_obj(ot_pad);
+			$$->base = $3;
+			$$->u.pad.name = $2;
+			$$->u.pad.other = $4;
+			$$->u.pad.rounded = 1;
 		}
 	| TOK_RECT base base opt_expr
 		{

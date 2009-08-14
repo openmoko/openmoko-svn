@@ -39,6 +39,7 @@
 #include "icons/meas_x.xpm"
 #include "icons/meas_y.xpm"
 #include "icons/pad.xpm"
+#include "icons/rpad.xpm"
 #include "icons/point.xpm"
 #include "icons/delete.xpm"
 #include "icons/delete_off.xpm"
@@ -377,6 +378,7 @@ static int end_new_pad(struct inst *from, struct inst *to)
 	obj = new_obj(ot_pad, from);
 	obj->u.pad.other = inst_get_vec(to);
 	obj->u.pad.name = stralloc("?");
+	obj->u.pad.rounded = 0;
 	return 1;
 }
 
@@ -390,6 +392,35 @@ struct pix_buf *draw_move_pad(struct inst *inst, struct coord pos, int i)
 static struct tool_ops pad_ops = {
 	.drag_new	= drag_new_rect,
 	.end_new	= end_new_pad,
+};
+
+
+/* ----- rounded pad ------------------------------------------------------- */
+
+
+static int end_new_rpad(struct inst *from, struct inst *to)
+{
+	struct obj *obj;
+
+	if (from == to)
+		return 0;
+	obj = new_obj(ot_pad, from);
+	obj->u.pad.other = inst_get_vec(to);
+	obj->u.pad.name = stralloc("?");
+	obj->u.pad.rounded = 1;
+	return 1;
+}
+
+
+struct pix_buf *draw_move_rpad(struct inst *inst, struct coord pos, int i)
+{
+	return draw_move_rect_common(inst, inst->u.pad.other, pos, i);
+}
+
+
+static struct tool_ops rpad_ops = {
+	.drag_new	= drag_new_rect,
+	.end_new	= end_new_rpad,
 };
 
 
@@ -989,6 +1020,8 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	    tool_button_press_event, &frame_ops);
 	tool_button(bar, drawable, xpm_pad,
 	    tool_button_press_event, &pad_ops);
+	tool_button(bar, drawable, xpm_rpad,
+	    tool_button_press_event, &rpad_ops);
 	tool_button(bar, drawable, xpm_line,
 	    tool_button_press_event, &line_ops);
 	tool_button(bar, drawable, xpm_rect,

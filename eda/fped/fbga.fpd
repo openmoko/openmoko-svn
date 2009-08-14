@@ -12,7 +12,7 @@ frame pad {
 	__0: vec @(col*e-Px/2, row*-e-Py/2)
 	__1: vec .(0mm, Py)
 	__2: vec __0(Px, 0mm)
-	pad "$rname$cname" __1 .
+	rpad "$rname$cname" __1 .
 }
 
 frame inner {

@@ -78,8 +78,9 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 	/*
 	 * name, shape (rectangle), Xsize, Ysize, Xdelta, Ydelta, Orientation
  	 */
-	fprintf(file, "Sh \"%s\" R %d %d 0 0 0\n",
-	    inst->u.pad.name, max.x-min.x, max.y-min.y);
+	fprintf(file, "Sh \"%s\" %c %d %d 0 0 0\n",
+	    inst->u.pad.name, inst->obj->u.pad.rounded ? 'O' : 'R',
+	    max.x-min.x, max.y-min.y);
 
 	/*
 	 * Attributes: pad type, N, layer mask

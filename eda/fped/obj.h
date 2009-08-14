@@ -104,7 +104,7 @@ struct vec {
 	struct sample *samples;
 
 	/* for the GUI */
-	GtkWidget *list_widget;
+	GtkWidget *list_widget; /* NULL if items aren't shown */
 };
 
 struct frame {
@@ -148,6 +148,7 @@ struct rect {
 struct pad {
 	char *name;
 	struct vec *other; /* NULL if frame origin */
+	int rounded;
 };
 
 struct arc {
@@ -175,7 +176,7 @@ struct obj {
 	int dumped;
 
 	/* for the GUI */
-	GtkWidget *list_widget;
+	GtkWidget *list_widget; /* NULL if items are not shown */
 };
 
 

@@ -199,6 +199,16 @@ vec @(1mm, 1mm)
 pad "1" @ .
 
 
+Rounded pads
+- - - - - -
+
+Rounded pads are like rectangular pads except that they end with a
+semi-circle at each of the smaller sides of the enclosing rectangle.
+If enclosed in a square, rounded pads form a circle.
+
+rpad "<name>" <point-a> <point-b>
+
+
 Measurements
 - - - - - -
 

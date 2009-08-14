@@ -48,6 +48,33 @@ static void ps_pad(FILE *file, const struct inst *inst)
 }
 
 
+static void ps_rpad(FILE *file, const struct inst *inst)
+{
+	struct coord a = inst->base;
+	struct coord b = inst->u.pad.other;
+	unit_type h, w, r;
+
+	sort_coord(&a, &b);
+	h = b.y-a.y;
+	w = b.x-a.x;
+	fprintf(file, "0 setgray %d setlinewidth\n", HATCH_LINE);
+	if (h > w) {
+		r = w/2;
+		fprintf(file, "  %d %d moveto\n", b.x, b.y-r);
+		fprintf(file, "  %d %d %d 0 180 arc\n", a.x+r, b.y-r, r);
+		fprintf(file, "  %d %d lineto\n", a.x, a.y+r);
+		fprintf(file, "  %d %d %d 180 360 arc\n", a.x+r, a.y+r, r);
+	} else {
+		r = h/2;
+		fprintf(file, "  %d %d moveto\n", b.x-r, a.y);
+		fprintf(file, "  %d %d %d -90 90 arc\n", b.x-r, a.y+r, r);
+		fprintf(file, "  %d %d lineto\n", a.x+r, b.y);
+		fprintf(file, "  %d %d %d 90 270 arc\n", a.x+r, a.y+r, r);
+	}
+	fprintf(file, "  closepath gsave hatchpath grestore stroke\n");
+}
+
+
 static void ps_line(FILE *file, const struct inst *inst)
 {
 	struct coord a = inst->base;
@@ -131,7 +158,10 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 {
 	switch (prio) {
 	case ip_pad:
-		ps_pad(file, inst);
+		if (inst->obj->u.pad.rounded)
+			ps_rpad(file, inst);
+		else
+			ps_pad(file, inst);
 		break;
 	case ip_vec:
 		if (postscript_params.show_stuff)

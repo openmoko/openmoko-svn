@@ -235,7 +235,7 @@ unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-void gui_draw_pad(struct inst *self)
+static void gui_draw_pad_text(struct inst *self)
 {
 	struct coord min = translate(self->base);
 	struct coord max = translate(self->u.pad.other);
@@ -243,18 +243,56 @@ void gui_draw_pad(struct inst *self)
 	struct coord c;
 	unit_type h, w;
 
-	gc = gc_pad[get_mode(self)];
-	sort_coord(&min, &max);
-	gdk_draw_rectangle(DA, gc, TRUE,
-	    min.x, min.y, max.x-min.x, max.y-min.y);
-
 	gc = gc_ptext[get_mode(self)];
+	sort_coord(&min, &max);
 	c = add_vec(min, max);
 	h = max.y-min.y;
 	w = max.x-min.x;
 	render_text(DA, gc, c.x/2, c.y/2, w <= h*1.1 ? 0 : 90,
 	    self->u.pad.name, PAD_FONT, 0.5, 0.5,
 	    w-2*PAD_BORDER, h-2*PAD_BORDER);
+}
+
+
+void gui_draw_pad(struct inst *self)
+{
+	struct coord min = translate(self->base);
+	struct coord max = translate(self->u.pad.other);
+	GdkGC *gc;
+
+	gc = gc_pad[get_mode(self)];
+	sort_coord(&min, &max);
+	gdk_draw_rectangle(DA, gc, TRUE,
+	    min.x, min.y, max.x-min.x, max.y-min.y);
+
+	gui_draw_pad_text(self);
+}
+
+
+void gui_draw_rpad(struct inst *self)
+{
+	struct coord min = translate(self->base);
+	struct coord max = translate(self->u.pad.other);
+	GdkGC *gc;
+	unit_type h, w, r;
+
+	gc = gc_pad[get_mode(self)];
+	sort_coord(&min, &max);
+	h = max.y-min.y;
+	w = max.x-min.x;
+	if (h > w) {
+		r = w/2;
+		draw_arc(DA, gc, TRUE, min.x+r, max.y-r, r, 180, 0);
+		gdk_draw_rectangle(DA, gc, TRUE, min.x, min.y+r, w, h-2*r);
+		draw_arc(DA, gc, TRUE, min.x+r, min.y+r, r, 0, 180);
+	} else {
+		r = h/2;
+		draw_arc(DA, gc, TRUE, min.x+r, min.y+r, r, 90, 270);
+		gdk_draw_rectangle(DA, gc, TRUE, min.x+r, min.y, w-2*r, h);
+		draw_arc(DA, gc, TRUE, max.x-r, min.y+r, r, 270, 90);
+	}
+
+	gui_draw_pad_text(self);
 }
 
 

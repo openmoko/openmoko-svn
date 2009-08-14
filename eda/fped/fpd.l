@@ -85,6 +85,8 @@ SP	[\t ]*
 				  return TOK_VEC; }
 <INITIAL>"pad"			{ BEGIN(NOKEYWORD);
 				  return TOK_PAD; }
+<INITIAL>"rpad"			{ BEGIN(NOKEYWORD);
+				  return TOK_RPAD; }
 <INITIAL>"rect"			{ BEGIN(NOKEYWORD);
 				  return TOK_RECT; }
 <INITIAL>"line"			{ BEGIN(NOKEYWORD);
