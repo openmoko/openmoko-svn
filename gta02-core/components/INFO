@@ -229,3 +229,8 @@ D: http://www.ralec.com/download/products/5_Array-convex.pdf
 S: varistor
 A: kev
 D: http://www.kmax.com.tw/doc/02_KEV_Series.pdf
+
+# GPS 32.768KHz Crystal (CC7V-T1A)
+S: CRYSTAL
+A: gps-xtal
+D: http://www.microcrystal.com/CMSPages/GetFile.aspx?nodeguid=0e348300-766a-4c4d-a9fc-854939ece316
