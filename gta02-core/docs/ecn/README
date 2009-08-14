@@ -102,6 +102,9 @@ The current STATUS file can use the following states:
 
 - Execute: ECN is being implemented and reviewed.
 
+- Done: ECN has been implemented and the implementation has been
+  reviewed.
+
 - Defer: ECN will not be implemented in the current hardware revision
   but may be considered for future revisions.
 
