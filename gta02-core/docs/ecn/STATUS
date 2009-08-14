@@ -27,4 +27,4 @@ Number	Status	Description
 0025	Done	Connect CLKOUT1 to UEXTCLK (U1501)
 0026	Discuss	Improve bus termination at sd-card
 0027	Edit	Renamed some nets for clarity
-0028	Edit	Remove USB host power switch
+0028	Edit	Remove USB "charge path" power switch U4905
