@@ -12,3 +12,4 @@ https://lists.openmoko.org/pipermail/hardware/2008-August/000461.html
 Author: Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
 Review: Dave Ball <openmoko@daveball.org.uk>, rev5338.
 Commit: SVN 5339, Connect CLKOUT1 to UEXTCLK
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5447
