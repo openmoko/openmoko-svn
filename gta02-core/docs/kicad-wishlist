@@ -45,23 +45,6 @@ http://tech.groups.yahoo.com/group/kicad-devel/
   Status: dabbled a bit with it, but don't really have anything to show.
 
 
-- Make relative paths work when passing a file to eeschema and pcbnew
-
-  Background: eeschema and pcbnew can be invoked with the name of the
-  file to open. This works very well as long as the path name is
-  absolute. However, if it is relative ...
-
-  Problem: eeschema and pcbnew change the working directory which
-  yields weird results if the path is relative to the current directory,
-  usually resulting in eeschema finding neither the profile (project
-  settings) nor the file passed on the command line. (As can be guessed
-  from this description, I haven't quite figured out how exactly all
-  this goes wrong.)
-
-  The work-around is to simply prefix the relative path with `pwd`/,
-  but this upsets the usual  command prefix[Tab][Enter]  workflow.
-
-
 - Pin name inside and on top
 
   Background: eeschema currently supports two types if pin labeling,
@@ -105,8 +88,8 @@ http://tech.groups.yahoo.com/group/kicad-devel/
 
 - Fix wx plot and print
 
-  [ Add more description. Not sure if any actual coding is needed,
-    or just integration. ]
+  [ Add more description. Not sure if any actual coding is needed, or
+    just integration. Also, need to check if issues still persist. ]
 
   http://tech.groups.yahoo.com/group/kicad-devel/message/2649
   http://tech.groups.yahoo.com/group/kicad-devel/message/2653
