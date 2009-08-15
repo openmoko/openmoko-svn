@@ -13,6 +13,19 @@ http://focus.ti.com/lit/ds/symlink/bq24314.pdf
 Joerg Reisenweber has designed a circuit using the BQ24314DSG:
 ecn0014/U4905-circuit.png
 
+Based on further comments from Joerg:
+
+VBAT overvoltage checking is not really used in this scenario.
+According to the BQ24314 data sheet:
+
+| If the Bat-OVP function is not required, the VBAT pin should be
+| connected to VSS.
+
+Therefore, R4903 should be removed and VBAT connected to GND.
+Also, nUSB_OC is a bit mis-named since there should never be an
+overcurrent condition (barring catastrophic PMU failure.) nUSB_OV
+would describe its function more accurately.
+
 Defer this to post-gta02-core since it requires a new part and it's
 not an emergency.
 
