@@ -355,10 +355,14 @@ static const char *meas_type_name[mt_n] = {
 
 static char *print_meas_base(struct vec *base)
 {
+	char *name, *res;
+
+	name = base_name(base, NULL);
 	if (base->frame == root_frame)
-		return stralloc_printf("%s", base->name);
-	else
-		return stralloc_printf("%s.%s", base->frame->name, base->name);
+		return name;
+	res = stralloc_printf("%s.%s", base->frame->name, name);
+	free(name);
+	return res;
 }
 
 
