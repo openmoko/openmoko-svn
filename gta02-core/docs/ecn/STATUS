@@ -13,7 +13,7 @@ Number	Status	Description
 0011	Edit	Reduce number of varistors on USB_VBUS (C4902, C4909)
 0012	Defer	Add fuse to USB_VBUS
 0013	Defer	Increase rated current of B4902
-0014	Defer	Limit non-ESD overvoltage on USB_VBUS
+0014	Defer	Limit non-ESD overvoltage on USB_VBUS (U4905)
 0015	Discuss	Remove Calypso serial interface on headset (U4401)
 0016	Edit	Remove upper acceleration sensor (U7801)
 0017	Edit	Move Bluetooth module (U2) to main PCB

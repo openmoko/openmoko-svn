@@ -1,7 +1,20 @@
-Limit non-ESD overvoltage on USB_VBUS
+Limit non-ESD overvoltage on USB_VBUS (U4905)
 
 
-To do:
-- issue: broken power supply and such, PMU not very tolerant
-- change U4905 to better part
-- defer since it's not an emergency
+The issue: the highest USB voltage the PMU is specied for is 5.5 V,
+which makes it not very tolerant to USB overvoltage. Excessive USB
+voltage may come from defective power supplies and supplies with
+loose design tolerances, such as car chargers.
+
+The RT9711 only provides overcurrent protection but no overvoltage
+protection. A better choice would be the TI BQ24314DSG:
+http://focus.ti.com/lit/ds/symlink/bq24314.pdf
+
+Joerg Reisenweber has designed a circuit using the BQ24314DSG:
+ecn0014/U4905-circuit.png
+
+Defer this to post-gta02-core since it requires a new part and it's
+not an emergency.
+
+
+Author: Werner Almesberger <werner@openmoko.org>
