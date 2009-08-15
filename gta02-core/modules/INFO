@@ -1,0 +1,14 @@
+#
+# Tags:
+#
+# F  Footprint name (must be first)
+# S  Symbol name (from ../components/INFO)
+# C  Component name
+# D  Data sheet URL
+#
+# If symbol data sheet contains footprint, don't repeat it here.
+#
+
+F: bga96-8x12-0mm8.fpd
+S: atr0635
+# ATR0635 data sheet page 33

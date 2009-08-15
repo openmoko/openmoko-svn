@@ -1,0 +1,59 @@
+/* MACHINE-GENERATED ! */
+
+frame outline {
+	set A = 7mm
+
+	set B = 10mm
+
+	ll: vec @(-B/2, -A/2)
+	ur: vec @(B/2, A/2)
+	rect ll . silk
+}
+
+frame marking {
+	__0: vec @(e/2, 0mm)
+	circ @ . silk
+}
+
+frame ball {
+	ll: vec @(-Pd/2, -Pd/2)
+	ur: vec @(Pd/2, Pd/2)
+	rpad "$rname$col" ll .
+}
+
+frame balls {
+	table
+	    { row, rname }
+	    { 1, "A" }
+	    { 2, "B" }
+	    { 3, "C" }
+	    { 4, "D" }
+	    { 5, "E" }
+	    { 6, "F" }
+	    { 7, "G" }
+	    { 8, "H" }
+
+	loop col = 1, 12
+
+	cxy: vec @(e*(col-1), -e*(row-1))
+	frame ball .
+}
+
+part "BGA96-8x12-0.8mm"
+set Pd = 0.4mm
+
+set e = 0.8mm
+
+set silk = 5mil
+
+a1: vec @(-5.5*e, 3.5*e)
+frame balls .
+frame marking .
+frame outline @
+measy balls.cxy -> balls.cxy 1mm
+measy balls.cxy >> a1 1.3mm
+measx a1 >> balls.cxy 1.3mm
+measx a1 -> balls.cxy 1mm
+measy outline.ll >> outline.ur 1.1mm
+measx outline.ll >> outline.ur -1mm
+measx ball.ll -> ball.ur -1mm
