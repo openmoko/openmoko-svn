@@ -145,7 +145,7 @@ static void kicad_circ(FILE *file, const struct inst *inst)
 	    units_to_kicad(inst->base.x),
 	    -units_to_kicad(inst->base.y),
 	    units_to_kicad(inst->base.x),
-	    units_to_kicad(inst->base.y+inst->u.arc.r),
+	    -units_to_kicad(inst->base.y+inst->u.arc.r),
 	    units_to_kicad(inst->u.arc.width),
 	    layer_silk_top);
 }

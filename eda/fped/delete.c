@@ -229,6 +229,8 @@ static void do_delete_obj(struct obj *obj)
 	del = new_deletion(dt_obj);
 	del->u.obj.ref = obj;
 	del->u.obj.prev = prev;
+	if (obj->type == ot_frame && obj->u.frame.ref->active_ref == obj)
+		obj->u.frame.ref->active_ref = NULL;
 }
 
 

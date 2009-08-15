@@ -804,12 +804,13 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 	struct inst *inst;
 	double r, a1, a2;
 
-	inst = add_inst(&arc_ops, ip_arc, center);
+	a1 = theta(center, start);
+	a2 = theta(center, end);
+	inst = add_inst(&arc_ops,
+	    fmod(a1, 360) == fmod(a2, 360) ? ip_circ : ip_arc, center);
 	inst->obj = obj;
 	r = hypot(start.x-center.x, start.y-center.y);
 	inst->u.arc.r = r;
-	a1 = theta(center, start);
-	a2 = theta(center, end);
 	inst->u.arc.a1 = a1;
 	inst->u.arc.a2 = a2;
 	inst->u.arc.width = width;

@@ -10,6 +10,8 @@
 # (at your option) any later version.
 #
 
+PREFIX = /usr/local
+
 OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        unparse.o file.o dump.o kicad.o postscript.o meas.o \
        cpp.o lex.yy.o y.tab.o \
@@ -67,7 +69,7 @@ endif
 
 # ----- Rules -----------------------------------------------------------------
 
-.PHONY:		all dep depend clean
+.PHONY:		all dep depend clean install uninstall
 
 .SUFFIXES:	.fig .xpm
 
@@ -111,6 +113,14 @@ endif
 
 # ----- Cleanup ---------------------------------------------------------------
 
-      clean:
+clean:
 		rm -f $(OBJS) $(XPMS:%=icons/%)
 		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend
+
+# ----- Install / uninstall ---------------------------------------------------
+
+install:
+		install -m 755 fped $(PREFIX)/bin/
+
+uninstall:
+		rm -f $(PREFIX)/bin/fped
