@@ -1,7 +1,7 @@
 Remove USB "charge path" power switch U4905
 
 
-We can just disable USB host power at the PMU, so U4905 has no real
+We could just disable USB host power at the PMU, so U4905 has no real
 purpose. Note that an overvoltage-limiting component should be used in
 the future, as explained in ECN0014.
 
@@ -18,6 +18,8 @@ Software changes:
 
 - when switching to USB host mode, make sure the PMU MBC is in USB
   suspend mode (MBCC7.usbdevstat = 3)
+
+Considered too risky, so let's not do this.
 
 
 Author: Werner Almesberger <werner@openmoko.org>
