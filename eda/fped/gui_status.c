@@ -41,6 +41,15 @@ struct edit_ops {
 	void (*store)(const char *s, void *ctx);
 };
 
+
+static enum curr_unit {
+	unit_mm,
+	unit_mil,
+	unit_auto,
+	unit_n
+} curr_unit = unit_mm;
+
+
 static GtkWidget *open_edits = NULL;
 static GtkWidget *last_edit = NULL;
 
@@ -55,7 +64,7 @@ static GtkWidget *status_x, *status_y;
 static GtkWidget *status_r, *status_angle;
 static GtkWidget *status_sys_x, *status_sys_y;
 static GtkWidget *status_user_x, *status_user_y;
-static GtkWidget *status_zoom, *status_grid;
+static GtkWidget *status_zoom, *status_grid, *status_unit;
 static GtkWidget *status_msg;
 
 
@@ -93,6 +102,41 @@ SETTER(user_x)
 SETTER(user_y)
 SETTER(zoom)
 SETTER(grid)
+SETTER(unit)
+
+
+/* ----- set things with units --------------------------------------------- */
+
+
+void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
+    unit_type u)
+{
+	double n;
+	int mm;
+
+	switch (curr_unit) {
+	case unit_mm:
+		n = units_to_mm(u);
+		mm = 1;
+		break;
+	case unit_mil:
+		n = units_to_mil(u);
+		mm = 0;
+		break;
+	case unit_auto:
+		n = units_to_best(u, &mm);
+		break;
+	default:
+		abort();
+	}
+	if (mm) {
+		/* -NNN.NNN mm */
+		set("%s%8.3f mm", prefix, n);
+	} else {
+		/* -NNNN.N mil */
+		set("%s%7.1f mil", prefix, n);
+	}
+}
 
 
 /* ----- complex status updates -------------------------------------------- */
@@ -104,8 +148,8 @@ void status_set_xy(struct coord coord)
 	status_set_type_x("X =");
 	status_set_type_y("Y =");
 
-	status_set_x("%5.2f mm", units_to_mm(coord.x));
-	status_set_y("%5.2f mm", units_to_mm(coord.y));
+	set_with_units(status_set_x, "", coord.x);
+	set_with_units(status_set_y, "", coord.y);
 }
 
 
@@ -500,12 +544,10 @@ static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
 		return TRUE;
 	for (edit = open_edits; edit;
 	    edit = gtk_object_get_data(GTK_OBJECT(edit), "edit-next"))
-{
 		if (get_status(edit) == es_good) {
 			entry_color(edit, COLOR_EDIT_ASIS);
 			set_edit(edit);
 		}
-}
 	inst_deselect();
 	change_world();
 	return TRUE;
@@ -553,10 +595,38 @@ void status_begin_reporting(void)
 }
 
 
+/* ----- unit selection ---------------------------------------------------- */
+
+
+static gboolean unit_button_press_event(GtkWidget *widget,
+    GdkEventButton *event, gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		curr_unit = (curr_unit+1) % unit_n;
+		switch (curr_unit) {
+		case unit_mm:
+			status_set_unit("mm");
+			break;
+		case unit_mil:
+			status_set_unit("mil");
+			break;
+		case unit_auto:
+			status_set_unit("auto");
+			break;
+		default:
+			abort();
+		}
+		break;
+	}
+	return TRUE;
+}
+
+
 /* ----- setup ------------------------------------------------------------- */
 
 
-static GtkWidget *add_label(GtkWidget *tab, int col, int row)
+static GtkWidget *add_label_basic(GtkWidget *tab, int col, int row)
 {
 	GtkWidget *label;
 
@@ -565,7 +635,15 @@ static GtkWidget *add_label(GtkWidget *tab, int col, int row)
 	    col, col+1, row, row+1,
 	    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 1);
 	    /* 0 , 1 - padding */
+	return label;
+}
 
+
+static GtkWidget *add_label(GtkWidget *tab, int col, int row)
+{
+	GtkWidget *label;
+
+	label = add_label_basic(tab, col, row);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 	return label;
@@ -632,10 +710,17 @@ void make_status_area(GtkWidget *vbox)
 	status_r = add_label(tab, 4, 2);
 	status_angle = add_label(tab, 5, 2);
 
-	/* zoom / grid */
+	/* zoom / grid / unit */
 
 	status_zoom = add_label(tab, 6, 0);
 	status_grid = add_label(tab, 6, 1);
+	status_unit = add_label_basic(tab, 6, 2);
+
+	/* unit selection */
+
+	status_set_unit("mm");
+	g_signal_connect(G_OBJECT(box_of_label(status_unit)),
+	    "button_press_event", G_CALLBACK(unit_button_press_event), NULL);
 
 	/* message bar */
 

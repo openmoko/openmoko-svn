@@ -1,7 +1,5 @@
 Major missing features:
 - populate input area (still needed: mm/mil, rezoom)
-- add default unit (combine with grid unit selection ?)
-- consider adding auto/mm/mil selection for each dimension
 - add postscript output (partially done)
 - add option to include/omit helper vecs and frames (done for display, still
   need postscript). Better idea: in PS, print the component 10x, 1x, and then

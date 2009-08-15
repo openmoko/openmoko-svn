@@ -30,6 +30,44 @@ double mil_to_mm(double mil, int exponent)
 	return mil*pow(MIL_IN_MM, exponent);
 }
 
+
+/* ----- convert internal units to best external unit ---------------------- */
+
+
+double units_to_best(unit_type u, int *mm)
+{
+	/*
+	 * For finding the best choice, we work with deci-micrometers and
+	 * micro-inches. The conversion to "dum" is actually a no-op, but that
+	 * may change if we ever pick a different internal unit than 0.1 um.
+	 */
+
+	long dum = round(units_to_mm(u)*10000.0);
+	long uin = round(units_to_mil(u)*1000.0);
+
+	/* remove trailing zeroes */
+
+	while (dum && !(dum % 10))
+		dum /= 10;
+	while (uin && !(uin % 10))
+		uin /= 10;
+
+	/* ceil(log10(dum)) <= ceil(log10(uin)) ? */
+
+	while (dum && uin) {
+		dum /= 10;
+		uin /= 10;
+	}
+	if (!dum) {
+		*mm = 1;
+		return units_to_mm(u);
+	} else {
+		*mm = 0;
+		return units_to_mil(u);
+	}
+}
+
+
 /* ----- vector operations ------------------------------------------------- */
 
 

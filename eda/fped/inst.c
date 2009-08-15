@@ -389,10 +389,10 @@ static void rect_status(struct coord a, struct coord b, unit_type width)
 		angle = theta(a, b);
 		status_set_angle("a = %3.1f deg", angle);
 	}
-	status_set_r("r = %5.2f mm", hypot(units_to_mm(d.x), units_to_mm(d.y)));
+	set_with_units(status_set_r, "r = ", hypot(d.x, d.y));
 	if (width != -1) {
 		status_set_type_entry("width =");
-		status_set_name("%5.2f mm", units_to_mm(width));
+		set_with_units(status_set_name, "", width);
 	}
 }
 
@@ -769,9 +769,9 @@ static void arc_op_select(struct inst *self)
 	status_set_angle("a = %3.1f deg",
 	    self->u.arc.a1 == self->u.arc.a2 ? 360 :
 	    self->u.arc.a2-self->u.arc.a1);
-	status_set_r("r = %5.2f mm", units_to_mm(self->u.arc.r));
+	set_with_units(status_set_r, "r = ", self->u.arc.r);
 	status_set_type_entry("width =");
-	status_set_name("%5.2f mm", units_to_mm(self->u.arc.width));
+	set_with_units(status_set_name, "", self->u.arc.width);
 	obj_arc_edit(self->obj);
 }
 
@@ -845,7 +845,7 @@ static void meas_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, -1);
 	status_set_type_entry("offset =");
-	status_set_name("%5.2f mm", units_to_mm(self->u.meas.offset));
+	set_with_units(status_set_name, "", self->u.meas.offset);
 	obj_meas_edit(self->obj);
 }
 

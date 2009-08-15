@@ -55,10 +55,10 @@ static void update_zoom(void)
 
 static void update_pos(struct coord pos)
 {
-	status_set_sys_x("X %5.2lf" , units_to_mm(pos.x));
-	status_set_sys_y("Y %5.2lf" , units_to_mm(pos.y));
-	status_set_user_x("x %5.2lf", units_to_mm(pos.x-user_origin.x));
-	status_set_user_y("y %5.2lf", units_to_mm(pos.y-user_origin.y));
+	set_with_units(status_set_sys_x, "X ", pos.x);
+	set_with_units(status_set_sys_y, "Y ", pos.x);
+	set_with_units(status_set_user_x, "x ", pos.x-user_origin.x);
+	set_with_units(status_set_user_y, "y ", pos.y-user_origin.y);
 }
 
 

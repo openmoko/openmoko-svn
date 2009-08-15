@@ -54,6 +54,12 @@ static inline double units_to_mm(unit_type u)
 }
 
 
+static inline double units_to_mil(unit_type u)
+{
+	return (double) u/MIL_UNITS;
+}
+
+
 static inline int units_to_kicad(unit_type u)
 {
 	return (double) u/KICAD_UNIT;
@@ -68,6 +74,8 @@ static inline int coord_eq(struct coord a, struct coord b)
 
 double mm_to_mil(double mm, int exponent);
 double mil_to_mm(double mil, int exponent);
+
+double units_to_best(unit_type u, int *mm);
 
 struct coord normalize(struct coord v, unit_type len);
 struct coord rotate(struct coord v, double angle);

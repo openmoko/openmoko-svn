@@ -30,6 +30,9 @@ void edit_x(struct expr **expr);
 void edit_y(struct expr **expr);
 void edit_nothing(void);
 
+void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
+    unit_type u);
+
 void status_set_type_x(const char *fmt, ...);
 void status_set_type_y(const char *fmt, ...);
 void status_set_type_entry(const char *fmt, ...);
@@ -44,6 +47,7 @@ void status_set_user_x(const char *fmt, ...);
 void status_set_user_y(const char *fmt, ...);
 void status_set_zoom(const char *fmt, ...);
 void status_set_grid(const char *fmt, ...);
+void status_set_unit(const char *fmt, ...);
 
 void status_set_xy(struct coord coord);
 
