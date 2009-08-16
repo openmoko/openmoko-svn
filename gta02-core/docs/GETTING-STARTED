@@ -49,6 +49,14 @@ Setting things up
 
     cd ..
 
+- We draw footprints with the footprint editor fped. Install it:
+
+  svn checkout http://svn.openmoko.org/trunk/eda/fped
+  cd fped
+  make del all install
+
+  cd ..
+
 - Build your local copy of the component (schematics symbol) library:
 
   make update
@@ -73,7 +81,7 @@ Setting things up
 
   - (re)view and edit the ECNs (Engineering Change Notices)
 
-  - (re)view and edit footprints (coming soon)
+  - (re)view and edit footprints
 
   - (re)view and edit the layout (coming soon)
 
@@ -145,6 +153,42 @@ docs/ecn/README. Their status is tracked in docs/ecn/STATUS.
 
 Wherever possible and remotely useful, ECNs should be referenced in
 the schematics.
+
+
+(Re)viewing and editing footprints
+----------------------------------
+
+#Feeling lazy ? Then use the pre-built PDF link for the "expanded view"
+#on http://people.openmoko.org/werner/gta02-core.html
+
+The footprints are kept in *.fpd files in modules/. To view a footprint,
+run
+
+  fped modules/filename.fpd
+
+To generate printable Postscript, run
+
+  fped -p modules/filename.fpd
+
+(writes modules/filename.ps), or
+
+  fped -p modules/filename.fpd -
+
+(writes to stdout.)
+
+Footprints are translated to KiCad and merged in a combined library with
+the script "mkloe" in the same directory. You usually don't invoke
+"mkloe" directly, but run
+
+  make update
+
+in the project's top-level directory.
+
+The review status of footprint is recorded in modules/STATUS
+
+Additional information, specifically links to data sheets (in addition
+to the ones we already have for the component itself), is in the file
+modules/INFO
 
 
 Making changes
