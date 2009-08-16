@@ -26,6 +26,7 @@ extern struct value *var_value_list;
 void scan_empty(void);
 void scan_expr(const char *s);
 void scan_var(const char *s);
+void scan_values(const char *s);
 
 int yyparse(void);
 

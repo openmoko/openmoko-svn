@@ -140,6 +140,7 @@ void free_expr(struct expr *expr);
 
 int parse_var(const char *s, const char **id, struct value **values,
     int max_values);
+int parse_values(const char *s, struct value **values);
 void free_values(struct value *values, int keep_expr);
 
 #endif /* !EXPR_H */

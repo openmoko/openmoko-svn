@@ -360,14 +360,16 @@ static enum edit_status unique_with_values_status(const char *s, void *ctx)
 {
 	const struct edit_unique_with_values_ctx *unique_ctx = ctx;
 	const char *id;
+	struct value *values;
 	int n;
 
 	if (!strcmp(s, *unique_ctx->s))
 		return es_unchanged;
 	status_begin_reporting();
-	n = parse_var(s, &id, NULL, unique_ctx->max_values);
+	n = parse_var(s, &id, &values, unique_ctx->max_values);
 	if (n < 0)
 		return es_bad;
+	free_values(values, 0);
 	return !unique_ctx->validate ||
 	    unique_ctx->validate(id, unique_ctx->ctx) ? es_good : es_bad;
 }
@@ -541,6 +543,73 @@ void edit_x(struct expr **expr)
 void edit_y(struct expr **expr)
 {
 	edit_any_expr(status_entry_y, expr);
+}
+
+
+/* ----- expression list --------------------------------------------------- */
+
+
+struct edit_expr_list_ctx {
+	struct expr *expr;
+	void (*set_values)(void *user, const struct value *values,
+	    int n_values);
+	void *user;
+};
+
+
+static char *expr_list_retrieve(void *ctx)
+{
+	struct edit_expr_list_ctx *expr_list_ctx = ctx;
+
+	return unparse(expr_list_ctx->expr);
+}
+
+
+static enum edit_status expr_list_status(const char *s, void *ctx)
+{
+	struct value *values;
+	int n;
+
+	status_begin_reporting();
+	n = parse_values(s, &values);
+	if (n < 0)
+		return es_bad;
+	free_values(values, 0);
+	return es_good;
+}
+
+
+static void expr_list_store(const char *s, void *ctx)
+{
+	struct edit_expr_list_ctx *expr_list_ctx = ctx;
+	struct value *values;
+	int n;
+
+	status_begin_reporting();
+	n = parse_values(s, &values);
+	assert(n >= 0);
+	expr_list_ctx->set_values(expr_list_ctx->user, values, n);
+	free_values(values, 1);
+}
+
+
+static struct edit_ops edit_ops_expr_list = {
+	.retrieve	= expr_list_retrieve,
+	.status		= expr_list_status,
+	.store		= expr_list_store,
+};
+
+
+void edit_expr_list(struct expr *expr,
+    void (*set_values)(void *user, const struct value *values, int n_values),
+    void *user)
+{
+	static struct edit_expr_list_ctx expr_list_ctx;
+
+	expr_list_ctx.expr = expr;
+	expr_list_ctx.set_values = set_values;
+	expr_list_ctx.user = user;
+	setup_edit(status_entry, &edit_ops_expr_list, &expr_list_ctx);
 }
 
 

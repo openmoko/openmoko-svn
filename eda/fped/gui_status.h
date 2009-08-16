@@ -30,6 +30,9 @@ void edit_unique_with_values(const char **s,
     void *user, int max_values);
 void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx);
 void edit_expr(struct expr **expr);
+void edit_expr_list(struct expr *expr,
+    void (*set_values)(void *user, const struct value *values, int n_values),
+    void *user);
 void edit_x(struct expr **expr);
 void edit_y(struct expr **expr);
 void edit_nothing(void);

@@ -153,7 +153,7 @@ static struct obj *new_obj(enum obj_type type)
 };
 
 
-%token		START_FPD START_EXPR START_VAR
+%token		START_FPD START_EXPR START_VAR START_VALUES
 %token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY
@@ -198,6 +198,10 @@ all:
 		{
 			var_id = $2;
 			var_value_list = $3;
+		}
+	| START_VALUES row
+		{
+			var_value_list = $2;
 		}
 	;
 

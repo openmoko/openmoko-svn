@@ -49,6 +49,13 @@ void scan_var(const char *s)
 	yy_scan_string(s);
 }
 
+
+void scan_values(const char *s)
+{
+	start_token = START_VALUES;
+	yy_scan_string(s);
+}
+
 %}
 
 

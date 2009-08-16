@@ -523,6 +523,17 @@ static void edit_value(struct value *value)
 }
 
 
+static void edit_value_list(struct value *value,
+    void (*set_values)(void *user, const struct value *values, int n_values),
+    void *user)
+{
+	inst_select_outside(value, unselect_value);
+	label_in_box_bg(value->widget, COLOR_VAR_EDITING);
+	edit_nothing();
+	edit_expr_list(value->expr, set_values, user);
+}
+
+
 /* ----- activator --------------------------------------------------------- */
 
 
@@ -569,6 +580,7 @@ static void set_col_values(void *user, const struct value *values,
 		value = (*row)->values;
 		for (walk = table->vars; walk != var; walk = walk->next)
 			value = value->next;
+		free_expr(value->expr);
 		value->expr = values->expr;
 		values = values->next;
 		row = &(*row)->next;
@@ -661,6 +673,35 @@ static void select_row(struct row *row)
 }
 
 
+static void set_row_values(void *user, const struct value *values,
+    int n_values)
+{
+	struct value *value = user;
+	struct row *row = value->row;
+	struct table *table = row->table;
+	struct var **var;
+	const struct value *walk;
+	int first = 1;
+
+	var = &table->vars;
+	for (walk = row->values; walk != value; walk = walk->next)
+		var = &(*var)->next;
+
+	while (values) {
+		if (!*var)
+			add_column_here(table, var);
+		if (first)
+			first = 0;
+		else
+			value = value->next;
+		free_expr(value->expr);
+		value->expr = values->expr;
+		values = values->next;
+		var = &(*var)->next;
+	}
+}
+
+
 static gboolean table_var_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
@@ -688,7 +729,7 @@ static gboolean table_value_select_event(GtkWidget *widget,
 		if (!value->row ||
 		    value->row->table->active_row == value->row) {
 			edit_nothing();
-			edit_value(value);
+			edit_value_list(value, set_row_values, value);
 		} else {
 			select_row(value->row);
 			change_world();

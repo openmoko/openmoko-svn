@@ -483,7 +483,7 @@ void free_expr(struct expr *expr)
 }
 
 
-/* ----- var = value, ... shortcut ----------------------------------------- */
+/* ----- [var =] value, ... shortcuts -------------------------------------- */
 
 
 int parse_var(const char *s, const char **id, struct value **values,
@@ -497,8 +497,7 @@ int parse_var(const char *s, const char **id, struct value **values,
 		return -1;
 	if (id)
 		*id = var_id;
-	if (values)
-		*values = var_value_list;
+	*values = var_value_list;
 	n = 0;
 	for (value = var_value_list; value; value = value->next)
 		n++;
@@ -506,6 +505,22 @@ int parse_var(const char *s, const char **id, struct value **values,
 		return n;
 	free_values(var_value_list, 0);
 	return -1;
+}
+
+
+int parse_values(const char *s, struct value **values)
+{
+	const struct value *value;
+	int n;
+
+	scan_values(s);
+	if (yyparse())
+		return -1;
+	*values = var_value_list;
+	n = 0;
+	for (value = var_value_list; value; value = value->next)
+		n++;
+	return n;
 }
 
 
