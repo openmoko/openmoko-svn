@@ -8,3 +8,4 @@ direct connection to ground.
 
 Author: Werner Almesberger <werner@openmoko.org>
 Commit: SVN 5467, PMU side
+Commit: SVN 5472, CPU side as well
