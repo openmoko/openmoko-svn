@@ -153,7 +153,30 @@ static void kicad_circ(FILE *file, const struct inst *inst)
 
 static void kicad_arc(FILE *file, const struct inst *inst)
 {
-	fprintf(stderr, "NOT YET IMPLEMENTED\n");
+	struct coord p;
+	double a;
+
+	/*
+	 * The documentation says:
+	 * Xstart, Ystart, Xend, Yend, Angle, Width, Layer
+	 *
+	 * But it's really:
+	 * Xcenter, Ycenter, Xend, Yend, ...
+	 */
+	p = rotate_r(inst->base, inst->u.arc.r, inst->u.arc.a2);
+	a = inst->u.arc.a2-inst->u.arc.a1;
+	while (a <= 0)
+		a += 360;
+	while (a > 360)
+		a -= 360;
+	fprintf(file, "DA %d %d %d %d %d %d %d\n",
+	    units_to_kicad(inst->base.x),
+	    -units_to_kicad(inst->base.y),
+	    units_to_kicad(p.x),
+	    -units_to_kicad(p.y),
+	    (int) (a*10.0),
+	    units_to_kicad(inst->u.arc.width),
+	    layer_silk_top);
 }
 
 
@@ -176,6 +199,10 @@ static void kicad_inst(FILE *file, enum inst_prio prio, const struct inst *inst)
 		kicad_arc(file, inst);
 		break;
 	default:
+		/*
+		 * Don't try to export vectors, frame references, or
+		 * measurements.
+		 */
 		break;
 	}
 }

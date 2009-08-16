@@ -23,18 +23,41 @@
 #define	DOT_DIAM	mm_to_units(0.01)
 #define	HATCH		mm_to_units(0.1)
 #define	HATCH_LINE	mm_to_units(0.02)
+#define	FONT_OUTLINE	mm_to_units(0.025)
 
 
 struct postscript_params postscript_params = {
 	.zoom		= 10.0,
-	.show_pad_names	= 0,
+	.show_pad_names	= 1,
 	.show_stuff	= 0,
 	.label_vecs	= 0,
 	.show_meas	= 0,
 };
 
 
-static void ps_pad(FILE *file, const struct inst *inst)
+static void ps_pad_name(FILE *file, const struct inst *inst)
+{
+	struct coord a = inst->base;
+	struct coord b = inst->u.pad.other;
+	unit_type h, w;
+
+	h = a.y-b.y;
+	w = a.x-b.x;
+	if (h < 0)
+		h = -h;
+	if (w < 0)
+		w = -w;
+	fprintf(file, "0 setgray /Helvetica-Bold findfont dup\n");
+	fprintf(file, "   (%s) %d %d\n", inst->u.pad.name, w/2, h/2);
+	fprintf(file, "   4 copy 100 maxfont\n");
+	fprintf(file, "   maxfont scalefont setfont\n");
+	fprintf(file, "   %d %d moveto\n", (a.x+b.x)/2, (a.y+b.y)/2);
+	fprintf(file, "   (%s) center %d showoutlined newpath\n",
+	    inst->u.pad.name, FONT_OUTLINE);
+}
+
+
+static void ps_pad(FILE *file, const struct inst *inst, int show_name)
 {
 	struct coord a = inst->base;
 	struct coord b = inst->u.pad.other;
@@ -45,10 +68,13 @@ static void ps_pad(FILE *file, const struct inst *inst)
 	fprintf(file, "  %d %d lineto\n", b.x, b.y);
 	fprintf(file, "  %d %d lineto\n", a.x, b.y);
 	fprintf(file, "  closepath gsave hatchpath grestore stroke\n");
+
+	if (show_name)
+		ps_pad_name(file, inst);
 }
 
 
-static void ps_rpad(FILE *file, const struct inst *inst)
+static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
 {
 	struct coord a = inst->base;
 	struct coord b = inst->u.pad.other;
@@ -72,6 +98,9 @@ static void ps_rpad(FILE *file, const struct inst *inst)
 		fprintf(file, "  %d %d %d 90 270 arc\n", a.x+r, a.y+r, r);
 	}
 	fprintf(file, "  closepath gsave hatchpath grestore stroke\n");
+
+	if (show_name)
+		ps_pad_name(file, inst);
 }
 
 
@@ -159,9 +188,9 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 	switch (prio) {
 	case ip_pad:
 		if (inst->obj->u.pad.rounded)
-			ps_rpad(file, inst);
+			ps_rpad(file, inst, postscript_params.show_pad_names);
 		else
-			ps_pad(file, inst);
+			ps_pad(file, inst, postscript_params.show_pad_names);
 		break;
 	case ip_vec:
 		if (postscript_params.show_stuff)
@@ -202,9 +231,9 @@ int postscript(FILE *file)
 "    1 setlinecap %d setlinewidth\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    llx %d urx {\n"
-"	 lly %d ury {\n"
+"	lly %d ury {\n"
 "	    1 index exch moveto 0 0 rlineto stroke\n"
-"	 } for\n"
+"	} for\n"
 "    } for\n"
 "    grestore newpath } def\n", DOT_DIAM, DOT_DIST, DOT_DIST);
 
@@ -213,10 +242,45 @@ int postscript(FILE *file)
 "     gsave pathbbox clip newpath\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    lly ury sub %d urx llx sub {\n"	/* for -(ury-lly) to urx-llx */
-"      llx add dup lly moveto\n"
-"      ury lly sub add ury lineto stroke\n"
+"	llx add dup lly moveto\n"
+"	ury lly sub add ury lineto stroke\n"
 "    } for\n"
 "    grestore newpath } def\n", HATCH);
+
+	/*
+	 * Stack: font string width height factor -> factor
+	 */
+
+	fprintf(file,
+"/maxfont {\n"
+"    gsave 0 0 moveto\n"
+"    /f exch def /h exch def /w exch def\n"
+"    exch f scalefont setfont\n"
+"    false charpath pathbbox\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    w urx llx sub div h ury lly sub div 2 copy gt { exch } if pop\n"
+"    f mul grestore } def\n");
+
+	/*
+	 * Stack: string -> string
+	 */
+
+	fprintf(file,
+"/center {\n"
+"    gsave dup false charpath pathbbox\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    grestore\n"
+"    llx urx sub 2 div lly ury sub 2 div rmoveto } def\n");
+
+	/*
+	 * Stack: string outline_width -> -
+	 */
+
+	fprintf(file,
+"/showoutlined {\n"
+"    gsave 2 mul setlinewidth 1 setgray\n"
+"    dup false charpath stroke grestore\n"
+"    show } def\n");
 
 	FOR_INSTS_UP(prio, inst)
 		ps_background(file, prio, inst);
