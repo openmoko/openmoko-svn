@@ -273,7 +273,7 @@ int kicad(FILE *file)
 {
 	time_t now = time(NULL);
 
-	fprintf(file, "PCBNEW-LibModule-V1 %s\n", ctime(&now));
+	fprintf(file, "PCBNEW-LibModule-V1 %s", ctime(&now));
 
 	fprintf(file, "$INDEX\n");
 	fprintf(file, "%s\n", part_name);
