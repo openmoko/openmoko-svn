@@ -1,4 +1,4 @@
-.PHONY:		all gen generate gv sch update upload xpdf bom-by-ref
+.PHONY:		all gen generate gv sch brd update upload xpdf bom-by-ref
 
 all:
 		@echo "make what ? target: gen generate sch upload"
@@ -13,7 +13,9 @@ gen generate:
 		scripts/all-sheets --shrink --pdf gta02-core
 
 update:
-		svn update && cd components && ./mkloe
+		svn update && \
+		    cd components && ./mkloe && \
+		    cd ../modules && ./mkloe
 
 gv:
 		gv gta02-core-all.ps.gz
@@ -27,6 +29,9 @@ upload:		generate
 
 sch:
 		eeschema `pwd`/gta02-core.sch
+
+brd:
+		pcbnew `pwd`/gta02-core.brd
 
 bom-by-ref:
 		@sed '/^#Cmp ( order = Reference )/,/#End Cmp/p;d' \

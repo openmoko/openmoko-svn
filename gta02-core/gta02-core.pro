@@ -57,11 +57,7 @@ ShowRat=0
 ShowMRa=1
 [pcbnew/libraries]
 LibDir=
-LibName1=connect
-LibName2=discret
-LibName3=pin_array
-LibName4=divers
-LibName5=led
+LibName1=./modules/gta02-core
 [general]
 version=1
 [cvpcb]

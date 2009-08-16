@@ -1,0 +1,46 @@
+#!/bin/sh
+# Make a Library of Everything
+
+MODS="bga96-8x12-0mm8"
+
+LIB=gta02-core.mod
+
+
+for n in $MODS; do
+    if [ ! -r $n.fpd ]; then
+	echo $n.fpd: cannot read 1>&2
+	exit 1
+    fi
+done
+
+for n in $MODS; do
+    fped -k $n.fpd -
+done |
+perl -e '
+while (<>) {
+    if (/^\$EndINDEX/) {
+	$index = 0;
+	next;
+    }
+    if ($index) {
+	push(@index, $_);
+	next;
+    }
+    if (/^\$INDEX/) {
+	$index = 1;
+	next;
+    }
+    if (/^PCBNEW-LibModule/) {
+	$head = $_;
+	next;
+    }
+    if (/^\$EndLIBRARY/) {
+	$tail = $_;
+	next;
+    }
+    push(@body, $_);
+}
+print $head;
+print "\$INDEX\n", join("", @index), "\$EndINDEX\n";
+print join("", @body), $tail;
+' >$LIB
