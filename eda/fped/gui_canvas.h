@@ -29,6 +29,11 @@ void refresh_pos(void);
 
 void redraw(void);
 
+void zoom_in_center(void);
+void zoom_out_center(void);
+void zoom_to_frame(void);
+void zoom_to_extents(void);
+
 GtkWidget *make_canvas(void);
 void init_canvas(void);
 

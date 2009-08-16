@@ -279,6 +279,38 @@ static void zoom_out(struct coord pos)
 }
 
 
+void zoom_in_center(void)
+{
+	zoom_in(draw_ctx.center);
+}
+
+
+void zoom_out_center(void)
+{
+	zoom_out(draw_ctx.center);
+}
+
+
+void zoom_to_frame(void)
+{
+	tool_dehover();
+	center(&active_frame_bbox);
+	auto_scale(&active_frame_bbox);
+	redraw();
+	tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
+}
+
+
+void zoom_to_extents(void)
+{
+	tool_dehover();
+	center(NULL);
+	auto_scale(NULL);
+	redraw();
+	tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
+}
+
+
 static gboolean scroll_event(GtkWidget *widget, GdkEventScroll *event,
     gpointer data)
 {
@@ -321,18 +353,10 @@ static gboolean key_press_event(GtkWidget *widget, GdkEventKey *event,
 		zoom_out(pos);
 		break;
 	case '*':
-		tool_dehover();
-		center(NULL);
-		auto_scale(NULL);
-		redraw();
-		tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
+		zoom_to_extents();
 		break;
 	case '#':
-		tool_dehover();
-		center(&active_frame_bbox);
-		auto_scale(&active_frame_bbox);
-		redraw();
-		tool_hover(canvas_to_coord(curr_pos.x, curr_pos.y));
+		zoom_to_frame();
 		break;
 	case '.':
 		tool_dehover();

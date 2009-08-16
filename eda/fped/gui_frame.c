@@ -743,6 +743,34 @@ static gboolean table_value_select_event(GtkWidget *widget,
 }
 
 
+static gboolean table_scroll_event(GtkWidget *widget, GdkEventScroll *event,
+    gpointer data)
+{
+	struct table *table = data;
+	struct row *row, *last;
+
+	switch (event->direction) {
+	case GDK_SCROLL_UP:
+		last = NULL;
+		for (row = table->rows;
+		    row && (!last || row != table->active_row); row = row->next)
+			last = row;
+		table->active_row = last;
+		change_world();
+		break;
+	case GDK_SCROLL_DOWN:
+		table->active_row = table->active_row->next;
+		if (!table->active_row)
+			table->active_row = table->rows;
+		change_world();
+		break;
+	default:
+		/* ignore */;
+	}
+	return TRUE;
+}
+
+
 static void build_table(GtkWidget *vbox, struct frame *frame,
     struct table *table)
 {
@@ -786,6 +814,9 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		g_signal_connect(G_OBJECT(box_of_label(field)),
 		    "button_press_event",
 		    G_CALLBACK(table_var_select_event), var);
+		g_signal_connect(G_OBJECT(box_of_label(field)),
+		    "scroll_event",
+		    G_CALLBACK(table_scroll_event), table);
 		var->widget = field;
 		n_vars++;
 	}
@@ -805,6 +836,9 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			g_signal_connect(G_OBJECT(box_of_label(field)),
 			    "button_press_event",
 			    G_CALLBACK(table_value_select_event), value);
+			g_signal_connect(G_OBJECT(box_of_label(field)),
+			    "scroll_event",
+			    G_CALLBACK(table_scroll_event), table);
 			value->widget = field;
 			n_vars++;
 		}

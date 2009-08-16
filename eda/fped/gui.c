@@ -39,18 +39,37 @@ static GtkWidget *ev_stuff, *ev_meas;
 static GtkWidget *stuff_image[2], *meas_image[2];
 
 
+/* ----- view callbacks ---------------------------------------------------- */
+
+
+static void swap_var_code(void)
+{
+	extern int show_vars;
+
+	show_vars = !show_vars;
+	change_world();
+}
+
+
 /* ----- menu bar ---------------------------------------------------------- */
 
 
 static GtkItemFactoryEntry menu_entries[] = {
 	{ "/File",		NULL,	NULL,	 	0, "<Branch>" },
 	{ "/File/Save",		NULL,	save_fpd,	0, "<Item>" },
-        { "/File/sep0",		NULL,	NULL,		0, "<Separator>" },
+        { "/File/sep1",		NULL,	NULL,		0, "<Separator>" },
         { "/File/Write KiCad",	NULL,	write_kicad,	0, "<Item>" },
         { "/File/Write Postscript",
 				NULL,	write_ps,	0, "<Item>" },
         { "/File/sep2",		NULL,	NULL,		0, "<Separator>" },
         { "/File/Quit",		NULL,	gtk_main_quit,	0, "<Item>" },
+	{ "/View",		NULL,	NULL,		0, "<Branch>" },
+	{ "/View/Zoom in",	NULL,	zoom_in_center,	0, "<Item>" },
+	{ "/View/Zoom out",	NULL,	zoom_out_center,0, "<Item>" },
+	{ "/View/Zoom all",	NULL,	zoom_to_extents,0, "<Item>" },
+	{ "/View/Zoom frame",	NULL,	zoom_to_frame,	0, "<Item>" },
+	{ "/View/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/View/Swap var&code",NULL,	swap_var_code,	0, "<Item>" },
 };
 
 

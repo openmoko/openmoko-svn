@@ -102,6 +102,7 @@ static int is_a_next(lt_op_type lt, struct inst *inst)
 }
 
 
+#if 0
 static int is_min_of_next(lt_op_type lt,
     const struct inst *inst, const struct inst *ref)
 {
@@ -111,6 +112,7 @@ static int is_min_of_next(lt_op_type lt,
 	next = meas_find_next(lt, ref->vec->samples, min);
 	return coord_eq(next, ref->u.rect.end);
 }
+#endif
 
 
 /* ----- picker functions -------------------------------------------------- */

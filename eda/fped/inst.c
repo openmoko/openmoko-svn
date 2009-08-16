@@ -879,14 +879,18 @@ int inst_meas(struct obj *obj,
     struct coord from, struct coord to, unit_type offset)
 {
 	struct inst *inst;
+	struct coord a1, b1;
 
 	inst = add_inst(&meas_ops, ip_meas, from);
 	inst->obj = obj;
 	inst->u.meas.end = to;
 	inst->u.meas.offset = offset;
 	inst->active = 1; /* measurements are always active */
-	/* @@@ our bbox is actually a bit more complex than this */
+	/* @@@ we still need to consider the text size as well */
 	update_bbox(&inst->bbox, to);
+	project_meas(inst, &a1, &b1);
+	update_bbox(&inst->bbox, a1);
+	update_bbox(&inst->bbox, b1);
 	propagate_bbox(inst);
 	return 1;
 }
