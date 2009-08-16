@@ -25,6 +25,7 @@
 #include "unparse.h"
 #include "gui_util.h"
 #include "gui_style.h"
+#include "gui_canvas.h"
 #include "gui.h"
 #include "gui_status.h"
 
@@ -43,12 +44,7 @@ struct edit_ops {
 };
 
 
-static enum curr_unit {
-	unit_mm,
-	unit_mil,
-	unit_auto,
-	unit_n
-} curr_unit = unit_mm;
+enum curr_unit curr_unit = curr_unit_mm;
 
 
 static GtkWidget *open_edits = NULL;
@@ -116,15 +112,15 @@ void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
 	int mm;
 
 	switch (curr_unit) {
-	case unit_mm:
+	case curr_unit_mm:
 		n = units_to_mm(u);
 		mm = 1;
 		break;
-	case unit_mil:
+	case curr_unit_mil:
 		n = units_to_mil(u);
 		mm = 0;
 		break;
-	case unit_auto:
+	case curr_unit_auto:
 		n = units_to_best(u, &mm);
 		break;
 	default:
@@ -132,10 +128,10 @@ void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
 	}
 	if (mm) {
 		/* -NNN.NNN mm */
-		set("%s%8.3f mm", prefix, n);
+		set("%s" MM_FORMAT_FIXED " mm", prefix, n);
 	} else {
 		/* -NNNN.N mil */
-		set("%s%7.1f mil", prefix, n);
+		set("%s" MIL_FORMAT_FIXED " mil", prefix, n);
 	}
 }
 
@@ -745,15 +741,15 @@ static gboolean unit_button_press_event(GtkWidget *widget,
 {
 	switch (event->button) {
 	case 1:
-		curr_unit = (curr_unit+1) % unit_n;
+		curr_unit = (curr_unit+1) % curr_unit_n;
 		switch (curr_unit) {
-		case unit_mm:
+		case curr_unit_mm:
 			status_set_unit("mm");
 			break;
-		case unit_mil:
+		case curr_unit_mil:
 			status_set_unit("mil");
 			break;
-		case unit_auto:
+		case curr_unit_auto:
 			status_set_unit("auto");
 			break;
 		default:
@@ -761,6 +757,8 @@ static gboolean unit_button_press_event(GtkWidget *widget,
 		}
 		break;
 	}
+	refresh_pos();
+	change_world();
 	return TRUE;
 }
 
@@ -860,6 +858,7 @@ void make_status_area(GtkWidget *vbox)
 
 	/* unit selection */
 
+	label_in_box_bg(status_unit, COLOR_UNIT_SELECTOR);
 	status_set_unit("mm");
 	g_signal_connect(G_OBJECT(box_of_label(status_unit)),
 	    "button_press_event", G_CALLBACK(unit_button_press_event), NULL);

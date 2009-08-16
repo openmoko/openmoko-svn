@@ -21,6 +21,7 @@
 #include "gui.h"
 #include "gui_util.h"
 #include "gui_style.h"
+#include "gui_status.h"
 #include "gui_inst.h"
 
 
@@ -378,7 +379,7 @@ static struct coord offset_vec(struct coord a, struct coord b,
 }
 
 
-static void project_meas(struct inst *inst, struct coord *a1, struct coord *b1)
+void project_meas(const struct inst *inst, struct coord *a1, struct coord *b1)
 {
 	const struct meas *meas = &inst->obj->u.meas;
 	struct coord off;
@@ -417,6 +418,35 @@ unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
+char *format_len(const char *label, unit_type len, enum curr_unit unit)
+{
+	const char *u = "";
+	double n;
+	int mm;
+
+	switch (unit) {
+	case curr_unit_mm:
+		n = units_to_mm(len);
+		mm = 1;
+		break;
+	case curr_unit_mil:
+		n = units_to_mil(len);
+		mm = 0;
+		break;
+	case curr_unit_auto:
+		n = units_to_best(len, &mm);
+		u = mm ? "mm" : "mil";
+		break;
+	default:
+		abort();
+	}
+	return stralloc_printf(mm ?
+	    "%s" MM_FORMAT_SHORT "%s" : 
+	    "%s" MIL_FORMAT_SHORT "%s",
+	    label, n, u);
+}
+
+
 void gui_draw_meas(struct inst *self)
 {
 	const struct meas *meas = &self->obj->u.meas;
@@ -429,7 +459,7 @@ void gui_draw_meas(struct inst *self)
 	b0 = translate(self->u.meas.end);
 	project_meas(self, &a1, &b1);
 
-	len = units_to_mm(dist_point(a1, b1));
+	len = dist_point(a1, b1);
 	a1 = translate(a1);
 	b1 = translate(b1);
 	gc = gc_meas[get_mode(self)];
@@ -441,7 +471,7 @@ void gui_draw_meas(struct inst *self)
 
 	c = add_vec(a1, b1);
 	d = sub_vec(b1, a1);
-	s = stralloc_printf("%s%lgmm", meas->label ? meas->label : "", len);
+	s = format_len(meas->label ? meas->label : "", len, curr_unit);
 	render_text(DA, gc, c.x/2, c.y/2, -atan2(d.y, d.x)/M_PI*180, s,
 	    MEAS_FONT, 0.5, -MEAS_BASELINE_OFFSET,
 	    dist_point(a1, b1)-1.5*MEAS_ARROW_LEN, 0);

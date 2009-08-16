@@ -20,11 +20,13 @@ extern int lineno;
 extern void (*reporter)(const char *s);
 
 
-void yyerrorf(const char *fmt, ...);
+void yyerrorf(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
 void yyerror(const char *s);
 
 void report_to_stderr(const char *s);
 void report_parse_error(const char *s);
-void fail(const char *fmt, ...);
+void fail(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
 
 #endif /* !ERROR_H */

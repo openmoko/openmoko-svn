@@ -18,6 +18,7 @@
 
 #include "coord.h"
 #include "inst.h"
+#include "gui_status.h"
 
 
 struct coord translate(struct coord pos);
@@ -34,6 +35,9 @@ unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_frame_eye(struct inst *self, struct coord pos,
     unit_type scale);
+
+void project_meas(const struct inst *inst, struct coord *a1, struct coord *b1);
+char *format_len(const char *label, unit_type len, enum curr_unit unit);
 
 void gui_draw_vec(struct inst *self);
 void gui_draw_line(struct inst *self);

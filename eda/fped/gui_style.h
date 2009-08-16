@@ -55,6 +55,11 @@
 
 #define	MIN_FONT_SCALE		0.20	/* don't scale fonts below this */
 
+#define	MM_FORMAT_FIXED		"%8.3f"	/* -NNN.NNN */
+#define	MIL_FORMAT_FIXED	"%7.1f"	/* -NNNN.N */
+#define	MM_FORMAT_SHORT		"%.4g"
+#define	MIL_FORMAT_SHORT	"%.4g"
+
 
 /* ----- assorted colors --------------------------------------------------- */
 
@@ -89,6 +94,8 @@
 #define	COLOR_ITEM_NORMAL	"#dcdad5"
 #define	COLOR_ITEM_SELECTED	COLOR_FRAME_SELECTED
 #define	COLOR_ITEM_ERROR	"red"
+
+#define	COLOR_UNIT_SELECTOR	"white"
 
 
 /* ----- canvas drawing styles --------------------------------------------- */

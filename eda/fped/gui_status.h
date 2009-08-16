@@ -20,6 +20,17 @@
 #include "expr.h"
 
 
+enum curr_unit {
+	curr_unit_mm,
+	curr_unit_mil,
+	curr_unit_auto,
+	curr_unit_n
+};
+
+
+extern enum curr_unit curr_unit;
+
+
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
     void *ctx);
 void edit_unique_null(const char **s, int (*validate)(const char *s, void *ctx),
@@ -40,21 +51,36 @@ void edit_nothing(void);
 void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
     unit_type u);
 
-void status_set_type_x(const char *fmt, ...);
-void status_set_type_y(const char *fmt, ...);
-void status_set_type_entry(const char *fmt, ...);
-void status_set_name(const char *fmt, ...);
-void status_set_x(const char *fmt, ...);
-void status_set_y(const char *fmt, ...);
-void status_set_r(const char *fmt, ...);
-void status_set_angle(const char *fmt, ...);
-void status_set_sys_x(const char *fmt, ...);
-void status_set_sys_y(const char *fmt, ...);
-void status_set_user_x(const char *fmt, ...);
-void status_set_user_y(const char *fmt, ...);
-void status_set_zoom(const char *fmt, ...);
-void status_set_grid(const char *fmt, ...);
-void status_set_unit(const char *fmt, ...);
+void status_set_type_x(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_type_y(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_type_entry(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_name(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_x(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_y(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_r(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_angle(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_sys_x(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_sys_y(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_user_x(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_user_y(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_zoom(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_grid(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+void status_set_unit(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
 
 void status_set_xy(struct coord coord);
 

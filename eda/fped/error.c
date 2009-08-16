@@ -38,7 +38,7 @@ void yyerrorf(const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(buf, n+1, fmt, ap);
 	va_end(ap);
-	fail(buf);
+	fail("%s", buf);
 	free(buf);
 }
 

@@ -62,6 +62,12 @@ static void update_pos(struct coord pos)
 }
 
 
+void refresh_pos(void)
+{
+	update_pos(curr_pos);
+}
+
+
 /* ----- coordinate system ------------------------------------------------- */
 
 

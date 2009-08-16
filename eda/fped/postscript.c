@@ -16,14 +16,21 @@
 
 #include "coord.h"
 #include "inst.h"
+#include "gui_status.h"
+#include "gui_inst.h"
 #include "postscript.h"
 
 
-#define	DOT_DIST	mm_to_units(0.03)
-#define	DOT_DIAM	mm_to_units(0.01)
-#define	HATCH		mm_to_units(0.1)
-#define	HATCH_LINE	mm_to_units(0.02)
-#define	FONT_OUTLINE	mm_to_units(0.025)
+#define	PS_DOT_DIST		mm_to_units(0.03)
+#define	PS_DOT_DIAM		mm_to_units(0.01)
+#define	PS_HATCH		mm_to_units(0.1)
+#define	PS_HATCH_LINE		mm_to_units(0.015)
+#define	PS_FONT_OUTLINE		mm_to_units(0.025)
+#define	PS_MEAS_LINE		mm_to_units(0.015)
+#define	PS_MEAS_ARROW_LEN	mm_to_units(0.07)
+#define	PS_MEAS_ARROW_ANGLE	30
+#define	PS_MEAS_TEXT_HEIGHT	mm_to_units(0.2)
+#define	PS_MEAS_BASE_OFFSET	mm_to_units(0.05)
 
 
 struct postscript_params postscript_params = {
@@ -31,7 +38,7 @@ struct postscript_params postscript_params = {
 	.show_pad_names	= 1,
 	.show_stuff	= 0,
 	.label_vecs	= 0,
-	.show_meas	= 0,
+	.show_meas	= 1,
 };
 
 
@@ -53,7 +60,7 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 	fprintf(file, "   maxfont scalefont setfont\n");
 	fprintf(file, "   %d %d moveto\n", (a.x+b.x)/2, (a.y+b.y)/2);
 	fprintf(file, "   (%s) center %d showoutlined newpath\n",
-	    inst->u.pad.name, FONT_OUTLINE);
+	    inst->u.pad.name, PS_FONT_OUTLINE);
 }
 
 
@@ -62,12 +69,12 @@ static void ps_pad(FILE *file, const struct inst *inst, int show_name)
 	struct coord a = inst->base;
 	struct coord b = inst->u.pad.other;
 
-	fprintf(file, "0 setgray %d setlinewidth\n", HATCH_LINE);
+	fprintf(file, "0 setgray %d setlinewidth\n", PS_HATCH_LINE);
 	fprintf(file, "  %d %d moveto\n", a.x, a.y);
 	fprintf(file, "  %d %d lineto\n", b.x, a.y);
 	fprintf(file, "  %d %d lineto\n", b.x, b.y);
 	fprintf(file, "  %d %d lineto\n", a.x, b.y);
-	fprintf(file, "  closepath gsave hatchpath grestore stroke\n");
+	fprintf(file, "  closepath gsave crosspath grestore stroke\n");
 
 	if (show_name)
 		ps_pad_name(file, inst);
@@ -83,7 +90,7 @@ static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
 	sort_coord(&a, &b);
 	h = b.y-a.y;
 	w = b.x-a.x;
-	fprintf(file, "0 setgray %d setlinewidth\n", HATCH_LINE);
+	fprintf(file, "0 setgray %d setlinewidth\n", PS_HATCH_LINE);
 	if (h > w) {
 		r = w/2;
 		fprintf(file, "  %d %d moveto\n", b.x, b.y-r);
@@ -157,8 +164,65 @@ static void ps_vec(FILE *file, const struct inst *inst)
 }
 
 
-static void ps_meas(FILE *file, const struct inst *inst)
+static void ps_arrow(FILE *file, struct coord from, struct coord to, int len,
+    int angle)
 {
+	struct coord side, p;
+
+	if (from.x == to.x && from.y == to.y) {
+		side.x = 0;
+		side.y = -len;
+	} else {
+		side = normalize(sub_vec(to, from), len);
+	}
+
+	p = add_vec(to, rotate(side, 180-angle));
+	fprintf(file, "  %d %d moveto\n", p.x, p.y);
+	fprintf(file, "  %d %d lineto\n", to.x, to.y);
+
+	p = add_vec(to, rotate(side, 180+angle));
+	fprintf(file, "  %d %d moveto\n", p.x, p.y);
+	fprintf(file, "  %d %d lineto\n", to.x, to.y);
+	fprintf(file, "  stroke\n");
+}
+
+
+static void ps_meas(FILE *file, const struct inst *inst,
+    enum curr_unit unit)
+{
+	struct coord a0, b0, a1, b1;
+	struct coord c, d;
+	char *s;
+
+	a0 = inst->base;
+	b0 = inst->u.meas.end;
+	project_meas(inst, &a1, &b1);
+	fprintf(file, "1 setlinecap 0 setgray %d setlinewidth\n", PS_MEAS_LINE);
+	fprintf(file, "  %d %d moveto\n", a0.x, a0.y);
+	fprintf(file, "  %d %d lineto\n", a1.x, a1.y);
+	fprintf(file, "  %d %d lineto\n", b1.x, b1.y);
+	fprintf(file, "  %d %d lineto\n", b0.x, b0.y);
+	fprintf(file, "  stroke\n");
+
+	ps_arrow(file, a1, b1, PS_MEAS_ARROW_LEN, PS_MEAS_ARROW_ANGLE);
+	ps_arrow(file, b1, a1, PS_MEAS_ARROW_LEN, PS_MEAS_ARROW_ANGLE);
+
+	s = format_len(inst->obj->u.meas.label ? inst->obj->u.meas.label : "",
+	    dist_point(a1, b1), unit);
+
+	c = add_vec(a1, b1);
+	d = sub_vec(b1, a1);
+//s = stralloc_printf("%s%lgmm", meas->label ? meas->label : "", len);
+	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
+	fprintf(file, "    /Helvetica-Bold findfont dup\n");
+	fprintf(file, "    (%s) %d %d\n", s,
+	    (int) (dist_point(a1, b1)-1.5*PS_MEAS_ARROW_LEN),
+	    PS_MEAS_TEXT_HEIGHT);
+	fprintf(file, "    4 copy 100 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
+	fprintf(file, "    (%s) %d hcenter\n", s, PS_MEAS_BASE_OFFSET);
+	fprintf(file, "    show grestore\n");
+	free(s);
 }
 
 
@@ -202,7 +266,7 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 		break;
 	case ip_meas:
 		if (postscript_params.show_meas)
-			ps_meas(file, inst);
+			ps_meas(file, inst, curr_unit);
 		break;
 	default:
 		break;
@@ -235,7 +299,7 @@ int postscript(FILE *file)
 "	    1 index exch moveto 0 0 rlineto stroke\n"
 "	} for\n"
 "    } for\n"
-"    grestore newpath } def\n", DOT_DIAM, DOT_DIST, DOT_DIST);
+"    grestore newpath } def\n", PS_DOT_DIAM, PS_DOT_DIST, PS_DOT_DIST);
 
 	fprintf(file,
 "/hatchpath {\n"
@@ -245,7 +309,21 @@ int postscript(FILE *file)
 "	llx add dup lly moveto\n"
 "	ury lly sub add ury lineto stroke\n"
 "    } for\n"
-"    grestore newpath } def\n", HATCH);
+"    grestore newpath } def\n", PS_HATCH);
+
+	fprintf(file,
+"/backhatchpath {\n"
+"     gsave pathbbox clip newpath\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    0 %d ury lly sub urx llx sub add {\n"	/* for 0 to urx-llx_ury-lly */
+"	llx add dup lly moveto\n"
+"	ury lly sub sub ury lineto stroke\n"
+"    } for\n"
+"    grestore newpath } def\n", PS_HATCH);
+
+fprintf(file,
+"/crosspath {\n"
+"    gsave hatchpath grestore backhatchpath } def\n");
 
 	/*
 	 * Stack: font string width height factor -> factor
@@ -271,6 +349,19 @@ int postscript(FILE *file)
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    grestore\n"
 "    llx urx sub 2 div lly ury sub 2 div rmoveto } def\n");
+
+	/*
+	 * Stack: string dist -> string
+	 */
+
+	fprintf(file,
+"/hcenter {\n"
+"    /off exch def\n"
+"    gsave dup false charpath pathbbox\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    grestore\n"
+"    llx urx sub 2 div\n"
+"    currentpoint exch pop lly sub off add rmoveto } def\n");
 
 	/*
 	 * Stack: string outline_width -> -

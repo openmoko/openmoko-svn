@@ -25,6 +25,8 @@
 extern void (*highlight)(void);
 
 
+void refresh_pos(void);
+
 void redraw(void);
 
 GtkWidget *make_canvas(void);

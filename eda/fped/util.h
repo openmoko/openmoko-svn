@@ -48,7 +48,8 @@
 
 
 char *stralloc_vprintf(const char *fmt, va_list ap);
-char *stralloc_printf(const char *fmt, ...);
+char *stralloc_printf(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
 
 int is_id_char(char c, int first);
 int is_id(const char *s);

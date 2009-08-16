@@ -28,7 +28,7 @@ CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
 LIBS_GTK = `pkg-config --libs gtk+-2.0`
 
 CFLAGS_WARN=-Wall -Wshadow -Wmissing-prototypes \
-            -Wmissing-declarations
+            -Wmissing-declarations -Wno-format-zero-length
 CFLAGS=-g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' $(CFLAGS_WARN)
 SLOPPY=-Wno-unused -Wno-implicit-function-declaration -Wno-missing-prototypes \
        -Wno-missing-declarations
