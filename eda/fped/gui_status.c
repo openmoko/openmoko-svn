@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -338,6 +339,78 @@ void edit_unique_null(const char **s,
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
 	setup_edit(status_entry, &edit_ops_null_unique, &unique_ctx);
+}
+
+
+/* ----- unique field (variable) optionally followed by values ------------- */
+
+
+struct edit_unique_with_values_ctx {
+	const char **s;
+	int (*validate)(const char *s, void *ctx);
+	void *ctx;
+	void (*set_values)(void *user, const struct value *values,
+	    int n_values);
+	void *user;
+	int max_values;
+};
+
+
+static enum edit_status unique_with_values_status(const char *s, void *ctx)
+{
+	const struct edit_unique_with_values_ctx *unique_ctx = ctx;
+	const char *id;
+	int n;
+
+	if (!strcmp(s, *unique_ctx->s))
+		return es_unchanged;
+	status_begin_reporting();
+	n = parse_var(s, &id, NULL, unique_ctx->max_values);
+	if (n < 0)
+		return es_bad;
+	return !unique_ctx->validate ||
+	    unique_ctx->validate(id, unique_ctx->ctx) ? es_good : es_bad;
+}
+
+
+static void unique_with_values_store(const char *s, void *ctx)
+{
+	const struct edit_unique_with_values_ctx *unique_ctx = ctx;
+	struct value *values;
+	int n;
+
+	status_begin_reporting();
+	n = parse_var(s, unique_ctx->s, &values, unique_ctx->max_values);
+	if (!n)
+		return;
+	assert(n >= 0);
+	assert(unique_ctx->max_values == -1 || n <= unique_ctx->max_values);
+	unique_ctx->set_values(unique_ctx->user, values, n);
+	free_values(values, 1);
+}
+
+
+static struct edit_ops edit_ops_unique_with_values = {
+	.retrieve	= unique_retrieve,
+	.status		= unique_with_values_status,
+	.store		= unique_with_values_store,
+};
+
+
+void edit_unique_with_values(const char **s,
+    int (*validate)(const char *s, void *ctx), void *ctx,
+    void (*set_values)(void *user, const struct value *values, int n_values),
+    void *user, int max_values)
+{
+	static struct edit_unique_with_values_ctx unique_ctx;
+
+	unique_ctx.s = s;
+	unique_ctx.validate = validate;
+	unique_ctx.ctx = ctx;
+	unique_ctx.set_values = set_values;
+	unique_ctx.user = user;
+	unique_ctx.max_values = max_values;
+	setup_edit(status_entry, &edit_ops_unique_with_values, &unique_ctx);
 }
 
 

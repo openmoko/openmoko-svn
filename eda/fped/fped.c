@@ -22,10 +22,8 @@
 #include "inst.h"
 #include "file.h"
 #include "gui.h"
+#include "fpd.h"
 
-
-extern void scan_empty(void);
-extern int yyparse(void);
 
 char *save_file_name = NULL;
 

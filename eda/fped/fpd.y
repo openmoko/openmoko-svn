@@ -19,9 +19,13 @@
 #include "expr.h"
 #include "obj.h"
 #include "meas.h"
+#include "fpd.h"
 
 
-extern struct expr *expr_result;
+struct expr *expr_result;
+const char *var_id;
+struct value *var_value_list;
+
 
 static struct frame *curr_frame;
 static struct table *curr_table;
@@ -149,7 +153,7 @@ static struct obj *new_obj(enum obj_type type)
 };
 
 
-%token		START_FPD START_EXPR
+%token		START_FPD START_EXPR START_VAR
 %token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY
@@ -162,7 +166,7 @@ static struct obj *new_obj(enum obj_type type)
 %type	<table>	table
 %type	<var>	vars var
 %type	<row>	rows
-%type	<value>	row value
+%type	<value>	row value opt_value_list
 %type	<vec>	vec base qbase
 %type	<obj>	obj meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
@@ -178,7 +182,6 @@ all:
 			root_frame = zalloc_type(struct frame);
 			set_frame(root_frame);
 		}
-
 	    fpd
 		{
 			root_frame->prev = last_frame;
@@ -190,6 +193,11 @@ all:
 	| START_EXPR expr
 		{
 			expr_result = $2;
+		}
+	| START_VAR ID opt_value_list
+		{
+			var_id = $2;
+			var_value_list = $3;
 		}
 	;
 
@@ -648,6 +656,18 @@ primary_expr:
 			$$->u.str = $1;
 		}
 	| '(' expr ')'
+		{
+			$$ = $2;
+		}
+	;
+
+/* special sub-grammar */
+
+opt_value_list:
+		{
+			$$ = NULL;
+		}
+	| '=' row
 		{
 			$$ = $2;
 		}

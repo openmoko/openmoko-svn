@@ -22,6 +22,7 @@
 
 struct frame;
 struct expr;
+struct value;
 
 enum num_type {
 	nt_none,
@@ -136,5 +137,9 @@ char *expand(const char *name, const struct frame *frame);
 struct expr *new_num(struct num num);
 struct expr *parse_expr(const char *s);
 void free_expr(struct expr *expr);
+
+int parse_var(const char *s, const char **id, struct value **values,
+    int max_values);
+void free_values(struct value *values, int keep_expr);
 
 #endif /* !EXPR_H */

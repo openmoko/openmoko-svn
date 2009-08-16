@@ -18,6 +18,7 @@
 #include "error.h"
 #include "obj.h"
 #include "unparse.h"
+#include "fpd.h"
 #include "expr.h"
 
 
@@ -449,13 +450,6 @@ struct expr *new_num(struct num num)
 /* ----- expression-only parser -------------------------------------------- */
 
 
-void scan_expr(const char *s);
-int yyparse(void);
-
-
-struct expr *expr_result;
-
-
 struct expr *parse_expr(const char *s)
 {
 	scan_expr(s);
@@ -486,4 +480,44 @@ void free_expr(struct expr *expr)
 {
 	vacate_op(expr);
 	free(expr);
+}
+
+
+/* ----- var = value, ... shortcut ----------------------------------------- */
+
+
+int parse_var(const char *s, const char **id, struct value **values,
+    int max_values)
+{
+	const struct value *value;
+	int n;
+
+	scan_var(s);
+	if (yyparse())
+		return -1;
+	if (id)
+		*id = var_id;
+	if (values)
+		*values = var_value_list;
+	n = 0;
+	for (value = var_value_list; value; value = value->next)
+		n++;
+	if (max_values == -1 || n <= max_values)
+		return n;
+	free_values(var_value_list, 0);
+	return -1;
+}
+
+
+void free_values(struct value *values, int keep_expr)
+{
+	struct value *next;
+
+	while (values) {
+		next = values->next;
+		if (!keep_expr)
+			free_expr(values->expr);
+		free(values);
+		values = next;
+	}
 }

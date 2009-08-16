@@ -451,7 +451,8 @@ static void add_sep(GtkWidget *box, int size)
 /* ----- variable name editor ---------------------------------------------- */
 
 
-static int find_var_in_frame(const struct frame *frame, const char *name)
+static int find_var_in_frame(const struct frame *frame, const char *name,
+    const struct var *self)
 {
 	const struct table *table;
 	const struct loop *loop;
@@ -459,10 +460,10 @@ static int find_var_in_frame(const struct frame *frame, const char *name)
 
 	for (table = frame->tables; table; table = table->next)
 		for (var = table->vars; var; var = var->next)
-			if (!strcmp(var->name, name))
+			if (var != self && !strcmp(var->name, name))
 				return 1;
 	for (loop = frame->loops; loop; loop = loop->next)
-		if (!strcmp(loop->var.name, name))
+		if (&loop->var != self && !strcmp(loop->var.name, name))
 			return 1;
 	return 0;
 }
@@ -474,7 +475,7 @@ static int validate_var_name(const char *s, void *ctx)
 
 	if (!is_id(s))
 		return 0;
-	return !find_var_in_frame(var->frame, s);
+	return !find_var_in_frame(var->frame, s, var);
 }
 
 
@@ -486,14 +487,17 @@ static void unselect_var(void *data)
 }
 
 
-static void edit_var(struct var *var)
+static void edit_var(struct var *var,
+    void (*set_values)(void *user, const struct value *values, int n_values),
+    void *user, int max_values)
 {
 	inst_select_outside(var, unselect_var);
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry("name =");
 	status_set_name("%s", var->name);
 	edit_nothing();
-	edit_unique(&var->name, validate_var_name, var);
+	edit_unique_with_values(&var->name, validate_var_name, var,
+	    set_values, user, max_values);
 }
 
 
@@ -549,6 +553,29 @@ static GtkWidget *add_activator(GtkWidget *hbox, int active,
 /* ----- assignments ------------------------------------------------------- */
 
 
+static void set_col_values(void *user, const struct value *values,
+    int n_values)
+{
+	struct var *var = user;
+	struct table *table = var->table;
+	struct value *value;
+	const struct var *walk;
+	struct row **row;
+
+	row = &table->rows;
+	while (values) {
+		if (!*row)
+			add_row_here(table, row);
+		value = (*row)->values;
+		for (walk = table->vars; walk != var; walk = walk->next)
+			value = value->next;
+		value->expr = values->expr;
+		values = values->next;
+		row = &(*row)->next;
+	}
+}
+
+
 static gboolean assignment_var_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
@@ -556,8 +583,7 @@ static gboolean assignment_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
-		edit_nothing();
-		edit_var(var);
+		edit_var(var, set_col_values, var, -1);
 		break;
 	case 3:
 		pop_up_single_var(var, event);
@@ -642,8 +668,7 @@ static gboolean table_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
-		edit_nothing();
-		edit_var(var);
+		edit_var(var, set_col_values, var, -1);
 		break;
 	case 3:
 		pop_up_table_var(var, event);
@@ -750,6 +775,30 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 /* ----- loops ------------------------------------------------------------- */
 
 
+static void set_loop_values(void *user, const struct value *values,
+    int n_values)
+{
+	struct loop *loop = user;
+
+	switch (n_values) {
+	case 2:
+		if (loop->to.expr)
+			free_expr(loop->to.expr);
+		loop->to.expr = values->next->expr;
+		/* fall through */
+	case 1:
+		if (loop->from.expr)
+			free_expr(loop->from.expr);
+		loop->from.expr = values->expr;
+		break;
+	case 0:
+		break;
+	default:
+		abort();
+	}
+}
+
+
 static gboolean loop_var_select_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
@@ -757,8 +806,7 @@ static gboolean loop_var_select_event(GtkWidget *widget,
 
 	switch (event->button) {
 	case 1:
-		edit_nothing();
-		edit_var(&loop->var);
+		edit_var(&loop->var, set_loop_values, loop, 2);
 		break;
 	case 3:
 		pop_up_loop_var(loop, event);

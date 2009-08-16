@@ -19,6 +19,7 @@
 #include "expr.h"
 #include "error.h"
 #include "meas.h"
+#include "fpd.h"
 
 #include "y.tab.h"
 
@@ -38,6 +39,13 @@ void scan_empty(void)
 void scan_expr(const char *s)
 {
 	start_token = START_EXPR;
+	yy_scan_string(s);
+}
+
+
+void scan_var(const char *s)
+{
+	start_token = START_VAR;
 	yy_scan_string(s);
 }
 
