@@ -28,4 +28,4 @@ Number	Status	Description
 0026	Discuss	Improve bus termination at sd-card
 0027	Edit	Renamed some nets for clarity
 0028	Cancel	Remove USB "charge path" power switch U4905
-0029	Edit	Move 0R resistors next to PMU after caps
+0029	Discuss	Move 0R resistors next to PMU after caps

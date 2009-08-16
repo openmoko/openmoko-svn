@@ -13,3 +13,4 @@ of the regulation (in both cases).
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Review: Joerg Reisenweber <joerg@openmoko.org>, SVN 5470
