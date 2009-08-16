@@ -1,0 +1,55 @@
+/* MACHINE-GENERATED ! */
+
+frame pad_r {
+	ll: vec @(0mm, -b/2)
+	x: vec .(a, 0mm)
+	y: vec ll(0mm, b)
+	pad "2" . x
+}
+
+frame pad_l {
+	ll: vec @(-a, -b/2)
+	w: vec .(a, 0mm)
+	h: vec ll(0mm, b)
+	pad "1" . w
+}
+
+frame pads {
+	left: vec @(-e/2, 0mm)
+	frame pad_l .
+	right: vec @(e/2, 0mm)
+	frame pad_r .
+}
+
+frame outline {
+	set L = e+2*a+5mil
+
+	set W = b+5mil
+
+	ll: vec @(-L/2, -W/2)
+	__1: vec @(L/2, W/2)
+	rect ll . silk
+}
+
+part "0402"
+table
+    { name, L, W, a, b, e }
+    { "0201", 0.6mm, 0.3mm, 0.28mm, 0.43mm, 0.23mm }
+    { "0402", 1mm, 0.5mm, 0.4mm, 0.6mm, 0.5mm }
+    { "0603", 1.55mm, 0.85mm, 0.5mm, 0.9mm, 1mm }
+    { "0805", 2mm, 1.25mm, 0.7mm, 1.3mm, 1.2mm }
+    { "1206", 3.2mm, 1.6mm, 0.9mm, 1.7mm, 2mm }
+
+set silk = 2mil
+
+loop max_0402 = L/1mm, 1
+
+loop min_0402 = 1, L/1mm
+
+frame pads @
+frame outline @
+measx pad_l.w >> pad_r.ll -0.3mm
+measx pad_l.ll -> pad_l.w -0.3mm
+measy pad_l.ll >> pad_l.h 0.3mm
+measx outline.ll >> outline.__1 1mm
+measy outline.__1 >> outline.ll 0.3mm
