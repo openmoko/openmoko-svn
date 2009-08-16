@@ -11,3 +11,5 @@ It should therefore be safe to remove R1705 as well.
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Commit: SVN 5467
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5471

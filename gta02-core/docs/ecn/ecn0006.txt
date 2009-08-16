@@ -12,3 +12,5 @@ remove the R1701 footprint.
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Commit: SVN 5467
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5471
