@@ -5,10 +5,11 @@ Each power supply leaving the PMU connects through a 0R resistor
 and then to a group of buffer (> 1 uF) and filter capacitors
 (typically < 1 uF).
 
-Joerg suggested that at least the filter capacitors - and possibly
-also the buffer capacitors - should be moved to the PMU side of
-the 0R resistor, since they're supposed to filter noise originating
-from the PMU.
+Joerg suggested that at least the filter capacitors - and if possible
+also the buffer capacitors - should be moved to the PMU side of the
+0R resistor, since they're supposed to filter noise originating
+from the PMU (in the case of DC-DC converters), and ensure stability
+of the regulation (in both cases).
 
 
 Author: Werner Almesberger <werner@openmoko.org>
