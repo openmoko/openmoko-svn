@@ -22,10 +22,36 @@ Number	Status	Description
 0020	Discuss	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
 0022	Discuss	Apply bass fix
-0023	Edit	Fix #1024 (C1009)
+0023	Cancel	Fix #1024 (C1009)
 0024	Edit	Improve GPS ground and PCB layout
 0025	Done	Connect CLKOUT1 to UEXTCLK (U1501)
 0026	Discuss	Improve bus termination at sd-card
 0027	Edit	Renamed some nets for clarity
 0028	Cancel	Remove USB "charge path" power switch U4905
 0029	Discuss	Move 0R resistors next to PMU after caps
+0030	Edit	Replace Calypso with Telit GE865
+0031	Edit	Use codec to detect jack insertion and HOLD button
+
+
+Open ECNs
+---------
+
+0001	GLAMO, CPU, LCM
+0002	MEMORY, CPU
+0008	GPS
+0009	CPU
+0010	AUDIO
+0011	USB
+0015	AUDIO
+0016	IO
+0017	BT
+0018	AUDIO
+0019	AUDIO
+0020	AUDIO
+0022	AUDIO
+0024	GPS
+0026	SD-SIM
+0027	General
+0029	PMU
+0030	MODEM
+0031	AUDIO

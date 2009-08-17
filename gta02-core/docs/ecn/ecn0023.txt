@@ -5,3 +5,9 @@ To do:
 - change C1009 from Y5V to X5R
 - increase C1009 from 10 uF to 22 uF
 - improve routing
+
+With the removal of the Calypso (ECN0030), fixing its bugs isn't
+necessary anymore.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

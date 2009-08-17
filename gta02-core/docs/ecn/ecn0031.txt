@@ -1,0 +1,17 @@
+Use codec to detect jack insertion and HOLD button
+
+
+The Wolfson WM8753L has the ability to detect jack insertion and pressing
+the HOLD button (MIC bias short-circuit).
+
+Rough outline:
+- HOLD seems to be internal, ok
+- route JACK_INSERT to the codec (GPIO4), not the CPU
+- route codec IRQ (GP1) to CPU
+
+Q: how do we distinguish multiple interrupt sources ? Mask and see if
+the interrupt persists ? Or would we have to upgrade to a 3-wire interface
+so that we could read data back ? (Seems too intrusive.)
+
+
+Author: Werner Almesberger <werner@openmoko.org>
