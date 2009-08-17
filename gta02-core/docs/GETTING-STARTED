@@ -53,7 +53,7 @@ Setting things up
 
   svn checkout http://svn.openmoko.org/trunk/eda/fped
   cd fped
-  make del all install
+  make dep all install
 
   cd ..
 
