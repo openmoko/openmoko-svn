@@ -49,13 +49,28 @@ Setting things up
 
     cd ..
 
-- We draw footprints with the footprint editor fped. Install it:
+- We draw footprints with the footprint editor fped.
 
-  svn checkout http://svn.openmoko.org/trunk/eda/fped
-  cd fped
-  make dep all install
+  - Prerequisites:
 
-  cd ..
+    - flex
+    - bison
+    - fig2dev
+    - ImageMagick
+    - Gtk+ 2.x development package (libgtk2.0-dev or similar)
+
+  - Download it:
+
+    svn checkout http://svn.openmoko.org/trunk/eda/fped
+
+  - Build and install it:
+
+    cd fped
+    make dep all install
+
+  - we're done here, go back
+
+    cd ..
 
 - Build your local copy of the component (schematics symbol) library:
 
@@ -148,7 +163,7 @@ when pulling updates.
 (Re)viewing and editing ECNs
 ----------------------------
 
-The ECNs are keps in docs/ecn/. Their structure is described in
+The ECNs are kept in docs/ecn/. Their structure is described in
 docs/ecn/README. Their status is tracked in docs/ecn/STATUS.
 
 Wherever possible and remotely useful, ECNs should be referenced in
