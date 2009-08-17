@@ -22,16 +22,16 @@ frame pads {
 }
 
 frame outline {
-	set L = e+2*a+5mil
+	set L = e+2*a+2*clear+silk
 
-	set W = b+5mil
+	set W = b+2*clear+silk
 
 	ll: vec @(-L/2, -W/2)
 	__1: vec @(L/2, W/2)
 	rect ll . silk
 }
 
-part "0402"
+package "$name"
 table
     { name, L, W, a, b, e }
     { "0201", 0.6mm, 0.3mm, 0.28mm, 0.43mm, 0.23mm }
@@ -42,9 +42,7 @@ table
 
 set silk = 2mil
 
-loop max_0402 = L/1mm, 1
-
-loop min_0402 = 1, L/1mm
+set clear = 4mil
 
 frame pads @
 frame outline @
