@@ -28,7 +28,7 @@
 #define	MAX_ITERATIONS	1000	/* abort "loop"s at this limit */
 
 
-char *part_name = NULL;
+char *pkg_name = NULL;
 struct frame *frames = NULL;
 struct frame *root_frame = NULL;
 struct frame *active_frame = NULL;
@@ -163,8 +163,14 @@ error:
 
 static int generate_items(struct frame *frame, struct coord base, int active)
 {
+	char *s;
 	int ok;
 
+	if (!frame->name) {
+		s = expand(pkg_name, frame);
+		inst_select_pkg(s);
+		free(s);
+	}
 	inst_begin_active(active && frame == active_frame);
 	ok = generate_vecs(frame, base) && generate_objs(frame, base, active);
 	inst_end_active();
@@ -270,8 +276,8 @@ int instantiate(void)
 	struct coord zero = { 0, 0 };
 	int ok;
 
-	inst_start();
 	meas_start();
+	inst_start();
 	instantiation_error = NULL;
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
 	if (ok)

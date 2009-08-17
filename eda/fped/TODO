@@ -25,12 +25,19 @@ Style:
   excessively large.
 - pango_layout_get_size doesn't seem to consider rotation, so we currently
   don't properly size rotated text.
+- when changing the part, we should automatically switch to a configuration
+  that generates any of its (non-global) elements
 
 Bugs:
 - default silk width has no business being hard-coded in obj.c
 - undelete only works if not much has changed since the deletion
 - focus should return to canvas if nobody else wants it
 - whenever we call parse_* for input parsing, we may leak lots of expressions
+- can't edit measurement labels through the GUI
+- r of rpads is misleading, particularly if we have a circle
+- we can't enter an arc through the GUI / can't convert a circle to an arc
+- using variables in a measurement offset causes a crash because evaluation
+  takes place after all table entries have been visited
 
 Code cleanup:
 - merge edit_unique with edit_name
@@ -68,7 +75,4 @@ Future directions:
 - advanced: non-standard solder mask
 - advanced: solder paste exceptions (subtractive, additive)
 - advanced: silk line width
-- future: when encountering an error after a change, we could try to find the
-  same element in the old instance, and select it
 - future: consider editing non-canvas items in place
-- near future: treat part name as pattern

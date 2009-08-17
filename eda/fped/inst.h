@@ -109,10 +109,32 @@ struct inst {
 };
 
 
+struct pkg {
+	const char *name;	/* NULL if global package */
+	struct inst *insts[ip_n];
+	struct inst **next_inst[ip_n];
+	struct sample **samples;
+	struct pkg *next;
+};
+
+
 extern struct inst *selected_inst;
-extern struct inst *insts[ip_n];
+extern struct pkg *pkgs;	/* list of packages */
+extern struct pkg *active_pkg;	/* package selected in GUI */
+extern struct pkg *curr_pkg;	/* package currently being instantiated */
 extern struct bbox active_frame_bbox;
 
+/*
+ * frame being instantiated - we need to export this one for meas.c, so that
+ * measurement scan update the root frame's bounding box.
+ */
+extern	struct inst *curr_frame;
+
+/*
+ * @@@ Note that we over-generalize a bit here: the only item that ever ends up
+ * in the global package is currently the root frame. However, we may later
+ * allow other items shared by all packages be there as well.
+ */
 
 #define FOR_INST_PRIOS_UP(prio)					\
 	for (prio = 0; prio != ip_n; prio++)
@@ -120,13 +142,11 @@ extern struct bbox active_frame_bbox;
 #define FOR_INST_PRIOS_DOWN(prio)				\
 	for (prio = ip_n-1; prio != (enum inst_prio) -1; prio--)
 
-#define	FOR_INSTS_UP(prio, inst)				\
-	FOR_INST_PRIOS_UP(prio)					\
-		for (inst = insts[prio]; inst; inst = inst->next)
+#define	FOR_GLOBAL_INSTS(prio, inst)			\
+	for (inst = pkgs->insts[prio]; inst; inst = inst->next)
 
-#define	FOR_INSTS_DOWN(prio, inst)				\
-	FOR_INST_PRIOS_DOWN(prio)				\
-		for (inst = insts[prio]; inst; inst = inst->next)
+#define	FOR_PKG_INSTS(prio, inst)				\
+	for (inst = active_pkg->insts[prio]; inst; inst = inst->next)
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));
@@ -158,6 +178,8 @@ void inst_begin_frame(struct obj *obj, const struct frame *frame,
     struct coord base, int active, int is_active_frame);
 void inst_end_frame(const struct frame *frame);
 
+void inst_select_pkg(const char *name);
+
 struct bbox inst_get_bbox(void);
 
 void inst_start(void);
@@ -176,6 +198,5 @@ int inst_do_move_to(struct inst *inst, struct inst *to, int i);
 struct pix_buf *inst_hover(struct inst *inst);
 void inst_begin_drag_move(struct inst *inst, int i);
 void inst_delete(struct inst *inst);
-void inst_debug(void);
 
 #endif /* !INST_H */

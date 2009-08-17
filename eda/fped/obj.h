@@ -100,8 +100,8 @@ struct vec {
 	/* used when editing */
 	struct frame *frame;
 
-	/* samples for measurements */
-	struct sample *samples;
+	/* index into table of samples */
+	int n;
 
 	/* for the GUI */
 	GtkWidget *list_widget; /* NULL if items aren't shown */
@@ -180,7 +180,7 @@ struct obj {
 };
 
 
-extern char *part_name;
+extern char *pkg_name;
 extern struct frame *frames;
 extern struct frame *root_frame;
 extern struct frame *active_frame;

@@ -154,7 +154,7 @@ static struct obj *new_obj(enum obj_type type)
 
 
 %token		START_FPD START_EXPR START_VAR START_VALUES
-%token		TOK_SET TOK_LOOP TOK_PART TOK_FRAME TOK_TABLE TOK_VEC
+%token		TOK_SET TOK_LOOP TOK_PACKAGE TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
@@ -210,20 +210,20 @@ fpd:
 	;
 
 part_name:
-	TOK_PART STRING
+	TOK_PACKAGE STRING
 		{
 			const char *p;
 
 			if (!*$2) {
-				yyerrorf("invalid part name");
+				yyerrorf("invalid package name");
 				YYABORT;
 			}
 			for (p = $2; *p; *p++)
 				if (*p < 32 || *p > 126) {
-					yyerrorf("invalid part name");
+					yyerrorf("invalid package name");
 					YYABORT;
 				}
-			part_name = $2;
+			pkg_name = $2;
 		}
 	;
 
@@ -394,7 +394,6 @@ vec:
 			$$->y = $6;
 			$$->frame = curr_frame;
 			$$->next = NULL;
-			$$->samples = NULL;
 			last_vec = $$;
 			*next_vec = $$;
 			next_vec = &$$->next;

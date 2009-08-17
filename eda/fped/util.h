@@ -27,6 +27,11 @@
 
 #define alloc_type(t) ((t *) alloc_size(sizeof(t)))
 
+#define	zalloc_size(s)					\
+    ({	void *zalloc_size_tmp = alloc_size(s);		\
+	memset(zalloc_size_tmp, 0, (s));		\
+	zalloc_size_tmp; })
+
 #define zalloc_type(t)					\
     ({	t *zalloc_type_tmp = alloc_type(t);		\
 	memset(zalloc_type_tmp, 0, sizeof(t));		\

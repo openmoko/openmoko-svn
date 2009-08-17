@@ -21,37 +21,43 @@
 #include "meas.h"
 
 
+int n_samples;
+
+
 struct num eval_unit(const struct expr *expr, const struct frame *frame);
 
 
-static void reset_samples(struct sample **samples)
+void reset_samples(struct sample **samples)
 {
 	struct sample *next;
+	int i;
 
-	while (*samples) {
-		next = (*samples)->next;
-		free(*samples);
-		*samples = next;
-	}
+	for (i = 0; i != n_samples; i++)
+		while (samples[i]) {
+			next = samples[i]->next;
+			free(samples[i]);
+			samples[i] = next;
+		}
 }
 
 
 void meas_start(void)
 {
-	struct frame *frame;
+	const struct frame *frame;
 	struct vec *vec;
 
+	n_samples = 0;
 	for (frame = frames; frame; frame = frame->next)
 		for (vec = frame->vecs; vec; vec = vec->next)
-			reset_samples(&vec->samples);
+			vec->n = n_samples++;
 }
 
 
-void meas_post(struct vec *vec, struct coord pos)
+void meas_post(const struct vec *vec, struct coord pos)
 {
 	struct sample **walk, *new;
 
-	for (walk = &vec->samples; *walk; walk = &(*walk)->next) {
+	for (walk = &curr_pkg->samples[vec->n]; *walk; walk = &(*walk)->next) {
 		if (pos.y < (*walk)->pos.y)
 			break;
 		if (pos.y > (*walk)->pos.y)
@@ -219,7 +225,7 @@ struct coord meas_find_max(lt_op_type lt, const struct sample *s)
 /* ----- instantiation ----------------------------------------------------- */
 
 
-int instantiate_meas(void)
+static int instantiate_meas_pkg(void)
 {
 	struct obj *obj;
 	const struct meas *meas;
@@ -231,15 +237,18 @@ int instantiate_meas(void)
 		if (obj->type != ot_meas)
 			continue;
 		meas = &obj->u.meas;
-		if (!obj->base->samples || !meas->high->samples)
+		if (!curr_pkg->samples[obj->base->n] ||
+		    !curr_pkg->samples[meas->high->n])
 			continue;
 
 		lt = lt_op[meas->type];
-		a0 = meas_find_min(lt, obj->base->samples);
+		a0 = meas_find_min(lt, curr_pkg->samples[obj->base->n]);
 		if (is_next[meas->type])
-			b0 = meas_find_next(lt, meas->high->samples, a0);
+			b0 = meas_find_next(lt,
+			    curr_pkg->samples[meas->high->n], a0);
 		else
-			b0 = meas_find_max(lt, meas->high->samples);
+			b0 = meas_find_max(lt,
+			    curr_pkg->samples[meas->high->n]);
 
 		if (!meas->offset)
 			offset.n = 0;
@@ -254,5 +263,20 @@ int instantiate_meas(void)
 		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0,
 		    offset.n);
 	}
+	return 1;
+}
+
+
+int instantiate_meas(void)
+{
+	struct pkg *pkg;
+
+	curr_frame = pkgs->insts[ip_frame];
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name) {
+			inst_select_pkg(pkg->name);
+			if (!instantiate_meas_pkg())
+				return 0;
+		}
 	return 1;
 }

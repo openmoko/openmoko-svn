@@ -89,7 +89,9 @@ SP	[\t ]*
 <INITIAL>"loop"			{ BEGIN(NOKEYWORD);
 				  return TOK_LOOP; }
 <INITIAL>"part"			{ BEGIN(NOKEYWORD);
-				  return TOK_PART; }
+				  return TOK_PACKAGE; }
+<INITIAL>"package"		{ BEGIN(NOKEYWORD);
+				  return TOK_PACKAGE; }
 <INITIAL>"frame"		{ BEGIN(NOKEYWORD);
 				  is_table = 0;
 				  return TOK_FRAME; }

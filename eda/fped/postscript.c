@@ -373,10 +373,18 @@ fprintf(file,
 "    dup false charpath stroke grestore\n"
 "    show } def\n");
 
-	FOR_INSTS_UP(prio, inst)
-		ps_background(file, prio, inst);
-	FOR_INSTS_UP(prio, inst)
-		ps_foreground(file, prio, inst);
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_GLOBAL_INSTS(prio, inst)
+			ps_background(file, prio, inst);
+		FOR_PKG_INSTS(prio, inst)
+			ps_background(file, prio, inst);
+	}
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_GLOBAL_INSTS(prio, inst)
+			ps_foreground(file, prio, inst);
+		FOR_PKG_INSTS(prio, inst)
+			ps_foreground(file, prio, inst);
+	}
 
 	fprintf(file, "showpage\n");
 	fprintf(file, "%%%%EOF\n");

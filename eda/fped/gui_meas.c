@@ -63,7 +63,7 @@ static int is_min(lt_op_type lt, const struct inst *inst)
 {
 	struct coord min;
 
-	min = meas_find_min(lt, inst->vec->samples);
+	min = meas_find_min(lt, active_pkg->samples[inst->vec->n]);
 	return coord_eq(inst->u.rect.end, min);
 }
 
@@ -73,7 +73,8 @@ static int is_next(lt_op_type lt,
 {
 	struct coord next;
 
-	next = meas_find_next(lt, inst->vec->samples, ref->u.rect.end);
+	next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
+	    ref->u.rect.end);
 	return coord_eq(inst->u.rect.end, next);
 }
 
@@ -82,7 +83,7 @@ static int is_max(lt_op_type lt, const struct inst *inst)
 {
 	struct coord max;
 
-	max = meas_find_max(lt, inst->vec->samples);
+	max = meas_find_max(lt, active_pkg->samples[inst->vec->n]);
 	return coord_eq(inst->u.rect.end, max);
 }
 
@@ -93,8 +94,9 @@ static int is_a_next(lt_op_type lt, struct inst *inst)
 	struct coord min, next;
 
 	for (a = insts_ip_vec(); a; a = a->next) {
-		min = meas_find_min(lt, a->vec->samples);
-		next = meas_find_next(lt, inst->vec->samples, min);
+		min = meas_find_min(lt, active_pkg->samples[a->vec->n]);
+		next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
+		    min);
 		if (coord_eq(next, inst->u.rect.end))
 			return 1;
 	}
@@ -122,7 +124,7 @@ static int meas_pick_vec_a(struct inst *inst, void *ctx)
 {
 	struct vec *vec = inst->vec;
 
-	if (!vec->samples)
+	if (!active_pkg->samples[vec->n])
 		return 0;
 	if (is_min(meas_dsc->lt, inst)) {
 		mode = min_to_next_or_max;
@@ -145,7 +147,7 @@ static int meas_pick_vec_b(struct inst *inst, void *ctx)
 	struct vec *vec = inst->vec;
 	struct inst *a = ctx;
 
-	if (!vec->samples)
+	if (!active_pkg->samples[vec->n])
 		return 0;
 	switch (mode) {
 	case min_to_next_or_max:
@@ -337,7 +339,7 @@ static struct inst *vec_at(const struct vec *vec, struct coord pos)
 
 	for (inst = insts_ip_vec(); inst; inst = inst->next)
 		if (inst->vec == vec)
-			for (s = vec->samples; s; s = s->next)
+			for (s = active_pkg->samples[vec->n]; s; s = s->next)
 				if (coord_eq(s->pos, pos))
 					return inst;
 	abort();

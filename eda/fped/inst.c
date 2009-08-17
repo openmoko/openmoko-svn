@@ -31,12 +31,11 @@
 
 
 struct inst *selected_inst = NULL;
-struct inst *insts[ip_n];
 struct bbox active_frame_bbox;
+struct pkg *pkgs, *active_pkg, *curr_pkg;
+struct inst *curr_frame = NULL;
 
-static struct inst *curr_frame = NULL;
-static struct inst **next_inst[ip_n];
-static struct inst *prev_insts[ip_n];
+static struct pkg *prev_pkgs;
 
 static unsigned long active_set = 0;
 
@@ -171,7 +170,7 @@ int inst_select(struct coord pos)
 	FOR_INST_PRIOS_DOWN(prio) {
 		if (!show(prio))
 			continue;
-		for (inst = insts[prio]; inst; inst = inst->next) {
+		for (inst = active_pkg->insts[prio]; inst; inst = inst->next) {
 			if (!inst->active || !inst->ops->distance)
 				continue;
 			if (!inst_connected(inst))
@@ -191,7 +190,7 @@ int inst_select(struct coord pos)
 
 	/* give vectors a second chance */
 
-	for (inst = insts[ip_vec]; inst; inst = inst->next) {
+	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next) {
 		if (!inst->active)
 			continue;
 		if (!inst_connected(inst))
@@ -219,7 +218,7 @@ struct inst *inst_find_point(struct coord pos)
 	int dist;
 
 	found = NULL;
-	for (inst = insts[ip_frame]; inst; inst = inst->next) {
+	for (inst = active_pkg->insts[ip_frame]; inst; inst = inst->next) {
 		if (!inst->u.frame.active)
 			continue;
 		dist = gui_dist_frame_eye(inst, pos, draw_ctx.scale);
@@ -231,7 +230,7 @@ struct inst *inst_find_point(struct coord pos)
 	if (found)
 		return found;
 
-	for (inst = insts[ip_vec]; inst; inst = inst->next) {
+	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next) {
 		if (!inst->active || !inst->ops->distance)
 			continue;
 		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
@@ -256,7 +255,8 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 	n = inst_anchors(selected_inst, anchors);
 	for (i = 0; i != n; i++) {
 		if (*anchors[i]) {
-			for (inst = insts[ip_vec]; inst; inst = inst->next) {
+			for (inst = active_pkg->insts[ip_vec]; inst;
+			    inst = inst->next) {
 				if (inst->vec != *anchors[i])
 					continue;
 				d = gui_dist_vec(inst, pos, draw_ctx.scale);
@@ -267,7 +267,8 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 				}
 			}
 		} else {
-			for (inst = insts[ip_frame]; inst; inst = inst->next) {
+			for (inst = active_pkg->insts[ip_frame]; inst; 
+			    inst = inst->next) {
 				if (inst != selected_inst->outer)
 					continue;
 				d = gui_dist_frame(inst, pos, draw_ctx.scale);
@@ -347,7 +348,7 @@ void inst_select_vec(struct vec *vec)
 
 	if (vec->frame != active_frame)
 		select_frame(vec->frame);
-	for (inst = insts[ip_vec]; inst; inst = inst->next)
+	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next)
 		if (inst->vec == vec && inst->active) {
 			inst_deselect();
 			inst_select_inst(inst);
@@ -364,13 +365,20 @@ void inst_select_obj(struct obj *obj)
 
 	if (obj->frame != active_frame)
 		select_frame(obj->frame);
-	FOR_INSTS_DOWN(prio, inst)
-		if (inst->obj && inst->obj == obj && inst->active) {
-			inst_deselect();
-			inst_select_inst(inst);
-			return;
-		}
+	FOR_INST_PRIOS_DOWN(prio) {
+		FOR_GLOBAL_INSTS(prio, inst)
+			if (inst->obj && inst->obj == obj && inst->active)
+				goto found;
+		FOR_PKG_INSTS(prio, inst)
+			if (inst->obj && inst->obj == obj && inst->active)
+				goto found;
+	}
 	obj_edit(obj);
+	return;
+
+found:
+	inst_deselect();
+	inst_select_inst(inst);
 }
 
 
@@ -415,7 +423,8 @@ static void update_bbox(struct bbox *bbox, struct coord coord)
 
 static void propagate_bbox(const struct inst *inst)
 {
-	struct inst *frame = curr_frame ? curr_frame : insts[ip_frame];
+	struct inst *frame =
+	    curr_frame ? curr_frame : curr_pkg->insts[ip_frame];
 
 	update_bbox(&frame->bbox, inst->bbox.min);
 	update_bbox(&frame->bbox, inst->bbox.max);
@@ -445,21 +454,13 @@ static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
 	inst->active = IS_ACTIVE;
 	inst->in_path = 0;
 	inst->next = NULL;
-	*next_inst[prio] = inst;
-	next_inst[prio] = &inst->next;
+	*curr_pkg->next_inst[prio] = inst;
+	curr_pkg->next_inst[prio] = &inst->next;
 	return inst;
 }
 
 
 /* ----- vec --------------------------------------------------------------- */
-
-
-static void vec_op_debug(struct inst *self)
-{
-	printf("vec %lg, %lg -> %lg, %lg\n",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.rect.end.x), units_to_mm(self->u.rect.end.y));
-}
 
 
 static int validate_vec_name(const char *s, void *ctx)
@@ -525,7 +526,6 @@ static int vec_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops vec_ops = {
-	.debug		= vec_op_debug,
 	.draw		= gui_draw_vec,
 	.hover		= gui_hover_vec,
 	.distance	= gui_dist_vec,
@@ -552,14 +552,6 @@ int inst_vec(struct vec *vec, struct coord base)
 /* ----- line -------------------------------------------------------------- */
 
 
-static void line_op_debug(struct inst *self)
-{
-	printf("line %lg, %lg / %lg, %lg\n",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.rect.end.x), units_to_mm(self->u.rect.end.y));
-}
-
-
 static void obj_line_edit(struct obj *obj)
 {
 	edit_expr(&obj->u.line.width);
@@ -584,7 +576,6 @@ static int line_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops line_ops = {
-	.debug		= line_op_debug,
 	.draw		= gui_draw_line,
 	.distance	= gui_dist_line,
 	.select		= line_op_select,
@@ -611,14 +602,6 @@ int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width)
 /* ----- rect -------------------------------------------------------------- */
 
 
-static void rect_op_debug(struct inst *self)
-{
-	printf("rect %lg, %lg / %lg, %lg\n",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.rect.end.x), units_to_mm(self->u.rect.end.y));
-}
-
-
 static void obj_rect_edit(struct obj *obj)
 {
 	edit_expr(&obj->u.rect.width);
@@ -633,7 +616,6 @@ static void rect_op_select(struct inst *self)
 
 
 static struct inst_ops rect_ops = {
-	.debug		= rect_op_debug,
 	.draw		= gui_draw_rect,
 	.distance	= gui_dist_rect,
 	.select		= rect_op_select,
@@ -658,21 +640,6 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width)
 
 
 /* ----- pad / rpad -------------------------------------------------------- */
-
-
-static void pad_op_debug(struct inst *self)
-{
-	printf("pad \"%s\" %lg, %lg / %lg, %lg\n", self->u.name,
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.pad.other.x), units_to_mm(self->u.pad.other.y));
-}
-
-
-static void rpad_op_debug(struct inst *self)
-{
-	printf("r");
-	pad_op_debug(self);
-}
 
 
 static int validate_pad_name(const char *s, void *ctx)
@@ -713,7 +680,6 @@ static int pad_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops pad_ops = {
-	.debug		= pad_op_debug,
 	.draw		= gui_draw_pad,
 	.distance	= gui_dist_pad,
 	.select		= pad_op_select,
@@ -723,7 +689,6 @@ static struct inst_ops pad_ops = {
 
 
 static struct inst_ops rpad_ops = {
-	.debug		= rpad_op_debug,
 	.draw		= gui_draw_rpad,
 	.distance	= gui_dist_pad, /* @@@ */
 	.select		= pad_op_select,
@@ -747,14 +712,6 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 
 
 /* ----- arc --------------------------------------------------------------- */
-
-
-static void arc_op_debug(struct inst *self)
-{
-	printf("arc %lg, %lg radius %lg %lg ... %lg\n",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.arc.r), self->u.arc.a1, self->u.arc.a2);
-}
 
 
 static void obj_arc_edit(struct obj *obj)
@@ -788,7 +745,6 @@ static int arc_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops arc_ops = {
-	.debug		= arc_op_debug,
 	.draw		= gui_draw_arc,
 	.distance	= gui_dist_arc,
 	.select		= arc_op_select,
@@ -827,15 +783,6 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 /* ----- measurement ------------------------------------------------------- */
 
 
-static void meas_op_debug(struct inst *self)
-{
-	printf("meas %lg, %lg / %lg, %lg offset %lg\n",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y),
-	    units_to_mm(self->u.meas.end.x), units_to_mm(self->u.meas.end.y),
-	    units_to_mm(self->u.meas.offset));
-}
-
-
 static void obj_meas_edit(struct obj *obj)
 {
 	edit_expr(&obj->u.meas.offset);
@@ -862,7 +809,6 @@ static int meas_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops meas_ops = {
-	.debug		= meas_op_debug,
 	.draw		= gui_draw_meas,
 	.distance	= gui_dist_meas,
 	.select		= meas_op_select,
@@ -943,14 +889,6 @@ void inst_end_active(void)
 /* ----- frame ------------------------------------------------------------- */
 
 
-static void frame_op_debug(struct inst *self)
-{
-	printf("frame %s @ %lg, %lg\n",
-	    self->u.frame.ref->name ? self->u.frame.ref->name : "(root)",
-	    units_to_mm(self->base.x), units_to_mm(self->base.y));
-}
-
-
 static void frame_op_select(struct inst *self)
 {
 	rect_status(self->bbox.min, self->bbox.max, -1);
@@ -967,7 +905,6 @@ static int frame_op_anchors(struct inst *inst, struct vec ***anchors)
 
 
 static struct inst_ops frame_ops = {
-	.debug		= frame_op_debug,
 	.draw		= gui_draw_frame,
 	.hover		= gui_hover_frame,
 	.distance	= gui_dist_frame,
@@ -1003,56 +940,91 @@ void inst_end_frame(const struct frame *frame)
 }
 
 
+/* ----- package ----------------------------------------------------------- */
+
+
+void inst_select_pkg(const char *name)
+{
+	struct pkg **pkg;
+	enum inst_prio prio;
+
+	name = name ? unique(name) : NULL;
+	for (pkg = &pkgs; *pkg; pkg = &(*pkg)->next)
+		if ((*pkg)->name == name)
+			break;
+	if (!*pkg) {
+		*pkg = zalloc_type(struct pkg);
+		(*pkg)->name = name;
+		FOR_INST_PRIOS_UP(prio)
+			(*pkg)->next_inst[prio] = &(*pkg)->insts[prio];
+		(*pkg)->samples =
+		    zalloc_size(sizeof(struct sample *)*n_samples);
+	}
+	curr_pkg = *pkg;
+}
+
+
 /* ----- misc. ------------------------------------------------------------- */
 
 
 struct bbox inst_get_bbox(void)
 {
-	return insts[ip_frame]->bbox;
+	return pkgs->insts[ip_frame]->bbox;
 }
 
 
-static void inst_free(struct inst *list[ip_n])
+static void free_pkgs(struct pkg *pkg)
 {
 	enum inst_prio prio;
-	struct inst *next;
+	struct pkg *next_pkg;
+	struct inst *inst, *next;
 
-	FOR_INST_PRIOS_UP(prio)
-		while (list[prio]) {
-			next = list[prio]->next;
-			free(list[prio]);
-			list[prio] = next;
-		}
+	while (pkg) {
+		next_pkg = pkg->next;
+		FOR_INST_PRIOS_UP(prio)
+			for (inst = pkg->insts[prio]; inst; inst = next) {
+				next = inst->next;
+				free(inst);
+			}
+		reset_samples(pkg->samples);
+		free(pkg->samples);
+		free(pkg);
+		pkg = next_pkg;
+	}
 }
 
 
 void inst_start(void)
 {
 	static struct bbox bbox_zero = { { 0, 0 }, { 0, 0 }};
-	enum inst_prio prio;
 
 	active_frame_bbox = bbox_zero;
-	FOR_INST_PRIOS_UP(prio) {
-		prev_insts[prio] = insts[prio];
-		insts[prio] = NULL;
-		next_inst[prio] = &insts[prio];
-	}
+	prev_pkgs = pkgs;
+	pkgs = NULL;
+	inst_select_pkg(NULL);
+	curr_pkg = pkgs;
 }
 
 
 void inst_commit(void)
 {
-	inst_free(prev_insts);
+	struct pkg *pkg;
+
+	if (active_pkg) {
+		for (pkg = pkgs; pkgs && pkg->name != active_pkg->name;
+		    pkg = pkg->next);
+		active_pkg = pkg;
+	}
+	if (!active_pkg)
+		active_pkg = pkgs->next;
+	free_pkgs(prev_pkgs);
 }
 
 
 void inst_revert(void)
 {
-	enum inst_prio prio;
-
-	inst_free(insts);
-	FOR_INST_PRIOS_UP(prio)
-		insts[prio] = prev_insts[prio];
+	free_pkgs(pkgs);
+	pkgs = prev_pkgs;
 }
 
 
@@ -1061,18 +1033,34 @@ void inst_draw(void)
 	enum inst_prio prio;
 	struct inst *inst;
 
-	FOR_INSTS_UP(prio, inst)
-		if (show(prio) && !inst->active && inst->ops->draw)
-			inst->ops->draw(inst);
-	FOR_INSTS_UP(prio, inst)
-		if (show(prio) && prio != ip_frame && inst->active &&
-		    inst != selected_inst && inst->ops->draw)
-			inst->ops->draw(inst);
-	if (show_stuff)
-		for (inst = insts[ip_frame]; inst; inst = inst->next)
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_GLOBAL_INSTS(prio, inst)
+			if (show(prio) && !inst->active && inst->ops->draw)
+				inst->ops->draw(inst);
+		FOR_PKG_INSTS(prio, inst)
+			if (show(prio) && !inst->active && inst->ops->draw)
+				inst->ops->draw(inst);
+	}
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_GLOBAL_INSTS(prio, inst)
+			if (show(prio) && prio != ip_frame && inst->active &&
+			    inst != selected_inst && inst->ops->draw)
+				inst->ops->draw(inst);
+		FOR_PKG_INSTS(prio, inst)
+			if (show(prio) && prio != ip_frame && inst->active &&
+			    inst != selected_inst && inst->ops->draw)
+				inst->ops->draw(inst);
+	}
+	if (show_stuff) {
+		FOR_GLOBAL_INSTS(ip_frame, inst)
 			if (inst->active && inst != selected_inst &&
 			    inst->ops->draw)
 				inst->ops->draw(inst);
+		FOR_PKG_INSTS(ip_frame, inst)
+			if (inst->active && inst != selected_inst &&
+			    inst->ops->draw)
+				inst->ops->draw(inst);
+	}
 	if (selected_inst && selected_inst->ops->draw)
 		selected_inst->ops->draw(selected_inst);
 }
@@ -1082,7 +1070,10 @@ void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user), void *user)
 {
 	struct inst *inst;
 
-	for (inst = insts[ip_vec]; inst; inst = inst->next)
+	FOR_GLOBAL_INSTS(ip_vec, inst)
+		if (pick(inst, user))
+			gui_highlight_vec(inst);
+	FOR_PKG_INSTS(ip_vec, inst)
 		if (pick(inst, user))
 			gui_highlight_vec(inst);
 }
@@ -1096,7 +1087,18 @@ struct inst *inst_find_vec(struct coord pos,
 	int dist;
 
 	found = NULL;
-	for (inst = insts[ip_vec]; inst; inst = inst->next) {
+	FOR_GLOBAL_INSTS(ip_vec, inst) {
+		if (!inst->ops->distance)
+			continue;
+		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
+		if (dist < 0 || (found && best_dist <= dist))
+			continue;
+		if (!pick(inst, user))
+			continue;
+		found = inst;
+		best_dist = dist;
+	}
+	FOR_PKG_INSTS(ip_vec, inst) {
 		if (!inst->ops->distance)
 			continue;
 		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
@@ -1113,7 +1115,7 @@ struct inst *inst_find_vec(struct coord pos,
 
 struct inst *insts_ip_vec(void)
 {
-	return insts[ip_vec];
+	return active_pkg->insts[ip_vec];
 }
 
 
@@ -1153,14 +1155,4 @@ void inst_delete(struct inst *inst)
 		delete_vec(inst->vec);
 	else
 		delete_obj(inst->obj);
-}
-
-
-void inst_debug(void)
-{
-	enum inst_prio prio;
-	struct inst *inst;
-
-	FOR_INSTS_UP(prio, inst)
-		inst->ops->debug(inst);
 }

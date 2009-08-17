@@ -47,6 +47,9 @@ struct sample {
 };
 
 
+extern int n_samples;
+
+
 int lt_x(struct coord a, struct coord b);
 int lt_y(struct coord a, struct coord b);
 int lt_xy(struct coord a, struct coord b);
@@ -56,8 +59,10 @@ struct coord meas_find_next(lt_op_type lt, const struct sample *s,
     struct coord ref);
 struct coord meas_find_max(lt_op_type lt, const struct sample *s);
 
+
+void reset_samples(struct sample **samples);
 void meas_start(void);
-void meas_post(struct vec *vec, struct coord pos);
+void meas_post(const struct vec *vec, struct coord pos);
 int instantiate_meas(void);
 
 #endif /* !MEAS_H */

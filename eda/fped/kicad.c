@@ -208,7 +208,7 @@ static void kicad_inst(FILE *file, enum inst_prio prio, const struct inst *inst)
 }
 
 
-static void kicad_module(FILE *file, const char *name, time_t now)
+static void kicad_module(FILE *file, const struct pkg *pkg, time_t now)
 {
 	enum inst_prio prio;
 	const struct inst *inst;
@@ -216,7 +216,7 @@ static void kicad_module(FILE *file, const char *name, time_t now)
 	/*
 	 * Module library name
 	 */
-	fprintf(file, "$MODULE %s\n", name);
+	fprintf(file, "$MODULE %s\n", pkg->name);
 
 	/*
 	 * Xpos = 0, Ypos = 0, 15 layers, last modification, timestamp,
@@ -227,13 +227,13 @@ static void kicad_module(FILE *file, const char *name, time_t now)
 	/*
 	 * Module library name again
 	 */
-	fprintf(file, "Li %s\n", name);
+	fprintf(file, "Li %s\n", pkg->name);
 
 #if 0 /* optional */
 	/*
 	 * Description
 	 */
-	fprintf(file, "Cd %s\n", name);
+	fprintf(file, "Cd %s\n", pkg->name);
 #endif
 
 	/*
@@ -258,28 +258,37 @@ static void kicad_module(FILE *file, const char *name, time_t now)
 	 */
 
 	fprintf(file, "T0 0 -150 200 200 0 40 N V %d \"%s\"\n",
-	    layer_comment, name);
+	    layer_comment, pkg->name);
 	fprintf(file, "T1 0 150 200 200 0 40 N I %d \"Val*\"\n",
 	    layer_comment);
 
-	FOR_INSTS_UP(prio, inst)
-		kicad_inst(file, prio, inst);
+	FOR_INST_PRIOS_UP(prio) {
+		for (inst = pkgs->insts[prio]; inst; inst = inst->next)
+			kicad_inst(file, prio, inst);
+		for (inst = pkg->insts[prio]; inst; inst = inst->next)
+			kicad_inst(file, prio, inst);
+	}
 
-	fprintf(file, "$EndMODULE %s\n", name);
+	fprintf(file, "$EndMODULE %s\n", pkg->name);
 }
 
 
 int kicad(FILE *file)
 {
+	const struct pkg *pkg;
 	time_t now = time(NULL);
 
 	fprintf(file, "PCBNEW-LibModule-V1 %s", ctime(&now));
 
 	fprintf(file, "$INDEX\n");
-	fprintf(file, "%s\n", part_name);
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name)
+			fprintf(file, "%s\n", pkg->name);
 	fprintf(file, "$EndINDEX\n");
 
-	kicad_module(file, part_name, now);
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name)
+			kicad_module(file, pkg, now);
 
 	fprintf(file, "$EndLIBRARY\n");
 

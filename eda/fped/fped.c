@@ -91,8 +91,8 @@ int main(int argc, char **argv)
 		usage(name);
 	}
 
-	if (!part_name)
-		part_name = stralloc("_");
+	if (!pkg_name)
+		pkg_name = stralloc("_");
 
 	reporter = report_to_stderr;
 	if (!instantiate())

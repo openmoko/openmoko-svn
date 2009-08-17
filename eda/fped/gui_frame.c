@@ -1236,10 +1236,10 @@ static void dont_build_items(struct frame *frame)
 }
 
 
-/* ----- part name --------------------------------------------------------- */
+/* ----- package name ------------------------------------------------------ */
 
 
-static int validate_part_name(const char *s, void *ctx)
+static int validate_pkg_name(const char *s, void *ctx)
 {
 	if (!*s)
 		return 0;
@@ -1251,7 +1251,7 @@ static int validate_part_name(const char *s, void *ctx)
 	return 1;
 }
 
-static void unselect_part_name(void *data)
+static void unselect_pkg_name(void *data)
 {
 	GtkWidget *widget = data;
 
@@ -1259,37 +1259,104 @@ static void unselect_part_name(void *data)
 }
 
 
-static gboolean part_name_edit_event(GtkWidget *widget, GdkEventButton *event,
+static gboolean pkg_name_edit_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
 	switch (event->button) {
 	case 1:
-		inst_select_outside(widget, unselect_part_name);
+		inst_select_outside(widget, unselect_pkg_name);
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
-		status_set_type_entry("part =");
-		status_set_name("%s", part_name);
+		status_set_type_entry("package =");
+		status_set_name("%s", pkg_name);
 		edit_nothing();
-		edit_name(&part_name, validate_part_name, NULL);
+		edit_name(&pkg_name, validate_pkg_name, NULL);
 		break;
 	}
 	return TRUE;
 }
 
 
-static GtkWidget *build_part_name(void)
+static GtkWidget *build_pkg_name(void)
 {
 	GtkWidget *label;
 
-	label = label_in_box_new(part_name);
+	label = label_in_box_new(pkg_name);
 	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 
 	label_in_box_bg(label, COLOR_PART_NAME);
 
 	g_signal_connect(G_OBJECT(box_of_label(label)),
-	    "button_press_event", G_CALLBACK(part_name_edit_event), NULL);
+	    "button_press_event", G_CALLBACK(pkg_name_edit_event), NULL);
 
 	return box_of_label(label);
+}
+
+
+/* ----- packages ---------------------------------------------------------- */
+
+
+static gboolean pkg_scroll_event(GtkWidget *widget, GdkEventScroll *event,
+    gpointer data)
+{
+	struct pkg *pkg, *last;
+
+	switch (event->direction) {
+	case GDK_SCROLL_UP:
+		if (active_pkg->next)
+			active_pkg = active_pkg->next;
+		else
+			active_pkg = pkgs->next;
+		change_world();
+		break;
+	case GDK_SCROLL_DOWN:
+		last = NULL;
+		for (pkg = pkgs->next; pkg && (!last || pkg != active_pkg);
+		    pkg = pkg->next)
+			last = pkg;
+		active_pkg = last;
+		change_world();
+		break;
+	default:
+		/* ignore */;
+	}
+	return TRUE;
+}
+
+
+static gboolean pkg_select_event(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	struct pkg *pkg = data;
+
+	switch (event->button) {
+	case 1:
+		active_pkg = pkg;
+		/* @@@ we could actually skip instantiation here */
+		change_world();
+		break;
+	}
+	return TRUE;
+}
+
+
+static GtkWidget *build_pkg_names(void)
+{
+	GtkWidget *hbox;
+	struct pkg *pkg;
+	GtkWidget *field;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name) {
+			field = add_activator(hbox, pkg == active_pkg,
+			    pkg_select_event, pkg,
+			    "%s", pkg->name);
+			g_signal_connect(G_OBJECT(box_of_label(field)),
+			    "scroll_event",
+			    G_CALLBACK(pkg_scroll_event), NULL);
+		}
+	return hbox;
 }
 
 
@@ -1428,7 +1495,7 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 void build_frames(GtkWidget *vbox)
 {
 	struct frame *frame;
-	GtkWidget *hbox, *tab, *label, *refs, *vars, *items, *meas;
+	GtkWidget *hbox, *tab, *label, *packages, *refs, *vars, *items, *meas;
 	int n = 0;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
@@ -1444,8 +1511,11 @@ void build_frames(GtkWidget *vbox)
 	gtk_box_pack_start(GTK_BOX(hbox), tab, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-	label = build_part_name();
+	label = build_pkg_name();
 	gtk_table_attach_defaults(GTK_TABLE(tab), label, 0, 1, 0, 1);
+
+	packages = build_pkg_names();
+	gtk_table_attach_defaults(GTK_TABLE(tab), packages, 1, 2, 0, 1);
 
 	n = 0;
 	for (frame = root_frame; frame; frame = frame->prev) {

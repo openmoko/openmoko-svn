@@ -77,7 +77,6 @@ static struct vec *new_vec(struct inst *base)
 	vec->base = inst_get_vec(base);
 	vec->next = NULL;
 	vec->frame = active_frame;
-	vec->samples = NULL;
 	for (walk = &active_frame->vecs; *walk; walk = &(*walk)->next);
 	*walk = vec;
 	return vec;

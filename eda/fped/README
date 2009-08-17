@@ -13,6 +13,14 @@ that can be performed through the GUI.
 Building
 --------
 
+Prerequisites:
+
+- flex
+- bison
+- fig2dev
+- ImageMagick
+- Gtk+ 2.x development package (libgtk2.0-dev or similar)
+
 Check out the repository:
 
   svn co http://svn.openmoko.org/trunk/eda/fped
@@ -79,7 +87,7 @@ The file has the following structure:
 
 frame definitions
 ...
-part name
+package name
 objects
 ...
 
@@ -234,18 +242,21 @@ b: vec @(1mm, 1mm)
 meas a b 0.2 mm
 
 
-Part name
-- - - - -
+Package name
+- - - - - -
 
-The part name is a string of alphanumerical characters. Underscores are
-allowed in the part name as well.
+The package name is a string of printable ASCII characters, including
+spaces.
 
-part "<name>"
+package "<name>"
 
 Examples:
 
-part "SSOP_48"
-part "0603"
+package "48-SSOP"
+package "0603"
+
+Like in pad names, variables are expanded in package names. This allows
+the generation of multiple packages from a single definition.
 
 
 Frames

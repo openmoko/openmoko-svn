@@ -485,7 +485,7 @@ int dump(FILE *file)
 	fprintf(file, "/* MACHINE-GENERATED ! */\n\n");
 	for (frame = frames; frame; frame = frame->next) {
 		if (!frame->name) {
-			fprintf(file, "part \"%s\"\n", part_name);
+			fprintf(file, "package \"%s\"\n", pkg_name);
 			dump_frame(file, frame, "");
 		} else {
 			fprintf(file, "frame %s {\n", frame->name);
