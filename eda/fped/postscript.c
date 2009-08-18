@@ -278,6 +278,7 @@ int postscript(FILE *file)
 {
 	enum inst_prio prio;
 	const struct inst *inst;
+	int i;
 
 	fprintf(file, "%%!PS\n");
 
@@ -373,18 +374,12 @@ fprintf(file,
 "    dup false charpath stroke grestore\n"
 "    show } def\n");
 
-	FOR_INST_PRIOS_UP(prio) {
-		FOR_GLOBAL_INSTS(prio, inst)
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
 			ps_background(file, prio, inst);
-		FOR_PKG_INSTS(prio, inst)
-			ps_background(file, prio, inst);
-	}
-	FOR_INST_PRIOS_UP(prio) {
-		FOR_GLOBAL_INSTS(prio, inst)
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
 			ps_foreground(file, prio, inst);
-		FOR_PKG_INSTS(prio, inst)
-			ps_foreground(file, prio, inst);
-	}
 
 	fprintf(file, "showpage\n");
 	fprintf(file, "%%%%EOF\n");

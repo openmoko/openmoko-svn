@@ -158,7 +158,7 @@ int inst_select(struct coord pos)
 	enum inst_prio prio;
 	struct inst *inst;
 	int best_dist = 0; /* keep gcc happy */
-	int dist;
+	int dist, i;
 
 	deselect_outside();
 	edit_nothing();
@@ -170,7 +170,7 @@ int inst_select(struct coord pos)
 	FOR_INST_PRIOS_DOWN(prio) {
 		if (!show(prio))
 			continue;
-		for (inst = active_pkg->insts[prio]; inst; inst = inst->next) {
+		FOR_ALL_INSTS(i, prio, inst) {
 			if (!inst->active || !inst->ops->distance)
 				continue;
 			if (!inst_connected(inst))
@@ -190,7 +190,7 @@ int inst_select(struct coord pos)
 
 	/* give vectors a second chance */
 
-	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next) {
+	FOR_ALL_INSTS(i, ip_vec, inst) {
 		if (!inst->active)
 			continue;
 		if (!inst_connected(inst))
@@ -215,10 +215,10 @@ struct inst *inst_find_point(struct coord pos)
 {
 	struct inst *inst, *found;
 	int best_dist = 0; /* keep gcc happy */
-	int dist;
+	int dist, i;
 
 	found = NULL;
-	for (inst = active_pkg->insts[ip_frame]; inst; inst = inst->next) {
+	FOR_ALL_INSTS(i, ip_frame, inst) {
 		if (!inst->u.frame.active)
 			continue;
 		dist = gui_dist_frame_eye(inst, pos, draw_ctx.scale);
@@ -230,7 +230,7 @@ struct inst *inst_find_point(struct coord pos)
 	if (found)
 		return found;
 
-	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next) {
+	FOR_ALL_INSTS(i, ip_vec, inst) {
 		if (!inst->active || !inst->ops->distance)
 			continue;
 		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
@@ -249,14 +249,13 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 	int n, best_i, i;
 	struct inst *best = NULL;
 	struct inst *inst;
-	int d_min, d;
+	int d_min, d, j;
 
 	assert(selected_inst);
 	n = inst_anchors(selected_inst, anchors);
 	for (i = 0; i != n; i++) {
 		if (*anchors[i]) {
-			for (inst = active_pkg->insts[ip_vec]; inst;
-			    inst = inst->next) {
+			FOR_ALL_INSTS(j, ip_vec, inst) {
 				if (inst->vec != *anchors[i])
 					continue;
 				d = gui_dist_vec(inst, pos, draw_ctx.scale);
@@ -267,8 +266,7 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 				}
 			}
 		} else {
-			for (inst = active_pkg->insts[ip_frame]; inst; 
-			    inst = inst->next) {
+			FOR_ALL_INSTS(j, ip_vec, inst) {
 				if (inst != selected_inst->outer)
 					continue;
 				d = gui_dist_frame(inst, pos, draw_ctx.scale);
@@ -345,10 +343,11 @@ static void obj_edit(struct obj *obj);
 void inst_select_vec(struct vec *vec)
 {
 	struct inst *inst;
+	int i;
 
 	if (vec->frame != active_frame)
 		select_frame(vec->frame);
-	for (inst = active_pkg->insts[ip_vec]; inst; inst = inst->next)
+	FOR_ALL_INSTS(i, ip_vec, inst)
 		if (inst->vec == vec && inst->active) {
 			inst_deselect();
 			inst_select_inst(inst);
@@ -362,17 +361,14 @@ void inst_select_obj(struct obj *obj)
 {
 	enum inst_prio prio;
 	struct inst *inst;
+	int i;
 
 	if (obj->frame != active_frame)
 		select_frame(obj->frame);
-	FOR_INST_PRIOS_DOWN(prio) {
-		FOR_GLOBAL_INSTS(prio, inst)
+	FOR_INST_PRIOS_DOWN(prio)
+		FOR_ALL_INSTS(i, prio, inst)
 			if (inst->obj && inst->obj == obj && inst->active)
 				goto found;
-		FOR_PKG_INSTS(prio, inst)
-			if (inst->obj && inst->obj == obj && inst->active)
-				goto found;
-	}
 	obj_edit(obj);
 	return;
 
@@ -1037,35 +1033,22 @@ void inst_draw(void)
 {
 	enum inst_prio prio;
 	struct inst *inst;
+	int i;
 
-	FOR_INST_PRIOS_UP(prio) {
-		FOR_GLOBAL_INSTS(prio, inst)
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
 			if (show(prio) && !inst->active && inst->ops->draw)
 				inst->ops->draw(inst);
-		FOR_PKG_INSTS(prio, inst)
-			if (show(prio) && !inst->active && inst->ops->draw)
-				inst->ops->draw(inst);
-	}
-	FOR_INST_PRIOS_UP(prio) {
-		FOR_GLOBAL_INSTS(prio, inst)
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
 			if (show(prio) && prio != ip_frame && inst->active &&
 			    inst != selected_inst && inst->ops->draw)
 				inst->ops->draw(inst);
-		FOR_PKG_INSTS(prio, inst)
-			if (show(prio) && prio != ip_frame && inst->active &&
-			    inst != selected_inst && inst->ops->draw)
-				inst->ops->draw(inst);
-	}
-	if (show_stuff) {
-		FOR_GLOBAL_INSTS(ip_frame, inst)
+	if (show_stuff)
+		FOR_ALL_INSTS(i, ip_frame, inst)
 			if (inst->active && inst != selected_inst &&
 			    inst->ops->draw)
 				inst->ops->draw(inst);
-		FOR_PKG_INSTS(ip_frame, inst)
-			if (inst->active && inst != selected_inst &&
-			    inst->ops->draw)
-				inst->ops->draw(inst);
-	}
 	if (selected_inst && selected_inst->ops->draw)
 		selected_inst->ops->draw(selected_inst);
 }
@@ -1074,11 +1057,9 @@ void inst_draw(void)
 void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user), void *user)
 {
 	struct inst *inst;
+	int i;
 
-	FOR_GLOBAL_INSTS(ip_vec, inst)
-		if (pick(inst, user))
-			gui_highlight_vec(inst);
-	FOR_PKG_INSTS(ip_vec, inst)
+	FOR_ALL_INSTS(i, ip_vec, inst)
 		if (pick(inst, user))
 			gui_highlight_vec(inst);
 }
@@ -1089,21 +1070,10 @@ struct inst *inst_find_vec(struct coord pos,
 {
 	struct inst *inst, *found;
 	int best_dist = 0; /* keep gcc happy */
-	int dist;
+	int dist, i;
 
 	found = NULL;
-	FOR_GLOBAL_INSTS(ip_vec, inst) {
-		if (!inst->ops->distance)
-			continue;
-		dist = inst->ops->distance(inst, pos, draw_ctx.scale);
-		if (dist < 0 || (found && best_dist <= dist))
-			continue;
-		if (!pick(inst, user))
-			continue;
-		found = inst;
-		best_dist = dist;
-	}
-	FOR_PKG_INSTS(ip_vec, inst) {
+	FOR_ALL_INSTS(i, ip_vec, inst) {
 		if (!inst->ops->distance)
 			continue;
 		dist = inst->ops->distance(inst, pos, draw_ctx.scale);

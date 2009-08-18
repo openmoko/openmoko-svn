@@ -137,17 +137,16 @@ extern	struct inst *curr_frame;
  * allow other items shared by all packages be there as well.
  */
 
-#define FOR_INST_PRIOS_UP(prio)					\
+#define FOR_INST_PRIOS_UP(prio)						\
 	for (prio = 0; prio != ip_n; prio++)
 
-#define FOR_INST_PRIOS_DOWN(prio)				\
+#define FOR_INST_PRIOS_DOWN(prio)					\
 	for (prio = ip_n-1; prio != (enum inst_prio) -1; prio--)
 
-#define	FOR_GLOBAL_INSTS(prio, inst)			\
-	for (inst = pkgs->insts[prio]; inst; inst = inst->next)
-
-#define	FOR_PKG_INSTS(prio, inst)				\
-	for (inst = active_pkg->insts[prio]; inst; inst = inst->next)
+#define	FOR_ALL_INSTS(i, prio, inst)					\
+	for (i = 0; i != 2; i++)					\
+		for (inst = (i ? active_pkg : pkgs)->insts[prio]; inst;	\
+		    inst = inst->next)
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));
