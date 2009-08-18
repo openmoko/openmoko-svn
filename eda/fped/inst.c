@@ -1016,7 +1016,7 @@ void inst_commit(void)
 	struct pkg *pkg;
 
 	if (active_pkg) {
-		for (pkg = pkgs; pkgs && pkg->name != active_pkg->name;
+		for (pkg = pkgs; pkg && pkg->name != active_pkg->name;
 		    pkg = pkg->next);
 		active_pkg = pkg;
 	}
