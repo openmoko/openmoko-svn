@@ -127,25 +127,9 @@ static int inst_connected(const struct inst *inst)
 /* ----- selection --------------------------------------------------------- */
 
 
-static void set_path(int on)
-{
-	struct inst *inst;
-return;
-	if (inst->ops != &vec_ops && inst->ops != &frame_ops)
-		return;
-/* @@@ wrong */
-	for (inst = selected_inst; inst; inst = inst->outer) {
-		if (inst->ops != &vec_ops && inst->ops != &frame_ops)
-			break;
-		inst->in_path = on;
-	}
-}
-
-
 static void inst_select_inst(struct inst *inst)
 {
 	selected_inst = inst;
-	set_path(1);
 	tool_selected_inst(inst);
 	gui_frame_select_inst(inst);
 	if (inst->ops->select)
@@ -315,7 +299,6 @@ int inst_anchors(struct inst *inst, struct vec ***anchors)
 void inst_deselect(void)
 {
 	if (selected_inst) {
-		set_path(0);
 		tool_selected_inst(NULL);
 		gui_frame_deselect_inst(selected_inst);
 	}
@@ -448,7 +431,6 @@ static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
 	inst->base = inst->bbox.min = inst->bbox.max = base;
 	inst->outer = curr_frame;
 	inst->active = IS_ACTIVE;
-	inst->in_path = 0;
 	inst->next = NULL;
 	*curr_pkg->next_inst[prio] = inst;
 	curr_pkg->next_inst[prio] = &inst->next;

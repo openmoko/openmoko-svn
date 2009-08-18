@@ -90,7 +90,7 @@ static char *unparse_op(const struct expr *expr, enum prec prec)
 	if (expr->op == op_var)
 		return stralloc(expr->u.var);
 	if (expr->op == op_minus)
-		return merge2("-", unparse_op(expr->u.op.a, prec_add));
+		return merge2("-", unparse_op(expr->u.op.a, prec_unary));
 	if (expr->op == op_add)
 		return merge3(unparse_op(expr->u.op.a, prec_add), "+",
 		    unparse_op(expr->u.op.b, prec_add));

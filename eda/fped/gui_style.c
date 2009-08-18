@@ -49,13 +49,10 @@ static GdkGC *gc(const char *spec, int width)
 
 
 static void style(GdkGC *gcs[mode_n],
-    const char *in, const char *in_path, const char *act, const char *act_path,
-    const char *sel)
+    const char *in, const char *act, const char *sel)
 {
 	gcs[mode_inactive]		= gc(in, 1);
-	gcs[mode_inactive_in_path]	= gc(in_path, 1);
 	gcs[mode_active]		= gc(act, 1);
-	gcs[mode_active_in_path]	= gc(act_path, 1);
 	gcs[mode_selected]		= gc(sel, 2);
 }
 
@@ -65,13 +62,13 @@ void gui_setup_style(GdkDrawable *drawable)
 	gc_bg = gc("#000000", 0);
 	gc_bg_error = gc("#000040", 0);
 	gc_drag = gc("#ffffff", 2);
-	/*		inactive   in+path    active     act+path   selected */
-	style(gc_vec,	"#202000", "#404020", "#909040", "#c0c080", "#ffff80");
-	style(gc_obj,	"#006060", INVALID,   "#00ffff", INVALID,   "#ffff80");
-	style(gc_pad,	"#400000", INVALID,   "#ff0000", INVALID,   "#ffff80");
-	style(gc_ptext,	"#404040", INVALID,   "#ffffff", INVALID,   "#ffffff");
-	style(gc_meas,	"#280040", INVALID,   "#ff00ff", INVALID,   "#ffff80");
-	style(gc_frame,	"#004000", "#205020", "#009000", INVALID,   "#ffff80");
+	/*		inactive   active     selected */
+	style(gc_vec,	"#202000", "#b0b050", "#ffff80");
+	style(gc_obj,	"#006060", "#00ffff", "#ffff80");
+	style(gc_pad,	"#400000", "#ff0000", "#ffff80");
+	style(gc_ptext,	"#404040", "#ffffff", "#ffffff");
+	style(gc_meas,	"#280040", "#ff00ff", "#ffff80");
+	style(gc_frame,	"#004000", "#009000", "#ffff80");
 
 	gc_active_frame = gc("#00ff00", 2);
 //	gc_highlight = gc("#ff8020", 2);

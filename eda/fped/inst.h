@@ -23,9 +23,7 @@
 
 enum mode {
 	mode_inactive,		/* on inactive frame */
-	mode_inactive_in_path,	/* inactive but is in path to selected */
 	mode_active,		/* on active frame */
-	mode_active_in_path,	/* active and is in path to selected */
 	mode_selected,		/* item is selected */
 	mode_hover,		/* hovering over item's contact area */
 	mode_n			/* number of modes */
@@ -80,7 +78,6 @@ struct inst {
 	struct obj *obj; /* NULL if not object */
 	struct inst *outer; /* frame containing this item */
 	int active;
-	int in_path;
 	union {
 		struct {
 			const struct frame *ref;
