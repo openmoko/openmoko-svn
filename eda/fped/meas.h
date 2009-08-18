@@ -60,7 +60,7 @@ struct coord meas_find_next(lt_op_type lt, const struct sample *s,
 struct coord meas_find_max(lt_op_type lt, const struct sample *s);
 
 
-void reset_samples(struct sample **samples);
+void reset_samples(struct sample **samples, int n);
 void meas_start(void);
 void meas_post(const struct vec *vec, struct coord pos);
 int instantiate_meas(void);

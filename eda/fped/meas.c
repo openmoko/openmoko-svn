@@ -27,12 +27,12 @@ int n_samples;
 struct num eval_unit(const struct expr *expr, const struct frame *frame);
 
 
-void reset_samples(struct sample **samples)
+void reset_samples(struct sample **samples, int n)
 {
 	struct sample *next;
 	int i;
 
-	for (i = 0; i != n_samples; i++)
+	for (i = 0; i != n; i++)
 		while (samples[i]) {
 			next = samples[i]->next;
 			free(samples[i]);

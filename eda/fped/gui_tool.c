@@ -471,12 +471,10 @@ struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i)
 	case 0:
 		c = pos;
 		break;
-	case 1:
-		from = pos;
-		if (inst->obj->u.arc.start != inst->obj->u.arc.end)
-			break;
-		/* fall through */
 	case 2:
+		from = pos;
+		break;
+	case 1:
 		to = pos;
 		break;
 	default:
@@ -502,7 +500,7 @@ struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i)
 	buf = save_pix_buf(DA,
 	    c.x-r_save, c.y-r_save, c.x+r_save, c.y+r_save, 1);
 	draw_arc(DA, gc_drag, FALSE, c.x, c.y, r, a1, a2);
-	if (i == 2) {
+	if (i == 1) {
 		end = rotate_r(c, r_save, -a2);
 		gdk_draw_line(DA, gc_drag, c.x, c.y, end.x, end.y);
 	}
@@ -514,19 +512,15 @@ void do_move_to_arc(struct inst *inst, struct inst *to, int i)
 {
 	struct vec *vec = inst_get_vec(to);
 	struct obj *obj = inst->obj;
-	int is_circle;
 
-	is_circle = obj->u.arc.start == obj->u.arc.end;
 	switch (i) {
 	case 0:
 		obj->base = vec;
 		break;
-	case 1:
-		obj->u.arc.start = vec;
-		if (!is_circle)
-			break;
-		/* fall through */
 	case 2:
+		obj->u.arc.start = vec;
+		break;
+	case 1:
 		obj->u.arc.end = vec;
 		break;
 	default:

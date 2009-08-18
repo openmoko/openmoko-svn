@@ -114,6 +114,7 @@ struct pkg {
 	struct inst *insts[ip_n];
 	struct inst **next_inst[ip_n];
 	struct sample **samples;
+	int n_samples;
 	struct pkg *next;
 };
 

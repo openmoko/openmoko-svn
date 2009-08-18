@@ -737,9 +737,13 @@ static int arc_op_anchors(struct inst *inst, struct vec ***anchors)
 {
 	struct obj *obj = inst->obj;
 
+	/*
+	 * Put end point first so that this is what we grab if dragging a
+	 * circle (thereby turning it into an arc).
+	 */
 	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.arc.start;
-	anchors[2] = &obj->u.arc.end;
+	anchors[1] = &obj->u.arc.end;
+	anchors[2] = &obj->u.arc.start;
 	return 3;
 }
 
@@ -959,6 +963,7 @@ void inst_select_pkg(const char *name)
 			(*pkg)->next_inst[prio] = &(*pkg)->insts[prio];
 		(*pkg)->samples =
 		    zalloc_size(sizeof(struct sample *)*n_samples);
+		(*pkg)->n_samples = n_samples;
 	}
 	curr_pkg = *pkg;
 }
@@ -986,7 +991,7 @@ static void free_pkgs(struct pkg *pkg)
 				next = inst->next;
 				free(inst);
 			}
-		reset_samples(pkg->samples);
+		reset_samples(pkg->samples, pkg->n_samples);
 		free(pkg->samples);
 		free(pkg);
 		pkg = next_pkg;
