@@ -13,6 +13,10 @@ F: bga96-8x12-0mm8
 S: atr0635
 # ATR0635 data sheet page 33
 
+# Telit GE865 BGA module
+F: ge865
+D: http://www.telit.com/module/infopool/download.php?id=1666
+
 # Standard rectangular passive components
 F: stdpass
 D: http://www.vishay.com/doc?20035

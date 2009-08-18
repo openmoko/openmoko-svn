@@ -1,0 +1,70 @@
+/* MACHINE-GENERATED ! */
+
+frame ball {
+	set diam = 1mm
+
+	__0: vec @(-diam/2, -diam/2)
+	__1: vec @(diam/2, diam/2)
+	rpad "$cname$row" __0 .
+}
+
+frame balls {
+	table
+	    { cname, col }
+	    { "A", 1 }
+	    { "B", 2 }
+	    { "C", 3 }
+	    { "D", 4 }
+	    { "E", 5 }
+	    { "F", 6 }
+	    { "G", 7 }
+	    { "H", 8 }
+
+	set pitch = 2.4mm
+
+	loop row = 1, 8
+
+	__0: vec @((col-4.5)*pitch, (4.5-row)*pitch)
+	frame ball .
+}
+
+frame keepout {
+	set border = 1.5mm
+
+	__0: vec @(-w/2-border, -h/2-border)
+	__1: vec @(w/2+border, h/2+border)
+	rect __0 . silk
+}
+
+frame outline {
+	set cdiam = 0.8mm
+
+	__0: vec @(-w/2, h/2)
+	__1: vec @(w/2, -h/2)
+	__2: vec @(w/2, h/2)
+	__3: vec @(-w/2, -h/2)
+	__4: vec __2(-cdiam/2, 0mm)
+	line __0 . silk
+	__5: vec __2(0mm, -cdiam/2)
+	arc __2 __4 . silk
+	__6: vec __1(0mm, cdiam/2)
+	line __5 . silk
+	__7: vec __1(-cdiam/2, 0mm)
+	arc __1 __6 . silk
+	__8: vec __3(cdiam/2, 0mm)
+	line . __7 silk
+	__9: vec __3(0mm, cdiam/2)
+	line __0 . silk
+	arc __3 __8 . silk
+}
+
+package "GE865"
+set silk = 5mil
+
+set h = 22mm
+
+set w = 22mm
+
+frame outline @
+frame keepout @
+frame balls @
