@@ -3,12 +3,33 @@
 frame ball {
 	set diam = 1mm
 
-	__0: vec @(-diam/2, -diam/2)
-	__1: vec @(diam/2, diam/2)
-	rpad "$cname$row" __0 .
+	ll: vec @(-diam/2, -diam/2)
+	ur: vec @(diam/2, diam/2)
+	rpad "$cname$row" ll .
 }
 
-frame balls {
+frame ball_pos {
+	c: vec @(-(4.5-col)*pitch, (4.5-row)*pitch)
+	frame ball .
+}
+
+frame row4 {
+	table
+	    { cname, col }
+	    { "A", 1 }
+	    { "B", 2 }
+	    { "C", 3 }
+	    { "D", 4 }
+	    { "E", 5 }
+	    { "F", 6 }
+	    { "G", 7 }
+
+	set row = 4
+
+	frame ball_pos @
+}
+
+frame rows_except_4 {
 	table
 	    { cname, col }
 	    { "A", 1 }
@@ -20,42 +41,59 @@ frame balls {
 	    { "G", 7 }
 	    { "H", 8 }
 
-	set pitch = 2.4mm
+	table
+	    { row }
+	    { 1 }
+	    { 2 }
+	    { 3 }
+	    { 5 }
+	    { 6 }
+	    { 7 }
+	    { 8 }
 
-	loop row = 1, 8
+	frame ball_pos @
+}
 
-	__0: vec @((col-4.5)*pitch, (4.5-row)*pitch)
-	frame ball .
+frame balls {
+	frame rows_except_4 @
+	frame row4 @
 }
 
 frame keepout {
 	set border = 1.5mm
 
-	__0: vec @(-w/2-border, -h/2-border)
-	__1: vec @(w/2+border, h/2+border)
-	rect __0 . silk
+	ll: vec @(-w/2-border, -h/2-border)
+	ur: vec @(w/2+border, h/2+border)
+	rect ll . silk
+}
+
+frame A1 {
+	__0: vec @(-3.5*pitch, 3.5*pitch)
+	r: vec .(pitch/2, 0mm)
+	circ __0 . silk
 }
 
 frame outline {
 	set cdiam = 0.8mm
 
-	__0: vec @(-w/2, h/2)
-	__1: vec @(w/2, -h/2)
-	__2: vec @(w/2, h/2)
-	__3: vec @(-w/2, -h/2)
-	__4: vec __2(-cdiam/2, 0mm)
-	line __0 . silk
-	__5: vec __2(0mm, -cdiam/2)
-	arc __2 __4 . silk
-	__6: vec __1(0mm, cdiam/2)
-	line __5 . silk
-	__7: vec __1(-cdiam/2, 0mm)
-	arc __1 __6 . silk
-	__8: vec __3(cdiam/2, 0mm)
-	line . __7 silk
-	__9: vec __3(0mm, cdiam/2)
-	line __0 . silk
-	arc __3 __8 . silk
+	ul: vec @(-w/2, h/2)
+	lr: vec @(w/2, -h/2)
+	ur: vec @(w/2, h/2)
+	ll: vec @(-w/2, -h/2)
+	ur_l: vec ur(-cdiam/2, 0mm)
+	line ul . silk
+	ur_d: vec ur(0mm, -cdiam/2)
+	arc ur ur_l . silk
+	lr_u: vec lr(0mm, cdiam/2)
+	line ur_d . silk
+	lr_l: vec lr(-cdiam/2, 0mm)
+	arc lr lr_u . silk
+	ll_r: vec ll(cdiam/2, 0mm)
+	line . lr_l silk
+	ll_u: vec ll(0mm, cdiam/2)
+	line ul . silk
+	arc ll ll_r . silk
+	frame A1 @
 }
 
 package "GE865"
@@ -65,6 +103,14 @@ set h = 22mm
 
 set w = 22mm
 
+set pitch = 2.4mm
+
 frame outline @
 frame keepout @
 frame balls @
+measy ball.ll -> ball.ur 5mm
+measx ball_pos.c -> ball_pos.c -6mm
+measy keepout.ll >> outline.ll_r 1mm
+measy outline.ur >> outline.lr 3mm
+measx outline.ul >> outline.ur 3mm
+measx "r = " outline.lr_l >> outline.lr -3mm
