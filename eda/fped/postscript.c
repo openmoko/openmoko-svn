@@ -31,6 +31,8 @@
 #define	PS_MEAS_ARROW_ANGLE	30
 #define	PS_MEAS_TEXT_HEIGHT	mm_to_units(0.2)
 #define	PS_MEAS_BASE_OFFSET	mm_to_units(0.05)
+#define	PS_CROSS_WIDTH		mm_to_units(0.01)
+#define	PS_CROSS_DASH		mm_to_units(0.1)
 
 
 struct postscript_params postscript_params = {
@@ -274,6 +276,18 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 }
 
 
+static void ps_cross(FILE *file, const struct inst *inst)
+{
+	fprintf(file, "gsave 0 setgray %d setlinewidth\n", PS_CROSS_WIDTH);
+	fprintf(file, "    [%d] 0 setdash\n", PS_CROSS_DASH);
+	fprintf(file, "    %d 0 moveto %d 0 lineto\n",
+	    inst->bbox.min.x, inst->bbox.max.x);
+	fprintf(file, "    0 %d moveto 0 %d lineto\n",
+	    inst->bbox.min.y, inst->bbox.max.y);
+	fprintf(file, "    stroke grestore \n");
+}
+
+
 int postscript(FILE *file)
 {
 	enum inst_prio prio;
@@ -292,7 +306,7 @@ int postscript(FILE *file)
 
 	fprintf(file,
 "/dotpath {\n"
-"    gsave pathbbox clip newpath\n"
+"    gsave flattenpath pathbbox clip newpath\n"
 "    1 setlinecap %d setlinewidth\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    llx %d urx {\n"
@@ -304,7 +318,7 @@ int postscript(FILE *file)
 
 	fprintf(file,
 "/hatchpath {\n"
-"     gsave pathbbox clip newpath\n"
+"     gsave flattenpath pathbbox clip newpath\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    lly ury sub %d urx llx sub {\n"	/* for -(ury-lly) to urx-llx */
 "	llx add dup lly moveto\n"
@@ -314,7 +328,7 @@ int postscript(FILE *file)
 
 	fprintf(file,
 "/backhatchpath {\n"
-"     gsave pathbbox clip newpath\n"
+"     gsave flattenpath pathbbox clip newpath\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    0 %d ury lly sub urx llx sub add {\n"	/* for 0 to urx-llx_ury-lly */
 "	llx add dup lly moveto\n"
@@ -335,7 +349,7 @@ fprintf(file,
 "    gsave 0 0 moveto\n"
 "    /f exch def /h exch def /w exch def\n"
 "    exch f scalefont setfont\n"
-"    false charpath pathbbox\n"
+"    false charpath flattenpath pathbbox\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    w urx llx sub div h ury lly sub div 2 copy gt { exch } if pop\n"
 "    f mul grestore } def\n");
@@ -346,10 +360,12 @@ fprintf(file,
 
 	fprintf(file,
 "/center {\n"
-"    gsave dup false charpath pathbbox\n"
-"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    currentpoint /y exch def /x exch def\n"
+"    gsave dup false charpath flattenpath pathbbox\n"
+"    /ury exch def /urx exch def\n"
+"    /lly exch def /llx exch def\n"
 "    grestore\n"
-"    llx urx sub 2 div lly ury sub 2 div rmoveto } def\n");
+"    x llx urx add 2 div sub y lly ury add 2 div sub rmoveto } def\n");
 
 	/*
 	 * Stack: string dist -> string
@@ -358,7 +374,7 @@ fprintf(file,
 	fprintf(file,
 "/hcenter {\n"
 "    /off exch def\n"
-"    gsave dup false charpath pathbbox\n"
+"    gsave dup false charpath flattenpath pathbbox\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    grestore\n"
 "    llx urx sub 2 div\n"
@@ -371,9 +387,20 @@ fprintf(file,
 	fprintf(file,
 "/showoutlined {\n"
 "    gsave 2 mul setlinewidth 1 setgray\n"
-"    dup false charpath stroke grestore\n"
+"    dup false charpath flattenpath stroke grestore\n"
 "    show } def\n");
 
+	/*
+	 * Stack: string -> string
+	 */
+
+fprintf(file,
+"/debugbox { gsave dup false charpath flattenpath pathbbox\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    0 setgray 100 setlinewidth\n"
+"    llx lly urx llx sub ury lly sub rectstroke grestore } def\n");
+
+	ps_cross(file, pkgs->insts[ip_frame]);
 	FOR_INST_PRIOS_UP(prio)
 		FOR_ALL_INSTS(i, prio, inst)
 			ps_background(file, prio, inst);

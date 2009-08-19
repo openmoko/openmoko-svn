@@ -50,7 +50,7 @@ frame outline {
 	line top_left . 5mil
 }
 
-part "SC89"
+package "SC89"
 table
     { Px, Py, Gy, Wx }
     { 0.5mm, 0.6mm, 0.7mm, 1.5mm }

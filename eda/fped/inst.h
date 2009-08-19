@@ -72,7 +72,6 @@ struct inst_ops {
 struct inst {
 	const struct inst_ops *ops;
 	struct coord base;
-//	struct inst *base_inst; /* frame or vector leading to this item */
 	struct bbox bbox;
 	struct vec *vec; /* NULL if not vector */
 	struct obj *obj; /* NULL if not object */

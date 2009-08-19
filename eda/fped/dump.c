@@ -436,8 +436,7 @@ char *print_vec(const struct vec *vec)
 /* ----- frames ------------------------------------------------------------ */
 
 
-static void dump_frame(FILE *file, const struct frame *frame,
-    const char *indent)
+static void dump_frame(FILE *file, struct frame *frame, const char *indent)
 {
 	const struct table *table;
 	const struct loop *loop;
@@ -445,6 +444,17 @@ static void dump_frame(FILE *file, const struct frame *frame,
 	struct order *order;
 	const struct order *item;
 	char *s, *s1;
+
+	if (frame->dumped)
+		return;
+	frame->dumped = 1;
+
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->type == ot_frame)
+			dump_frame(file, obj->u.frame.ref, "\t");
+
+	if (frame->name)
+		fprintf(file, "frame %s {\n", frame->name);
 
 	for (table = frame->tables; table; table = table->next)
 		dump_table(file, table, indent);
@@ -472,6 +482,9 @@ static void dump_frame(FILE *file, const struct frame *frame,
 		fprintf(file, "%s%s\n", indent, s);
 		free(s);
 	}
+
+	if (frame->name)
+		fprintf(file, "}\n\n");
 }
 
 
@@ -480,17 +493,17 @@ static void dump_frame(FILE *file, const struct frame *frame,
 
 int dump(FILE *file)
 {
-	const struct frame *frame;
+	struct frame *frame;
 
 	fprintf(file, "/* MACHINE-GENERATED ! */\n\n");
+	for (frame = frames; frame; frame = frame->next)
+		frame->dumped = 0;
 	for (frame = frames; frame; frame = frame->next) {
 		if (!frame->name) {
 			fprintf(file, "package \"%s\"\n", pkg_name);
 			dump_frame(file, frame, "");
 		} else {
-			fprintf(file, "frame %s {\n", frame->name);
 			dump_frame(file, frame, "\t");
-			fprintf(file, "}\n\n");
 		}
 	}
 	fflush(file);

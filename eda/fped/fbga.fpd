@@ -35,7 +35,7 @@ frame first {
 	frame pad @
 }
 
-part "Fake_BGA"
+package "Fake_BGA"
 table
     { row, rname, inner }
     { 0, "A", 1 }

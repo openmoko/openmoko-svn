@@ -122,6 +122,9 @@ struct frame {
 	/* generating and editing */
 	struct obj *active_ref;
 
+	/* for dumping */
+	int dumped;
+
 	/* for the GUI */
 	GtkWidget *label;
 };
