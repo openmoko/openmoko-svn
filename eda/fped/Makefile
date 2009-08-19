@@ -24,17 +24,18 @@ XPMS = point.xpm delete.xpm delete_off.xpm \
        meas.xpm meas_x.xpm meas_y.xpm \
        stuff.xpm stuff_off.xpm meas_off.xpm
 
+SHELL = /bin/bash
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
 LIBS_GTK = `pkg-config --libs gtk+-2.0`
 
-CFLAGS_WARN=-Wall -Wshadow -Wmissing-prototypes \
-            -Wmissing-declarations -Wno-format-zero-length
-CFLAGS=-g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' $(CFLAGS_WARN)
-SLOPPY=-Wno-unused -Wno-implicit-function-declaration -Wno-missing-prototypes \
-       -Wno-missing-declarations
+CFLAGS_WARN = -Wall -Wshadow -Wmissing-prototypes \
+	      -Wmissing-declarations -Wno-format-zero-length
+CFLAGS = -g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' $(CFLAGS_WARN)
+SLOPPY = -Wno-unused -Wno-implicit-function-declaration \
+	 -Wno-missing-prototypes -Wno-missing-declarations
 LDLIBS = -lm -lfl $(LIBS_GTK)
-YACC=bison -y
-YYFLAGS=-v
+YACC = bison -y
+YYFLAGS = -v
 
 # ----- Verbosity control -----------------------------------------------------
 
@@ -75,13 +76,11 @@ endif
 
 # generate 26x26 pixels icons, then drop the 1-pixel frame
 
-# this adds a magenta border
-# sed '/2 2 0 1 /{s//2 2 0 15 /;s/ 0 7 / 22 7 /;}' $< | \
-
 .fig.xpm:
 		$(GEN) fig2dev -L xpm -Z 0.32 -S 4 $< | \
 		  convert -crop 24x24+1+1 - - | \
-		  sed "s/*.*\[]/*xpm_`basename $@ .xpm`[]/" >$@
+		  sed "s/*.*\[]/*xpm_`basename $@ .xpm`[]/" >$@; \
+		  [ "$${PIPESTATUS[*]}" = "0 0 0" ] || { rm -f $@; exit 1; }
 
 all:		fped
 

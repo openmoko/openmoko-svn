@@ -18,9 +18,6 @@
 #include "gui_style.h"
 
 
-#define	INVALID	"#00ffff"
-
-
 GdkGC *gc_bg, *gc_bg_error;
 GdkGC *gc_drag;
 GdkGC *gc_highlight;
