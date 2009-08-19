@@ -53,6 +53,7 @@ Setting things up
 
   - Prerequisites:
 
+    - bash
     - flex
     - bison
     - fig2dev
