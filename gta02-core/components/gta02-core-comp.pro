@@ -151,3 +151,4 @@ LibName43=./debug_con.lib
 LibName44=./ge865.lib
 LibName45=./adg3304.lib
 LibName46=./bf2520.lib
+LibName47=./wm3236aq.lib
