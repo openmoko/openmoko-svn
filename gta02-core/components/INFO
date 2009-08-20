@@ -234,3 +234,7 @@ D: http://www.kmax.com.tw/doc/02_KEV_Series.pdf
 S: CRYSTAL
 A: gps-xtal
 D: http://www.microcrystal.com/CMSPages/GetFile.aspx?nodeguid=0e348300-766a-4c4d-a9fc-854939ece316
+
+# Logic Level translator
+S: adg3304
+D: http://www.analog.com/static/imported-files/Data_Sheets/ADG3304.pdf
