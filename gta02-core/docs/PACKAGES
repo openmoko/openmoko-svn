@@ -1,3 +1,6 @@
+Dual
+----
+
 Leads	Pitch	Size		NXP		Names
 3	0.45mm	1.4 x 0.8 mm	-		SON1408-3, MFPAK
 3	0.5 mm	1.6 x 0.8 mm	SOT416		SC-75
@@ -39,3 +42,24 @@ SOT680-1: http://www.nxp.com/#/page/content=[f=/packages/SOT680-1.xml]
 SOT753:	http://www.nxp.com/#/page/content=[f=/packages/SOT753.xml]
 
 * SOT23 =? SOT346
+
+
+QFN
+---
+
+Pads	Pitch	Size		Center	Side	NXP		Names
+48	0.5 mm	7 x 7 x 0.85 mm	5.1 mm	incl.	SOT619-2	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	5.1 mm	incl.	SOT619-3	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	5.6 mm	vert.	SOT619-4	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.9  mm	4.6 mm	vert.	SOT619-5	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	4.6 mm	vert.	SOT619-6	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	3.3 mm	vert.	SOT619-7	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	5.6 mm	vert.	SOT619-8	MO-220, HVQFN48
+48	0.5 mm	7 x 7 x 0.85 mm	5.3 mm	incl.	SOT619-9	MO-220, HVQFN48
+48	0.4 mm	6 x 6 x 0.85 mm	4.1 mm	incl.	SOT778-5	HVQFN48
+48	0.5 mm	7 x 7 x 0.7  mm	4.0 mm	vert.	SOT1031-1	HWQFN48R
+48	0.5 mm	7 x 7 x 0.7  mm	5.25mm	vert.	SOT1031-2	HWQFN48R
+48	0.5 mm	7 x 7 x 0.65 mm	5.25mm	vert.	SOT1074-1	HWQFN48
+
+http://www.nxp.com/#/page/content=[f=/packages/SOT619-2.xml]
+etc.

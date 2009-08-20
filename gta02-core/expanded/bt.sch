@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed Aug 12 21:10:04 2009
+EESchema Schematic File Version 2  date Thu Aug 20 10:57:36 2009
 LIBS:power,device,conn,gta02-core-expanded,gta02-core-expanded-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L XADG3304 U?
+U 1 1 4A8D55FE
+P 8050 5250
+F 0 "U?" H 8050 5650 60  0000 C CNN
+F 1 "XADG3304" H 8050 4250 60  0000 C CNN
+	1    8050 5250
+	1    0    0    -1  
+$EndComp
 Text Notes 7500 1250 0    120  ~ 24
 WLAN
 $Comp
