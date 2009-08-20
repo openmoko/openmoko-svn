@@ -238,3 +238,12 @@ D: http://www.microcrystal.com/CMSPages/GetFile.aspx?nodeguid=0e348300-766a-4c4d
 # Logic Level translator
 S: adg3304
 D: http://www.analog.com/static/imported-files/Data_Sheets/ADG3304.pdf
+
+# WiFi module
+S: wm3236aq
+D: http://www.accton.com/products/Datasheet/WM3236A.AQ.pdf
+
+# WiFi 2400MHz band-pass filter 
+S: bf2520
+A: BF2520-B2R4CAB
+D: http://www.anttechcorp.com/images/acx_bf_PDF/BF2520-B2R4CAB.pdf
