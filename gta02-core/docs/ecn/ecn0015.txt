@@ -5,13 +5,13 @@ The Calypso serial interface on the headset port caused many problem.
 
 Changes:
 - removed U4401
-- removed R4407 and R4408, these resistors probably keept the input signal from
-  shorting through the amplifier, so there is no need for them anymore.
+- changed R4407 and R4405 from 33 Ohm to 0 Ohm. These resistors probably kept
+  the input signal from shorting through the amplifier, so there is no need
+  for them anymore. (Remove them completely ?)
 - removed TP4405/4406
 - removed R4403, pulldown resistor for U4401 enable lines 
-
-To do:
-- depending on Calypso replacement we might want to keep/remove R4411 and TP4402/4401 as well
+- remove R4411 and TP4402/4401 as well
 
 
 Author: Rene Harder <rehar@saweb.de>
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5490

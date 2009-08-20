@@ -4,14 +4,43 @@ Use codec to detect jack insertion and HOLD button
 The Wolfson WM8753L has the ability to detect jack insertion and pressing
 the HOLD button (MIC bias short-circuit).
 
-Rough outline:
-- HOLD seems to be internal, ok
-- route JACK_INSERT to the codec (GPIO4), not the CPU
-- route codec IRQ (GP1) to CPU
+Outline (based on Joerg's "mega-ECN"):
 
-Q: how do we distinguish multiple interrupt sources ? Mask and see if
-the interrupt persists ? Or would we have to upgrade to a 3-wire interface
-so that we could read data back ? (Seems too intrusive.)
+- HOLD is detected inside the codec:
+  - remove R4410, R1531
+  - remove nHOLD net
+  - free EINT7
+- route JACK_INSERT to the codec, not the CPU:
+  - remove R4406
+  - disconnect R1532 from the JACK_INSERT net
+  - connect JACK_INSERT to a new 10 kOhm series resistor (To protect codec
+    against negative transients from the output capacitors. The name R4402
+    is available.)
+  - connect the other end of R4402 to the codec's GPIO4
+- route codec IRQ (GP1) to CPU
+  - name net CODEC_IRQ
+  - connect codec GP1 to R1532
+  - EINT4 is now CODEC_IRQ, not JACK_INSERT
+
+Q: how do we distinguish multiple interrupt sources ?
+A: Mask and see if the interrupt persists.
+
+again:
+	HPSWIEN = 0;				/* mask jack insert */
+	/* assume active-low */
+	if (gpio_get_value(CODEC_INT)) {
+		/* interrupt went away - it's JACK_INSERT */
+		HPSWIPOL = !HPSWIPOL;
+	} else {
+		/* interrupt is still pending - it's HOLD */
+		MICSHTEN = 0;
+		MICSHTPOL = !MICSHTPOL;
+		MICSHTEN = 1;
+	}
+	HPSWIEN = 1;
+	/* more than one source or new interrupt */
+	if (!gpio_get_value(CODEC_INT))
+		goto again;
 
 
 Author: Werner Almesberger <werner@openmoko.org>

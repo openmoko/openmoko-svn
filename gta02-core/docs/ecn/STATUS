@@ -30,7 +30,7 @@ Number	Status	Description
 0028	Cancel	Remove USB "charge path" power switch U4905
 0029	Discuss	Move 0R resistors next to PMU after caps
 0030	Edit	Replace Calypso with Telit GE865
-0031	Edit	Use codec to detect jack insertion and HOLD button
+0031	Discuss	Use codec to detect jack insertion and HOLD button
 
 
 Open ECNs
