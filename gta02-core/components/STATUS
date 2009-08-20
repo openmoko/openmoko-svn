@@ -43,6 +43,7 @@ td028ttec1		CON6001	Rene
 varistor		D3001	Alvaro	Werner	Dave	Rene
 vibrator		VB4601	Alvaro	Werner	Rene
 wm8753l			U3001	Dave	Werner	Rene
+adg3304			U7803	Alvaro
 
 KiCad R_PACK4		RP2201	-	Werner	Rene
 KiCad CRYSTAL		X7602	-	Werner	Rene

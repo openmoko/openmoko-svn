@@ -149,3 +149,4 @@ LibName41=./zxct1009.lib
 LibName42=./ht110.lib
 LibName43=./debug_con.lib
 LibName44=./ge865.lib
+LibName45=./adg3304.lib
