@@ -40,6 +40,7 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/varistor.lib
   components/vibrator.lib
   components/zxct1009.lib
+  components/adg3304.lib
 
   Compilations:
   components/gta02-core-expanded.lib
