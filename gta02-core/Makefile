@@ -1,4 +1,5 @@
 .PHONY:		all gen generate gv sch brd update upload xpdf bom-by-ref
+.PHONY:		dsv
 
 all:
 		@echo "make what ? target: gen generate sch upload"
@@ -37,3 +38,6 @@ bom-by-ref:
 		@sed '/^#Cmp ( order = Reference )/,/#End Cmp/p;d' \
 		  gta02-core.lst | \
 		  sed '/^#/d;/ NC /d;s/^| //;/^TP/d'
+
+dsv:
+		$(MAKE) -C scripts dsv

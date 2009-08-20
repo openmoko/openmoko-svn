@@ -9,7 +9,7 @@ antenna			U1	Rene				[4]
 atr0610			U7601	Rene	Werner	Alvaro	Andre
 atr0635			U7608   Rene	Dave			<1>
 b7840			U7603	Rene	Werner	Dave    Alvaro
-bf2520			U7802	Alvaro
+bf2520			U7802	Alvaro	Werner
 btp-03ja4g		CON1701	Rene	Werner
 coax			CON7601 Rene	Werner
 dfbm-cs320		U2	Rene	Werner
@@ -44,7 +44,7 @@ tas4025a		X1501	Alvaro	Tobias	Rene		[3]
 td028ttec1		CON6001	Rene
 varistor		D3001	Alvaro	Werner	Dave	Rene
 vibrator		VB4601	Alvaro	Werner	Rene
-wm3236aq		U7801	Alvaro
+wm3236aq		U7801	Alvaro	Werner
 wm8753l			U3001	Dave	Werner	Rene
 
 KiCad R_PACK4		RP2201	-	Werner	Rene

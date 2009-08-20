@@ -83,7 +83,7 @@ Setting things up
   them locally. To do so, decide on a location for the cache, e.g.,
   /home/moko/dsv (dsv is "Data Sheet Viewer"), then
 
-  DSV_HOME=/home/moko/dsv make -C scripts dsv
+  DSV_HOME=/home/moko/dsv make dsv
 
   Then add $DSV_HOME/bin to your PATH, and you'll be able to view
   data sheets with commands like dsv-sc32442, dsv-cpu, etc. See
