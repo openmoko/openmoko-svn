@@ -77,5 +77,6 @@ void tool_selected_inst(struct inst *inst);
 void tool_reset(void);
 
 GtkWidget *gui_setup_tools(GdkDrawable *drawable);
+void gui_cleanup_tools(void);
 
 #endif /* !GUI_TOOL_H */

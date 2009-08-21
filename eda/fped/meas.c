@@ -231,7 +231,6 @@ static int instantiate_meas_pkg(void)
 	const struct meas *meas;
 	struct coord a0, b0;
 	lt_op_type lt;
-	struct num offset;
 
 	for (obj = root_frame->objs; obj; obj = obj->next) {
 		if (obj->type != ot_meas)
@@ -250,18 +249,8 @@ static int instantiate_meas_pkg(void)
 			b0 = meas_find_max(lt,
 			    curr_pkg->samples[meas->high->n]);
 
-		if (!meas->offset)
-			offset.n = 0;
-		else {
-			offset = eval_unit(meas->offset, root_frame);
-			if (is_undef(offset)) {
-				instantiation_error = obj;
-				return 0;
-			}
-		}
 		inst_meas(obj,
-		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0,
-		    offset.n);
+		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0);
 	}
 	return 1;
 }

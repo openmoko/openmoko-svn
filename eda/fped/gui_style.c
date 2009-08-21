@@ -74,3 +74,9 @@ void gui_setup_style(GdkDrawable *drawable)
 
 	item_list_font = pango_font_description_from_string(ITEM_LIST_FONT);
 }
+
+
+void gui_cleanup_style(void)
+{
+	pango_font_description_free(item_list_font);
+}

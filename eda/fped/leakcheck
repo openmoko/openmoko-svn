@@ -1,13 +1,4 @@
 #!/bin/sh
-#valgrind --leak-check=full --show-reachable=yes --suppressions=leak.supp \
-#  ./fped "$@"
-
-#
-# Seems that we can't suppress warnings from gtk_init, so we use FPED_NO_GUI
-# to avoid bringing up Gtk+ at all.
-#
-FPED_NO_GUI=y valgrind --leak-check=full --show-reachable=yes \
+valgrind --leak-check=full --show-reachable=yes --num-callers=50 \
+  --suppressions=leak.supp \
   ./fped "$@"
-
-#valgrind --leak-check=full --show-reachable=no \
-#  ./fped "$@"

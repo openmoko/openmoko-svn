@@ -803,24 +803,49 @@ static struct inst_ops meas_ops = {
 };
 
 
-int inst_meas(struct obj *obj,
-    struct coord from, struct coord to, unit_type offset)
+static struct inst *find_meas_hint(const struct obj *obj)
+{
+	struct inst *inst;
+
+	for (inst = curr_pkg->insts[ip_meas]; inst; inst = inst->next)
+		if (inst->obj == obj)
+			break;
+	return inst;
+}
+
+
+int inst_meas(struct obj *obj, struct coord from, struct coord to)
 {
 	struct inst *inst;
 	struct coord a1, b1;
 
-	inst = add_inst(&meas_ops, ip_meas, from);
-	inst->obj = obj;
+	inst = find_meas_hint(obj);
+	assert(inst);
+	inst->base = from;
 	inst->u.meas.end = to;
-	inst->u.meas.offset = offset;
-	inst->active = 1; /* measurements are always active */
 	/* @@@ we still need to consider the text size as well */
+	update_bbox(&inst->bbox, from);
 	update_bbox(&inst->bbox, to);
 	project_meas(inst, &a1, &b1);
 	update_bbox(&inst->bbox, a1);
 	update_bbox(&inst->bbox, b1);
 	propagate_bbox(inst);
 	return 1;
+}
+
+
+void inst_meas_hint(struct obj *obj, unit_type offset)
+{
+	static const struct coord zero = { 0, 0 };
+	struct inst *inst;
+
+	inst = find_meas_hint(obj);
+	if (inst)
+		return;
+	inst = add_inst(&meas_ops, ip_meas, zero);
+	inst->obj = obj;
+	inst->u.meas.offset = offset;
+	inst->active = 1; /* measurements are always active */
 }
 
 

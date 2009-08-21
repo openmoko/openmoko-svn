@@ -1044,3 +1044,13 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 
 	return bar;
 }
+
+
+void gui_cleanup_tools(void)
+{
+	g_object_unref(frame_image);
+	g_object_unref(frame_image_locked);
+	g_object_unref(frame_image_ready);
+	g_object_unref(delete_image[0]);
+	g_object_unref(delete_image[1]);
+}

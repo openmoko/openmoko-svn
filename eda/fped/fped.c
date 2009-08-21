@@ -56,13 +56,10 @@ int main(int argc, char **argv)
 	int error;
 	int batch_write_kicad = 0, batch_write_ps = 0;
 	int c;
-	int have_gui = !getenv("FPED_NO_GUI");
 
-	if (have_gui) {
-		error = gui_init(&argc, &argv);
-		if (error)
-			return error;
-	}
+	error = gui_init(&argc, &argv);
+	if (error)
+		return error;
 
 	while ((c = getopt(argc, argv, "kp")) != EOF)
 		switch (c) {
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
 		write_kicad();
 	if (batch_write_ps)
 		write_ps();
-	if (have_gui && !batch_write_kicad && !batch_write_ps) {
+	if (!batch_write_kicad && !batch_write_ps) {
 		error = gui_main();
 		if (error)
 			return error;

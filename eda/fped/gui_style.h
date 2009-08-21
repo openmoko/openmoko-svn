@@ -115,5 +115,6 @@ extern GdkGC *gc_frame[mode_n];
 extern PangoFontDescription *item_list_font;
 
 void gui_setup_style(GdkDrawable *drawable);
+void gui_cleanup_style(void);
 
 #endif /* !GUI_STYLE_H */

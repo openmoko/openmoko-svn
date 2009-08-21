@@ -34,8 +34,6 @@ Bugs:
 - whenever we call parse_* for input parsing, we may leak lots of expressions
 - can't edit measurement labels through the GUI
 - r of rpads is misleading, particularly if we have a circle
-- using variables in a measurement offset causes a crash because evaluation
-  takes place after all table entries have been visited
 
 Code cleanup:
 - merge edit_unique with edit_name

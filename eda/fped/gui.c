@@ -139,6 +139,15 @@ static void make_tool_bar(GtkWidget *hbox, GdkDrawable *drawable)
 }
 
 
+static void cleanup_tool_bar(void)
+{
+	g_object_unref(stuff_image[0]);
+	g_object_unref(stuff_image[1]);
+	g_object_unref(meas_image[0]);
+	g_object_unref(meas_image[1]);
+}
+
+
 static void make_top_bar(GtkWidget *vbox)
 {
 	GtkWidget *hbox;
@@ -247,6 +256,10 @@ int gui_main(void)
 	make_popups();
 
 	gtk_main();
+
+	gui_cleanup_style();
+	gui_cleanup_tools();
+	cleanup_tool_bar();
 
 	return 0;
 }

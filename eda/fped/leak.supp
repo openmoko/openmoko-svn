@@ -1,0 +1,31 @@
+{
+	gtk_internal
+	Memcheck:Leak
+	...
+	fun:gtk_init
+}
+
+{
+	lex
+	Memcheck:Leak
+	fun:malloc
+	...
+	fun:yyensure_buffer_stack
+	...
+}
+
+{
+	pango_leaks_like_crazy
+	Memcheck:Leak
+	...
+	fun:pango_*
+	...
+}
+
+{
+	gdk_pixbuf_new_from_xpm_data_leaks_through_dlopen
+	Memcheck:Leak
+	...
+	fun:dlopen
+	...
+}

@@ -94,10 +94,15 @@ error:
 
 static int generate_objs(struct frame *frame, struct coord base, int active)
 {
+	static const struct num zero_offset = {
+		.type =	nt_mm,
+		.exponent = 0,
+		.n = 0,
+	};
 	struct obj *obj;
 	char *name;
 	int ok;
-	struct num width;
+	struct num width, offset;
 
 	for (obj = frame->objs; obj; obj = obj->next)
 		switch (obj->type) {
@@ -150,6 +155,12 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 				goto error;
 			break;
 		case ot_meas:
+			assert(frame == root_frame);
+			offset = eval_unit_default(obj->u.meas.offset, frame,
+			    zero_offset);
+			if (is_undef(offset))
+				goto error;
+			inst_meas_hint(obj, offset.n);
 			break;
 		default:
 			abort();
