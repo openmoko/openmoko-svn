@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 21 Aug 2009 17:05:15 WEST
+EESchema Schematic File Version 2  date Fri 21 Aug 2009 17:09:38 WEST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -2235,8 +2235,8 @@ $Comp
 L R_US R1719
 U 1 1 4A39F9FB
 P 15500 5600
-F 0 "R1719" H 15500 5700 50  0000 C CNN
-F 1 "0R" H 15700 5650 50  0000 C CNN
+F 0 "R1719" V 15450 5800 50  0000 C CNN
+F 1 "0R" V 15550 5750 50  0000 C CNN
 F 2 "R0402-H" H 15500 5600 60  0001 C CNN
 	1    15500 5600
 	0    1    1    0   
