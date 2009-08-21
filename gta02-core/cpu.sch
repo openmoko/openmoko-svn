@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 20 Aug 2009 10:32:37 PM CDT
+EESchema Schematic File Version 2  date Fri 21 Aug 2009 01:42:40 AM CDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 10750 5700 0    50   ~ 0
+removed nHOLD network ECN0031
+NoConn ~ 13450 5800
 NoConn ~ 3450 5450
 NoConn ~ 3450 5550
 Text Notes 4000 5600 0    50   ~ 0
