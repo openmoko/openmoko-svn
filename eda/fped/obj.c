@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "meas.h"
 #include "inst.h"
+#include "delete.h"
 #include "obj.h"
 
 
@@ -287,4 +288,17 @@ int instantiate(void)
 	else
 		inst_revert();
 	return ok;
+}
+
+
+/* ----- deallocation ------------------------------------------------------ */
+
+
+void obj_cleanup(void)
+{
+	free(pkg_name);
+	while (frames) {
+		delete_frame(frames);
+		destroy();
+	}
 }

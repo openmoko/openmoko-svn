@@ -459,9 +459,12 @@ struct expr *parse_expr(const char *s)
 
 static void vacate_op(struct expr *expr)
 {
-	if (expr->op == op_num || expr->op == op_string ||
-	    expr->op == op_var)
+	if (expr->op == op_num || expr->op == op_var)
 		return;
+	if (expr->op == op_string) {
+		free(expr->u.str);
+		return;
+	}
 	if (expr->op == op_minus) {
 		free_expr(expr->u.op.a);
 		return;

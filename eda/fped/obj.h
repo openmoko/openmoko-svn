@@ -191,5 +191,6 @@ extern void *instantiation_error;
 
 
 int instantiate(void);
+void obj_cleanup(void);
 
 #endif /* !OBJ_H */

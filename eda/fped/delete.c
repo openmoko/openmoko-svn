@@ -146,9 +146,6 @@ static void do_delete_vec(struct vec *vec)
 	struct vec *walk, *prev;
 	struct deletion *del;
 
-	delete_vecs_by_ref(vec->frame->vecs, vec);
-	delete_objs_by_ref(&vec->frame->objs, vec);
-
 	prev = NULL;
 	for (walk = vec->frame->vecs; walk != vec; walk = walk->next)
 		prev = walk;
@@ -159,6 +156,9 @@ static void do_delete_vec(struct vec *vec)
 	del = new_deletion(dt_vec);
 	del->u.vec.ref = vec;
 	del->u.vec.prev = prev;
+
+	delete_vecs_by_ref(vec->frame->vecs, vec);
+	delete_objs_by_ref(&vec->frame->objs, vec);
 }
 
 
@@ -204,6 +204,8 @@ static void destroy_obj(struct obj *obj)
 		free_expr(obj->u.arc.width);
 		break;
 	case ot_meas:
+		if (obj->u.meas.label)
+			free(obj->u.meas.label);
 		if (obj->u.meas.offset)
 			free_expr(obj->u.meas.offset);
 		break;
@@ -255,6 +257,20 @@ static void undelete_obj(struct obj *obj, struct obj *prev)
 
 
 /* ----- rows -------------------------------------------------------------- */
+
+
+static void destroy_row(struct row *row)
+{
+	struct value *next_value;
+
+	while (row->values) {
+		next_value = row->values->next;
+		free_expr(row->values->expr);
+		free(row->values);
+		row->values = next_value;
+	}
+	free(row);
+}
 
 
 void delete_row(struct row *row)
@@ -355,6 +371,23 @@ static void undelete_column(const struct column *col)
 /* ----- tables ------------------------------------------------------------ */
 
 
+static void destroy_table(struct table *table)
+{
+	struct var *next_var;
+
+	while (table->vars) {
+		next_var = table->vars->next;
+		free(table->vars);
+		table->vars = next_var;
+	}
+	while (table->rows) {
+		delete_row(table->rows);
+		destroy();
+	}
+	free(table);
+}
+
+
 void delete_table(struct table *table)
 {
 	struct frame *frame = table->vars->frame;
@@ -390,6 +423,14 @@ static void undelete_table(struct table *table, struct table *prev)
 
 
 /* ----- loops ------------------------------------------------------------- */
+
+
+static void destroy_loop(struct loop *loop)
+{
+	free_expr(loop->from.expr);
+	free_expr(loop->to.expr);
+	free(loop);
+}
 
 
 void delete_loop(struct loop *loop)
@@ -429,6 +470,28 @@ static void undelete_loop(struct loop *loop, struct loop *prev)
 /* ----- frames ------------------------------------------------------------ */
 
 
+static void destroy_frame(struct frame *frame)
+{
+	while (frame->tables) {
+		delete_table(frame->tables);
+		destroy();
+	}
+	while (frame->loops) {
+		delete_loop(frame->loops);
+		destroy();
+	}
+	while (frame->vecs) {
+		delete_vec(frame->vecs);
+		destroy();
+	}
+	while (frame->objs) {
+		delete_obj(frame->objs);
+		destroy();
+	}
+	free(frame);
+}
+
+
 static void delete_references(const struct frame *ref)
 {
 	struct frame *frame;
@@ -438,7 +501,7 @@ static void delete_references(const struct frame *ref)
 		for (obj = frame->objs; obj; obj = obj->next)
 			if (obj->type == ot_frame)
 				if (obj->u.frame.ref == ref)
-					delete_obj(obj);
+					do_delete_obj(obj);
 }
 
 
@@ -447,7 +510,6 @@ void delete_frame(struct frame *frame)
 	struct deletion *del;
 
 	groups++;
-	delete_references(frame);
 
 	del = new_deletion(dt_frame);
 	del->u.frame.ref = frame;
@@ -459,6 +521,8 @@ void delete_frame(struct frame *frame)
 		frame->prev->next = frame->next;
 	else
 		frames = frame->next;
+
+	delete_references(frame);
 }
 
 
@@ -478,12 +542,10 @@ static void undelete_frame(struct frame *frame, struct frame *prev)
 /* ----- destroy/undelete interface ---------------------------------------- */
 
 
-int destroy(void)
+static void destroy_one(void)
 {
 	struct deletion *del;
 
-	if (!deletions)
-		return 0;
 	del = deletions;
 	switch (del->type) {
 	case dt_vec:
@@ -493,15 +555,36 @@ int destroy(void)
 		destroy_obj(del->u.obj.ref);
 		break;
 	case dt_frame:
-		abort();
-		/* @@@ later */
+		destroy_frame(del->u.frame.ref);
+		break;
+	case dt_loop:
+		destroy_loop(del->u.loop.ref);
+		break;
+	case dt_table:
+		destroy_table(del->u.table.ref);
+		break;
+	case dt_row:
+		destroy_row(del->u.row.ref);
+		break;
+	case dt_column:
+		abort(); /* @@@ later */
 		break;
 	default:
 		abort();
 	}
 	deletions = del->next;
 	free(del);
-	return 1;
+}
+
+
+void destroy(void)
+{
+	int group;
+
+	assert(deletions);
+	group = deletions->group;
+	while (deletions && deletions->group == group)
+		destroy_one();
 }
 
 
@@ -553,4 +636,11 @@ int undelete(void)
 	while (deletions && deletions->group == group)
 		undelete_one();
 	return 1;
+}
+
+
+void purge(void)
+{
+	while (deletions)
+		destroy();
 }

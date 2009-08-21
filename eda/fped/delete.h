@@ -25,7 +25,8 @@ void delete_column(struct table *table, int n);
 void delete_table(struct table *table);
 void delete_loop(struct loop *loop);
 void delete_frame(struct frame *frame);
-int destroy(void);
+void destroy(void);
 int undelete(void);
+void purge(void);
 
 #endif /* !DELETE_H */

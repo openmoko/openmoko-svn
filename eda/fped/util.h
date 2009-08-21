@@ -60,5 +60,6 @@ int is_id_char(char c, int first);
 int is_id(const char *s);
 
 const char *unique(const char *s);
+void unique_cleanup(void);
 
 #endif /* !UTIL_H */

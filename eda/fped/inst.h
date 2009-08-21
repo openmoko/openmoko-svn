@@ -88,7 +88,7 @@ struct inst {
 			unit_type width;
 		} rect;
 		struct {
-			const char *name;
+			char *name;
 			struct coord other;
 		} pad;
 		struct {

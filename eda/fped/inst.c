@@ -956,6 +956,18 @@ struct bbox inst_get_bbox(void)
 }
 
 
+static void cleanup_inst(enum inst_prio prio, const struct inst *inst)
+{
+	switch (prio) {
+	case ip_pad:
+		free(inst->u.pad.name);
+		break;
+	default:
+		break;
+	}
+}
+
+
 static void free_pkgs(struct pkg *pkg)
 {
 	enum inst_prio prio;
@@ -967,6 +979,7 @@ static void free_pkgs(struct pkg *pkg)
 		FOR_INST_PRIOS_UP(prio)
 			for (inst = pkg->insts[prio]; inst; inst = next) {
 				next = inst->next;
+				cleanup_inst(prio, inst);
 				free(inst);
 			}
 		reset_samples(pkg->samples, pkg->n_samples);

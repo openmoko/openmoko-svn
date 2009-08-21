@@ -79,7 +79,7 @@ int is_id(const char *s)
 
 
 static struct unique {
-	const char *s;
+	char *s;
 	struct unique *next;
 } *uniques = NULL;
 
@@ -98,3 +98,17 @@ const char *unique(const char *s)
 	(*walk)->next = NULL;
 	return (*walk)->s;
 }
+
+
+void unique_cleanup(void)
+{
+	struct unique *next;
+
+	while (uniques) {
+		next = uniques->next;
+		free(uniques->s);
+		free(uniques);
+		uniques = next;
+	}
+}
+
