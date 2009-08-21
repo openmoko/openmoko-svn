@@ -364,10 +364,12 @@ found:
 /* ----- common status reporting ------------------------------------------- */
 
 
-static void rect_status(struct coord a, struct coord b, unit_type width)
+static void rect_status(struct coord a, struct coord b, unit_type width,
+    int rounded)
 {
 	struct coord d = sub_vec(b, a);
-	double angle;
+	double angle, r;
+	unit_type diag;
 	
 	status_set_xy(d);
 	if (!d.x && !d.y)
@@ -376,7 +378,33 @@ static void rect_status(struct coord a, struct coord b, unit_type width)
 		angle = theta(a, b);
 		status_set_angle("a = %3.1f deg", angle);
 	}
-	set_with_units(status_set_r, "r = ", hypot(d.x, d.y));
+	if (d.x < 0)
+		d.x = -d.x;
+	if (d.y < 0)
+		d.y = -d.y;
+	diag = hypot(d.x, d.y);
+	if (rounded) {
+		/*
+		 * Only consider the part of the diagonal that is on the pad
+		 * surface.
+		 *
+		 * The circle: (x-r)^2+(y-r)^2 = r^2
+		 * The diagonal: x = t*cos(theta), y = t*sin(theta)
+		 *
+		 * t is the distance from the corner of the surrounding
+		 * rectangle to the half-circle:
+		 *
+		 * t = 2*r*(s+c-sqrt(2*s*c))
+		 *
+		 * With s = sin(theta) and c = cos(theta).
+		 *
+		 * Since d.x = diag*cos(theta), we don't need to calculate the
+		 * sinus and cosinus but can use d.x and d.y directly.
+		 */
+		r = (d.x > d.y ? d.y : d.x)/2;
+		diag -= 2*r*(d.x+d.y-sqrt(2*d.x*d.y))/diag;
+	}
+	set_with_units(status_set_r, "d = ", diag);
 	if (width != -1) {
 		status_set_type_entry("width =");
 		set_with_units(status_set_name, "", width);
@@ -467,7 +495,7 @@ static void vec_op_select(struct inst *self)
 {
 	status_set_type_entry("ref =");
 	status_set_name("%s", self->vec->name ? self->vec->name : "");
-	rect_status(self->base, self->u.rect.end, -1);
+	rect_status(self->base, self->u.rect.end, -1, 0);
 	vec_edit(self->vec);
 }
 
@@ -538,7 +566,7 @@ static void obj_line_edit(struct obj *obj)
 
 static void line_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
+	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width, 0);
 	obj_line_edit(self->obj);
 }
 
@@ -588,7 +616,7 @@ static void obj_rect_edit(struct obj *obj)
 
 static void rect_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width);
+	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width, 0);
 	obj_rect_edit(self->obj);
 }
 
@@ -642,7 +670,7 @@ static void pad_op_select(struct inst *self)
 {
 	status_set_type_entry("label =");
 	status_set_name("%s", self->u.pad.name);
-	rect_status(self->base, self->u.pad.other, -1);
+	rect_status(self->base, self->u.pad.other, -1, 0);
 	obj_pad_edit(self->obj);
 }
 
@@ -666,10 +694,19 @@ static struct inst_ops pad_ops = {
 };
 
 
+static void rpad_op_select(struct inst *self)
+{
+	status_set_type_entry("label =");
+	status_set_name("%s", self->u.pad.name);
+	rect_status(self->base, self->u.pad.other, -1, 1);
+	obj_pad_edit(self->obj);
+}
+
+
 static struct inst_ops rpad_ops = {
 	.draw		= gui_draw_rpad,
 	.distance	= gui_dist_pad, /* @@@ */
-	.select		= pad_op_select,
+	.select		= rpad_op_select,
 	.anchors	= pad_op_anchors,
 	.draw_move	= draw_move_rpad,
 };
@@ -773,7 +810,7 @@ static void obj_meas_edit(struct obj *obj)
 
 static void meas_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, -1);
+	rect_status(self->bbox.min, self->bbox.max, -1, 0);
 	status_set_type_entry("offset =");
 	set_with_units(status_set_name, "", self->u.meas.offset);
 	obj_meas_edit(self->obj);
@@ -898,7 +935,7 @@ void inst_end_active(void)
 
 static void frame_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, -1);
+	rect_status(self->bbox.min, self->bbox.max, -1, 0);
 	status_set_type_entry("name =");
 	status_set_name("%s", self->u.frame.ref->name);
 }
