@@ -21,27 +21,60 @@
 #include "postscript.h"
 
 
+/*
+ * A4 is 210 mm x 297 mm
+ * US Letter is 216 mm x 279 mm
+ *
+ * We pick the smallest dimensions minus a bit of slack and center on the
+ * printer page.
+ */
+
+#define	PAGE_HALF_WIDTH		mm_to_units(210/2.0-10)	/* A4 */
+#define	PAGE_HALF_HEIGHT	mm_to_units(279/2.0-15)	/* US Letter */
+
+/*
+ * Page layout:
+ *
+ * HEADER                 DATE
+ * --------------------------- HEADER_HEIGHT+DIVIDER_BORDER below top
+ *                    |
+ *                    |  2x
+ *         10 x       |<------------- roughly at 10/12
+ *                    |  1x
+ *                    |
+ * --------------------------- 50% height
+ * Frames in boxes
+ *
+ */
+
+
+#define	PS_HEADER_HEIGHT	mm_to_units(8)
+#define	PS_DIVIDER_BORDER	mm_to_units(2)
+#define	PS_DIVIDER_WIDTH	mm_to_units(0.5)
+
 #define	PS_DOT_DIST		mm_to_units(0.03)
 #define	PS_DOT_DIAM		mm_to_units(0.01)
 #define	PS_HATCH		mm_to_units(0.1)
 #define	PS_HATCH_LINE		mm_to_units(0.015)
 #define	PS_FONT_OUTLINE		mm_to_units(0.025)
 #define	PS_MEAS_LINE		mm_to_units(0.015)
-#define	PS_MEAS_ARROW_LEN	mm_to_units(0.07)
+#define	PS_MEAS_ARROW_LEN	mm_to_units(0.15)
 #define	PS_MEAS_ARROW_ANGLE	30
-#define	PS_MEAS_TEXT_HEIGHT	mm_to_units(0.2)
-#define	PS_MEAS_BASE_OFFSET	mm_to_units(0.05)
+#define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3.5)	/* ~10 pt, real mm */
+#define	PS_MEAS_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
 #define	PS_CROSS_WIDTH		mm_to_units(0.01)
 #define	PS_CROSS_DASH		mm_to_units(0.1)
 
 
 struct postscript_params postscript_params = {
-	.zoom		= 10.0,
 	.show_pad_names	= 1,
 	.show_stuff	= 0,
 	.label_vecs	= 0,
 	.show_meas	= 1,
 };
+
+static const struct postscript_params minimal_params;
+static struct postscript_params active_params;
 
 
 static void ps_pad_name(FILE *file, const struct inst *inst)
@@ -58,7 +91,7 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 		w = -w;
 	fprintf(file, "0 setgray /Helvetica-Bold findfont dup\n");
 	fprintf(file, "   (%s) %d %d\n", inst->u.pad.name, w/2, h/2);
-	fprintf(file, "   4 copy 100 maxfont\n");
+	fprintf(file, "   4 copy 1000 maxfont\n");
 	fprintf(file, "   maxfont scalefont setfont\n");
 	fprintf(file, "   %d %d moveto\n", (a.x+b.x)/2, (a.y+b.y)/2);
 	fprintf(file, "   (%s) center %d showoutlined newpath\n",
@@ -217,12 +250,13 @@ static void ps_meas(FILE *file, const struct inst *inst,
 //s = stralloc_printf("%s%lgmm", meas->label ? meas->label : "", len);
 	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
 	fprintf(file, "    /Helvetica-Bold findfont dup\n");
-	fprintf(file, "    (%s) %d %d\n", s,
+	fprintf(file, "    (%s) %d %d realsize\n", s,
 	    (int) (dist_point(a1, b1)-1.5*PS_MEAS_ARROW_LEN),
 	    PS_MEAS_TEXT_HEIGHT);
-	fprintf(file, "    4 copy 100 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
 	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
-	fprintf(file, "    (%s) %d hcenter\n", s, PS_MEAS_BASE_OFFSET);
+	fprintf(file, "    (%s) %d realsize hcenter\n",
+	    s, PS_MEAS_BASE_OFFSET);
 	fprintf(file, "    show grestore\n");
 	free(s);
 }
@@ -254,26 +288,29 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 	switch (prio) {
 	case ip_pad:
 		if (inst->obj->u.pad.rounded)
-			ps_rpad(file, inst, postscript_params.show_pad_names);
+			ps_rpad(file, inst, active_params.show_pad_names);
 		else
-			ps_pad(file, inst, postscript_params.show_pad_names);
+			ps_pad(file, inst, active_params.show_pad_names);
 		break;
 	case ip_vec:
-		if (postscript_params.show_stuff)
+		if (active_params.show_stuff)
 			ps_vec(file, inst);
 		break;
 	case ip_frame:
-		if (postscript_params.show_stuff)
+		if (active_params.show_stuff)
 			ps_frame(file, inst);
 		break;
 	case ip_meas:
-		if (postscript_params.show_meas)
+		if (active_params.show_meas)
 			ps_meas(file, inst, curr_unit);
 		break;
 	default:
 		break;
 	}
 }
+
+
+/* ----- Package level ----------------------------------------------------- */
 
 
 static void ps_cross(FILE *file, const struct inst *inst)
@@ -284,16 +321,152 @@ static void ps_cross(FILE *file, const struct inst *inst)
 	    inst->bbox.min.x, inst->bbox.max.x);
 	fprintf(file, "    0 %d moveto 0 %d lineto\n",
 	    inst->bbox.min.y, inst->bbox.max.y);
-	fprintf(file, "    stroke grestore \n");
+	fprintf(file, "    stroke grestore\n");
 }
 
 
-int postscript(FILE *file)
+static void ps_draw_package(FILE *file, const struct pkg *pkg, double zoom)
 {
 	enum inst_prio prio;
 	const struct inst *inst;
 	int i;
 
+	fprintf(file, "gsave %f dup scale\n", zoom);
+	ps_cross(file, pkgs->insts[ip_frame]);
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
+			ps_background(file, prio, inst);
+	FOR_INST_PRIOS_UP(prio)
+		FOR_ALL_INSTS(i, prio, inst)
+			ps_foreground(file, prio, inst);
+	fprintf(file, "grestore\n");
+}
+
+
+/* ----- Page level -------------------------------------------------------- */
+
+
+static void ps_hline(FILE *file, int y)
+{
+	fprintf(file, "gsave %d setlinewidth\n", PS_DIVIDER_WIDTH);
+	fprintf(file, "    %d %d moveto\n", -PAGE_HALF_WIDTH, y);
+	fprintf(file, "    %d 0 rlineto stroke gsave\n", PAGE_HALF_WIDTH*2);
+}
+
+
+static void ps_header(FILE *file, const struct pkg *pkg)
+{
+	fprintf(file, "gsave %d %d moveto\n",
+	    -PAGE_HALF_WIDTH, PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT);
+	fprintf(file, "    /Helvetica-Bold findfont dup\n");
+	fprintf(file, "    (%s) %d %d\n",
+	    pkg->name, PAGE_HALF_WIDTH, PS_HEADER_HEIGHT);
+	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    (%s) show grestore\n", pkg->name);
+
+	ps_hline(file, PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT-PS_DIVIDER_BORDER);
+}
+
+
+static void ps_package(FILE *file, const struct pkg *pkg)
+{
+	struct bbox bbox;
+	unit_type x, y;
+	unit_type w, h;
+	double f;
+	unit_type c, d;
+
+	ps_header(file, pkg);
+
+	x = 2*PAGE_HALF_WIDTH-2*PS_DIVIDER_BORDER;
+	y = PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT-3*PS_DIVIDER_BORDER;
+
+	bbox = inst_get_bbox();
+	w = 2*(-bbox.min.y > bbox.max.y ? -bbox.min.y : bbox.max.y);
+	h = 2*(-bbox.min.x > bbox.max.x ? -bbox.min.x : bbox.max.x);
+
+	/*
+	 * Zoom such that we can fit at least one drawing
+	 */
+
+	if (w > x/2 || h > y) {
+		f = (double) x/w;
+		if ((double) y/h < f)
+			f = (double) y/h;
+		if (f > 1)
+			f = 1;
+	} else {
+		for (f = 20; f > 1; f--)
+			if (x/(f+2) >= w && y/f >= h)
+				break;
+	}
+
+	/*
+	 * Decide if we have room for two, one, or zero smaller views
+	 */
+
+	c = y/2+PS_DIVIDER_BORDER;
+	active_params = postscript_params;
+	if (x/(f+2) >= w && y/3 > h) {
+		/* main drawing */
+		fprintf(file, "gsave %d %d translate\n",
+		    (int) (x/(f+2)*f/2)-PAGE_HALF_WIDTH, c);
+		ps_draw_package(file, pkg, f);
+
+		active_params = minimal_params;
+
+		/* divider */
+		d = PAGE_HALF_WIDTH-2*x/(f+2);
+		fprintf(file, "grestore %d %d moveto 0 %d rlineto stroke\n",
+		    d-PS_DIVIDER_BORDER, PS_DIVIDER_BORDER, y);
+
+		/* x1 package */
+		fprintf(file, "gsave %d %d translate\n",
+		    (d+PAGE_HALF_WIDTH)/2, y/6*5+PS_DIVIDER_BORDER);
+		ps_draw_package(file, pkg, 1);
+
+		/* x2 package */
+		fprintf(file, "grestore gsave %d %d translate\n",
+		    (d+PAGE_HALF_WIDTH)/2, y/3+PS_DIVIDER_BORDER);
+		ps_draw_package(file, pkg, 2);
+	} else if (x/(f+1) >= w && y/2 > h) {
+		/* main drawing */
+		fprintf(file, "gsave %d %d translate\n",
+		    (int) (x/(f+1)*f/2)-PAGE_HALF_WIDTH, c);
+		ps_draw_package(file, pkg, f);
+
+		active_params = minimal_params;
+
+		/* divider */
+		d = PAGE_HALF_WIDTH-x/(f+1);
+		fprintf(file, "grestore %d %d moveto 0 %d rlineto stroke\n",
+		    d-PS_DIVIDER_BORDER, PS_DIVIDER_BORDER, y);
+
+		/* x1 package */
+		fprintf(file, "gsave %d %d translate\n",
+		    (d+PAGE_HALF_WIDTH)/2, c);
+		ps_draw_package(file, pkg, 1);
+	} else {
+		fprintf(file, "gsave 0 %d translate\n", c);
+		ps_draw_package(file, pkg, f);
+	}
+	fprintf(file, "grestore\n");
+
+	ps_hline(file, 0);
+
+	/*
+	 * Put the frames
+	 */
+
+	fprintf(file, "showpage\n");
+}
+
+
+/* ----- File level -------------------------------------------------------- */
+
+
+static void prologue(FILE *file)
+{
 	fprintf(file, "%%!PS\n");
 
 	fprintf(file,
@@ -301,8 +474,8 @@ int postscript(FILE *file)
 "    aload pop\n"
 "    2 div exch 2 div exch\n"
 "    translate\n"
-"    %f 72 mul %d div 1000 div dup scale\n",
-    (double) postscript_params.zoom , (int) MIL_UNITS);
+"    72 %d div 1000 div dup scale\n",
+    (int) MIL_UNITS);
 
 	fprintf(file,
 "/dotpath {\n"
@@ -400,16 +573,28 @@ fprintf(file,
 "    0 setgray 100 setlinewidth\n"
 "    llx lly urx llx sub ury lly sub rectstroke grestore } def\n");
 
-	ps_cross(file, pkgs->insts[ip_frame]);
-	FOR_INST_PRIOS_UP(prio)
-		FOR_ALL_INSTS(i, prio, inst)
-			ps_background(file, prio, inst);
-	FOR_INST_PRIOS_UP(prio)
-		FOR_ALL_INSTS(i, prio, inst)
-			ps_foreground(file, prio, inst);
+	/*
+	 * Stack: int -> int
+	 */
 
-	fprintf(file, "showpage\n");
+fprintf(file,
+"/realsize {\n"
+"    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform pop\n"
+"    } def\n");
+}
+
+
+static void epilogue(FILE *file)
+{
 	fprintf(file, "%%%%EOF\n");
+}
+
+
+int postscript(FILE *file)
+{
+	prologue(file);
+	ps_package(file, active_pkg);
+	epilogue(file);
 
 	fflush(file);
 	return !ferror(file);
