@@ -1,0 +1,27 @@
+Add EMI and ESD protection to headset jack
+
+
+To prevent destroying the codec from any discharge we need to add a proper 
+ESD protection.
+We might still get RF feeding through the headset jack into the codec/system. 
+To be 100% sure it's best to add low pass EMI filter in all signal lines of the
+headset jack.
+
+based on Joerg's proposal!
+
+ESD protection 
+- add varistors (D4403/4404/4405) 5.6Vac to all headset jack signal pins
+  (same as D4402)
+
+EMI protection 
+- add Pi-filter to all signal lines of the headset jack 
+  C1=47pF C2=47pF B=KLB0603K601SA (see ecn0032/pi-filter.png)
+  possible references C4408-C4415, B4415-B4429
+- remove 22pF capacitors C4403/4404/4405
+- remove common mode choke B4102 
+
+Todo:
+cutoff frequency and attenuation at 2GHz with KLB0603K601SA needs to be verified
+(looks like impedance will be to low around 2GHz).
+
+Author: Rene Harder <rehar@saweb.de>

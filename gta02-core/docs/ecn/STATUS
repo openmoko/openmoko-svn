@@ -31,7 +31,7 @@ Number	Status	Description
 0029	Discuss	Move 0R resistors next to PMU after caps
 0030	Edit	Replace Calypso with Telit GE865
 0031	Discuss	Use codec to detect jack insertion and HOLD button
-
+0032	Discuss Add EMI and ESD protection to headset jack
 
 Open ECNs
 ---------
@@ -55,3 +55,4 @@ Open ECNs
 0029	PMU
 0030	MODEM
 0031	AUDIO
+0032    AUDIO
