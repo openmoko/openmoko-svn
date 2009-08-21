@@ -44,3 +44,8 @@ again:
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Review: Rene Harder <rehar@saweb.de>, rev5491, We should check HOLD interrupt
+	first otherwise we might lose the jack remove interrupt if both occour
+	at the same time.
+
+
