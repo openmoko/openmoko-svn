@@ -65,7 +65,7 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_pad,	"#400000", "#ff0000", "#ffff80");
 	style(gc_ptext,	"#404040", "#ffffff", "#ffffff");
 	style(gc_meas,	"#280040", "#ff00ff", "#ffff80");
-	style(gc_frame,	"#004000", "#009000", "#ffff80");
+	style(gc_frame,	"#005000", "#009000", "#ffff80");
 
 	gc_active_frame = gc("#00ff00", 2);
 //	gc_highlight = gc("#ff8020", 2);

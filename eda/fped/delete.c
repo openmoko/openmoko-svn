@@ -74,6 +74,9 @@ static void do_delete_vec(struct vec *vec);
 static void do_delete_obj(struct obj *obj);
 
 
+/* ----- helper functions -------------------------------------------------- */
+
+
 static struct deletion *new_deletion(enum del_type type)
 {
 	struct deletion *del;
@@ -84,6 +87,19 @@ static struct deletion *new_deletion(enum del_type type)
 	del->next = deletions;
 	deletions = del;
 	return del;
+}
+
+
+static void reset_active_ref(struct frame *ref)
+{
+	const struct frame *frame;
+	struct obj *obj = NULL;
+
+	for (frame = frames; frame; frame = frame->next)
+		for (obj = frame->objs; obj; obj = obj->next)
+			if (obj->type == ot_frame && obj->u.frame.ref == ref)
+				break;
+	ref->active_ref = obj;
 }
 
 
@@ -189,7 +205,7 @@ static void destroy_obj(struct obj *obj)
 	switch (obj->type) {
 	case ot_frame:
 		if (obj->u.frame.ref->active_ref == obj)
-			obj->u.frame.ref->active_ref = NULL;
+			reset_active_ref(obj->u.frame.ref);
 		break;
 	case ot_pad:
 		free(obj->u.pad.name);
@@ -232,7 +248,7 @@ static void do_delete_obj(struct obj *obj)
 	del->u.obj.ref = obj;
 	del->u.obj.prev = prev;
 	if (obj->type == ot_frame && obj->u.frame.ref->active_ref == obj)
-		obj->u.frame.ref->active_ref = NULL;
+		reset_active_ref(obj->u.frame.ref);
 }
 
 
@@ -502,6 +518,10 @@ static void delete_references(const struct frame *ref)
 			if (obj->type == ot_frame)
 				if (obj->u.frame.ref == ref)
 					do_delete_obj(obj);
+	for (obj = ref->objs; obj; obj = obj->next)
+		if (obj->type == ot_frame)
+			if (obj->u.frame.ref->active_ref == obj)
+				reset_active_ref(obj->u.frame.ref);
 }
 
 
