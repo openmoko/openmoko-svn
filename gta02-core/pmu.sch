@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 21 Aug 2009 17:03:31 WEST
+EESchema Schematic File Version 2  date Fri 21 Aug 2009 17:05:15 WEST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -16,7 +16,7 @@ $EndDescr
 Kmarq B 2500 7500 "Warning Pin passive not driven (Net 145)" F=1
 Kmarq B 10500 5250 "Error: Pin power_out connected to Pin power_out (net 136)" F=2
 Kmarq B 7550 6050 "Error: Pin power_out connected to Pin power_out (net 134)" F=2
-Kmarq B 2250 2450 "Warning Pin passive Unconnected" F=1
+Kmarq B 2750 4500 "Warning Pin passive Unconnected" F=1
 Kmarq B 13750 9600 "Warning: Pin power_out connected to Pin BiDi (net 99)" F=1
 Kmarq B 8650 1450 "Warning: Pin power_out connected to Pin BiDi (net 37)" F=1
 Connection ~ 14700 5800
@@ -131,13 +131,13 @@ Wire Wire Line
 Connection ~ 13450 4250
 Connection ~ 3400 9600
 Wire Wire Line
-	8300 2550 8300 2750
+	9150 2950 9150 3150
 Wire Wire Line
-	8300 2750 7900 2750
+	9150 3150 8750 3150
 Wire Wire Line
-	7900 2750 7700 2750
+	8750 3150 8550 3150
 Wire Wire Line
-	7200 2750 7000 2750
+	8050 3150 7850 3150
 Wire Wire Line
 	7250 4450 7250 4100
 Wire Wire Line
@@ -155,9 +155,9 @@ Wire Wire Line
 	7550 4650 7350 4650
 Connection ~ 9700 2050
 Wire Wire Line
-	2250 2450 2650 2450
+	2750 4500 3150 4500
 Wire Wire Line
-	1550 2250 1550 2450
+	2050 4300 2050 4500
 Wire Wire Line
 	3200 9600 3400 9600
 Wire Wire Line
@@ -766,12 +766,12 @@ Wire Wire Line
 	5350 8300 4900 8300
 Connection ~ 5350 8000
 Wire Wire Line
-	1550 1550 1550 1750
+	2050 3600 2050 3800
 Wire Wire Line
-	1750 2450 1550 2450
+	2250 4500 2050 4500
 Wire Wire Line
-	1550 2450 1150 2450
-Connection ~ 1550 2450
+	2050 4500 1650 4500
+Connection ~ 2050 4500
 Wire Wire Line
 	12450 10100 12450 10300
 Wire Wire Line
@@ -785,10 +785,10 @@ Wire Wire Line
 	11450 9500 11450 9700
 Connection ~ 13800 5800
 Wire Wire Line
-	7000 2750 7000 2550
+	7850 3150 7850 2950
 Wire Wire Line
-	7900 2650 7900 2750
-Connection ~ 7900 2750
+	8750 3050 8750 3150
+Connection ~ 8750 3150
 Connection ~ 13050 8150
 Wire Wire Line
 	12000 5550 12000 4600
@@ -997,41 +997,41 @@ $EndComp
 $Comp
 L PWR_FLAG #FLG0128
 U 1 1 4A4DD6DF
-P 7900 2650
-F 0 "#FLG0128" H 7900 2920 30  0001 C CNN
-F 1 "PWR_FLAG" H 7900 2880 30  0000 C CNN
-	1    7900 2650
+P 8750 3050
+F 0 "#FLG0128" H 8750 3320 30  0001 C CNN
+F 1 "PWR_FLAG" H 8750 3280 30  0000 C CNN
+	1    8750 3050
 	1    0    0    -1  
 $EndComp
 $Comp
 L IO_1V8 #PWR0129
 U 1 1 4A4BE192
-P 7000 2550
-F 0 "#PWR0129" H 7000 2450 50  0001 C CNN
-F 1 "IO_1V8" H 7000 2700 50  0000 C CNN
-	1    7000 2550
+P 7850 2950
+F 0 "#PWR0129" H 7850 2850 50  0001 C CNN
+F 1 "IO_1V8" H 7850 3100 50  0000 C CNN
+	1    7850 2950
 	1    0    0    -1  
 $EndComp
 $Comp
 L FLASH_1V8 #PWR0130
 U 1 1 4A45F0E6
-P 8300 2550
-F 0 "#PWR0130" H 8300 2450 50  0001 C CNN
-F 1 "FLASH_1V8" H 8300 2700 50  0000 C CNN
-	1    8300 2550
+P 9150 2950
+F 0 "#PWR0130" H 9150 2850 50  0001 C CNN
+F 1 "FLASH_1V8" H 9150 3100 50  0000 C CNN
+	1    9150 2950
 	1    0    0    -1  
 $EndComp
 $Comp
 L R_US R2504
 U 1 1 4A45F0BA
-P 7450 2750
-F 0 "R2504" H 7450 2850 50  0000 C CNN
-F 1 "0R" H 7650 2800 50  0000 C CNN
-F 2 "R0402-H" H 7450 2750 60  0001 C CNN
-	1    7450 2750
+P 8300 3150
+F 0 "R2504" H 8300 3250 50  0000 C CNN
+F 1 "0R" H 8500 3200 50  0000 C CNN
+F 2 "R0402-H" H 8300 3150 60  0001 C CNN
+	1    8300 3150
 	1    0    0    -1  
 $EndComp
-Text Notes 1450 1450 0    200  ~ 40
+Text Notes 1200 1400 0    200  ~ 40
 PMU
 NoConn ~ 7550 7600
 NoConn ~ 7550 5450
@@ -1054,38 +1054,38 @@ F 1 "GND" H 9700 2080 30  0001 C CNN
 	1    9700 2150
 	1    0    0    -1  
 $EndComp
-Text GLabel 2650 2450 2    60   Output ~ 0
+Text GLabel 3150 4500 2    60   Output ~ 0
 HDQ
 $Comp
 L R_US R1762
 U 1 1 4A3CEDC9
-P 2000 2450
-F 0 "R1762" H 2000 2550 50  0000 C CNN
-F 1 "470R" H 2000 2350 50  0000 C CNN
-F 2 "R0402-H" H 2000 2450 60  0001 C CNN
-	1    2000 2450
+P 2500 4500
+F 0 "R1762" H 2500 4600 50  0000 C CNN
+F 1 "470R" H 2500 4400 50  0000 C CNN
+F 2 "R0402-H" H 2500 4500 60  0001 C CNN
+	1    2500 4500
 	1    0    0    -1  
 $EndComp
 $Comp
 L IO_3V3 #PWR0133
 U 1 1 4A3CEDAF
-P 1550 1550
-F 0 "#PWR0133" H 1550 1450 50  0001 C CNN
-F 1 "IO_3V3" H 1550 1700 50  0000 C CNN
-	1    1550 1550
+P 2050 3600
+F 0 "#PWR0133" H 2050 3500 50  0001 C CNN
+F 1 "IO_3V3" H 2050 3750 50  0000 C CNN
+	1    2050 3600
 	1    0    0    -1  
 $EndComp
 $Comp
 L R_US R1761
 U 1 1 4A3CEDAE
-P 1550 2000
-F 0 "R1761" V 1500 2200 50  0000 C CNN
-F 1 "10k" V 1600 2150 50  0000 C CNN
-F 2 "R0402-H" H 1550 2000 60  0001 C CNN
-	1    1550 2000
+P 2050 4050
+F 0 "R1761" V 2000 4250 50  0000 C CNN
+F 1 "10k" V 2100 4200 50  0000 C CNN
+F 2 "R0402-H" H 2050 4050 60  0001 C CNN
+	1    2050 4050
 	0    1    1    0   
 $EndComp
-Text GLabel 1150 2450 0    60   Input ~ 0
+Text GLabel 1650 4500 0    60   Input ~ 0
 BAT_ID
 $Comp
 L TST TP1704
