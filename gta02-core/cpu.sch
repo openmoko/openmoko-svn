@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sun Aug 16 20:23:01 2009
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 20 Aug 2009 10:32:37 PM CDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -55,12 +55,6 @@ Wire Wire Line
 	13100 6100 13450 6100
 Wire Wire Line
 	12550 6000 12550 4550
-Wire Wire Line
-	12250 5700 12450 5700
-Wire Wire Line
-	12450 5700 12450 5800
-Wire Wire Line
-	12450 5800 13450 5800
 Wire Wire Line
 	13450 6000 11550 6000
 Connection ~ 13150 4800
@@ -450,8 +444,6 @@ Wire Wire Line
 Wire Wire Line
 	11550 5100 11750 5100
 Wire Wire Line
-	11550 5700 11750 5700
-Wire Wire Line
 	8950 6000 8950 5350
 Connection ~ 8950 5550
 Connection ~ 10300 5550
@@ -654,15 +646,6 @@ F 1 "SW_PUSH_4" H 9100 5450 60  0000 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L R_US R1531
-U 1 1 4A4B8434
-P 12000 5700
-F 0 "R1531" H 11870 5620 50  0000 C CNN
-F 1 "10k" H 12130 5620 50  0000 C CNN
-	1    12000 5700
-	1    0    0    -1  
-$EndComp
-$Comp
 L R_US R1532
 U 1 1 4A4B8426
 P 12000 5250
@@ -693,12 +676,10 @@ Text GLabel 11550 6900 0    60   Input ~ 0
 nACCEL_INT2
 Text GLabel 11550 6000 0    60   Input ~ 0
 PWR_IRQ
-Text GLabel 11550 5700 0    60   Input ~ 0
-nHOLD
 Text GLabel 11550 5400 0    60   Input ~ 0
 WLAN_GPIO1
 Text GLabel 11550 5250 0    60   Input ~ 0
-JACK_INSERT
+CODEC_IRQ
 Text GLabel 11550 5100 0    60   Input ~ 0
 EINT3
 Text GLabel 11550 4950 0    60   BiDi ~ 0
