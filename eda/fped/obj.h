@@ -79,6 +79,7 @@ struct loop {
 
 	/* GUI use */
 	int active;	/* n-th iteration is active, 0 based */
+	double n;	/* start value when it was active */
 	int iterations;	/* iterations when it was active */
 
 	/* for evaluation */

@@ -1013,7 +1013,7 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 
 	for (i = 0; i != loop->iterations; i++) {
 		label = add_activator(hbox, loop->active == i,
-		    loop_select_event, loop, "%d", i);
+		    loop_select_event, loop, "%g", loop->n+i);
 		gtk_object_set_data(GTK_OBJECT(box_of_label(label)), "value",
 		    (gpointer) (long) i);
 

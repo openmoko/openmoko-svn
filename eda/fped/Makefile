@@ -12,6 +12,8 @@
 
 PREFIX = /usr/local
 
+UPLOAD = werner@sita.openmoko.org:public_html/fped/
+
 OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        unparse.o file.o dump.o kicad.o postscript.o meas.o \
        cpp.o lex.yy.o y.tab.o \
@@ -24,6 +26,8 @@ XPMS = point.xpm delete.xpm delete_off.xpm \
        meas.xpm meas_x.xpm meas_y.xpm \
        stuff.xpm stuff_off.xpm meas_off.xpm \
        bright.xpm bright_off.xpm all.xpm all_off.xpm
+
+PNGS = intro-1.png intro-2.png intro-3.png intro-4.png intro-5.png intro-6.png
 
 SHELL = /bin/bash
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
@@ -71,7 +75,7 @@ endif
 
 # ----- Rules -----------------------------------------------------------------
 
-.PHONY:		all dep depend clean install uninstall
+.PHONY:		all dep depend clean install uninstall upload-manual
 
 .SUFFIXES:	.fig .xpm
 
@@ -101,6 +105,13 @@ y.tab.o:	y.tab.c
 		$(CC) -c $(CFLAGS) $(SLOPPY) y.tab.c
 
 gui_tool.o gui.o: $(XPMS:%=icons/%)
+
+# ----- Upload the GUI manual -------------------------------------------------
+
+upload-manual:	$(XPMS:%=icons/%)
+		scp gui.html README $(UPLOAD)/
+		scp $(XPMS:%=icons/%) $(UPLOAD)/icons/
+		scp $(PNGS:%=screens/%) $(UPLOAD)/screens/
 
 # ----- Dependencies ----------------------------------------------------------
 

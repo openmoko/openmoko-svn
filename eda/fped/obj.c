@@ -238,7 +238,10 @@ static int run_loops(struct frame *frame, struct loop *loop,
 		n++;
 	}
 	loop->initialized = 0;
-	loop->iterations = n;
+	if (active) {
+		loop->n = from.n;
+		loop->iterations = n;
+	}
 	return 1;
 
 fail:
@@ -279,6 +282,17 @@ static int generate_frame(struct frame *frame, struct coord base,
 }
 
 
+static void reset_all_loops(void)
+{
+	const struct frame *frame;
+	struct loop *loop;
+
+	for (frame = frames; frame; frame = frame->next)
+		for (loop = frame->loops; loop; loop = loop->next)
+			loop->iterations = 0;
+}
+
+
 int instantiate(void)
 {
 	struct coord zero = { 0, 0 };
@@ -287,6 +301,7 @@ int instantiate(void)
 	meas_start();
 	inst_start();
 	instantiation_error = NULL;
+	reset_all_loops();
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
 	if (ok)
 		ok = instantiate_meas();
