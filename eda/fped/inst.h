@@ -139,10 +139,12 @@ extern	struct inst *curr_frame;
 #define FOR_INST_PRIOS_DOWN(prio)					\
 	for (prio = ip_n-1; prio != (enum inst_prio) -1; prio--)
 
+#define	FOR_PKG_INSTS(pkg, prio, inst)					\
+	for (inst = (pkg)->insts[prio]; inst; inst = inst->next)
+
 #define	FOR_ALL_INSTS(i, prio, inst)					\
 	for (i = 0; i != 2; i++)					\
-		for (inst = (i ? active_pkg : pkgs)->insts[prio]; inst;	\
-		    inst = inst->next)
+		FOR_PKG_INSTS(i ? active_pkg : pkgs, prio, inst)
 
 
 void inst_select_outside(void *item, void (*deselect)(void *item));

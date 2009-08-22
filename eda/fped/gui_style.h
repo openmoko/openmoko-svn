@@ -47,7 +47,8 @@
 #define	FRAME_EYE_R1		3
 #define	FRAME_EYE_R2		5
 
-#define	ITEM_LIST_FONT		"Courier Bold 8"
+#define	ITEM_LIST_FONT		"Liberation Mono 8"
+//#define	ITEM_LIST_FONT		"Courier Bold 8"
 
 #define	SELECT_R		6	/* pixels within which we select */
 

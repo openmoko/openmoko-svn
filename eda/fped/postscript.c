@@ -247,7 +247,6 @@ static void ps_meas(FILE *file, const struct inst *inst,
 
 	c = add_vec(a1, b1);
 	d = sub_vec(b1, a1);
-//s = stralloc_printf("%s%lgmm", meas->label ? meas->label : "", len);
 	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
 	fprintf(file, "    /Helvetica-Bold findfont dup\n");
 	fprintf(file, "    (%s) %d %d realsize\n", s,
@@ -329,16 +328,21 @@ static void ps_draw_package(FILE *file, const struct pkg *pkg, double zoom)
 {
 	enum inst_prio prio;
 	const struct inst *inst;
-	int i;
 
 	fprintf(file, "gsave %f dup scale\n", zoom);
 	ps_cross(file, pkgs->insts[ip_frame]);
-	FOR_INST_PRIOS_UP(prio)
-		FOR_ALL_INSTS(i, prio, inst)
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_PKG_INSTS(pkgs, prio, inst)
 			ps_background(file, prio, inst);
-	FOR_INST_PRIOS_UP(prio)
-		FOR_ALL_INSTS(i, prio, inst)
+		FOR_PKG_INSTS(pkg, prio, inst)
+			ps_background(file, prio, inst);
+	}
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_PKG_INSTS(pkgs, prio, inst)
 			ps_foreground(file, prio, inst);
+		FOR_PKG_INSTS(pkg, prio, inst)
+			ps_foreground(file, prio, inst);
+	}
 	fprintf(file, "grestore\n");
 }
 
@@ -368,7 +372,24 @@ static void ps_header(FILE *file, const struct pkg *pkg)
 }
 
 
-static void ps_package(FILE *file, const struct pkg *pkg)
+
+static void ps_page(FILE *file, int page)
+{
+	fprintf(file, "%%%%Page: %d %d\n", page, page);
+
+	fprintf(file, "%%%%BeginPageSetup\n");
+	fprintf(file,
+"currentpagedevice /PageSize get\n"
+"    aload pop\n"
+"    2 div exch 2 div exch\n"
+"    translate\n"
+"    72 %d div 1000 div dup scale\n",
+    (int) MIL_UNITS);
+	fprintf(file, "%%%%EndPageSetup\n");
+}
+
+
+static void ps_package(FILE *file, const struct pkg *pkg, int page)
 {
 	struct bbox bbox;
 	unit_type x, y;
@@ -376,6 +397,7 @@ static void ps_package(FILE *file, const struct pkg *pkg)
 	double f;
 	unit_type c, d;
 
+	ps_page(file, page);
 	ps_header(file, pkg);
 
 	x = 2*PAGE_HALF_WIDTH-2*PS_DIVIDER_BORDER;
@@ -465,17 +487,17 @@ static void ps_package(FILE *file, const struct pkg *pkg)
 /* ----- File level -------------------------------------------------------- */
 
 
-static void prologue(FILE *file)
+static void prologue(FILE *file, int pages)
 {
-	fprintf(file, "%%!PS\n");
+	fprintf(file, "%%!PS-Adobe-3.0\n");
+	fprintf(file, "%%%%Pages: %d\n", pages);
+	fprintf(file, "%%%%EndComments\n");
 
-	fprintf(file,
-"currentpagedevice /PageSize get\n"
-"    aload pop\n"
-"    2 div exch 2 div exch\n"
-"    translate\n"
-"    72 %d div 1000 div dup scale\n",
-    (int) MIL_UNITS);
+	fprintf(file, "%%%%BeginDefaults\n");
+	fprintf(file, "%%%%PageResources: font Helvetica Helvetica-Bold\n");
+	fprintf(file, "%%%%EndDefaults\n");
+
+	fprintf(file, "%%%%BeginProlog\n");
 
 	fprintf(file,
 "/dotpath {\n"
@@ -581,6 +603,8 @@ fprintf(file,
 "/realsize {\n"
 "    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform pop\n"
 "    } def\n");
+
+	fprintf(file, "%%%%EndProlog\n");
 }
 
 
@@ -592,8 +616,17 @@ static void epilogue(FILE *file)
 
 int postscript(FILE *file)
 {
-	prologue(file);
-	ps_package(file, active_pkg);
+	struct pkg *pkg;
+	int pages;
+
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name)
+			pages++;
+	prologue(file, pages);
+	pages = 0;
+	for (pkg = pkgs; pkg; pkg = pkg->next)
+		if (pkg->name)
+			ps_package(file, pkg, ++pages);
 	epilogue(file);
 
 	fflush(file);

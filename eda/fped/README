@@ -21,6 +21,7 @@ Prerequisites:
 - fig2dev
 - ImageMagick
 - Gtk+ 2.x development package (libgtk2.0-dev or similar)
+- Liberation Fonts (ttf-liberation or similar)
 
 Check out the repository:
 
