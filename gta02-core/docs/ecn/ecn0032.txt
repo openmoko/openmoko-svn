@@ -15,13 +15,12 @@ ESD protection
 
 EMI protection 
 - add Pi-filter to all signal lines of the headset jack 
-  C1=47pF C2=47pF B=KLB0603K601SA (see ecn0032/pi-filter.png)
+  (see ecn0032/pi-filter.png)
+  C1=47pF C2=47pF B=BLM15HD102SN1 1R25(DC) 
   possible references C4408-C4415, B4415-B4429
 - remove 22pF capacitors C4403/4404/4405
 - remove common mode choke B4102 
 
-Todo:
-cutoff frequency and attenuation at 2GHz with KLB0603K601SA needs to be verified
-(looks like impedance will be to low around 2GHz).
+attenuation: f=1..3GHz approx 55dB(IN)/68dB(OUT) (150pF varistor)
 
 Author: Rene Harder <rehar@saweb.de>

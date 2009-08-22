@@ -247,3 +247,14 @@ D: http://www.accton.com/products/Datasheet/WM3236A.AQ.pdf
 S: bf2520
 A: BF2520-B2R4CAB
 D: http://www.anttechcorp.com/images/acx_bf_PDF/BF2520-B2R4CAB.pdf
+
+# GPS Ferrite Bead 1k1 OHM @1GHz BLM15HD102SN1
+S: FILTER
+A: gps-bead
+D: http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0110S0101BLM15H.pdf
+
+# GLAMO Ferrite Bead MCB1005S601EA
+#S: FILTER
+#A: glamo-bead
+#D: http://www.inpaq.com.tw/en/specification/Specification-MCB-S&B%20Series-Updated20090331.pdf
+
