@@ -137,36 +137,87 @@ static void inst_select_inst(struct inst *inst)
 }
 
 
+static int activate_item(struct inst *inst)
+{
+	if (!inst->outer)
+		return 0;
+	if (inst->outer->u.frame.ref->active_ref == inst->outer->obj)
+		return activate_item(inst->outer);
+	inst->outer->u.frame.ref->active_ref = inst->outer->obj;
+	activate_item(inst->outer);
+	return 1;
+}
+
+
 int inst_select(struct coord pos)
 {
 	enum inst_prio prio;
+	const struct inst *prev;
 	struct inst *inst;
+	struct inst *first = NULL;	/* first active item */
+	struct inst *next = NULL;	/* active item after currently sel. */
+	struct inst *any_first = NULL;	/* first item, active or inactive */
+	struct inst *any_same_frame = NULL; /* first item on active frame */
+	struct frame *frame;
 	int best_dist = 0; /* keep gcc happy */
+	int select_next;
 	int dist, i;
 
+	prev = selected_inst;
 	deselect_outside();
 	edit_nothing();
 	if (selected_inst) {
 		gui_frame_deselect_inst(selected_inst);
 		tool_selected_inst(NULL);
 	}
-	selected_inst = NULL;
+	inst_deselect();
+	select_next = 0;
 	FOR_INST_PRIOS_DOWN(prio) {
 		if (!show(prio))
 			continue;
 		FOR_ALL_INSTS(i, prio, inst) {
-			if (!inst->active || !inst->ops->distance)
+			if (!inst->ops->distance)
 				continue;
 			if (!inst_connected(inst))
 				continue;
 			dist = inst->ops->distance(inst, pos, draw_ctx.scale);
-			if (dist >= 0 && (!selected_inst || best_dist > dist)) {
-				selected_inst = inst;
-				best_dist = dist;
+			if (dist >= 0) {
+				if (!any_first)
+					any_first = inst;
+				if (!any_same_frame && inst->outer &&
+				    inst->outer->u.frame.ref == active_frame)
+					any_same_frame = inst;
+				if (!inst->active)
+					continue;
+				if (!first)
+					first = inst;
+				if (!next && select_next)
+					next = inst;
+				if (inst == prev)
+					select_next = 1;
+				if (!selected_inst || best_dist > dist) {
+					selected_inst = inst;
+					best_dist = dist;
+				}
 			}
+		}
+		if (select_next) {
+			selected_inst = next ? next : first;
+			goto selected;
 		}
 		if (selected_inst)
 			goto selected;
+	}
+	if (any_same_frame) {
+		if (activate_item(any_same_frame))
+			return inst_select(pos);
+	}
+	if (any_first) {
+		frame = any_first->outer ? any_first->outer->u.frame.ref : NULL;
+		if (frame != active_frame) {
+			select_frame(frame);
+			return inst_select(pos);
+		}
 	}
 
 	if (!show_stuff)
@@ -958,7 +1009,7 @@ static struct inst_ops frame_ops = {
 };
 
 
-void inst_begin_frame(struct obj *obj, const struct frame *frame,
+void inst_begin_frame(struct obj *obj, struct frame *frame,
     struct coord base, int active, int is_active_frame)
 {
 	struct inst *inst;
@@ -1061,6 +1112,7 @@ void inst_start(void)
 	pkgs = NULL;
 	inst_select_pkg(NULL);
 	curr_pkg = pkgs;
+	curr_frame = NULL;
 }
 
 

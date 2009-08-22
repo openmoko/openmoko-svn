@@ -79,7 +79,7 @@ struct inst {
 	int active;
 	union {
 		struct {
-			const struct frame *ref;
+			struct frame *ref;
 			int active;
 		} frame;
 		const char *name;
@@ -172,7 +172,7 @@ void inst_meas_hint(struct obj *obj, unit_type offset);
 void inst_begin_active(int active);
 void inst_end_active(void);
 
-void inst_begin_frame(struct obj *obj, const struct frame *frame,
+void inst_begin_frame(struct obj *obj, struct frame *frame,
     struct coord base, int active, int is_active_frame);
 void inst_end_frame(const struct frame *frame);
 

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "util.h"
 #include "coord.h"
 #include "inst.h"
 #include "gui_status.h"
@@ -75,6 +76,77 @@ struct postscript_params postscript_params = {
 
 static const struct postscript_params minimal_params;
 static struct postscript_params active_params;
+
+
+/* ----- Boxes ------------------------------------------------------------- */
+
+
+static struct box {
+	unit_type x, y;		/* width and height */
+	unit_type x0, y0;	/* lower left corner */
+	struct box *next;
+} *boxes = NULL;
+
+
+static void add_box(unit_type xa, unit_type ya, unit_type xb, unit_type yb)
+{
+	struct box *box;
+
+	box = alloc_type(struct box);
+	box->x = xb-xa;
+	box->y = yb-ya;
+	box->x0 = xa;
+	box->y0 = ya;
+	box->next = boxes;
+	boxes = box;
+}
+
+
+static void free_boxes(void)
+{
+	struct box *next;
+
+	while (boxes) {
+		next = boxes->next;
+		free(boxes);
+		boxes = next;
+	}
+}
+
+
+static int get_box(unit_type x, unit_type y, unit_type *xa, unit_type *ya)
+{
+	struct box **box, **best = NULL;
+	struct box *b;
+	double size, best_size;
+
+	for (box = &boxes; *box; box = &(*box)->next) {
+		if ((*box)->x < x || (*box)->y < y)
+			continue;
+		size = (double) (*box)->x*(*box)->y;
+		if (!best || size < best_size) {
+			best = box;
+			best_size = size;
+		}
+	}
+	if (!best)
+		return 0;
+	b = *best;
+	if (xa)
+		*xa = b->x0;
+	if (ya)
+		*ya = b->y0;
+
+	*best = b->next;
+	add_box(b->x0+x, b->y0, b->x0+b->x, b->y0+y);
+	add_box(b->x0, b->y0+y, b->x0+b->x, b->y0+b->y);
+	free(b);
+
+	return 1;
+}
+
+
+/* ----- Items ------------------------------------------------------------- */
 
 
 static void ps_pad_name(FILE *file, const struct inst *inst)
@@ -261,6 +333,9 @@ static void ps_meas(FILE *file, const struct inst *inst,
 }
 
 
+/* ----- Print layers ------------------------------------------------------ */
+
+
 static void ps_background(FILE *file, enum inst_prio prio,
      const struct inst *inst)
 {
@@ -347,6 +422,31 @@ static void ps_draw_package(FILE *file, const struct pkg *pkg, double zoom)
 }
 
 
+/* ----- Object frames ----------------------------------------------------- */
+
+
+static int generate_frames(FILE *file, const struct pkg *pkg,
+    const struct frame *frame, double zoom)
+{
+	const struct inst *inst;
+
+	while (frame) {
+		if (frame->name)
+			for (inst = pkg->insts[ip_frame]; inst;
+			    inst = inst->next)
+				if (inst->u.frame.ref == frame)
+					goto found_frame;
+		frame = frame->next;
+	}
+	if (!frame)
+		return 1;
+
+found_frame:
+	/* @@@ */
+	return 0;
+}
+
+
 /* ----- Page level -------------------------------------------------------- */
 
 
@@ -372,7 +472,6 @@ static void ps_header(FILE *file, const struct pkg *pkg)
 }
 
 
-
 static void ps_page(FILE *file, int page)
 {
 	fprintf(file, "%%%%Page: %d %d\n", page, page);
@@ -396,6 +495,7 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 	unit_type w, h;
 	double f;
 	unit_type c, d;
+	int done;
 
 	ps_page(file, page);
 	ps_header(file, pkg);
@@ -479,6 +579,15 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 	/*
 	 * Put the frames
 	 */
+
+	for (f = 20; f >= 0.1; f = f > 1 ? f-1 : f-0.1) {
+		add_box(-PAGE_HALF_WIDTH, -PAGE_HALF_HEIGHT, PAGE_HALF_WIDTH,
+		    -PS_DIVIDER_BORDER);
+		done = generate_frames(file, pkg, frames, f);
+		free_boxes();
+		if (done)
+			break;
+	}
 
 	fprintf(file, "showpage\n");
 }
@@ -589,7 +698,7 @@ fprintf(file,
 	 * Stack: string -> string
 	 */
 
-fprintf(file,
+	fprintf(file,
 "/debugbox { gsave dup false charpath flattenpath pathbbox\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    0 setgray 100 setlinewidth\n"
@@ -599,7 +708,7 @@ fprintf(file,
 	 * Stack: int -> int
 	 */
 
-fprintf(file,
+	fprintf(file,
 "/realsize {\n"
 "    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform pop\n"
 "    } def\n");

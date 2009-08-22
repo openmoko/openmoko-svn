@@ -625,6 +625,7 @@ static int end_new_frame(struct inst *from, struct inst *to)
 		locked_frame->active_ref = obj;
 	locked_frame = NULL;
 	tool_frame_update();
+	tool_reset();
 	return 1;
 }
 

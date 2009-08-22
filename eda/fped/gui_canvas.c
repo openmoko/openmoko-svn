@@ -200,7 +200,6 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			break;
 		}
 		prev = selected_inst;
-		inst_deselect();
 		inst_select(pos);
 		if (prev != selected_inst)
 			redraw();
