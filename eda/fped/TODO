@@ -36,7 +36,6 @@ Bugs:
 - whenever we call parse_* for input parsing, we may leak lots of expressions
 - can't edit measurement labels through the GUI
 - unbalanced parentheses in text throw off Postscript syntax
-- we can't drag points that are at a frame base
 
 Code cleanup:
 - merge edit_unique with edit_name

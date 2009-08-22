@@ -301,7 +301,7 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 				}
 			}
 		} else {
-			FOR_ALL_INSTS(j, ip_vec, inst) {
+			FOR_ALL_INSTS(j, ip_frame, inst) {
 				if (inst != selected_inst->outer)
 					continue;
 				d = gui_dist_frame(inst, pos, draw_ctx.scale);
