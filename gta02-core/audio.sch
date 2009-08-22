@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu 20 Aug 2009 10:53:31 PM CDT
+EESchema Schematic File Version 2  date Sat 22 Aug 2009 04:19:18 PM CDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Wire Line
+	11950 9350 14700 9350
 Wire Wire Line
 	8550 5100 7850 5100
 Wire Wire Line
@@ -68,11 +70,7 @@ Wire Wire Line
 Wire Wire Line
 	6300 6150 6300 4900
 Wire Wire Line
-	11950 9350 13150 9350
-Wire Wire Line
 	12450 8950 12450 9650
-Wire Wire Line
-	13650 8950 14700 8950
 Wire Wire Line
 	13050 3200 12850 3200
 Wire Wire Line
@@ -573,12 +571,8 @@ Wire Wire Line
 	9350 3650 9350 3950
 Connection ~ 9350 3950
 Wire Wire Line
-	13650 9350 14700 9350
-Wire Wire Line
 	13850 9650 13850 8950
 Connection ~ 13850 8950
-Wire Wire Line
-	13150 8950 11950 8950
 Connection ~ 12450 8950
 Wire Wire Line
 	12950 9650 12950 9350
@@ -633,6 +627,8 @@ Wire Wire Line
 	7850 5100 7850 4900
 Wire Wire Line
 	8350 5400 8550 5400
+Wire Wire Line
+	11950 8950 14700 8950
 NoConn ~ 7400 4900
 Text GLabel 8550 5100 2    60   Output ~ 0
 CODEC_IRQ
@@ -1183,26 +1179,6 @@ Text GLabel 11300 7200 0    60   Input ~ 0
 MICBIAS
 Text GLabel 8700 8500 0    60   Output ~ 0
 HS_MIC
-$Comp
-L R_US R4405
-U 1 1 4A41220C
-P 13400 9350
-F 0 "R4405" H 13400 9450 50  0000 C CNN
-F 1 "0R" H 13400 9250 50  0000 C CNN
-F 2 "0402" H 13350 9500 60  0001 C CNN
-	1    13400 9350
-	1    0    0    -1  
-$EndComp
-$Comp
-L R_US R4407
-U 1 1 4A412206
-P 13400 8950
-F 0 "R4407" H 13400 9050 50  0000 C CNN
-F 1 "0R" H 13400 8850 50  0000 C CNN
-F 2 "0402" H 13350 9100 60  0001 C CNN
-	1    13400 8950
-	1    0    0    -1  
-$EndComp
 $Comp
 L GND #PWR0215
 U 1 1 4A3F175F
