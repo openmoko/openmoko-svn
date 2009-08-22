@@ -22,12 +22,8 @@ frame pads {
 }
 
 frame outline {
-	set L = e+2*a+2*clear+silk
-
-	set W = b+2*clear+silk
-
-	ll: vec @(-L/2, -W/2)
-	__1: vec @(L/2, W/2)
+	ll: vec @(-Ox/2, -Oy/2)
+	ur: vec @(Ox/2, Oy/2)
 	rect ll . silk
 }
 
@@ -44,10 +40,14 @@ set silk = 2mil
 
 set clear = 4mil
 
+set Ox = e+2*a+2*clear+silk
+
+set Oy = b+2*clear+silk
+
 frame pads @
 frame outline @
 measx pad_l.w >> pad_r.ll -0.3mm
 measx pad_l.ll -> pad_l.w -0.3mm
 measy pad_l.ll >> pad_l.h 0.3mm
-measx outline.ll >> outline.__1 1mm
-measy outline.__1 >> outline.ll 0.3mm
+measx outline.ll >> outline.ur Oy+0.3mm
+measy outline.ur >> outline.ll 0.3mm
