@@ -25,6 +25,7 @@
 
 
 #define	DEFAULT_SILK_WIDTH	make_mil(15)	/* @@@ */
+#define	DEFAULT_OFFSET		make_mil(0)	/* @@@ */
 
 #define	MAX_ITERATIONS	1000	/* abort "loop"s at this limit */
 
@@ -94,11 +95,6 @@ error:
 
 static int generate_objs(struct frame *frame, struct coord base, int active)
 {
-	static const struct num zero_offset = {
-		.type =	nt_mm,
-		.exponent = 0,
-		.n = 0,
-	};
 	struct obj *obj;
 	char *name;
 	int ok;
@@ -157,7 +153,7 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 		case ot_meas:
 			assert(frame == root_frame);
 			offset = eval_unit_default(obj->u.meas.offset, frame,
-			    zero_offset);
+			    DEFAULT_OFFSET);
 			if (is_undef(offset))
 				goto error;
 			inst_meas_hint(obj, offset.n);

@@ -101,6 +101,7 @@ void connect_obj(struct frame *frame, struct obj *obj)
 {
 	struct obj **walk;
 
+	obj->frame = frame;
 	for (walk = &frame->objs; *walk; walk = &(*walk)->next);
 	*walk = obj;
 }
