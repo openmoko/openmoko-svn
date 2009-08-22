@@ -2,7 +2,8 @@
 .PHONY:		dsv
 
 all:
-		@echo "make what ? target: gen generate sch upload"
+		@echo "make what ? target: gen update sch gv xpdf brd dsv"
+		# we have more targets, but "normal users" don't need them
 		@exit 1
 
 gen generate:
