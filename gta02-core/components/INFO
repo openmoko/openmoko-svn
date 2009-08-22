@@ -248,7 +248,7 @@ S: bf2520
 A: BF2520-B2R4CAB
 D: http://www.anttechcorp.com/images/acx_bf_PDF/BF2520-B2R4CAB.pdf
 
-# GPS Ferrite Bead 1k1 OHM @1GHz BLM15HD102SN1
+# GPS Ferrite Bead 2k OHM @1GHz BLM15HD102SN1
 S: FILTER
 A: gps-bead
 D: http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0110S0101BLM15H.pdf

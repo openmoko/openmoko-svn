@@ -19,6 +19,7 @@ Filter, capacitors, and varistors will not be changed or replaced.
 
 The external headphone will be connected between ROUT1 and LOUT2, the common
 mode choke B4102 will be inserted in the stereo path of the headphone.
+The common mode choke B4102 will be removed with ECN0032.
 
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf

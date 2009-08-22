@@ -9,3 +9,4 @@ Problem pointed out by Joerg Reisenweber <joerg@openmoko.org>
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Review: Rene Harder, SVN 5197, choke B4102 will be removed with ECN0032

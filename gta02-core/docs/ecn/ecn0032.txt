@@ -17,7 +17,7 @@ EMI protection
 - add Pi-filter to all signal lines of the headset jack 
   (see ecn0032/pi-filter.png)
   C1=47pF C2=47pF B=BLM15HD102SN1 1R25(DC) 
-  possible references C4408-C4415, B4415-B4429
+  possible references C4408-C4415, B4415-B4419
 - remove 22pF capacitors C4403/4404/4405
 - remove common mode choke B4102 
 

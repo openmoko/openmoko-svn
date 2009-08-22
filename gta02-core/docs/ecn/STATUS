@@ -9,17 +9,17 @@ Number	Status	Description
 0007	Done	Remove KEEPACT net and connect PMU.KEEPACT directly to IO_3V3
 0008	Edit	Remove external GPS antenna connector and circuit (CON7602)
 0009	Execute	Remove LED transistors (Q1501 and Q1502)
-0010	Discuss	Remove audio amplifier (U4101)
+0010	Execute	Remove audio amplifier (U4101)
 0011	Edit	Reduce number of varistors on USB_VBUS (C4902, C4909)
 0012	Defer	Add fuse to USB_VBUS
 0013	Defer	Increase rated current of B4902
 0014	Defer	Limit non-ESD overvoltage on USB_VBUS (U4905)
-0015	Discuss	Remove Calypso serial interface on headset (U4401)
+0015	Execute	Remove Calypso serial interface on headset (U4401)
 0016	Edit	Remove upper acceleration sensor (U7801)
 0017	Edit	Move Bluetooth module (U2) to main PCB
 0018	Edit	Add beads/filters to audio signals leaving/entering can
 0019	Discuss	Consider applying buzz fix
-0020	Discuss	No common mode choke on stereo signals (B4102)
+0020	Cancel	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
 0022	Discuss	Apply bass fix
 0023	Cancel	Fix #1024 (C1009)
@@ -30,7 +30,7 @@ Number	Status	Description
 0028	Cancel	Remove USB "charge path" power switch U4905
 0029	Done	Move 0R resistors next to PMU after caps
 0030	Edit	Replace Calypso with Telit GE865
-0031	Discuss	Use codec to detect jack insertion and HOLD button
+0031	Execute	Use codec to detect jack insertion and HOLD button
 0032	Discuss Add EMI and ESD protection to headset jack
 
 Open ECNs
