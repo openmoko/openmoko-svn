@@ -21,3 +21,7 @@ D: http://www.telit.com/module/infopool/download.php?id=1666
 F: stdpass
 D: http://www.vishay.com/doc?20035
 # http://industrial.panasonic.com/www-data/pdf/AOA0000/AOA0000PE2.pdf
+
+# WM3236AQ, very non-standard 48QFN
+F: wm3236aq
+# WM3236AQ_R0E_datasheet_Preliminary_0630_2007.pdf (no-public)

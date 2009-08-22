@@ -1,0 +1,122 @@
+/* MACHINE-GENERATED ! */
+
+frame pad_e {
+	set name = Nx+ny+1
+
+	ce: vec @(Ox/2-4mil, pos)
+	ll: vec .(0mil, Pw/2)
+	ur: vec .(-Ph, -Pw)
+	pad "$name" ll .
+}
+
+frame pad_w {
+	set name = 2*(Nx+Ny)-ny
+
+	cw: vec @(-Ox/2+4mil, pos)
+	ll: vec .(0mil, Pw/2)
+	ur: vec .(Ph, -Pw)
+	pad "$name" ll .
+}
+
+frame pad_n {
+	set name = nx+1
+
+	nc: vec @(pos, Oy/2-4mil)
+	ll: vec .(-Pw/2, 0mm)
+	ur: vec .(Pw, -Ph)
+	pad "$name" ll .
+}
+
+frame pad_s {
+	set name = 2*Nx+Ny-nx
+
+	sc: vec @(pos, -Oy/2+4mil)
+	ll: vec .(-Pw/2, 0mm)
+	ur: vec .(Pw, Ph)
+	pad "$name" ll .
+}
+
+frame pads_y {
+	set pos = (Ny/2-ny-0.5)*e
+
+	loop ny = 0, Ny-1
+
+	frame pad_w @
+	frame pad_e @
+}
+
+frame pads_x {
+	set pos = (nx-Nx/2+0.5)*e
+
+	loop nx = 0, Nx-1
+
+	frame pad_s @
+	frame pad_n @
+}
+
+frame pads {
+	set Nx = 13
+
+	set Ny = 11
+
+	frame pads_x @
+	frame pads_y @
+}
+
+frame c_pad {
+	ll: vec @(-Cx/2, -Cy/2)
+	ur: vec @(Cx/2, Cy/2)
+	pad "GND" ll .
+}
+
+frame center {
+	set Cx = 182.9mil
+
+	set Cy = 167mil
+
+	set Gx = 10mil
+
+	set Gy = 10mil
+
+	loop nx = 0, 1
+
+	loop ny = 0, 1
+
+	c: vec @((nx-0.5)*(Cx+Gx), (ny-0.5)*(Cy+Gy))
+	frame c_pad .
+}
+
+frame outline {
+	ll: vec @(-Ox/2, -Oy/2)
+	ur: vec @(Ox/2, Oy/2)
+	rect ll . silk
+}
+
+package "WM3236AQ"
+unit mil
+set Ox = 507.8mil
+
+set Oy = 476mil
+
+set e = 32mil
+
+set silk = 5mil
+
+set Pw = 20mil
+
+set Ph = 40mil
+
+frame outline @
+frame center @
+frame pads @
+measx pad_n.ll >> pad_n.ur 100mil
+measx pad_n.nc >> pad_n.nc 70mil
+measx pad_n.nc -> pad_n.nc 40mil
+measx c_pad.ur >> c_pad.ll Oy/2+40mil
+measx outline.ll >> outline.ur Oy+130mil
+measy pad_w.cw >> pad_w.cw 70mil
+measy pad_w.ll -> pad_w.ur 40mil
+measy pad_w.ur >> pad_w.ll 100mil+Ph
+measy outline.ll >> outline.ur 130mil
+measx c_pad.ll -> c_pad.ur -100mil
+measy c_pad.ll -> c_pad.ur -480mil
