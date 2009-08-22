@@ -18,8 +18,10 @@
 
 
 extern GtkWidget *root;
+extern int show_all;
 extern int show_stuff;
 extern int show_meas;
+extern int show_bright;
 
 
 /* update everything after a model change */

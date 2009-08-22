@@ -27,16 +27,23 @@
 #include "icons/stuff_off.xpm"
 #include "icons/meas.xpm"
 #include "icons/meas_off.xpm"
+#include "icons/all.xpm"
+#include "icons/all_off.xpm"
+#include "icons/bright.xpm"
+#include "icons/bright_off.xpm"
 
 
 GtkWidget *root;
+int show_all = 1;
 int show_stuff = 1;
 int show_meas = 1;
+int show_bright = 0;
 
 
 static GtkWidget *frames_box;
-static GtkWidget *ev_stuff, *ev_meas;
-static GtkWidget *stuff_image[2], *meas_image[2];
+static GtkWidget *ev_stuff, *ev_meas, *ev_all, *ev_bright;
+static GtkWidget *stuff_image[2], *meas_image[2], *all_image[2];
+static GtkWidget *bright_image[2];
 
 
 /* ----- view callbacks ---------------------------------------------------- */
@@ -87,6 +94,21 @@ static void make_menu_bar(GtkWidget *hbox)
 }
 
 
+static gboolean toggle_all(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		show_all = !show_all;
+		set_image(ev_all, all_image[show_all]);
+		inst_deselect();
+		redraw();
+		break;
+	}
+        return TRUE;
+}
+
+
 static gboolean toggle_stuff(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
@@ -117,6 +139,21 @@ static gboolean toggle_meas(GtkWidget *widget, GdkEventButton *event,
 }
 
 
+static gboolean toggle_bright(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		show_bright = !show_bright;
+		set_image(ev_bright, bright_image[show_bright]);
+		inst_deselect();
+		redraw();
+		break;
+	}
+        return TRUE;
+}
+
+
 static void make_tool_bar(GtkWidget *hbox, GdkDrawable *drawable)
 {
 	GtkWidget *bar;
@@ -126,16 +163,24 @@ static void make_tool_bar(GtkWidget *hbox, GdkDrawable *drawable)
 	//gtk_box_pack_end(GTK_BOX(hbox), bar, FALSE, FALSE, 0);
 	gtk_toolbar_set_style(GTK_TOOLBAR(bar), GTK_TOOLBAR_ICONS);
 
+	ev_all = tool_button(bar, drawable, NULL, toggle_all, NULL);
 	ev_stuff = tool_button(bar, drawable, NULL, toggle_stuff, NULL);
 	ev_meas = tool_button(bar, drawable, NULL, toggle_meas, NULL);
+	ev_bright = tool_button(bar, drawable, NULL, toggle_bright, NULL);
 
 	stuff_image[0] = gtk_widget_ref(make_image(drawable, xpm_stuff_off));
 	stuff_image[1] = gtk_widget_ref(make_image(drawable, xpm_stuff));
 	meas_image[0] = gtk_widget_ref(make_image(drawable, xpm_meas_off));
 	meas_image[1] = gtk_widget_ref(make_image(drawable, xpm_meas));
+	all_image[0] = gtk_widget_ref(make_image(drawable, xpm_all_off));
+	all_image[1] = gtk_widget_ref(make_image(drawable, xpm_all));
+	bright_image[0] = gtk_widget_ref(make_image(drawable, xpm_bright_off));
+	bright_image[1] = gtk_widget_ref(make_image(drawable, xpm_bright));
 
 	set_image(ev_stuff, stuff_image[show_stuff]);
 	set_image(ev_meas, meas_image[show_meas]);
+	set_image(ev_all, all_image[show_all]);
+	set_image(ev_bright, bright_image[show_bright]);
 }
 
 
@@ -145,6 +190,10 @@ static void cleanup_tool_bar(void)
 	g_object_unref(stuff_image[1]);
 	g_object_unref(meas_image[0]);
 	g_object_unref(meas_image[1]);
+	g_object_unref(all_image[0]);
+	g_object_unref(all_image[1]);
+	g_object_unref(bright_image[0]);
+	g_object_unref(bright_image[1]);
 }
 
 

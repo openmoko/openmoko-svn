@@ -111,7 +111,7 @@ static enum mode get_mode(struct inst *self)
 {
 	if (selected_inst == self)
 		return mode_selected;
-	return self->active ? mode_active : mode_inactive;
+	return self->active || bright(self) ? mode_active : mode_inactive;
 }
 
 

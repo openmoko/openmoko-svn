@@ -22,7 +22,8 @@ XPMS = point.xpm delete.xpm delete_off.xpm \
        vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \
        line.xpm rect.xpm pad.xpm rpad.xpm circ.xpm \
        meas.xpm meas_x.xpm meas_y.xpm \
-       stuff.xpm stuff_off.xpm meas_off.xpm
+       stuff.xpm stuff_off.xpm meas_off.xpm \
+       bright.xpm bright_off.xpm all.xpm all_off.xpm
 
 SHELL = /bin/bash
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`

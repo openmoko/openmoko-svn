@@ -41,6 +41,7 @@ static unsigned long active_set = 0;
 
 static struct inst_ops vec_ops;
 static struct inst_ops frame_ops;
+static struct inst_ops meas_ops;
 
 
 #define	IS_ACTIVE	((active_set & 1))
@@ -60,6 +61,27 @@ static int show(enum inst_prio prio)
 	default:
 		return 1;
 	}
+}
+
+
+int bright(const struct inst *inst)
+{
+	if (!show_bright)
+		return 0;
+	return inst->ops != &vec_ops && inst->ops != &frame_ops &&
+	    inst->ops != &meas_ops;
+}
+
+
+static int show_this(const struct inst *inst)
+{
+	if (show_all)
+		return 1;
+	if (inst->ops == &frame_ops && inst->u.frame.ref == active_frame)
+		return 1;
+	if (!inst->outer)
+		return active_frame == root_frame;
+	return inst->outer->u.frame.ref == active_frame;
 }
 
 
@@ -176,6 +198,8 @@ int inst_select(struct coord pos)
 		if (!show(prio))
 			continue;
 		FOR_ALL_INSTS(i, prio, inst) {
+			if (!show_this(inst))
+				continue;
 			if (!inst->ops->distance)
 				continue;
 			if (!inst_connected(inst))
@@ -227,6 +251,9 @@ int inst_select(struct coord pos)
 		if (selected_inst)
 			goto selected;
 	}
+
+	if (!show_all)
+		return 0;
 
 	if (any_same_frame) {
 		if (activate_item(any_same_frame))
@@ -1148,8 +1175,10 @@ void inst_draw(void)
 
 	FOR_INST_PRIOS_UP(prio)
 		FOR_ALL_INSTS(i, prio, inst)
-			if (show(prio) && !inst->active && inst->ops->draw)
-				inst->ops->draw(inst);
+			if (show_this(inst))
+				if (show(prio) && !inst->active &&
+				    inst->ops->draw)
+					inst->ops->draw(inst);
 	FOR_INST_PRIOS_UP(prio)
 		FOR_ALL_INSTS(i, prio, inst)
 			if (show(prio) && prio != ip_frame && inst->active &&

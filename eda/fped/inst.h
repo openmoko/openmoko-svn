@@ -147,6 +147,8 @@ extern	struct inst *curr_frame;
 		FOR_PKG_INSTS(i ? active_pkg : pkgs, prio, inst)
 
 
+int bright(const struct inst *inst);
+
 void inst_select_outside(void *item, void (*deselect)(void *item));
 int inst_select(struct coord pos);
 void inst_deselect(void);
