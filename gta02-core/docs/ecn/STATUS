@@ -28,7 +28,7 @@ Number	Status	Description
 0026	Discuss	Improve bus termination at sd-card
 0027	Edit	Renamed some nets for clarity
 0028	Cancel	Remove USB "charge path" power switch U4905
-0029	Execute	Move 0R resistors next to PMU after caps
+0029	Done	Move 0R resistors next to PMU after caps
 0030	Edit	Replace Calypso with Telit GE865
 0031	Discuss	Use codec to detect jack insertion and HOLD button
 0032	Discuss Add EMI and ESD protection to headset jack
