@@ -736,25 +736,31 @@ void status_begin_reporting(void)
 /* ----- unit selection ---------------------------------------------------- */
 
 
+static void show_curr_unit(void)
+{
+	switch (curr_unit) {
+	case curr_unit_mm:
+		status_set_unit("mm");
+		break;
+	case curr_unit_mil:
+		status_set_unit("mil");
+		break;
+	case curr_unit_auto:
+		status_set_unit("auto");
+		break;
+	default:
+		abort();
+	}
+}
+
+
 static gboolean unit_button_press_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
 	switch (event->button) {
 	case 1:
 		curr_unit = (curr_unit+1) % curr_unit_n;
-		switch (curr_unit) {
-		case curr_unit_mm:
-			status_set_unit("mm");
-			break;
-		case curr_unit_mil:
-			status_set_unit("mil");
-			break;
-		case curr_unit_auto:
-			status_set_unit("auto");
-			break;
-		default:
-			abort();
-		}
+		show_curr_unit();
 		break;
 	}
 	refresh_pos();
@@ -859,7 +865,7 @@ void make_status_area(GtkWidget *vbox)
 	/* unit selection */
 
 	label_in_box_bg(status_unit, COLOR_UNIT_SELECTOR);
-	status_set_unit("mm");
+	show_curr_unit();
 	g_signal_connect(G_OBJECT(box_of_label(status_unit)),
 	    "button_press_event", G_CALLBACK(unit_button_press_event), NULL);
 

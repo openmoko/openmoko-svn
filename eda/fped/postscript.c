@@ -53,6 +53,8 @@
 #define	PS_DIVIDER_BORDER	mm_to_units(2)
 #define	PS_DIVIDER_WIDTH	mm_to_units(0.5)
 
+#define	PS_MISC_TEXT_HEIGHT	mm_to_units(3)
+
 #define	PS_DOT_DIST		mm_to_units(0.03)
 #define	PS_DOT_DIAM		mm_to_units(0.01)
 #define	PS_HATCH		mm_to_units(0.1)
@@ -454,7 +456,7 @@ static void ps_hline(FILE *file, int y)
 {
 	fprintf(file, "gsave %d setlinewidth\n", PS_DIVIDER_WIDTH);
 	fprintf(file, "    %d %d moveto\n", -PAGE_HALF_WIDTH, y);
-	fprintf(file, "    %d 0 rlineto stroke gsave\n", PAGE_HALF_WIDTH*2);
+	fprintf(file, "    %d 0 rlineto stroke grestore\n", PAGE_HALF_WIDTH*2);
 }
 
 
@@ -488,6 +490,32 @@ static void ps_page(FILE *file, int page)
 }
 
 
+static void ps_unit(FILE *file,
+    unit_type x, unit_type y, unit_type w, unit_type h)
+{
+	const char *s;
+
+	switch (curr_unit) {
+	case curr_unit_mm:
+		s = "Dimensions in mm";
+		break;
+	case curr_unit_mil:
+		s = "Dimensions in mil";
+		break;
+	case curr_unit_auto:
+		return;
+	default:
+		abort();
+	}
+
+	fprintf(file, "gsave %d %d moveto\n", x, y);
+	fprintf(file, "    /Helvetica findfont dup\n");
+	fprintf(file, "    (%s) %d %d\n", s, w, h);
+	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    (%s) show grestore\n", s);
+}
+
+
 static void ps_package(FILE *file, const struct pkg *pkg, int page)
 {
 	struct bbox bbox;
@@ -504,8 +532,8 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 	y = PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT-3*PS_DIVIDER_BORDER;
 
 	bbox = inst_get_bbox();
-	w = 2*(-bbox.min.y > bbox.max.y ? -bbox.min.y : bbox.max.y);
-	h = 2*(-bbox.min.x > bbox.max.x ? -bbox.min.x : bbox.max.x);
+	w = 2*(-bbox.min.x > bbox.max.x ? -bbox.min.x : bbox.max.x);
+	h = 2*(-bbox.min.y > bbox.max.y ? -bbox.min.y : bbox.max.y);
 
 	/*
 	 * Zoom such that we can fit at least one drawing
@@ -574,6 +602,8 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 	}
 	fprintf(file, "grestore\n");
 
+	ps_unit(file, -PAGE_HALF_WIDTH, PS_DIVIDER_BORDER, PAGE_HALF_WIDTH,
+	    PS_MISC_TEXT_HEIGHT);
 	ps_hline(file, 0);
 
 	/*

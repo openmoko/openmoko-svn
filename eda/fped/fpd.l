@@ -118,6 +118,8 @@ SP	[\t ]*
 				  return TOK_MEASX; }
 <INITIAL>"measy"		{ BEGIN(NOKEYWORD);
 				  return TOK_MEASY; }
+<INITIAL>"unit"			{ BEGIN(NOKEYWORD);
+				  return TOK_UNIT; }
 
 <INITIAL>[a-zA-Z_][a-zA-Z_0-9]*: { *strchr(yytext, ':') = 0;
 				  yylval.id = unique(yytext);

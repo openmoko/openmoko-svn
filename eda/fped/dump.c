@@ -17,6 +17,7 @@
 #include "util.h"
 #include "unparse.h"
 #include "obj.h"
+#include "gui_status.h"
 #include "dump.h"
 
 
@@ -491,6 +492,24 @@ static void dump_frame(FILE *file, struct frame *frame, const char *indent)
 /* ----- file -------------------------------------------------------------- */
 
 
+static void dump_unit(FILE *file)
+{
+	switch (curr_unit) {
+	case curr_unit_mm:
+		fprintf(file, "unit mm\n");
+		break;
+	case curr_unit_mil:
+		fprintf(file, "unit mil\n");
+		break;
+	case curr_unit_auto:
+		fprintf(file, "unit auto\n");
+		break;
+	default:
+		abort();
+	}
+}
+
+
 int dump(FILE *file)
 {
 	struct frame *frame;
@@ -501,6 +520,7 @@ int dump(FILE *file)
 	for (frame = frames; frame; frame = frame->next) {
 		if (!frame->name) {
 			fprintf(file, "package \"%s\"\n", pkg_name);
+			dump_unit(file);
 			dump_frame(file, frame, "");
 		} else {
 			dump_frame(file, frame, "\t");

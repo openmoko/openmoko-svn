@@ -241,13 +241,17 @@ static void gui_draw_pad_text(struct inst *self)
 	GdkGC *gc;
 	struct coord c;
 	unit_type h, w;
+	int rot;
 
+	w = self->bbox.max.x-self->bbox.min.x;
+	h = self->bbox.max.y-self->bbox.min.y;
+	rot = w/1.1 < h;
 	gc = gc_ptext[get_mode(self)];
 	sort_coord(&min, &max);
 	c = add_vec(min, max);
 	h = max.y-min.y;
 	w = max.x-min.x;
-	render_text(DA, gc, c.x/2, c.y/2, w <= h*1.1 ? 0 : 90,
+	render_text(DA, gc, c.x/2, c.y/2, rot ? 0 : 90,
 	    self->u.pad.name, PAD_FONT, 0.5, 0.5,
 	    w-2*PAD_BORDER, h-2*PAD_BORDER);
 }

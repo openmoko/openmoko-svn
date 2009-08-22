@@ -215,8 +215,19 @@ void tool_selected_inst(struct inst *inst)
 static struct coord gridify(struct coord base, struct coord pos)
 {
 	struct coord new;
-	unit_type unit = mm_to_units(0.1);
+	unit_type unit;
 
+	switch (curr_unit) {
+	case curr_unit_mm:
+	case curr_unit_auto:
+		unit = mm_to_units(0.1);
+		break;
+	case curr_unit_mil:
+		unit = mil_to_units(10);
+		break;
+	default:
+		abort();
+	}
 	new.x = pos.x-((pos.x-base.x) % unit);
 	new.y = pos.y-((pos.y-base.y) % unit);
 	if (new.x != base.x || new.y != base.y)
@@ -238,8 +249,20 @@ static struct pix_buf *drag_new_vec(struct inst *from, struct coord to)
 	to = gridify(pos, to);
 	status_set_type_x("dX =");
 	status_set_type_y("dX =");
-	status_set_x("%lg mm", units_to_mm(to.x-pos.x));
-	status_set_y("%lg mm", units_to_mm(to.y-pos.y));
+	/* @@@ use status_set_xy */
+	switch (curr_unit) {
+	case curr_unit_mm:
+	case curr_unit_auto:
+		status_set_x("%lg mm", units_to_mm(to.x-pos.x));
+		status_set_y("%lg mm", units_to_mm(to.y-pos.y));
+		break;
+	case curr_unit_mil:
+		status_set_x("%lg mil", units_to_mil(to.x-pos.x));
+		status_set_y("%lg mil", units_to_mil(to.y-pos.y));
+		break;
+	default:
+		abort();
+	}
 	pos = translate(pos);
 	to = translate(to);
 	buf = save_pix_buf(DA, pos.x, pos.y, to.x, to.y, 1);
@@ -270,8 +293,19 @@ static int end_new_raw_vec(struct inst *from, struct coord to)
 	vec = new_vec(from);
 	pos = inst_get_point(from);
 	to = gridify(pos, to);
-	vec->x = new_num(make_mm(units_to_mm(to.x-pos.x)));
-	vec->y = new_num(make_mm(units_to_mm(to.y-pos.y)));
+	switch (curr_unit) {
+	case curr_unit_mm:
+	case curr_unit_auto:
+		vec->x = new_num(make_mm(units_to_mm(to.x-pos.x)));
+		vec->y = new_num(make_mm(units_to_mm(to.y-pos.y)));
+		break;
+	case curr_unit_mil:
+		vec->x = new_num(make_mil(units_to_mil(to.x-pos.x)));
+		vec->y = new_num(make_mil(units_to_mil(to.y-pos.y)));
+		break;
+	default:
+		abort();
+	}
 	return 1;
 }
 

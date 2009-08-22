@@ -118,7 +118,7 @@ clean:
 
 # ----- Install / uninstall ---------------------------------------------------
 
-install:
+install:	all
 		install -m 755 fped $(PREFIX)/bin/
 
 uninstall:

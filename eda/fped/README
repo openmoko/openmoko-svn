@@ -90,6 +90,7 @@ The file has the following structure:
 frame definitions
 ...
 package name
+unit
 objects
 ...
 
@@ -124,6 +125,15 @@ set a = 1mm+20mil
 set b = 10*1mm
 
 All values used as dimensions must be either mm or mil.
+
+The default unit can be set with one of the following directives:
+
+unit mm
+unit mil
+unit auto
+
+When saving a footprint definition, the default unit is set to the
+unit set in the GUI.
 
 
 Vectors

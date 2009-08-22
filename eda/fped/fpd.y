@@ -19,6 +19,7 @@
 #include "expr.h"
 #include "obj.h"
 #include "meas.h"
+#include "gui_status.h"
 #include "fpd.h"
 
 
@@ -156,7 +157,7 @@ static struct obj *new_obj(enum obj_type type)
 %token		START_FPD START_EXPR START_VAR START_VALUES
 %token		TOK_SET TOK_LOOP TOK_PACKAGE TOK_FRAME TOK_TABLE TOK_VEC
 %token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
-%token		TOK_MEAS TOK_MEASX TOK_MEASY
+%token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 
 %token	<num>	NUMBER
@@ -206,7 +207,7 @@ all:
 	;
 
 fpd:
-	| frame_defs part_name frame_items
+	| frame_defs part_name opt_unit frame_items
 	;
 
 part_name:
@@ -224,6 +225,22 @@ part_name:
 					YYABORT;
 				}
 			pkg_name = $2;
+		}
+	;
+
+opt_unit:
+	| TOK_UNIT ID
+		{
+			if (!strcmp($2, "mm"))
+				curr_unit = curr_unit_mm;
+			else if (!strcmp($2, "mil"))
+				curr_unit = curr_unit_mil;
+			else if (!strcmp($2, "auto"))
+				curr_unit = curr_unit_auto;
+			else {
+				yyerrorf("unrecognized unit \"%s\"", $2);
+				YYABORT;
+			}
 		}
 	;
 

@@ -208,6 +208,26 @@ int inst_select(struct coord pos)
 		if (selected_inst)
 			goto selected;
 	}
+
+	/* give vectors a second chance */
+
+	if (show_stuff) {
+		FOR_ALL_INSTS(i, ip_vec, inst) {
+			if (!inst->active)
+				continue;
+			if (!inst_connected(inst))
+				continue;
+			dist = gui_dist_vec_fallback(inst, pos, draw_ctx.scale);
+			if (dist >= 0 && (!selected_inst || best_dist > dist)) {
+				selected_inst = inst;
+				best_dist = dist;
+			}
+		}
+	
+		if (selected_inst)
+			goto selected;
+	}
+
 	if (any_same_frame) {
 		if (activate_item(any_same_frame))
 			return inst_select(pos);
@@ -220,25 +240,7 @@ int inst_select(struct coord pos)
 		}
 	}
 
-	if (!show_stuff)
-		return 0;
-
-	/* give vectors a second chance */
-
-	FOR_ALL_INSTS(i, ip_vec, inst) {
-		if (!inst->active)
-			continue;
-		if (!inst_connected(inst))
-			continue;
-		dist = gui_dist_vec_fallback(inst, pos, draw_ctx.scale);
-		if (dist >= 0 && (!selected_inst || best_dist > dist)) {
-			selected_inst = inst;
-			best_dist = dist;
-		}
-	}
-	
-	if (!selected_inst)
-		return 0;
+	return 0;
 
 selected:
 	inst_select_inst(selected_inst);
