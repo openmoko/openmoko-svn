@@ -1,0 +1,19 @@
+Replace coupling capacitors for input/output lines
+
+
+Wolfson recommends 1uF coupling capacitors for input and output lines of the 
+codec [1]. However in the current GTA02 100nF capacitors are used for coupling.
+To follow Wolfson's recommendation we will change all line input/output 
+coupling capacitors to 1uF.
+
+Replace the following capacitors with 1uF (CM105X5R105M16AT):
+- C4304 and C4303 (MIC input)
+- C3007 and C3008 (GSM modem input)
+- C3018 and C3011 (GSM modem output)
+- C3016 (headset MIC)
+
+
+[1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf (p. 88)
+
+
+Author: Rene Harder <rehar@saweb.de>

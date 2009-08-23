@@ -14,8 +14,9 @@ with a separate ground for microphone and headphone as well as a different
 headset jack.
 
 To improve the audio quality we need to replace C4111 and C4110 with a 100uF
-capacitor so the lower cutoff frequency with a 32 Ohm headphone will be at 50Hz
-(assumes R4407 & R4405 = 0R, see ECN0015 "Remove Calypso serial interface on
+polarized tantalum capacitor so the lower cutoff frequency with a 32 Ohm 
+headphone will be at 50Hz.
+(assumed R4407 & R4405 = 0R, see ECN0015 "Remove Calypso serial interface on
 headset")
 
 
