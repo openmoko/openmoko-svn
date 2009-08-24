@@ -24,10 +24,10 @@ Here is a simple example:
   <LI> Right-click on the yellow field that says "(root)" and select
     "Add loop". An entry saying "_ = 0 ... 0 (0)" appears next to the
     yellow field.
-    <P><IMG src="screens/intro-1.png">
+    <P><IMG src="manual/intro-1.png">
   <LI> Click on the underscore, type <B>n=1,5</B> and press Enter.
     The entry should now show "n = 1 ... 5 (1 2 3 4 5)"
-    <P><IMG src="screens/intro-2.png">
+    <P><IMG src="manual/intro-2.png">
   <LI> Click on the dark-yellow vector icon on the right-hand side.
     A red frame shows that it is selected.
   <LI> Move the mouse pointer to the green dot in the middle of the
@@ -38,21 +38,21 @@ Here is a simple example:
     to dark yellow after the button is released.
   <LI> Click on the yellow line. It is now shown in bright yellow and
     a number of text entry fields appear below the canvas.
-    <P><IMG src="screens/intro-3.png">
+    <P><IMG src="manual/intro-3.png">
   <LI> Click into the field on the top that probably says "0.1mm",
     change it to <B>n*1mm</B> and press Enter.
   <LI> Select "Zoom all" from the "View" drop-down menu. The canvas
     should now show the green dot on the left, with a yellow arrow
     pointing to the right, and four more even darker arrows following
     that arrow.
-    <P><IMG src="screens/intro-4.png">
+    <P><IMG src="manual/intro-4.png">
   <LI> Click on the icon depicting a light-blue circle.
   <LI> Move the mouse pointer over the green dot, then drag to the
     circle at the end of the vector, and release the mouse button.
     A series of partial circles should appear.
-    <P><IMG src="screens/intro-5.png">
+    <P><IMG src="manual/intro-5.png">
   <LI> Select "Zoom all" again to show the full circles.
-    <P><IMG src="screens/intro-6.png">
+    <P><IMG src="manual/intro-6.png">
 </UL>
 The graphical items you have entered are a vector and a circle with the
 radius determined by the vector. We call these items "objects". Furthermore,
@@ -120,13 +120,13 @@ overwhelming. The visibility options help to quickly hide irrelevant
 details and get one's bearings. They are located in the menu bar at the
 top.
 <DL>
-  <DT><IMG src="icons/all.xpm">&nbsp;<IMG src="icons/all_off.xpm"> 
+  <DT><IMG src="manual/all.png">&nbsp;<IMG src="manual/all_off.png"> 
   <DD>Show all frames. If disabled, only show the currently active frame.
-  <DT><IMG src="icons/stuff.xpm">&nbsp;<IMG src="icons/stuff_off.xpm">
+  <DT><IMG src="manual/stuff.png">&nbsp;<IMG src="manual/stuff_off.png">
   <DD>Show vectors and frames.
-  <DT><IMG src="icons/meas.xpm">&nbsp;<IMG src="icons/meas_off.xpm">
+  <DT><IMG src="manual/meas.png">&nbsp;<IMG src="manual/meas_off.png">
   <DD>Show measurements.
-  <DT><IMG src="icons/bright.xpm">&nbsp;<IMG src="icons/bright_off.xpm">
+  <DT><IMG src="manual/bright.png">&nbsp;<IMG src="manual/bright_off.png">
   <DD>Highlight the elements that will be exported to KiCad, i.e.,
     the pads and the silk screen drawings. To show the component
     exactly as it will appear in KiCad, also turn off vectors,
@@ -139,18 +139,18 @@ The visibility options can be combined.
 
 Tools are used to add new elements and to manipulate existing ones.
 <DL>
-  <DT><IMG src="icons/point.xpm">
+  <DT><IMG src="manual/point.png">
   <DD> The pointer. This is the default tool. The pointer is used to
     select items and do move points of the selected item.
     <P>
     To move points, select the item, then move the mouse pointer over
     the point to move. A red circle will appear under the mouse pointer.
     Then drag the point to its new location and release the mouse button.
-  <DT><IMG src="icons/delete.xpm">&nbsp;<IMG src="icons/delete_off.xpm">
+  <DT><IMG src="manual/delete.png">&nbsp;<IMG src="manual/delete_off.png">
   <DD> Delete the currently selected item. Whenever an item is selected,
     the delete icon lights up. Clicking the icon deletes the item.
     To undelete the item, press <B>U</B>.
-  <DT><IMG src="icons/vec.xpm">
+  <DT><IMG src="manual/vec.png">
   <DD> Add a vector. To add a new vector, move the mouse pointer to the
     new vector's starting point then drag towards the desired end point.
     Vectors are normally specified via parameters. To enter the parameters,
@@ -159,8 +159,8 @@ Tools are used to add new elements and to manipulate existing ones.
     Note that the starting point of the vector has to be in the same
     frame as the vector being drawn. This limitation also applies to
     points defining pads and silk-screen items.
-  <DT><IMG src="icons/frame.xpm">&nbsp;<IMG src="icons/frame_locked.xpm">
-    &nbsp;<IMG src="icons/frame_ready.xpm">
+  <DT><IMG src="manual/frame.png">&nbsp;<IMG src="manual/frame_locked.png">
+    &nbsp;<IMG src="manual/frame_ready.png">
   <DD> Add a frame reference. A frame reference inserts the content of a
     frame into another frame. There are three steps in this process:
     <UL>
@@ -178,17 +178,17 @@ Tools are used to add new elements and to manipulate existing ones.
     When finished, don't forget that the destination frame is still selected.
     In order to add elements to the newly referenced frame, you have to
     select it first.
-  <DT><IMG src="icons/pad.xpm">&nbsp;<IMG src="icons/rpad.xpm">
+  <DT><IMG src="manual/pad.png">&nbsp;<IMG src="manual/rpad.png">
   <DD> Add a pad. Pads are either rectangular or rounded. They are
     defined by two points which are opposite corners of the rectangle
     containing the pad. Move the mouse cursor to the first point, then
     drag to the second point. The pad's name can be edited after selecting
     the pad.
-  <DT><IMG src="icons/line.xpm">&nbsp;<IMG src="icons/rect.xpm">
+  <DT><IMG src="manual/line.png">&nbsp;<IMG src="manual/rect.png">
   <DD> Add a line or a rectangle. Similar to pads, lines and rectangles
     are defined by two points. The width of the line can be edited after
     selecting the line or rectangle.
-  <DT><IMG src="icons/circ.xpm">
+  <DT><IMG src="manual/circ.png">
   <DD> Add circle or arc. Circles are defined by their center end a
     point at their radius. An arc has a third point, which defines the
     angle at which the arc ends. If this third point is not located on
@@ -201,8 +201,8 @@ Tools are used to add new elements and to manipulate existing ones.
     <P>
     To change the radius point of a circle, first drag the end point,
     then drag the radius point itself to that same location.
-  <DT><IMG src="icons/meas.xpm">&nbsp;<IMG src="icons/meas_x.xpm">&nbsp;
-    <IMG src="icons/meas_y.xpm">
+  <DT><IMG src="manual/meas.png">&nbsp;<IMG src="manual/meas_x.png">&nbsp;
+    <IMG src="manual/meas_y.png">
   <DD> Add a measurement. Measurements show the distance between points.
     They can either measure diagonally or only horizontally or only vertically.
     Unlike other items, measurements are not limited to points in the same

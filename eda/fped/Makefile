@@ -110,8 +110,10 @@ gui_tool.o gui.o: $(XPMS:%=icons/%)
 
 upload-manual:	$(XPMS:%=icons/%)
 		scp gui.html README $(UPLOAD)/
-		scp $(XPMS:%=icons/%) $(UPLOAD)/icons/
-		scp $(PNGS:%=screens/%) $(UPLOAD)/screens/
+		for n in $(XPMS:%.xpm=%); do \
+		    convert icons/$$n.xpm manual/$$n.png || exit 1; done
+		scp $(XPMS:%.xpm=manual/%.png) $(PNGS:%=manual/%) \
+		  $(UPLOAD)/manual/
 
 # ----- Dependencies ----------------------------------------------------------
 
