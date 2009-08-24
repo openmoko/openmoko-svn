@@ -9,6 +9,14 @@
 # If symbol data sheet contains footprint, don't repeat it here.
 #
 
+# Samsung SC32442B, 332-FBGA, 14x14 mm, pitch 0.5 mm
+F: 332fbga-p05.fpd
+S: sc32442
+# To do:
+# - add measurements (ironically, those N^3 search algorithms get too slow)
+# - verify land size
+# define keep out area
+
 # Atmel ATR0635, BGA96, 8x12 mm, pitch 0.8 mm
 F: bga96-8x12-0mm8
 S: atr0635

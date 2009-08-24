@@ -1,0 +1,149 @@
+/* MACHINE-GENERATED ! */
+
+frame ball {
+	__0: vec @((col-N/2-0.5)*e, (N/2-row+0.5)*e)
+	__1: vec .(-d/2, -d/2)
+	__2: vec __0(d/2, d/2)
+	rpad "$rname$col" __1 .
+}
+
+frame cin_long {
+	table
+	    { rname, row }
+	    { "N", 13 }
+	    { "P", 14 }
+
+	loop col = 12, 15
+
+	frame ball @
+}
+
+frame cin_short {
+	table
+	    { rname, row }
+	    { "M", 12 }
+	    { "R", 15 }
+
+	table
+	    { col }
+	    { 13 }
+	    { 14 }
+
+	frame ball @
+}
+
+frame cmid_side {
+	table
+	    { rname, row }
+	    { "G", 7 }
+	    { "H", 8 }
+	    { "J", 9 }
+	    { "K", 10 }
+	    { "L", 11 }
+	    { "M", 12 }
+	    { "N", 13 }
+	    { "P", 14 }
+	    { "R", 15 }
+	    { "T", 16 }
+	    { "U", 17 }
+	    { "V", 18 }
+	    { "W", 19 }
+	    { "Y", 20 }
+
+	table
+	    { col }
+	    { 5 }
+	    { 6 }
+	    { 21 }
+	    { 22 }
+
+	frame ball @
+}
+
+frame cmid_full {
+	table
+	    { rname, row }
+	    { "E", 5 }
+	    { "F", 6 }
+	    { "AA", 21 }
+	    { "AB", 22 }
+
+	loop col = 5, 22
+
+	frame ball @
+}
+
+frame cout_side {
+	table
+	    { rname, row }
+	    { "C", 3 }
+	    { "D", 4 }
+	    { "E", 5 }
+	    { "F", 6 }
+	    { "G", 7 }
+	    { "H", 8 }
+	    { "J", 9 }
+	    { "K", 10 }
+	    { "L", 11 }
+	    { "M", 12 }
+	    { "N", 13 }
+	    { "P", 14 }
+	    { "R", 15 }
+	    { "T", 16 }
+	    { "U", 17 }
+	    { "V", 18 }
+	    { "W", 19 }
+	    { "Y", 20 }
+	    { "AA", 21 }
+	    { "AB", 22 }
+	    { "AC", 23 }
+	    { "AD", 24 }
+
+	table
+	    { col }
+	    { 1 }
+	    { 2 }
+	    { 25 }
+	    { 26 }
+
+	frame ball @
+}
+
+frame cout_full {
+	table
+	    { rname, row }
+	    { "A", 1 }
+	    { "B", 2 }
+	    { "AE", 25 }
+	    { "AF", 26 }
+
+	loop col = 1, 26
+
+	frame ball @
+}
+
+frame outline {
+	__0: vec @(-Ox/2, -Oy/2)
+	__1: vec @(Ox/2, Oy/2)
+	rect __0 . 
+}
+
+package "_"
+unit mm
+set e = 0.5mm
+
+set N = 26
+
+set d = 0.2mm
+
+set Ox = 14mm
+
+set Oy = 14mm
+
+frame cout_full @
+frame cout_side @
+frame cmid_full @
+frame cin_short @
+frame cin_long @
+frame cmid_side @
+frame outline @

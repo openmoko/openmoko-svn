@@ -83,5 +83,8 @@ Werner Almesberger <werner@openmoko.org>
 
   The scripts under scripts/ and expanded/
   components/mkloe
+  modules/332fbga-p05.fpd
   modules/bga96-8x12-0mm8.fpd
   modules/ge865.fpd
+  modules/stdpass.fpd
+  modules/wm3236aq.fpd
