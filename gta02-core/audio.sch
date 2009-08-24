@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sun 23 Aug 2009 03:27:46 PM CDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Mo 24 Aug 2009 15:22:36 CDT
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -694,7 +694,7 @@ F 4 "5.6Vac" V 12550 3650 60  0000 C CNN "AC-Voltage"
 	0    -1   1    0   
 $EndComp
 Text Notes 13700 1050 0    100  ~ 0
-This schematic differs from\nthe original GTA02 schematic.\n\nDone:\n- ECN0010     - ECN0015\n- ECN0019     - ECN0022\n- ECN0031\n\nToDo/Discuss:\n- ECN0018     - ECN0020
+This schematic differs from\nthe original GTA02 schematic.\n\nDone:\n- ECN0010     - ECN0015\n- ECN0019     - ECN0022\n- ECN0031\n\nToDo/Discuss:\n- ECN0018     - ECN0020\n- ECN0032     - ECN0033
 Text Notes 13700 850  0    150  ~ 30
 Note:
 NoConn ~ 14700 9150

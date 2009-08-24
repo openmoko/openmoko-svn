@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Mo 24 Aug 2009 15:22:29 CDT
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 14050 5100 0    50   ~ 0
+C1 value corrected!\nIn GTA02 a 200fF cap is used
 Connection ~ 4700 9700
 Wire Wire Line
 	4700 9900 4700 9500
@@ -982,7 +984,7 @@ L C C1
 U 1 1 4A429C45
 P 13500 4950
 F 0 "C1" H 13550 5050 50  0000 L CNN
-F 1 "22p" H 13550 4850 50  0000 L CNN
+F 1 "200f" H 13550 4850 50  0000 L CNN
 	1    13500 4950
 	1    0    0    -1  
 $EndComp
