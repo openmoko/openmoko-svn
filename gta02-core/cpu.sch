@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 21 Aug 2009 01:42:40 AM CDT
+EESchema Schematic File Version 2  date s?n 23 aug 2009 16:32:15 CEST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -608,7 +608,7 @@ F 1 " " H 13150 4800 30  0000 C CNN
 	1    13150 4550
 	1    0    0    -1  
 $EndComp
-Text GLabel 11550 5850 0    60   Input ~ 0
+Text GLabel 11550 5850 0    60   Output ~ 0
 nACCEL_CS
 $Comp
 L GND #PWR071
@@ -661,9 +661,9 @@ Text GLabel 11550 7050 0    60   Input ~ 0
 nUSB_OC
 Text GLabel 11550 7200 0    60   Input ~ 0
 nUSB_FLT
-Text GLabel 11550 6750 0    60   Input ~ 0
+Text GLabel 11550 6750 0    60   Output ~ 0
 ACCEL_SPICLK
-Text GLabel 11550 6600 0    60   Input ~ 0
+Text GLabel 11550 6600 0    60   Output ~ 0
 ACCEL_SPIMOSI
 Text GLabel 11550 6450 0    60   Input ~ 0
 ACCEL_SPIMISO
@@ -683,12 +683,12 @@ Text GLabel 11550 5400 0    60   Input ~ 0
 WLAN_GPIO1
 Text GLabel 11550 5250 0    60   Input ~ 0
 CODEC_IRQ
-Text GLabel 11550 5100 0    60   Input ~ 0
+Text GLabel 11550 5100 0    60   BiDi ~ 0
 EINT3
 Text GLabel 11550 4950 0    60   BiDi ~ 0
 BT_PIO2
 Text GLabel 11550 4800 0    60   Input ~ 0
-IO1
+GSM_INT
 Text GLabel 11550 4650 0    60   Input ~ 0
 nACCEL_INT1
 NoConn ~ 13450 6300
@@ -738,8 +738,6 @@ Text GLabel 4900 4800 2    60   Output ~ 0
 INTO
 Text GLabel 4900 4950 2    60   Output ~ 0
 nGSM_EN
-Text GLabel 4900 6000 2    60   Output ~ 0
-CHIP_PWD
 Text GLabel 4900 6000 2    60   Output ~ 0
 CHIP_PWD
 Text GLabel 4900 5400 2    60   BiDi ~ 0

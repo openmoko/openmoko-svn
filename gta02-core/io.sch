@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sun 02 Aug 2009 23:25:00 BST
+EESchema Schematic File Version 2  date s?n 23 aug 2009 16:48:54 CEST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -399,11 +399,11 @@ Text GLabel 4650 5550 0    60   Input ~ 0
 ACCEL_SPICLK
 Text GLabel 4650 5400 0    60   Input ~ 0
 ACCEL_SPIMOSI
-Text GLabel 4650 5250 0    60   Input ~ 0
+Text GLabel 4650 5250 0    60   Output ~ 0
 ACCEL_SPIMISO
-Text GLabel 4650 5050 0    60   Input ~ 0
+Text GLabel 4650 5050 0    60   Output ~ 0
 nACCEL_INT2
-Text GLabel 4650 4900 0    60   Input ~ 0
+Text GLabel 4650 4900 0    60   Output ~ 0
 nACCEL_INT1
 Text GLabel 4650 4750 0    60   Input ~ 0
 nACCEL_CS
@@ -594,7 +594,7 @@ Text GLabel 12150 9950 0    60   Output ~ 0
 CONSOLE_RXD
 Text GLabel 12150 9800 0    60   Input ~ 0
 CONSOLE_TXD
-Text GLabel 12150 8600 0    60   Input ~ 0
+Text GLabel 12150 8600 0    60   BiDi ~ 0
 EINT3
 Text GLabel 12150 8450 0    60   Input ~ 0
 WLAN_SS
