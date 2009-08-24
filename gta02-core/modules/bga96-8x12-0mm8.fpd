@@ -39,7 +39,8 @@ frame balls {
 	frame ball .
 }
 
-part "BGA96-8x12-0.8mm"
+package "FBGA96-P0.8"
+unit mm
 set Pd = 0.4mm
 
 set e = 0.8mm

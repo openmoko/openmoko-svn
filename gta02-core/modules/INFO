@@ -9,6 +9,7 @@
 # If symbol data sheet contains footprint, don't repeat it here.
 #
 
+# Atmel ATR0635, BGA96, 8x12 mm, pitch 0.8 mm
 F: bga96-8x12-0mm8
 S: atr0635
 # ATR0635 data sheet page 33
@@ -21,7 +22,11 @@ D: http://www.telit.com/module/infopool/download.php?id=1666
 F: stdpass
 D: http://www.vishay.com/doc?20035
 # http://industrial.panasonic.com/www-data/pdf/AOA0000/AOA0000PE2.pdf
+# To do:
+# - define keep out area
 
 # WM3236AQ, very non-standard 48QFN
 F: wm3236aq
 # WM3236AQ_R0E_datasheet_Preliminary_0630_2007.pdf (no-public)
+# To do:
+# - define keep out area
