@@ -15,6 +15,9 @@ Items to add:
 
 Changes:
 - Moved CS signal of remaining sensor to GPG0
+- No, since we have only one sensor now, we don't need CS anymore.
+  Connect to GND, remove the nACCEL_CS net, free EINT8/GPG0, and remove
+  R7810.
 - Connected INT2 of remaining sensor to GPG8 (formerly INT1 of other sensor)
 
 To do:
