@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat Aug  1 14:24:10 2009
+EESchema Schematic File Version 2  date Wed Aug 26 18:18:32 2009
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 1 12
+Sheet 1 14
 Title "GTA02-CORE"
 Date "20 jun 2009"
 Rev ""
@@ -13,11 +13,23 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 1000 7000 1500 1500
+U 4A95A67D
+F0 "MODEM" 60
+F1 "modem.sch" 60
+$EndSheet
+$Sheet
+S 10900 4500 1500 1500
+U 4A95A493
+F0 "WLAN" 60
+F1 "wlan.sch" 60
+$EndSheet
 Text Notes 7100 2500 0    60   ~ 0
 R1801
-Text Notes 9050 5000 0    60   ~ 0
-x
 Text Notes 9050 4850 0    60   ~ 0
+x
+Text Notes 11000 4700 0    60   ~ 0
 79xx
 Text Notes 9050 4700 0    60   ~ 0
 77xx
