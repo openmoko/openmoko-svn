@@ -24,3 +24,6 @@ To do:
 - why the upper ?
   http://lists.openmoko.org/pipermail/devel/2009-June/005758.html
 - connect both interrupts (motivation)
+
+
+Commit: SVN 5546 (nACCEL_CS removal)
