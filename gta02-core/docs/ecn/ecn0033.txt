@@ -6,14 +6,18 @@ codec [1]. However in the current GTA02 100nF capacitors are used for coupling.
 To follow Wolfson's recommendation we will change all line input/output 
 coupling capacitors to 1uF.
 
-Replace the following capacitors with 1uF (CM105X5R105M16AT):
+Replace the following capacitors with 1uF/6.3V SMD-0402 :
 - C4304 and C4303 (MIC input)
-- C3007 and C3008 (GSM modem input)
+- C3007 and C3006 (GSM modem input)
 - C3018 and C3011 (GSM modem output)
-- C3016 (headset MIC)
+- C3016 and C4406 (headset MIC)
 
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf (p. 88)
+
+Todo:
+find a suitable and easy to source capacitor e.g. TDK C1005X5R0J105K (Digi-Key)
+or AVX 04026D105KAT2A (Digi-Key & Farnell) 
 
 
 Author: Rene Harder <rehar@saweb.de>

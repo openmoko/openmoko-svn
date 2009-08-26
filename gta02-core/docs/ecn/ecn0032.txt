@@ -1,15 +1,15 @@
 Add EMI and ESD protection to headset jack
 
 
-To prevent destroying the codec from any discharge we need to add a proper 
+To prevent destroying the codec from any discharge we need to add a proper
 ESD protection.
-We might still get RF feeding through the headset jack into the codec/system. 
+We might still get RF feeding through the headset jack into the codec/system.
 To be 100% sure it's best to add low pass EMI filter in all signal lines of the
 headset jack.
 
 based on Joerg's proposal!
 
-ESD protection 
+ESD protection
 - add varistors (D4403/4404/4405) 5.6Vac to all headset jack signal pins
   (same as D4402)
 
@@ -22,5 +22,6 @@ EMI protection
 - remove common mode choke B4102 
 
 attenuation: f=1..3GHz approx 55dB(IN)/68dB(OUT) (150pF varistor)
+
 
 Author: Rene Harder <rehar@saweb.de>
