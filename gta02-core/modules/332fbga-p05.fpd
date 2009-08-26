@@ -128,7 +128,7 @@ frame outline {
 	rect __0 . 
 }
 
-package "_"
+package "332FBGA-P0.5"
 unit mm
 set e = 0.5mm
 
