@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date s?n 23 aug 2009 16:48:54 CEST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed Aug 26 18:34:24 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 8 12
+Sheet 10 14
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 4550 6150 0    50   ~ 0
+Removed secondary acceleration sensor and cleaned up.\nSee ECN0016 for details.
+Wire Wire Line
+	6250 4850 6050 4850
+Wire Wire Line
+	6050 4850 6050 5650
 Wire Wire Line
 	12400 2500 12950 2500
 Connection ~ 13250 3500
@@ -32,7 +38,7 @@ Connection ~ 12400 1700
 Wire Wire Line
 	12400 2150 12400 2700
 Wire Wire Line
-	12950 3500 12950 3250
+	12950 3250 12950 3500
 Wire Wire Line
 	4050 9600 3850 9600
 Wire Wire Line
@@ -46,15 +52,11 @@ Wire Wire Line
 Wire Wire Line
 	4850 5400 4650 5400
 Wire Wire Line
-	4950 4750 4950 4850
-Wire Wire Line
-	4950 4750 4650 4750
-Wire Wire Line
 	4850 4900 4850 4950
 Wire Wire Line
 	4850 4900 4650 4900
 Wire Wire Line
-	6250 5050 4650 5050
+	4650 5050 6250 5050
 Wire Wire Line
 	4150 2500 3950 2500
 Wire Wire Line
@@ -70,7 +72,7 @@ Wire Wire Line
 Wire Wire Line
 	14250 6150 12350 6150
 Wire Wire Line
-	14250 6250 12150 6250
+	12150 6250 14250 6250
 Wire Wire Line
 	14250 6350 12350 6350
 Wire Wire Line
@@ -90,7 +92,7 @@ Wire Wire Line
 Wire Wire Line
 	12150 8300 12350 8300
 Wire Wire Line
-	14250 8150 12150 8150
+	12150 8150 14250 8150
 Wire Wire Line
 	14250 7850 12550 7850
 Wire Wire Line
@@ -106,7 +108,7 @@ Wire Wire Line
 Wire Wire Line
 	12550 7850 12550 7700
 Wire Wire Line
-	3650 8550 6800 8550
+	6800 8550 3650 8550
 Wire Wire Line
 	3650 9250 4050 9250
 Wire Wire Line
@@ -120,35 +122,35 @@ Wire Wire Line
 Wire Wire Line
 	5300 8350 3650 8350
 Wire Wire Line
-	5150 3900 6050 3900
+	5400 3900 5850 3900
 Wire Wire Line
-	9150 4400 9150 5300
+	9150 5300 9150 4400
 Wire Wire Line
 	13850 9800 13850 9550
 Wire Wire Line
-	14250 9550 13650 9550
+	13650 9550 14250 9550
 Connection ~ 14500 9950
 Wire Wire Line
 	14500 10150 14500 9950
 Connection ~ 6550 8550
 Wire Wire Line
-	6550 8550 6550 8350
+	6550 8350 6550 8550
 Connection ~ 4600 8450
 Wire Wire Line
 	4600 8050 4600 8450
 Connection ~ 3900 8250
 Wire Wire Line
-	3900 8250 3900 8050
+	3900 8050 3900 8250
 Wire Wire Line
 	4050 8900 3850 8900
 Wire Wire Line
 	14250 5850 14150 5850
 Wire Wire Line
-	13550 8250 13550 7600
+	13550 7600 13550 8250
 Wire Wire Line
-	12750 7850 12750 7600
+	12750 7600 12750 7850
 Wire Wire Line
-	13150 6150 13150 5700
+	13150 5700 13150 6150
 Wire Wire Line
 	13950 6550 13950 5700
 Wire Wire Line
@@ -166,7 +168,7 @@ Wire Wire Line
 	12950 6050 12950 5800
 Connection ~ 12950 6050
 Wire Wire Line
-	13350 6250 13350 5800
+	13350 5800 13350 6250
 Connection ~ 13350 6250
 Connection ~ 13950 8450
 Connection ~ 13550 8250
@@ -184,14 +186,11 @@ Wire Wire Line
 	14350 5300 14150 5300
 Wire Wire Line
 	14150 5300 14150 5850
-Connection ~ 5150 3900
 Wire Wire Line
-	5150 4100 5150 3750
+	5850 3900 5850 4100
+Connection ~ 5400 4950
 Wire Wire Line
-	6050 3900 6050 4100
-Connection ~ 5600 4950
-Wire Wire Line
-	5600 4950 5600 4600
+	5400 4950 5400 4600
 Wire Wire Line
 	9150 3750 9150 3900
 Connection ~ 9150 4900
@@ -227,17 +226,12 @@ Wire Wire Line
 Wire Wire Line
 	9150 6100 9150 5700
 Wire Wire Line
-	8450 4900 9150 4900
+	9150 4900 8450 4900
 Connection ~ 9150 5000
 Wire Wire Line
-	6050 5050 6050 4600
-Connection ~ 6050 5050
-Wire Wire Line
-	5150 4850 5150 4600
-Connection ~ 5150 4850
-Wire Wire Line
-	5600 4100 5600 3900
-Connection ~ 5600 3900
+	5850 4600 5850 5050
+Connection ~ 5850 5050
+Connection ~ 5400 3900
 Wire Wire Line
 	11600 2950 11850 2950
 Wire Wire Line
@@ -252,7 +246,7 @@ Wire Wire Line
 	12950 7950 12950 7700
 Connection ~ 12950 7950
 Wire Wire Line
-	13350 8150 13350 7700
+	13350 7700 13350 8150
 Connection ~ 13350 8150
 Wire Wire Line
 	13750 8350 13750 7700
@@ -261,17 +255,17 @@ Wire Wire Line
 	13650 6700 13650 6850
 Connection ~ 13650 6850
 Wire Wire Line
-	13550 6350 13550 5700
+	13550 5700 13550 6350
 Wire Wire Line
 	12750 5950 12750 5700
 Wire Wire Line
-	13150 8050 13150 7600
+	13150 7600 13150 8050
 Wire Wire Line
-	13950 8450 13950 7600
+	13950 7600 13950 8450
 Wire Wire Line
 	4050 9400 3850 9400
 Wire Wire Line
-	4250 8350 4250 8050
+	4250 8050 4250 8350
 Connection ~ 4250 8350
 Wire Wire Line
 	5000 8550 5000 8050
@@ -279,7 +273,7 @@ Connection ~ 5000 8550
 Wire Wire Line
 	6550 7650 6550 7850
 Wire Wire Line
-	14050 9350 14050 9550
+	14050 9550 14050 9350
 Connection ~ 14050 9550
 Wire Wire Line
 	12750 6850 12750 7050
@@ -297,7 +291,7 @@ Wire Wire Line
 Wire Wire Line
 	5200 8150 5200 8250
 Wire Wire Line
-	3650 8450 5500 8450
+	5500 8450 3650 8450
 Wire Wire Line
 	3650 8950 3850 8950
 Wire Wire Line
@@ -323,7 +317,7 @@ Wire Wire Line
 Wire Wire Line
 	12450 7850 12150 7850
 Wire Wire Line
-	14250 6850 12150 6850
+	12150 6850 14250 6850
 Wire Wire Line
 	12550 6550 14250 6550
 Wire Wire Line
@@ -355,8 +349,6 @@ Wire Wire Line
 Wire Wire Line
 	4850 4950 6250 4950
 Wire Wire Line
-	4950 4850 6250 4850
-Wire Wire Line
 	4650 5550 4950 5550
 Wire Wire Line
 	4950 5550 4950 5450
@@ -376,12 +368,23 @@ Wire Wire Line
 Wire Wire Line
 	12400 2050 12200 2050
 Wire Wire Line
-	12400 3700 12400 3300
+	12400 3300 12400 3700
 Wire Wire Line
 	13250 3500 13250 2400
 Connection ~ 12950 3500
 Wire Wire Line
 	13750 1700 13750 2350
+Wire Wire Line
+	5400 3750 5400 4100
+$Comp
+L GND #PWR?
+U 1 1 4A95A96F
+P 6050 5650
+F 0 "#PWR?" H 6050 5650 30  0001 C CNN
+F 1 "GND" H 6050 5580 30  0001 C CNN
+	1    6050 5650
+	1    0    0    -1  
+$EndComp
 Text Notes 3950 9800 0    50   ~ 0
 Connect CLKOUT1 to \nUEXTCLK - ecn0025
 Text GLabel 4050 9600 2    60   Input ~ 0
@@ -405,8 +408,6 @@ Text GLabel 4650 5050 0    60   Output ~ 0
 nACCEL_INT2
 Text GLabel 4650 4900 0    60   Output ~ 0
 nACCEL_INT1
-Text GLabel 4650 4750 0    60   Input ~ 0
-nACCEL_CS
 Text GLabel 12150 5800 0    60   Output ~ 0
 STDI
 $Comp
@@ -842,37 +843,28 @@ $EndComp
 $Comp
 L GSENSOR_3V3 #PWR?
 U 1 1 4A401C8A
-P 5150 3750
-F 0 "#PWR?" H 5150 3650 50  0001 C CNN
-F 1 "GSENSOR_3V3" H 5150 3900 50  0000 C CNN
-	1    5150 3750
+P 5400 3750
+F 0 "#PWR?" H 5400 3650 50  0001 C CNN
+F 1 "GSENSOR_3V3" H 5400 3900 50  0000 C CNN
+	1    5400 3750
 	1    0    0    -1  
-$EndComp
-$Comp
-L R_US R7810
-U 1 1 4A401C59
-P 5150 4350
-F 0 "R7810" V 5100 4175 50  0000 C CNN
-F 1 "NC" V 5200 4240 50  0000 C CNN
-	1    5150 4350
-	0    1    1    0   
 $EndComp
 $Comp
 L R_US R7807
 U 1 1 4A401C2B
-P 5600 4350
-F 0 "R7807" V 5550 4175 50  0000 C CNN
-F 1 "NC" V 5650 4240 50  0000 C CNN
-	1    5600 4350
+P 5400 4350
+F 0 "R7807" V 5350 4175 50  0000 C CNN
+F 1 "NC" V 5450 4240 50  0000 C CNN
+	1    5400 4350
 	0    1    1    0   
 $EndComp
 $Comp
 L R_US R7811
 U 1 1 4A401C19
-P 6050 4350
-F 0 "R7811" V 6000 4175 50  0000 C CNN
-F 1 "NC" V 6100 4240 50  0000 C CNN
-	1    6050 4350
+P 5850 4350
+F 0 "R7811" V 5800 4175 50  0000 C CNN
+F 1 "NC" V 5900 4240 50  0000 C CNN
+	1    5850 4350
 	0    1    1    0   
 $EndComp
 $Comp

@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date s?n 23 aug 2009 16:32:15 CEST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed Aug 26 18:32:51 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 6 12
+Sheet 8 14
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 13450 5900
+Text Notes 10750 5850 0    50   ~ 0
+removed nACCEL_CS network ECN0016
 Text Notes 10750 5700 0    50   ~ 0
 removed nHOLD network ECN0031
 NoConn ~ 13450 5800
@@ -513,12 +516,6 @@ Wire Wire Line
 	13150 5200 13150 4550
 Connection ~ 12550 6000
 Wire Wire Line
-	13450 5900 12350 5900
-Wire Wire Line
-	12350 5900 12350 5850
-Wire Wire Line
-	12350 5850 11550 5850
-Wire Wire Line
 	11550 6300 13250 6300
 Wire Wire Line
 	13250 6300 13250 6200
@@ -608,8 +605,6 @@ F 1 " " H 13150 4800 30  0000 C CNN
 	1    13150 4550
 	1    0    0    -1  
 $EndComp
-Text GLabel 11550 5850 0    60   Output ~ 0
-nACCEL_CS
 $Comp
 L GND #PWR071
 U 1 1 4A4B88E1
