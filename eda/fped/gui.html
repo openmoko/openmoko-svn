@@ -143,6 +143,22 @@ Tools are used to add new elements and to manipulate existing ones.
   <DD> The pointer. This is the default tool. The pointer is used to
     select items and do move points of the selected item.
     <P>
+    Clicking on an item selects it. If items overlap, the one with the
+    highest priority is selected. The priority is based on how difficult
+    it usually is to select an item, with frame references having a low
+    priority, pads, circles, arcs, rectangles, measurements, and lines
+    having increasingly higher priorities. There are a few special cases:
+    <UL>
+      <LI> The circle at the end of a vector has the highest priority
+	while its line has the lowest priority.
+      <LI> To select a frame reference, click on the L-shaped upper left
+        corner.
+      <LI> To select a measurement, click on the line with the text, not
+	the (hypothetical) line connecting the points being measured.
+    </UL>
+    If multiple items are under the mouse pointer, repeatedly clicking
+    iterates through them.
+    <P>
     To move points, select the item, then move the mouse pointer over
     the point to move. A red circle will appear under the mouse pointer.
     Then drag the point to its new location and release the mouse button.

@@ -211,13 +211,16 @@ static void destroy_obj(struct obj *obj)
 		free(obj->u.pad.name);
 		break;
 	case ot_line:
-		free_expr(obj->u.line.width);
+		if (obj->u.line.width)
+			free_expr(obj->u.line.width);
 		break;
 	case ot_rect:
-		free_expr(obj->u.rect.width);
+		if (obj->u.rect.width)
+			free_expr(obj->u.rect.width);
 		break;
 	case ot_arc:
-		free_expr(obj->u.arc.width);
+		if (obj->u.arc.width)
+			free_expr(obj->u.arc.width);
 		break;
 	case ot_meas:
 		if (obj->u.meas.label)
