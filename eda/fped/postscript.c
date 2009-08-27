@@ -63,7 +63,7 @@
 #define	PS_MEAS_LINE		mm_to_units(0.015)
 #define	PS_MEAS_ARROW_LEN	mm_to_units(0.15)
 #define	PS_MEAS_ARROW_ANGLE	30
-#define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3.5)	/* ~10 pt, real mm */
+#define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
 #define	PS_MEAS_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
 #define	PS_CROSS_WIDTH		mm_to_units(0.01)
 #define	PS_CROSS_DASH		mm_to_units(0.1)
@@ -755,9 +755,10 @@ fprintf(file,
 	 */
 
 	fprintf(file,
+"/originalsize 1 0 matrix currentmatrix idtransform pop def\n"
 "/realsize {\n"
 "    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform pop\n"
-"    } def\n");
+"    originalsize div } def\n");
 
 	fprintf(file, "%%%%EndProlog\n");
 }

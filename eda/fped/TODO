@@ -78,3 +78,6 @@ Future directions:
 - advanced: silk line width
 - future: consider editing non-canvas items (e.g., variable names/values) in
   place
+- add a means to cut&paste and copy&paste objects, and perhaps also variables
+  (to move objects, we need to make sure all references are included. besides
+  that, copy&paste should be a slight variation of delete/undelete)
