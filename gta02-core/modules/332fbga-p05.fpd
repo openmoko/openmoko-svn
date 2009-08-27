@@ -147,3 +147,8 @@ frame cin_short @
 frame cin_long @
 frame cmid_side @
 frame outline @
+measy outline.__0 >> outline.__1 1.5mm
+measx outline.__0 >> outline.__1 Oy+1.5mm
+measy ball.__0 >> ball.__0 1.5mm
+measx ball.__0 >> ball.__0 Oy
+measx ball.__0 -> ball.__0 -1.5mm
