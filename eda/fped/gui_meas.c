@@ -64,7 +64,7 @@ static int is_min(lt_op_type lt, const struct inst *inst)
 	struct coord min;
 
 	min = meas_find_min(lt, active_pkg->samples[inst->vec->n]);
-	return coord_eq(inst->u.rect.end, min);
+	return coord_eq(inst->u.vec.end, min);
 }
 
 
@@ -74,8 +74,8 @@ static int is_next(lt_op_type lt,
 	struct coord next;
 
 	next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
-	    ref->u.rect.end);
-	return coord_eq(inst->u.rect.end, next);
+	    ref->u.vec.end);
+	return coord_eq(inst->u.vec.end, next);
 }
 
 
@@ -84,7 +84,7 @@ static int is_max(lt_op_type lt, const struct inst *inst)
 	struct coord max;
 
 	max = meas_find_max(lt, active_pkg->samples[inst->vec->n]);
-	return coord_eq(inst->u.rect.end, max);
+	return coord_eq(inst->u.vec.end, max);
 }
 
 
@@ -97,7 +97,7 @@ static int is_a_next(lt_op_type lt, struct inst *inst)
 		min = meas_find_min(lt, active_pkg->samples[a->vec->n]);
 		next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
 		    min);
-		if (coord_eq(next, inst->u.rect.end))
+		if (coord_eq(next, inst->u.vec.end))
 			return 1;
 	}
 	return 0;
@@ -112,7 +112,7 @@ static int is_min_of_next(lt_op_type lt,
 
 	min = meas_find_min(lt, inst->vec->samples);
 	next = meas_find_next(lt, ref->vec->samples, min);
-	return coord_eq(next, ref->u.rect.end);
+	return coord_eq(next, ref->u.vec.end);
 }
 #endif
 
@@ -234,12 +234,15 @@ static void tool_deselected_meas(void)
 /* ----- find start point (new measurement) -------------------------------- */
 
 
+static int is_highlighted(struct inst *inst, void *user)
+{
+	return inst->u.vec.highlighted;
+}
+
+
 static struct inst *find_point_meas_new(struct coord pos)
 {
-	if (meas_inst)
-		return inst_find_vec(pos, meas_pick_vec_b, meas_inst);
-	else
-		return inst_find_vec(pos, meas_pick_vec_a, NULL);
+	return inst_find_vec(pos, is_highlighted, NULL);
 }
 
 
@@ -302,14 +305,8 @@ static int end_new_meas(struct inst *from, struct inst *to)
 	}
 	meas->inverted =
 	    mode == min_to_next_or_max && is_min(meas_dsc->lt, to) ? 0 :
-	    meas_dsc->lt(from->u.rect.end, to->u.rect.end) !=
+	    meas_dsc->lt(from->u.vec.end, to->u.vec.end) !=
 	    (mode == min_to_next_or_max);
-{
-char *sm[] = { "min_to", "max_to", "next_to" };
-char *st[] = { "nxy", "nx", "ny", "mxy", "mx", "my" };
-fprintf(stderr, "mode %s type %s, inverted %d\n",
-sm[mode], st[meas->type], meas->inverted);
-}
 	meas->offset = NULL;
 	meas_dsc = NULL;
 	return 1;
@@ -388,7 +385,7 @@ void begin_drag_move_meas(struct inst *inst, int i)
 
 struct inst *find_point_meas_move(struct inst *inst, struct coord pos)
 {
-	return inst_find_vec(pos, meas_pick_vec_b, meas_inst);
+	return inst_find_vec(pos, is_highlighted, NULL);
 }
 
 

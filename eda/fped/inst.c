@@ -353,7 +353,7 @@ int inst_find_point_selected(struct coord pos, struct inst **res)
 struct coord inst_get_point(const struct inst *inst)
 {
 	if (inst->ops == &vec_ops)
-		return inst->u.rect.end;
+		return inst->u.vec.end;
 	if (inst->ops == &frame_ops)
 		return inst->base;
 	abort();
@@ -575,7 +575,7 @@ static void vec_op_select(struct inst *self)
 {
 	status_set_type_entry("ref =");
 	status_set_name("%s", self->vec->name ? self->vec->name : "");
-	rect_status(self->base, self->u.rect.end, -1, 0);
+	rect_status(self->base, self->u.vec.end, -1, 0);
 	vec_edit(self->vec);
 }
 
@@ -628,7 +628,7 @@ int inst_vec(struct vec *vec, struct coord base)
 
 	inst = add_inst(&vec_ops, ip_vec, base);
 	inst->vec = vec;
-	inst->u.rect.end = vec->pos;
+	inst->u.vec.end = vec->pos;
 	update_bbox(&inst->bbox, vec->pos);
 	propagate_bbox(inst);
 	return 1;
@@ -1199,9 +1199,11 @@ void inst_highlight_vecs(int (*pick)(struct inst *inst, void *user), void *user)
 	struct inst *inst;
 	int i;
 
-	FOR_ALL_INSTS(i, ip_vec, inst)
-		if (pick(inst, user))
+	FOR_ALL_INSTS(i, ip_vec, inst) {
+		inst->u.vec.highlighted = pick(inst, user);
+		if (inst->u.vec.highlighted)
 			gui_highlight_vec(inst);
+	}
 }
 
 

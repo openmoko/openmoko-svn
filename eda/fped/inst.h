@@ -79,13 +79,17 @@ struct inst {
 	int active;
 	union {
 		struct {
+			int highlighted; /* for measurements */
+			struct coord end;
+		} vec;
+		struct {
 			struct frame *ref;
 			int active;
 		} frame;
 		const char *name;
 		struct {
-			struct coord end;
 			unit_type width;
+			struct coord end;
 		} rect;
 		struct {
 			char *name;

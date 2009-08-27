@@ -274,14 +274,14 @@ static struct pix_buf *drag_new_vec(struct inst *from, struct coord to)
 struct pix_buf *draw_move_vec(struct inst *inst, struct coord pos, int i)
 {
 	return draw_move_line_common(inst,
-	    add_vec(sub_vec(inst->u.rect.end, inst->base), pos), pos, i);
+	    add_vec(sub_vec(inst->u.vec.end, inst->base), pos), pos, i);
 }
 
 
 struct pix_buf *gui_hover_vec(struct inst *self)
 {
 	return hover_common(gc_vec[mode_hover],
-	    self->u.rect.end, VEC_EYE_R);
+	    self->u.vec.end, VEC_EYE_R);
 }
 
 

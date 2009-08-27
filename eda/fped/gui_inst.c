@@ -122,7 +122,7 @@ unit_type gui_dist_vec(struct inst *self, struct coord pos, unit_type scale)
 {
 	unit_type d;
 
-	d = dist_point(pos, self->u.rect.end)/scale;
+	d = dist_point(pos, self->u.vec.end)/scale;
 	return d > VEC_EYE_R ? -1 : d;
 }
 
@@ -138,14 +138,14 @@ unit_type gui_dist_vec_fallback(struct inst *self, struct coord pos,
 {
 	unit_type d;
 
-	d = dist_line(pos, self->base, self->u.rect.end)/scale;
+	d = dist_line(pos, self->base, self->u.vec.end)/scale;
 	return d > SELECT_R ? -1 : d;
 }
 
 
 void gui_highlight_vec(struct inst *self)
 {
-	struct coord center = translate(self->u.rect.end);
+	struct coord center = translate(self->u.vec.end);
 
 	draw_circle(DA, gc_highlight, FALSE, center.x, center.y, VEC_EYE_R);
 }
@@ -154,7 +154,7 @@ void gui_highlight_vec(struct inst *self)
 void gui_draw_vec(struct inst *self)
 {
 	struct coord from = translate(self->base);
-	struct coord to = translate(self->u.rect.end);
+	struct coord to = translate(self->u.vec.end);
 	GdkGC *gc;
 
 	gc = gc_vec[get_mode(self)];
