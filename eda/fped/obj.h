@@ -139,6 +139,12 @@ enum obj_type {
 	ot_meas,
 };
 
+enum pad_type {
+	pt_normal,	/* copper and solder mask */
+	pt_bare,	/* only copper (and finish) */
+	pt_paste,	/* only solder paste */
+};
+
 struct frame_ref {
 	struct frame *ref;
 	int lineno;
@@ -153,6 +159,7 @@ struct pad {
 	char *name;
 	struct vec *other; /* NULL if frame origin */
 	int rounded;
+	enum pad_type type;
 };
 
 struct arc {

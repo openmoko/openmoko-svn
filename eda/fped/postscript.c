@@ -172,6 +172,20 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 	    inst->u.pad.name, PS_FONT_OUTLINE);
 }
 
+static const char *hatch(enum pad_type type)
+{
+	switch (type) {
+	case pt_normal:
+		return "crosspath";
+	case pt_bare:
+		return "hatchpath";
+	case pt_paste:
+		return "backhatchpath";
+	default:
+		abort();
+	}
+}
+
 
 static void ps_pad(FILE *file, const struct inst *inst, int show_name)
 {
@@ -183,7 +197,8 @@ static void ps_pad(FILE *file, const struct inst *inst, int show_name)
 	fprintf(file, "  %d %d lineto\n", b.x, a.y);
 	fprintf(file, "  %d %d lineto\n", b.x, b.y);
 	fprintf(file, "  %d %d lineto\n", a.x, b.y);
-	fprintf(file, "  closepath gsave crosspath grestore stroke\n");
+	fprintf(file, "  closepath gsave %s grestore stroke\n",
+	    hatch(inst->obj->u.pad.type));
 
 	if (show_name)
 		ps_pad_name(file, inst);
@@ -213,7 +228,8 @@ static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
 		fprintf(file, "  %d %d lineto\n", a.x+r, b.y);
 		fprintf(file, "  %d %d %d 90 270 arc\n", a.x+r, a.y+r, r);
 	}
-	fprintf(file, "  closepath gsave hatchpath grestore stroke\n");
+	fprintf(file, "  closepath gsave %s grestore stroke\n",
+	    hatch(inst->obj->u.pad.type));
 
 	if (show_name)
 		ps_pad_name(file, inst);

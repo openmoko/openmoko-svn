@@ -56,6 +56,7 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 {
 	struct coord min, max;
 	unit_type tmp;
+	int layers;
 
 	min.x = units_to_kicad(inst->base.x);
 	min.y = units_to_kicad(inst->base.y);
@@ -85,10 +86,21 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 	/*
 	 * Attributes: pad type, N, layer mask
 	 */
-	fprintf(file, "At SMD N %8.8X\n",
-	    (1 << layer_top) |
-	    (1 << layer_paste_top) |
-	    (1 << layer_mask_top));
+	layers = 0;
+	switch (inst->obj->u.pad.type) {
+	case pt_normal:
+		layers = 1 << layer_paste_top;
+		/* fall through */
+	case pt_bare:
+		layers |= (1 << layer_top) | (1 << layer_mask_top);
+		break;
+	case pt_paste:
+		layers = 1 << layer_paste_top;
+		break;
+	default:
+		abort();
+	}
+	fprintf(file, "At SMD N %8.8X\n", layers);
 
 	/*
 	 * Position: Xpos, Ypos

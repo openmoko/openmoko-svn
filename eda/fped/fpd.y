@@ -13,6 +13,7 @@
 
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #include "error.h"
@@ -146,6 +147,7 @@ static struct obj *new_obj(enum obj_type type)
 	struct value *value;
 	struct vec *vec;
 	struct obj *obj;
+	enum pad_type pt;
 	enum meas_type mt;
 	struct {
 		int inverted;
@@ -172,6 +174,7 @@ static struct obj *new_obj(enum obj_type type)
 %type	<obj>	obj meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
 %type	<str>	opt_string
+%type	<pt>	pad_type
 %type	<mt>	meas_type
 %type	<mo>	meas_op
 
@@ -441,21 +444,23 @@ base:
 	;
 
 obj:
-	TOK_PAD STRING base base
+	TOK_PAD STRING base base pad_type
 		{
 			$$ = new_obj(ot_pad);
 			$$->base = $3;
 			$$->u.pad.name = $2;
 			$$->u.pad.other = $4;
 			$$->u.pad.rounded = 0;
+			$$->u.pad.type = $5;
 		}
-	| TOK_RPAD STRING base base
+	| TOK_RPAD STRING base base pad_type
 		{
 			$$ = new_obj(ot_pad);
 			$$->base = $3;
 			$$->u.pad.name = $2;
 			$$->u.pad.other = $4;
 			$$->u.pad.rounded = 1;
+			$$->u.pad.type = $5;
 		}
 	| TOK_RECT base base opt_expr
 		{
@@ -503,6 +508,18 @@ obj:
 			if (!$$->u.frame.ref->active_ref)
 				$$->u.frame.ref->active_ref = $$;
 			$$->u.frame.lineno = $<num>3.n;
+		}
+	;
+
+pad_type:
+	ID
+		{
+			if (!strcmp($1, "bare"))
+				$$ = pt_bare;
+			else if (!strcmp($1, "paste"))
+				$$ = pt_paste;
+			else
+				$$ = pt_normal;
 		}
 	;
 

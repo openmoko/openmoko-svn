@@ -318,8 +318,22 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		break;
 	case ot_pad:
 		s1 = obj_base_name(obj->u.pad.other, prev);
-		s = stralloc_printf("%spad \"%s\" %s %s",
-		    obj->u.pad.rounded ? "r" : "", obj->u.pad.name, base, s1);
+		switch (obj->u.pad.type) {
+		case pt_normal:
+			s2 = "";
+			break;
+		case pt_bare:
+			s2 = " bare";
+			break;
+		case pt_paste:
+			s2 = " paste";
+			break;
+		default:
+			abort();
+		}
+		s = stralloc_printf("%spad \"%s\" %s %s%s",
+		    obj->u.pad.rounded ? "r" : "",
+		    obj->u.pad.name, base, s1, s2);
 		free(s1);
 		break;
 	case ot_arc:

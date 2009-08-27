@@ -208,7 +208,7 @@ Pads
 
 Pads are similar to rectangles, but they also have a name.
 
-pad "<name>" <point-a> <point-b>
+pad "<name>" <point-a> <point-b> [<type>]
 
 Variables can be expanded in a pad's name by prefixing their name with
 a dollar sign. The ${name} syntax is also available.
@@ -218,6 +218,16 @@ Example:
 vec @(1mm, 1mm)
 pad "1" @ .
 
+Pads normally affect the surface copper layer, the solder mask layer,
+and the solder paste layer. This can be modified with the optional
+type argument:
+
+Type		Layers
+---------	-------------------------------------
+(default)	copper, solder mask, and solder paste
+bare		copper and solder mask
+paste		solder paste
+
 
 Rounded pads
 - - - - - -
@@ -226,7 +236,7 @@ Rounded pads are like rectangular pads except that they end with a
 semi-circle at each of the smaller sides of the enclosing rectangle.
 If enclosed in a square, rounded pads form a circle.
 
-rpad "<name>" <point-a> <point-b>
+rpad "<name>" <point-a> <point-b> [<type>]
 
 
 Measurements
