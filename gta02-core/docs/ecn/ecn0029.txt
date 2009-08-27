@@ -14,3 +14,5 @@ of the regulation (in both cases).
 
 Author: Werner Almesberger <werner@openmoko.org>
 Review: Joerg Reisenweber <joerg@openmoko.org>, SVN 5470
+Commit: 5509 through 5513
+Review: Werner Almesberger <werner@openmoko.org>, SVN5548
