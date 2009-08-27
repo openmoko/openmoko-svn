@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed Aug 26 18:18:32 2009
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 27 Aug 2009 11:41:00 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -160,7 +160,7 @@ Text GLabel 13650 7750 2    60   Input ~ 0
 DL_GSM
 NoConn ~ 13450 7600
 Text GLabel 13650 7600 2    60   Input ~ 0
-INTO
+GSM_INT
 NoConn ~ 13450 7300
 NoConn ~ 13450 7150
 NoConn ~ 13450 7000

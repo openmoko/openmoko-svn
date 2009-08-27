@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed Aug 26 18:32:51 2009
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Thu 27 Aug 2009 11:40:56 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -730,7 +730,7 @@ F 1 "FLASH_1V8" H 4050 1600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 4900 4800 2    60   Output ~ 0
-INTO
+GSM_INT
 Text GLabel 4900 4950 2    60   Output ~ 0
 nGSM_EN
 Text GLabel 4900 6000 2    60   Output ~ 0

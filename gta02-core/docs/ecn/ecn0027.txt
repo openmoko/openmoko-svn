@@ -9,6 +9,23 @@ They are:
 Openmoko	gta02-core	Connects
 ---------------	---------------	----------------------------------------------
 EXTINT0		GPS_EXTINT	U1501A nXDREQ1/GPB8	U7608 P9/EXTINT0
+INT0		GSM_INT		U1501H CAMDATA3/GPJ3    n/a
+PIO10		WL_ACTIVE
+PIO9		BT_ACTIVE
+SPI_MISO0	WLAN_SPIMISO
+SPI_MOSI0	WLAN_SPIMOSI
+SPI_CLK0	WLAN_SPICLK
+SS0		WLAN_SS
+RX_MODEM	MODEM_RX
+TX_MODEM	MODEM_TX
+CTS_MODEM	MODEM_CTS
+RTS_MODEM	MODEM_RTS
+SPI_MISO1	ACCEL_SPIMISO
+SPI_MOSI1	ACCEL_SPIMOSI
+SPI_CLK1	ACCEL_SPICLK
+G1_INT		nACCEL_INT1
+G2_INT		nACCEL_INT2
+
 
 This ECN is a compilation of changes made by various people, so the
 "author" is actually just (one) editor.
