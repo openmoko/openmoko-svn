@@ -27,3 +27,4 @@ To do:
 
 
 Commit: SVN 5546 (nACCEL_CS removal)
+Review: Dave Ball <openmoko@daveball.org.uk>, rev5552 
