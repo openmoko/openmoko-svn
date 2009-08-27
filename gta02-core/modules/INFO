@@ -33,6 +33,9 @@ D: http://www.vishay.com/doc?20035
 # To do:
 # - define keep out area
 
+# Test point (1.2 mm diameter)
+F: tst
+
 # WM3236AQ, very non-standard 48QFN
 F: wm3236aq
 # WM3236AQ_R0E_datasheet_Preliminary_0630_2007.pdf (no-public)

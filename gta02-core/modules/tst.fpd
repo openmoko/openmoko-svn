@@ -1,0 +1,9 @@
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+set d = 1.2mm
+
+__0: vec @(-d/2, -d/2)
+__1: vec @(d/2, d/2)
+rpad "1" __0 . bare
