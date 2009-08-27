@@ -512,14 +512,19 @@ obj:
 	;
 
 pad_type:
-	ID
+		{
+			$$ = pt_normal;
+		}
+	| ID
 		{
 			if (!strcmp($1, "bare"))
 				$$ = pt_bare;
 			else if (!strcmp($1, "paste"))
 				$$ = pt_paste;
-			else
-				$$ = pt_normal;
+			else {
+				yyerrorf("unknown pad type \"%s\"", $1);
+				YYABORT;
+			}
 		}
 	;
 
