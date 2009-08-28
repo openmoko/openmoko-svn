@@ -7,12 +7,13 @@ CPU-POWER	Dave
 IO		Luke	Dave	5316
 GPS		Alvaro	Werner	5253
 LCM		Luke    Dave	5306	Rene	5307
-MEMORY		Luke	Werner	5182	Dave	5308
+MEMORY		Luke	Werner	5182	Dave	5308	Andre	53xx
 PMU		Alvaro	Werner	5548	Rene	5319
 SD-SIM		Dave	Werner	5275
 USB		Rene	Werner	5182	Dave	5311
 
 Alvaro	= Alvaro Lopes
+Andre	= Andre Knispel
 Dave	= Dave Ball
 Luke	= Luke Duncan
 Rene	= Rene Harder
