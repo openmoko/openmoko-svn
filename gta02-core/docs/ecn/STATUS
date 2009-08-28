@@ -32,7 +32,8 @@ Number	Status	Description
 0030	Edit	Replace Calypso with Telit GE865
 0031	Execute	Use codec to detect jack insertion and HOLD button
 0032	Discuss Add EMI and ESD protection to headset jack
-0033    Discuss Replace coupling capacitors for input/output lines
+0033	Discuss	Replace coupling capacitors for input/output lines
+0034	Discuss	Route additional SPI/GPIO pins to debug connector
 
 Open ECNs
 ---------

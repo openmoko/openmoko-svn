@@ -1,0 +1,34 @@
+Route additional SPI/GPIO pins to debug connector
+
+
+The gta02 debug connector exposed un unused SPI set, which is now 
+used by WLAN.  The sc32442 contains only two SPI controllers, used 
+for WLAN and Accelerometers in gta02-core.  However, the pins used 
+for these devices can be dissabled (configured as GPIO) and further
+pins can then be assigned to the SPI function.
+
+These additional pins can be used as GPIO, or switched to SPI if 
+the accelerometer is dissabled.
+
+Changes:
+ - route VD17/SPIMOSI1/GPD9, VD16/SPIMISO1/GPD8, VD9/SPICLK1/GPD1,
+   and VD8/nSPICS1/GPD0 to pins 10,11,12 on the debug connector
+
+ - move HDQ from VD8/nSPICS1/GPD0 to VD0/GPC8
+
+ - move LCD_nRES from VD17/SPIMOSI1/GPD9 to VD1/GPC9
+
+LCD_nRES and HDQ have both been moved since gta02 to accomodate the
+lcm move, and if this ecn is implimented their new locations should
+be noted in the relevant orginal ecn's
+
+It would be possible to also free up EINT11/nSS1/GPG3, which was 
+unused in gta02 and is currently used by WLAN_INT.  This could be 
+moved to EINT7 or EINT8
+
+
+With thanks to Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
+for the idea and details in this ecn.
+
+
+Author: Dave Ball <openmoko@daveball.org.uk>
