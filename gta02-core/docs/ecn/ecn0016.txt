@@ -8,7 +8,7 @@ conclude that the second sensor is of little or no practical use.
 
 Items to remove:
 - Upper Acceleration Sensor (U7801)
-- Other related passives (R7802, R7809, R7809, C7801, C7802)
+- Other related passives (R7802, R7808, R7809, C7801, C7802)
 
 Items to add:
 - NC pullup resistor to second interrupt (INT2) of remaining sensor

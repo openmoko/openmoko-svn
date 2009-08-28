@@ -7,3 +7,4 @@ set d = 1.2mm
 __0: vec @(-d/2, -d/2)
 __1: vec @(d/2, d/2)
 rpad "1" __0 . bare
+measy __0 >> __1 0.2mm
