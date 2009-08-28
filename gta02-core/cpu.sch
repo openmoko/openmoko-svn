@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Fri 28 Aug 2009 15:51:14 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Fri Aug 28 15:25:36 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -1026,7 +1026,7 @@ L R_US R1561
 U 1 1 4A454912
 P 5650 3600
 F 0 "R1561" H 5520 3700 50  0000 C CNN
-F 1 "150R" H 5780 3700 50  0000 C CNN
+F 1 "33R" H 5780 3700 50  0000 C CNN
 	1    5650 3600
 	1    0    0    -1  
 $EndComp
@@ -1035,7 +1035,7 @@ L R_US R1562
 U 1 1 4A4548FF
 P 5650 2850
 F 0 "R1562" H 5650 2950 50  0000 C CNN
-F 1 "33R" H 5650 2750 50  0000 C CNN
+F 1 "150R" H 5650 2750 50  0000 C CNN
 	1    5650 2850
 	1    0    0    -1  
 $EndComp
