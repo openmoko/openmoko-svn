@@ -80,7 +80,7 @@ A: lcm-filter
 D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 
 # Telit GSM module
-S: ge864
+S: ge865
 A: gsm
 A: telit-gsm
 D: http://www.telit.com/module/infopool/download.php?id=1666
