@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 28 Aug 2009 00:16:31 BST
+EESchema Schematic File Version 2  date Fri 28 Aug 2009 01:59:25 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,14 +13,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Notes 4700 9200 0    50   ~ 0
-HDQ moved\necn0001
-Wire Wire Line
-	3450 8950 4050 8950
-Wire Wire Line
-	4050 9050 4050 8950
-Wire Wire Line
-	4700 9050 4050 9050
+NoConn ~ 3450 8950
 Wire Wire Line
 	4600 7200 4600 7300
 Wire Wire Line
@@ -531,8 +524,6 @@ Wire Wire Line
 	4700 5400 4900 5400
 Wire Wire Line
 	4600 7300 3450 7300
-Text GLabel 4700 9050 2    60   Input ~ 0
-HDQ
 NoConn ~ 13450 5900
 Text Notes 10750 5850 0    50   ~ 0
 removed nACCEL_CS network ECN0016
