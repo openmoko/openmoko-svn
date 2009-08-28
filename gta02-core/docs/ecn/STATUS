@@ -21,7 +21,7 @@ Number	Status	Description
 0019	Discuss	Consider applying buzz fix
 0020	Cancel	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
-0022	Discuss	Apply bass fix
+0022	Done	Apply bass fix
 0023	Cancel	Fix #1024 (C1009)
 0024	Edit	Improve GPS ground and PCB layout
 0025	Done	Connect CLKOUT1 to UEXTCLK (U1501)
@@ -31,8 +31,8 @@ Number	Status	Description
 0029	Done	Move 0R resistors next to PMU after caps
 0030	Edit	Replace Calypso with Telit GE865
 0031	Execute	Use codec to detect jack insertion and HOLD button
-0032	Discuss Add EMI and ESD protection to headset jack
-0033	Discuss	Replace coupling capacitors for input/output lines
+0032	Execute	Add EMI and ESD protection to headset jack
+0033	Execute	Replace coupling capacitors for input/output lines
 0034	Discuss	Route additional SPI/GPIO pins to debug connector
 
 Open ECNs
@@ -48,7 +48,6 @@ Open ECNs
 0018	AUDIO
 0019	AUDIO
 0020	AUDIO
-0022	AUDIO
 0024	GPS
 0026	SD-SIM
 0027	General
@@ -56,3 +55,4 @@ Open ECNs
 0031	AUDIO
 0032    AUDIO
 0033    AUDIO
+0034	IO

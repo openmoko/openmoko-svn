@@ -21,6 +21,5 @@ headset")
 
 
 Author: Rene Harder <rehar@saweb.de>
-
-
-
+Commit: SVN 5188 ?
+Review: Werner Almesberger <werner@openmoko.org>, SVN5565
