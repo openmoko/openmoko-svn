@@ -30,7 +30,7 @@ R1801
 Text Notes 9050 4850 0    60   ~ 0
 x
 Text Notes 11000 4700 0    60   ~ 0
-79xx
+80xx
 Text Notes 9050 4700 0    60   ~ 0
 77xx
 Text Notes 7100 4700 0    60   ~ 0
