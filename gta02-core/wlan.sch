@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 29 Aug 2009 13:40:08 WEST
+EESchema Schematic File Version 2  date Sat 29 Aug 2009 18:45:11 WEST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,11 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Connection ~ 3850 2750
+Wire Wire Line
+	3850 2750 3850 2900
+Connection ~ 6850 5400
+Connection ~ 5800 5600
 Wire Wire Line
 	6850 4000 6850 4400
 Wire Wire Line
@@ -284,8 +289,6 @@ Wire Wire Line
 	5900 2900 5900 2600
 Connection ~ 5900 2800
 Wire Wire Line
-	3650 2850 3650 2550
-Wire Wire Line
 	9300 4950 9800 4950
 Wire Wire Line
 	9800 4950 9800 5150
@@ -433,6 +436,8 @@ Wire Wire Line
 	10900 7500 10900 8750
 Wire Wire Line
 	10900 8750 10700 8750
+Wire Wire Line
+	3650 2550 3650 2750
 $Comp
 L WLAN_3V3 #PWR?
 U 1 1 4A992199
@@ -791,10 +796,10 @@ $EndComp
 $Comp
 L PWR_FLAG #FLG021
 U 1 1 4A990CF0
-P 3650 2850
-F 0 "#FLG021" H 3650 3120 30  0001 C CNN
-F 1 "PWR_FLAG" H 3650 3080 30  0000 C CNN
-	1    3650 2850
+P 3850 2900
+F 0 "#FLG021" H 3850 3170 30  0001 C CNN
+F 1 "PWR_FLAG" H 3850 3130 30  0000 C CNN
+	1    3850 2900
 	-1   0    0    1   
 $EndComp
 $Comp
