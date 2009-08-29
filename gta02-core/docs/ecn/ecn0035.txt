@@ -1,0 +1,14 @@
+Kill WLAN unused RF components
+
+
+WLAN module has 3 unused components on RF path: R7801, C7802' and
+C7803'. R7801 is a 0R resistor, and the caps are not used.
+
+These components do interfere with RF trace impedance, causing
+attenuations and signal shifts. 
+
+Remove these components from design, thus allowing for better
+signal reception and transmission.
+
+
+Author: Alvaro Lopes <alvieboy@alvie.com>
