@@ -43,6 +43,7 @@ Alvaro Lopes <alvieboy@alvie.com>
   components/adg3304.lib
   components/bf2520.lib
   components/wm3236aq.lib
+  components/mm8430-2610.lib
 
   Compilations:
   components/gta02-core-expanded.lib
