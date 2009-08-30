@@ -56,5 +56,6 @@ fi
 
 if $pdf; then
     eval gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=$OUT.pdf -f \
-      `for n in $SHEETS; do [ -f $n.ps ] && echo "<($cmd $n.ps)"; done`
+      `for n in $SHEETS; do [ -f $n.ps ] && \
+      echo "<(echo '[ /Title ('${n#$B-}') /OUT pdfmark'; $cmd $n.ps;)"; done`
 fi
