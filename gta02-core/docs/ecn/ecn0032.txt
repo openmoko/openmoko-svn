@@ -25,3 +25,4 @@ attenuation: f=1..3GHz approx 55dB(IN)/68dB(OUT) (150pF varistor)
 
 
 Author: Rene Harder <rehar@saweb.de>
+Commit: SVN 5588
