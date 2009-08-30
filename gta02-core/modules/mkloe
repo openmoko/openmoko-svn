@@ -13,6 +13,13 @@ for n in $MODS; do
     fi
 done
 
+if [ "$1" = "-ps" ]; then
+    for n in $MODS; do
+	fped -p $n.fpd || exit 1
+    done
+    exit 0
+fi
+
 for n in $MODS; do
     fped -k $n.fpd -
 done |

@@ -16,8 +16,8 @@ gen generate:
 
 update:
 		svn update && \
-		    cd components && ./mkloe && \
-		    cd ../modules && ./mkloe
+		    make -C components loe && \
+		    make -C modules loe
 
 gv:
 		gv gta02-core-all.ps.gz
