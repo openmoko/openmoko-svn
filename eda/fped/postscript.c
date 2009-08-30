@@ -16,7 +16,9 @@
 
 #include "util.h"
 #include "coord.h"
+#include "obj.h"
 #include "inst.h"
+#include "unparse.h"
 #include "gui_status.h"
 #include "gui_inst.h"
 #include "postscript.h"
@@ -57,14 +59,24 @@
 
 #define	PS_DOT_DIST		mm_to_units(0.03)
 #define	PS_DOT_DIAM		mm_to_units(0.01)
+
 #define	PS_HATCH		mm_to_units(0.1)
 #define	PS_HATCH_LINE		mm_to_units(0.015)
+
 #define	PS_FONT_OUTLINE		mm_to_units(0.025)
+
+#define	PS_VEC_LINE		mm_to_units(0.02)
+#define	PS_VEC_ARROW_LEN	mm_to_units(0.3)
+#define	PS_VEC_ARROW_ANGLE	20
+#define	PS_VEC_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
+#define	PS_VEC_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
+
 #define	PS_MEAS_LINE		mm_to_units(0.015)
 #define	PS_MEAS_ARROW_LEN	mm_to_units(0.15)
 #define	PS_MEAS_ARROW_ANGLE	30
 #define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
 #define	PS_MEAS_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
+
 #define	PS_CROSS_WIDTH		mm_to_units(0.01)
 #define	PS_CROSS_DASH		mm_to_units(0.1)
 
@@ -137,11 +149,11 @@ static int get_box(unit_type x, unit_type y, unit_type *xa, unit_type *ya)
 	if (xa)
 		*xa = b->x0;
 	if (ya)
-		*ya = b->y0;
+		*ya = b->y0+b->y-y;
 
 	*best = b->next;
-	add_box(b->x0+x, b->y0, b->x0+b->x, b->y0+y);
-	add_box(b->x0, b->y0+y, b->x0+b->x, b->y0+b->y);
+	add_box(b->x0+x, b->y0, b->x0+b->x, b->y0+b->y);
+	add_box(b->x0, b->y0, b->x0+x, b->y0+b->y-y);
 	free(b);
 
 	return 1;
@@ -165,12 +177,12 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 		w = -w;
 	fprintf(file, "0 setgray /Helvetica-Bold findfont dup\n");
 	fprintf(file, "   (%s) %d %d\n", inst->u.pad.name, w/2, h/2);
-	fprintf(file, "   4 copy 1000 maxfont\n");
-	fprintf(file, "   maxfont scalefont setfont\n");
+	fprintf(file, "   boxfont\n");
 	fprintf(file, "   %d %d moveto\n", (a.x+b.x)/2, (a.y+b.y)/2);
 	fprintf(file, "   (%s) center %d showoutlined newpath\n",
 	    inst->u.pad.name, PS_FONT_OUTLINE);
 }
+
 
 static const char *hatch(enum pad_type type)
 {
@@ -284,11 +296,6 @@ static void ps_frame(FILE *file, const struct inst *inst)
 }
 
 
-static void ps_vec(FILE *file, const struct inst *inst)
-{
-}
-
-
 static void ps_arrow(FILE *file, struct coord from, struct coord to, int len,
     int angle)
 {
@@ -309,6 +316,44 @@ static void ps_arrow(FILE *file, struct coord from, struct coord to, int len,
 	fprintf(file, "  %d %d moveto\n", p.x, p.y);
 	fprintf(file, "  %d %d lineto\n", to.x, to.y);
 	fprintf(file, "  stroke\n");
+}
+
+
+static void ps_vec(FILE *file, const struct inst *inst)
+{
+	struct coord a, b, c, d;
+	char *s, *sx, *sy;
+
+	a = inst->base;
+	b = inst->u.vec.end;
+	fprintf(file, "1 setlinecap 0 setgray %d setlinewidth\n", PS_VEC_LINE);
+	fprintf(file, "  %d %d moveto\n", a.x, a.y);
+	fprintf(file, "  %d %d lineto\n", b.x, b.y);
+	fprintf(file, "  stroke\n");
+
+	ps_arrow(file, a, b, PS_VEC_ARROW_LEN, PS_VEC_ARROW_ANGLE);
+
+	if (!active_params.label_vecs)
+		return;
+
+	sx = unparse(inst->vec->x);
+	sy = unparse(inst->vec->y);
+	s = stralloc_printf("(%s, %s)", sx, sy);
+	free(sx);
+	free(sy);
+	c = add_vec(a, b);
+	d = sub_vec(b, a);
+	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
+	fprintf(file, "    /Helvetica-Bold findfont dup\n");
+	fprintf(file, "    (%s) %d %d realsize\n", s,
+	    (int) (dist_point(a, b)-2*PS_VEC_ARROW_LEN),
+	    PS_VEC_TEXT_HEIGHT);
+	fprintf(file, "    boxfont\n");
+	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
+	fprintf(file, "    (%s) %d realsize pop 0 hcenter\n",
+	    s, PS_VEC_BASE_OFFSET);
+	fprintf(file, "    show grestore\n");
+	free(s);
 }
 
 
@@ -342,7 +387,7 @@ static void ps_meas(FILE *file, const struct inst *inst,
 	fprintf(file, "    (%s) %d %d realsize\n", s,
 	    (int) (dist_point(a1, b1)-1.5*PS_MEAS_ARROW_LEN),
 	    PS_MEAS_TEXT_HEIGHT);
-	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    boxfont\n");
 	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
 	fprintf(file, "    (%s) %d realsize hcenter\n",
 	    s, PS_MEAS_BASE_OFFSET);
@@ -443,10 +488,69 @@ static void ps_draw_package(FILE *file, const struct pkg *pkg, double zoom)
 /* ----- Object frames ----------------------------------------------------- */
 
 
+static void ps_draw_frame(FILE *file, const struct pkg *pkg,
+    const struct inst *outer, double zoom)
+{
+	enum inst_prio prio;
+	const struct inst *inst;
+
+	fprintf(file, "gsave %f dup scale\n", zoom);
+	ps_cross(file, outer);
+        FOR_INST_PRIOS_UP(prio) {
+		FOR_PKG_INSTS(pkgs, prio, inst)
+			if (inst->outer == outer)
+				ps_background(file, prio, inst);
+		FOR_PKG_INSTS(pkg, prio, inst)
+			if (inst->outer == outer)
+				ps_background(file, prio, inst);
+	}
+	FOR_INST_PRIOS_UP(prio) {
+		FOR_PKG_INSTS(pkgs, prio, inst)
+			if (inst->outer == outer)
+				ps_foreground(file, prio, inst);
+		FOR_PKG_INSTS(pkg, prio, inst)
+			if (inst->outer == outer)
+				ps_foreground(file, prio, inst);
+	}
+	fprintf(file, "grestore\n");
+}
+
+
 static int generate_frames(FILE *file, const struct pkg *pkg,
     const struct frame *frame, double zoom)
 {
 	const struct inst *inst;
+	unit_type x, y, xa, ya;
+	unit_type cx, cy, border;
+	int ok;
+
+	/*
+	 * This doesn't work yet. The whole idea of just picking the current
+	 * instance of each object and drawing it is flawed, since we may have
+	 * very different sizes in a frame, so one big vector may dominate all
+	 * the finer details.
+	 *
+	 * Also, the amount of text can be large and force tiny fonts to make
+	 * things fit.
+	 *
+	 * A better approach would be to use a more qualitative display than a
+	 * quantitative one, emphasizing the logical structure of the drawing
+	 * and not the actual sizes.
+	 *
+ 	 * This could be done by ranking vectors by current, average, maximum,
+	 * etc. size, then let their size be determined by the amount of text
+	 * that's needed and the size of subordinate vectors. One difficulty
+	 * would be in making vectors with a fixed length ratio look correct,
+	 * particularly 1:1.
+	 *
+	 * Furthermore, don't write on the vector but put the text horizontally
+	 * on either the left or the right side.
+	 *
+	 * Frame references could be drawn by simply connecting a line to the
+	 * area of the respective frame. And let's not forget that we also need
+	 * to list the variables somewhere.
+	 */
+	return 0;
 
 	while (frame) {
 		if (frame->name)
@@ -460,8 +564,39 @@ static int generate_frames(FILE *file, const struct pkg *pkg,
 		return 1;
 
 found_frame:
-	/* @@@ */
-	return 0;
+	border = PS_MEAS_TEXT_HEIGHT+PS_DIVIDER_WIDTH+PS_DIVIDER_BORDER/2;
+	x = (inst->bbox.max.x-inst->bbox.min.x)*zoom+2*border;
+	y = (inst->bbox.max.y-inst->bbox.min.y)*zoom+2*border;
+	if (!get_box(x, y, &xa, &ya))
+		return 0;
+
+	/*
+	 * Recurse down first, so that we only draw something if we can be sure
+	 * that all the rest can be drawn too.
+	 */
+
+	ok = generate_frames(file, pkg, frame->next, zoom);
+	if (!ok)
+		return 0;
+
+
+#if 1
+fprintf(file, "0 setlinewidth 0.8 setgray\n");
+fprintf(file, "%d %d moveto\n", xa+border, ya+border);
+fprintf(file, "%d %d lineto\n", xa+x-border, ya+border);
+fprintf(file, "%d %d lineto\n", xa+x-border, ya+y-border);
+fprintf(file, "%d %d lineto\n", xa+border, ya+y-border);
+fprintf(file, "closepath fill\n");
+#endif
+	cx = xa+x/2-(inst->bbox.min.x+inst->bbox.max.x)/2*zoom;
+	cy = ya+y/2-(inst->bbox.min.y+inst->bbox.max.y)/2*zoom;
+
+	fprintf(file, "%% Frame %s\n", frame->name ? frame->name : "(root)");
+	fprintf(file, "gsave %d %d translate\n", cx, cy);
+	ps_draw_frame(file, pkg, inst, zoom);
+	fprintf(file, "grestore\n");
+
+	return 1;
 }
 
 
@@ -483,7 +618,7 @@ static void ps_header(FILE *file, const struct pkg *pkg)
 	fprintf(file, "    /Helvetica-Bold findfont dup\n");
 	fprintf(file, "    (%s) %d %d\n",
 	    pkg->name, PAGE_HALF_WIDTH, PS_HEADER_HEIGHT);
-	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    boxfont\n");
 	fprintf(file, "    (%s) show grestore\n", pkg->name);
 
 	ps_hline(file, PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT-PS_DIVIDER_BORDER);
@@ -527,7 +662,7 @@ static void ps_unit(FILE *file,
 	fprintf(file, "gsave %d %d moveto\n", x, y);
 	fprintf(file, "    /Helvetica findfont dup\n");
 	fprintf(file, "    (%s) %d %d\n", s, w, h);
-	fprintf(file, "    4 copy 1000 maxfont maxfont scalefont setfont\n");
+	fprintf(file, "    boxfont\n");
 	fprintf(file, "    (%s) show grestore\n", s);
 }
 
@@ -583,11 +718,13 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 
 		/* divider */
 		d = PAGE_HALF_WIDTH-2*x/(f+2);
-		fprintf(file, "grestore %d %d moveto 0 %d rlineto stroke\n",
+		fprintf(file, "grestore gsave %d setlinewidth\n",
+		    PS_DIVIDER_WIDTH);
+		fprintf(file, "    %d %d moveto 0 %d rlineto stroke\n",
 		    d-PS_DIVIDER_BORDER, PS_DIVIDER_BORDER, y);
 
 		/* x1 package */
-		fprintf(file, "gsave %d %d translate\n",
+		fprintf(file, "grestore gsave %d %d translate\n",
 		    (d+PAGE_HALF_WIDTH)/2, y/6*5+PS_DIVIDER_BORDER);
 		ps_draw_package(file, pkg, 1);
 
@@ -605,11 +742,13 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 
 		/* divider */
 		d = PAGE_HALF_WIDTH-x/(f+1);
-		fprintf(file, "grestore %d %d moveto 0 %d rlineto stroke\n",
+		fprintf(file, "grestore gsave %d setlinewidth\n",
+		    PS_DIVIDER_WIDTH);
+		fprintf(file, "    %d %d moveto 0 %d rlineto stroke\n",
 		    d-PS_DIVIDER_BORDER, PS_DIVIDER_BORDER, y);
 
 		/* x1 package */
-		fprintf(file, "gsave %d %d translate\n",
+		fprintf(file, "grestore gsave %d %d translate\n",
 		    (d+PAGE_HALF_WIDTH)/2, c);
 		ps_draw_package(file, pkg, 1);
 	} else {
@@ -624,8 +763,12 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 
 	/*
 	 * Put the frames
+	 *
+	 * @@@ is it really a good idea to use the same zoom for all of them ?
 	 */
 
+	active_params.show_stuff = 1;
+	active_params.label_vecs = 1;
 	for (f = 20; f >= 0.1; f = f > 1 ? f-1 : f-0.1) {
 		add_box(-PAGE_HALF_WIDTH, -PAGE_HALF_HEIGHT, PAGE_HALF_WIDTH,
 		    -PS_DIVIDER_BORDER);
@@ -705,6 +848,14 @@ fprintf(file,
 "    f mul grestore } def\n");
 
 	/*
+	 * Unrotate: - -> -
+	 */
+
+	fprintf(file,
+"/getscale { matrix currentmatrix dup 0 get dup mul exch 1 get dup mul\n"
+"    add sqrt } def\n");
+
+	/*
 	 * Stack: string -> string
 	 */
 
@@ -724,11 +875,13 @@ fprintf(file,
 	fprintf(file,
 "/hcenter {\n"
 "    /off exch def\n"
-"    gsave dup false charpath flattenpath pathbbox\n"
+"    gsave matrix setmatrix dup false charpath flattenpath pathbbox\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
 "    grestore\n"
+//"    /currscale getscale def\n"
 "    llx urx sub 2 div\n"
-"    currentpoint exch pop lly sub off add rmoveto } def\n");
+//"    off lly sub rmoveto } def\n");
+"    off rmoveto } def\n");
 
 	/*
 	 * Stack: string outline_width -> -
@@ -757,8 +910,16 @@ fprintf(file,
 	fprintf(file,
 "/originalsize 1 0 matrix currentmatrix idtransform pop def\n"
 "/realsize {\n"
-"    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform pop\n"
+"    254 div 72 mul 1000 div 0 matrix currentmatrix idtransform\n"
+"    dup mul exch dup mul add sqrt\n"
 "    originalsize div } def\n");
+
+	/*
+	 * Stack: font string x-size y-size -> -
+	 */
+
+	fprintf(file,
+"/boxfont { 4 copy 1000 maxfont maxfont scalefont setfont } def\n");
 
 	fprintf(file, "%%%%EndProlog\n");
 }

@@ -36,8 +36,6 @@ Bugs:
 - whenever we call parse_* for input parsing, we may leak lots of expressions
 - can't edit measurement labels through the GUI
 - unbalanced parentheses in text throw off Postscript syntax
-- when starting, Gtk+ may issue many "extension [...] missing" warnings, which
-  can (and did) hide warnings about real problems
 
 Code cleanup:
 - merge edit_unique with edit_name

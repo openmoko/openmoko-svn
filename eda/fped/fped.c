@@ -52,14 +52,13 @@ static void usage(const char *name)
 
 int main(int argc, char **argv)
 {
-	const char *name = *argv;
-	int error;
+	char *name = *argv;
+	char **fake_argv;
+	char *args[2];
+	int fake_argc;
+	int error, batch;
 	int batch_write_kicad = 0, batch_write_ps = 0;
 	int c;
-
-	error = gui_init(&argc, &argv);
-	if (error)
-		return error;
 
 	while ((c = getopt(argc, argv, "kp")) != EOF)
 		switch (c) {
@@ -72,6 +71,18 @@ int main(int argc, char **argv)
 		default:
 			usage(name);
 		}
+
+	batch = batch_write_kicad || batch_write_ps;
+
+	if (!batch) {
+		args[0] = name;
+		args[1] = NULL;
+		fake_argc = 1;
+		fake_argv = args;
+		error = gui_init(&fake_argc, &fake_argv);
+		if (error)
+			return error;
+	}
 
 	switch (argc-optind) {
 	case 0:
@@ -103,7 +114,7 @@ int main(int argc, char **argv)
 		write_kicad();
 	if (batch_write_ps)
 		write_ps();
-	if (!batch_write_kicad && !batch_write_ps) {
+	if (!batch) {
 		error = gui_main();
 		if (error)
 			return error;
