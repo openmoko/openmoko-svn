@@ -1,9 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 # Make a Library of Everything
 
 MODS="332fbga-p05 bga96-8x12-0mm8 ge865 stdpass tst wm3236aq"
 
 LIB=gta02-core.mod
+
+
+usage()
+{
+    echo "$0: [ --ps | --one-ps file | --one-pdf file ]" 1>&2
+    exit 1
+}
 
 
 for n in $MODS; do
@@ -13,12 +20,27 @@ for n in $MODS; do
     fi
 done
 
-if [ "$1" = "-ps" ]; then
+if [ "$1" = "-ps" -o "$1" = "--ps" ]; then
     for n in $MODS; do
 	fped -p $n.fpd || exit 1
     done
     exit 0
 fi
+
+if [ "$1" = "-one-ps" -o "$1" = "--one-ps" ]; then
+    [ ! -z "$2" ] || usage
+    eval psmerge -o$2 `for n in $MODS; do \
+      echo "<(fped -p $n.fpd -)"; done`
+    exit 0
+fi
+
+if [ "$1" = "-one-pdf" -o "$1" = "--one-pdf" ]; then
+    [ ! -z "$2" ] || usage
+    eval gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=$2 -f \
+      `for n in $MODS; do echo "<(fped -p $n.fpd -)"; done`
+    exit 0
+fi
+
 
 for n in $MODS; do
     fped -k $n.fpd -
