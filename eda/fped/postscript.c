@@ -625,7 +625,7 @@ static void ps_header(FILE *file, const struct pkg *pkg)
 }
 
 
-static void ps_page(FILE *file, int page)
+static void ps_page(FILE *file, int page, const struct pkg *pkg)
 {
 	fprintf(file, "%%%%Page: %d %d\n", page, page);
 
@@ -638,6 +638,7 @@ static void ps_page(FILE *file, int page)
 "    72 %d div 1000 div dup scale\n",
     (int) MIL_UNITS);
 	fprintf(file, "%%%%EndPageSetup\n");
+	fprintf(file, "[ /Title (%s) /OUT pdfmark\n", pkg->name);
 }
 
 
@@ -676,7 +677,7 @@ static void ps_package(FILE *file, const struct pkg *pkg, int page)
 	unit_type c, d;
 	int done;
 
-	ps_page(file, page);
+	ps_page(file, page, pkg);
 	ps_header(file, pkg);
 
 	x = 2*PAGE_HALF_WIDTH-2*PS_DIVIDER_BORDER;
@@ -920,6 +921,17 @@ fprintf(file,
 
 	fprintf(file,
 "/boxfont { 4 copy 1000 maxfont maxfont scalefont setfont } def\n");
+
+	/*
+	 * Ignore pdfmark. From
+	 * http://www.adobe.com/devnet/acrobat/pdfs/pdfmark_reference.pdf
+	 * Page 10, Example 1.1.
+	 */
+
+	fprintf(file,
+"/pdfmark where { pop }\n"
+"    { /globaldict where { pop globaldict } { userdict } ifelse"
+"    /pdfmark /cleartomark load put } ifelse\n");
 
 	fprintf(file, "%%%%EndProlog\n");
 }
