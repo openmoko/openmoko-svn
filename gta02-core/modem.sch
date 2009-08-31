@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 01 Sep 2009 00:23:47 BST
+EESchema Schematic File Version 2  date Tue 01 Sep 2009 00:57:12 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,10 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 10250 5200 0    50   ~ 0
+Modem might require \n47k pullups.
+Text Notes 12250 9100 0    50   ~ 0
+TODO:\nConfirm if DTR/MODEM_WAKE line is needed - Wake is on RTS.\nConfirm if TX_DISAB/MODEM_RFKILL will do anything useful - SW might be better\nConnect MODEM_MON / MODEM_WAKE / MODEM_nRFKILL\nAntenna\nannotations
 Connection ~ 8100 7150
 Wire Wire Line
 	8100 7150 8100 7000
