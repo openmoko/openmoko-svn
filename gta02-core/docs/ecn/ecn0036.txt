@@ -1,0 +1,9 @@
+Removal of decoupling capacitor C3020
+
+
+This capacitor is NC right now and there are no plans to change this.
+So we can remove C3020 to create more room for other components (audio rework).
+
+
+Author: Rene Harder <rehar@saweb.de>
+

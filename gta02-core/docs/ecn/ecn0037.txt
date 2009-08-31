@@ -1,0 +1,31 @@
+Route ROUT1/LOUT1 back to LINE1/LINE2 input
+
+
+In Joerg's GTA03 proposal he connected the stereo line from the headset jack
+back to the line inputs of the codec. So you are able to connect a line 
+compatible audio source to it and record or process the audio stream within the
+phone.
+
+
+We need to connect the codec side of the coupling capacitors C4110 and C4411 
+trough a 1k series resistor (R3030/R3031) to the line input (LINE1 and LINE2)
+of the codec. To be within the standard of line compatible audio inputs we need
+to increase the input impedance to 10k Ohm for a low impedance input. Therefore
+we have to change R4416 and R4417 to at least 10k. 
+
+Note: In general the input impedance for a regular line input (high impedance)
+is around 47k Ohm. We cannot change R4416/4417 to 47k Ohm as required because 
+we need a proper pulldown for the jack insert detection. The voltage divider 
+is formed out of the codec's internal 100k Ohm pull-up the 10k Ohm series 
+resistance R4402 and the pulldown resistor R4116. If we increase R4416 to 47k 
+Ohm the low level voltage would be around 1.2V, the codec maximum low level is
+at 0.8V so we would not be able to generate an interrupt during jack insert.
+
+Comments:
+To use this feature you would still need a special (probably self made) adapter
+cable, because a 2.5mm audio jack is very uncommon for any audio equipment. 
+(Rene)
+
+
+Author: Rene Harder <rehar@saweb.de>
+

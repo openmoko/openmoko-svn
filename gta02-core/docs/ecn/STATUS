@@ -35,6 +35,9 @@ Number	Status	Description
 0033	Execute	Replace coupling capacitors for input/output lines
 0034	Discuss	Route additional SPI/GPIO pins to debug connector
 0035	Discuss Kill WLAN unused RF components
+0036    Discuss Removal of decoupling capacitor C3020
+0037    Discuss Route ROUT1/LOUT1 back to LINE1/LINE2 input
+0038    Discuss Loudspeaker EMI filter
 
 Open ECNs
 ---------
@@ -48,7 +51,6 @@ Open ECNs
 0017	BT
 0018	AUDIO
 0019	AUDIO
-0020	AUDIO
 0024	GPS
 0026	SD-SIM
 0027	General
@@ -57,3 +59,6 @@ Open ECNs
 0032    AUDIO
 0033    AUDIO
 0034	IO
+0036    AUDIO
+0037    AUDIO
+0038    AUDIO
