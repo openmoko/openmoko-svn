@@ -4,12 +4,15 @@ Replace Calypso with Telit GE865
 Remove the whole Calypso circuit and use a Telit GE865-QUAD module instead.
 http://www.telit.com/en/products/gsm-gprs.php?p_id=12&p_ac=show&p=47
 
+
+
 Issues:
 - check that UART connectivity is okay (levels and such)
 - check control signals (power on/off, reset, interrupt, etc.)
 - check battery connection (voltage, current)
 - height will interfere with WLAN daughterboard
 - height will interfere with white plastic structure holding rear speaker 
+- firmware update capabilities - probably through test pads only, hence drop DL_GSM
 
 
 Author: Werner Almesberger <werner@openmoko.org>
