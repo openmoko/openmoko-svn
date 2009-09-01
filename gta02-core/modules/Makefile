@@ -22,7 +22,7 @@ loe:
 
 gen generate:
 		./mkloe --one-ps $(ALL).ps
-		gzip -9 $(ALL).ps
+		gzip -f -9 $(ALL).ps
 		./mkloe --one-pdf $(ALL).pdf
 
 upload:		gen

@@ -1,6 +1,9 @@
 .PHONY:		all gen generate gv sch brd update upload xpdf bom-by-ref
 .PHONY:		dsv
 
+UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
+COPY=rsync -e ssh --progress
+
 all:
 		@echo "make what ? target: gen update sch gv xpdf brd dsv"
 		# we have more targets, but "normal users" don't need them
@@ -26,8 +29,7 @@ xpdf:
 		xpdf gta02-core-all.pdf
 
 upload:		generate
-		scp gta02-core-all.ps.gz gta02-core-all.pdf \
-		  werner@sita.openmoko.org:public_html/gta02-core/
+		$(COPY) gta02-core-all.ps.gz gta02-core-all.pdf $(UPLOAD)
 
 sch:
 		eeschema `pwd`/gta02-core.sch

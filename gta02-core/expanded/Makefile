@@ -1,5 +1,8 @@
 .PHONY:	gen generate gv sch upload xpdf
 
+UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
+COPY=rsync -e ssh --progress
+
 gen generate:
 	cd ../components && ./mkloe
 	../scripts/expand-pintype ../components/gta02-core.lib \
@@ -16,8 +19,8 @@ xpdf:
 	xpdf gta02-core-expanded-all.pdf
 
 upload:	generate
-	scp gta02-core-expanded-all.ps.gz gta02-core-expanded-all.pdf \
-	  werner@sita.openmoko.org:public_html/gta02-core/
+	$(COPY) gta02-core-expanded-all.ps.gz gta02-core-expanded-all.pdf \
+	  $(UPLOAD)
 
 sch:
 	eeschema `pwd`/gta02-core-expanded.sch
