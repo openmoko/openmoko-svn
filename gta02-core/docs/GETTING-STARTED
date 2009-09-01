@@ -175,8 +175,8 @@ the schematics.
 (Re)viewing and editing footprints
 ----------------------------------
 
-#Feeling lazy ? Then use the pre-built PDF link for the "expanded view"
-#on http://people.openmoko.org/werner/gta02-core.html
+Feeling lazy ? Then use the pre-built PDF link for the modules on
+http://people.openmoko.org/werner/gta02-core.html
 
 The footprints are kept in *.fpd files in modules/. To view a footprint,
 run
