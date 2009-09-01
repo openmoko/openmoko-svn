@@ -1,0 +1,51 @@
+Telit GE865 Documentation Overview
+==================================
+
+GE865 documentation
+-------------------
+
+http://www.telit.com/en/products/gsm-gprs.php?p_id=12&p_ac=show&p=47
+
+- Hardware User Guide:
+  http://www.telit.com/module/infopool/download.php?id=1666
+
+- AT Command (also includes some explanations about sleep mode, etc.)
+  http://www.telit.com/module/infopool/download.php?id=542
+
+- Audio settings:
+  http://www.telit.com/module/infopool/download.php?id=900
+
+- SIM interface design:
+  http://www.telit.com/module/infopool/download.php?id=590
+
+
+GE864 documentation
+-------------------
+
+The GE864 is the predecessor of the GE865 and has more comprehensive
+documentation. The main differences between the GE864 and the GE865
+are:
+
+- GE864 has digitial audio, the GE865 doesn't
+
+- GE865 has the mysterious SERVICE pin
+
+- GE865 has two different battery inputs, GE864 only one
+
+The documents are linked from this page:
+
+http://www.telit.com/en/products/gsm-gprs.php?p_id=12&p_ac=show&p=11
+
+Documents also relevant to the GE865 include:
+
+- Software User Guide (quite a lot of topics, including power saving):
+  http://www.telit.com/module/infopool/download.php?id=522
+
+- Multiplexer Protocol:
+  http://www.telit.com/module/infopool/download.php?id=616
+
+- SIM Access Profile:
+  http://www.telit.com/module/infopool/download.php?id=576
+
+- VRTC backup:
+  http://www.telit.com/module/infopool/download.php?id=620
