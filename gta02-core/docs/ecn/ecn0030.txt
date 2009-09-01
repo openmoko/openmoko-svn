@@ -15,4 +15,12 @@ Issues:
 - firmware update capabilities - probably through test pads only, hence drop DL_GSM
 
 
+New and renamed nets:
+ - MODEM_MON. Monitor on/off status of modem.  Connect to nXDREQ0/GPB10
+ - MODEM_WAKE (renamed from INT0)
+ - MODEM_INT  (renamed from IO1)
+ - MODEM_nRFKILL (maybe)
+ - SIM_INSERT Short to ground when Sim is inserted.
+
+
 Author: Werner Almesberger <werner@openmoko.org>

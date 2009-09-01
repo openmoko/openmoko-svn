@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue 14 Jul 2009 11:26:59 PM PDT
+EESchema Schematic File Version 2  date Tue 01 Sep 2009 02:48:34 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 2 12
+Sheet 4 14
 Title ""
 Date ""
 Rev ""
@@ -14,6 +14,35 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
+	13500 3850 13500 3650
+Wire Wire Line
+	13500 3650 13700 3650
+Wire Wire Line
+	13550 6600 13550 6800
+Connection ~ 13150 6800
+Wire Wire Line
+	13150 6600 13150 6800
+Wire Wire Line
+	13950 6600 13950 6800
+Wire Wire Line
+	13950 6800 12750 6800
+Wire Wire Line
+	12750 6800 12750 6600
+Connection ~ 13150 5800
+Wire Wire Line
+	13150 6200 13150 5800
+Connection ~ 13950 5350
+Wire Wire Line
+	13950 5350 13950 6200
+Wire Wire Line
+	14450 5800 12500 5800
+Wire Wire Line
+	12050 5550 12250 5550
+Wire Wire Line
+	12500 5800 12500 5750
+Wire Wire Line
+	12500 5750 12050 5750
+Wire Wire Line
 	9950 3600 9950 5150
 Wire Wire Line
 	9150 6650 9750 6650
@@ -21,16 +50,6 @@ Wire Wire Line
 	9750 6650 9750 5850
 Wire Wire Line
 	6350 5100 9750 5100
-Wire Wire Line
-	12050 5350 12850 5350
-Wire Wire Line
-	12850 5500 12250 5500
-Wire Wire Line
-	12850 5800 12650 5800
-Wire Wire Line
-	12450 5750 12450 5650
-Wire Wire Line
-	12450 5750 12050 5750
 Connection ~ 12250 5350
 Wire Wire Line
 	9950 5150 10150 5150
@@ -197,16 +216,6 @@ Wire Wire Line
 Wire Wire Line
 	12250 5150 12250 5350
 Wire Wire Line
-	12050 5650 12250 5650
-Wire Wire Line
-	12250 5650 12250 5500
-Wire Wire Line
-	12050 5850 12650 5850
-Wire Wire Line
-	12650 5850 12650 5800
-Wire Wire Line
-	12450 5650 12850 5650
-Wire Wire Line
 	9550 5300 6350 5300
 Wire Wire Line
 	9550 5750 9550 6450
@@ -214,6 +223,113 @@ Wire Wire Line
 	9550 6450 9150 6450
 Wire Wire Line
 	7750 6500 7750 7050
+Wire Wire Line
+	12050 5850 12350 5850
+Wire Wire Line
+	12350 5850 12350 5950
+Wire Wire Line
+	12050 5450 12250 5450
+Wire Wire Line
+	12050 5650 14450 5650
+Wire Wire Line
+	14450 5350 12050 5350
+Wire Wire Line
+	12350 5950 14450 5950
+Wire Wire Line
+	13550 6200 13550 5650
+Connection ~ 13550 5650
+Wire Wire Line
+	12750 6200 12750 5950
+Connection ~ 12750 5950
+Connection ~ 13550 6800
+Wire Wire Line
+	13350 6800 13350 7050
+Connection ~ 13350 6800
+Wire Wire Line
+	14200 3650 14450 3650
+$Comp
+L GND #PWR?
+U 1 1 4A9C7D35
+P 13500 3850
+F 0 "#PWR?" H 13500 3850 30  0001 C CNN
+F 1 "GND" H 13500 3780 30  0001 C CNN
+	1    13500 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_US R?
+U 1 1 4A9C7D20
+P 13950 3650
+F 0 "R?" H 13950 3750 50  0000 C CNN
+F 1 "0R" H 13950 3550 50  0000 C CNN
+	1    13950 3650
+	1    0    0    -1  
+$EndComp
+Text GLabel 14450 3650 2    60   Output ~ 0
+SIM_INSERT
+$Comp
+L GND #PWR?
+U 1 1 4A9C7CCB
+P 13350 7050
+F 0 "#PWR?" H 13350 7050 30  0001 C CNN
+F 1 "GND" H 13350 6980 30  0001 C CNN
+	1    13350 7050
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4A9C7C3A
+P 13950 6400
+F 0 "C?" H 14000 6500 50  0000 L CNN
+F 1 "10p" H 14000 6300 50  0000 L CNN
+	1    13950 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4A9C7C39
+P 13550 6400
+F 0 "C?" H 13600 6500 50  0000 L CNN
+F 1 "33p" H 13600 6300 50  0000 L CNN
+	1    13550 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4A9C7C22
+P 13150 6400
+F 0 "C?" H 13200 6500 50  0000 L CNN
+F 1 "33p" H 13200 6300 50  0000 L CNN
+	1    13150 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C?
+U 1 1 4A9C7C0C
+P 12750 6400
+F 0 "C?" H 12800 6500 50  0000 L CNN
+F 1 "33p" H 12800 6300 50  0000 L CNN
+	1    12750 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L TST P?
+U 1 1 4A9C7BBB
+P 12250 5550
+F 0 "P?" V 12250 5850 40  0000 C CNN
+F 1 " " H 12250 5800 30  0000 C CNN
+	1    12250 5550
+	0    1    1    0   
+$EndComp
+$Comp
+L TST P?
+U 1 1 4A9C7BAD
+P 12250 5450
+F 0 "P?" V 12250 5750 40  0000 C CNN
+F 1 " " H 12250 5700 30  0000 C CNN
+	1    12250 5450
+	0    1    1    0   
+$EndComp
 Text Notes 900  1100 0    200  ~ 40
 SD CARD / SIM
 $Comp
@@ -225,16 +341,14 @@ F 1 "GND" H 12250 6980 30  0001 C CNN
 	1    12250 7050
 	1    0    0    -1  
 $EndComp
-Text GLabel 12850 5650 2    60   Input ~ 0
+Text GLabel 14450 5800 2    60   Input ~ 0
 SIM_CLK
-Text GLabel 12850 5500 2    60   Input ~ 0
+Text GLabel 14450 5650 2    60   Input ~ 0
 SIM_RST
-Text GLabel 12850 5350 2    60   Input ~ 0
+Text GLabel 14450 5350 2    60   Input ~ 0
 SIM_V
-Text GLabel 12850 5800 2    60   BiDi ~ 0
+Text GLabel 14450 5950 2    60   BiDi ~ 0
 SIM_IO
-NoConn ~ 12050 5550
-NoConn ~ 12050 5450
 Text Label 9150 6650 0    60   ~ 0
 SD_CLK
 Text Label 9150 6450 0    60   ~ 0
