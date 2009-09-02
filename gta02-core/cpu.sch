@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 01 Sep 2009 00:23:56 BST
+EESchema Schematic File Version 2  date Tue 01 Sep 2009 19:29:37 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -499,7 +499,7 @@ Wire Wire Line
 Wire Wire Line
 	3850 3350 4050 3350
 Text GLabel 4900 4800 2    60   Output ~ 0
-MODEM_WAKE
+MODEM_SLEEP
 Text GLabel 4900 4950 2    60   Output ~ 0
 MODEM_ON
 Text Notes 5850 4550 2    50   ~ 0
