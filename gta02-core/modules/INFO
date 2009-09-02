@@ -29,7 +29,7 @@ D: http://www.telit.com/module/infopool/download.php?id=1666
 # Standard rectangular passive components
 F: stdpass
 D: http://www.vishay.com/doc?20035
-# http://industrial.panasonic.com/www-data/pdf/AOA0000/AOA0000PE2.pdf
+# http://industrial.panasonic.com/www-data/pdf/AOA0000/AOA0000CE1.pdf
 # http://www.avx.com/docs/Catalogs/accuf-p.pdf
 #
 # To do:
