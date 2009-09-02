@@ -28,6 +28,7 @@ frame outline {
 }
 
 package "$name"
+unit mm
 table
     { name, L, W, a, b, e }
     { "0201", 0.6mm, 0.3mm, 0.28mm, 0.43mm, 0.23mm }
@@ -51,3 +52,4 @@ measx pad_l.ll -> pad_l.w -0.3mm
 measy pad_l.ll >> pad_l.h 0.3mm
 measx outline.ll >> outline.ur Oy+0.3mm
 measy outline.ur >> outline.ll 0.3mm
+measx pad_l.ll >> pad_r.x -0.5mm

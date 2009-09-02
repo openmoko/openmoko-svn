@@ -30,7 +30,10 @@ D: http://www.telit.com/module/infopool/download.php?id=1666
 F: stdpass
 D: http://www.vishay.com/doc?20035
 # http://industrial.panasonic.com/www-data/pdf/AOA0000/AOA0000PE2.pdf
+# http://www.avx.com/docs/Catalogs/accuf-p.pdf
+#
 # To do:
+# - verify pad sizes. Everyone seems to use wildly different parameters :-(
 # - define keep out area
 
 # Test point (1.2 mm diameter)
