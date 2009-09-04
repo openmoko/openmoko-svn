@@ -12,15 +12,25 @@ Issues:
 - check battery connection (voltage, current)
 - height will interfere with WLAN daughterboard
 - height will interfere with white plastic structure holding rear speaker 
-- firmware update capabilities - probably through test pads only, hence drop DL_GSM
+- firmware update capabilities - probably through combination of SERVICE and RX/TX.
+
+Use of a capacitor on VRTC pin provides RTC continuity when power is removed 
+from the rest of the device.  A precise calculation for the capacitor size is 
+not possible as the docs do not include a current consumtion figure (Irev) for 
+the GE865.  Irev for the GE863 is 2uA and 1.6uA for the GE864.  Assuming a 
+worse case of 2uA for the GE865, a 220uF capacitor will provide approx 1.5 
+minutes of RTC during battery swaps.
+http://www.telit.com/module/infopool/download.php?id=620
 
 
 New and renamed nets:
- - MODEM_MON. Monitor on/off status of modem.  Connect to nXDREQ0/GPB10
- - MODEM_WAKE (renamed from INT0)
- - MODEM_INT  (renamed from IO1)
- - MODEM_nRFKILL (maybe)
+ - MODEM_MON. Monitor modem status.  Connect to nXDREQ0/GPB10
+ - MODEM_WAKE (renamed from INT0) - CPU wakes / sleeps modem
+ - MODEM_INT  (renamed from IO1)  - modem wakes CPU
+ - MODEM_SERVICE 
  - SIM_INSERT Short to ground when Sim is inserted.
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+
+
