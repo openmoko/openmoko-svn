@@ -37,13 +37,13 @@ table
     { "0805", 2mm, 1.25mm, 0.7mm, 1.3mm, 1.2mm }
     { "1206", 3.2mm, 1.6mm, 0.9mm, 1.7mm, 2mm }
 
-set silk = 2mil
+set silk = 5mil
 
-set clear = 4mil
+set clear = 5mil
 
-set Ox = e+2*a+2*clear+silk
+set Ox = e+2*a+2*clear
 
-set Oy = b+2*clear+silk
+set Oy = b+2*clear
 
 frame pads @
 frame outline @
