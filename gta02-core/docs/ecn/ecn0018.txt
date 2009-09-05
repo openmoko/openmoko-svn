@@ -5,3 +5,7 @@ To do:
 - microphone and headset jack path
 - bead or EMI filter ?
 - location: at can edge
+
+
+This has been mostly taken care of in ecn0032 "Add EMI and ESD protection to
+headset jack" so this ECN is moved to status Cancel.

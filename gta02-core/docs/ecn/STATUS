@@ -17,7 +17,7 @@ Number	Status	Description
 0015	Execute	Remove Calypso serial interface on headset (U4401)
 0016	Done	Remove upper acceleration sensor (U7801)
 0017	Edit	Move Bluetooth module (U2) to main PCB
-0018	Edit	Add beads/filters to audio signals leaving/entering can
+0018	Cancel	Add beads/filters to audio signals leaving/entering can
 0019	Discuss	Consider applying buzz fix
 0020	Cancel	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
@@ -35,8 +35,8 @@ Number	Status	Description
 0033	Execute	Replace coupling capacitors for input/output lines
 0034	Discuss	Route additional SPI/GPIO pins to debug connector
 0035	Discuss Kill WLAN unused RF components
-0036    Discuss Removal of decoupling capacitor C3020
-0037    Discuss Route ROUT1/LOUT1 back to LINE1/LINE2 input
+0036    Execute Removal of decoupling capacitor C3020
+0037    Execute Route ROUT1/LOUT1 back to LINE1/LINE2 input
 0038    Discuss Loudspeaker EMI filter
 
 Open ECNs
@@ -49,7 +49,6 @@ Open ECNs
 0011	USB
 0015	AUDIO
 0017	BT
-0018	AUDIO
 0019	AUDIO
 0024	GPS
 0026	SD-SIM
