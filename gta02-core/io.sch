@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed Aug 26 18:34:24 2009
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Sat 05 Sep 2009 22:20:06 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -509,7 +509,7 @@ $Comp
 L TST TP4712
 U 1 1 4A479DF7
 P 12550 7050
-F 0 "TP4712" H 12550 7350 40  0000 C CNN
+F 0 "TP4712" V 12550 7400 40  0000 C CNN
 F 1 "TST" H 12550 7300 30  0001 C CNN
 	1    12550 7050
 	0    -1   -1   0   
@@ -527,8 +527,8 @@ Text GLabel 12150 6850 0    60   Input ~ 0
 nSTRST
 Text GLabel 12150 6700 0    60   Input ~ 0
 nNOR_WP
-Text GLabel 12150 6550 0    60   Input ~ 0
-nGSM_EN
+Text GLabel 12150 6550 0    60   Output ~ 0
+MODEM_ON
 Text GLabel 12150 6400 0    60   Input ~ 0
 STDO
 Text GLabel 12150 6250 0    60   Output ~ 0

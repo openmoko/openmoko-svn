@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 04 Sep 2009 20:40:40 BST
+EESchema Schematic File Version 2  date Sat 05 Sep 2009 22:20:18 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -14,21 +14,15 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
+	12600 2100 12600 2300
+Connection ~ 7500 4750
+Wire Wire Line
+	7500 4750 7500 4550
+Connection ~ 4850 4100
+Wire Wire Line
+	4850 4000 4850 4300
+Wire Wire Line
 	5650 3200 5650 3400
-$Comp
-L R_US R8101
-U 1 1 4AA14C49
-P 5650 3650
-F 0 "R8101" V 5650 3850 50  0000 C CNN
-F 1 "0R" V 5750 3800 50  0000 C CNN
-	1    5650 3650
-	0    1    1    0   
-$EndComp
-NoConn ~ 7000 7750
-Text Label 9050 6850 0    60   ~ 0
-SERVICE
-Text Label 3300 5750 0    60   ~ 0
-SERVICE
 Connection ~ 4100 5750
 Wire Wire Line
 	4100 5600 4100 5750
@@ -71,7 +65,7 @@ Wire Wire Line
 Wire Wire Line
 	7200 6950 7000 6950
 Wire Wire Line
-	5650 4100 4850 4100
+	4850 4100 5650 4100
 Wire Wire Line
 	8900 5150 8900 5350
 Connection ~ 10350 6650
@@ -85,8 +79,6 @@ Wire Wire Line
 Connection ~ 10350 5350
 Wire Wire Line
 	10750 5350 9550 5350
-Wire Wire Line
-	12600 2400 12600 2100
 Wire Wire Line
 	2700 5050 4500 5050
 Wire Wire Line
@@ -148,8 +140,6 @@ Wire Wire Line
 	4100 6250 4700 6250
 Connection ~ 5250 4100
 Wire Wire Line
-	4850 4100 4850 4300
-Wire Wire Line
 	4850 4700 4850 4900
 Wire Wire Line
 	6000 5050 6000 4850
@@ -167,8 +157,6 @@ Wire Wire Line
 	11350 7250 11350 7050
 Wire Wire Line
 	12900 6050 12750 6050
-Wire Wire Line
-	12900 5150 13100 5150
 Wire Wire Line
 	11550 6050 11350 6050
 Wire Wire Line
@@ -259,7 +247,6 @@ Wire Wire Line
 	9950 5350 9950 5550
 Wire Wire Line
 	11350 6050 11350 4750
-Connection ~ 12600 2300
 Connection ~ 9950 5350
 Wire Wire Line
 	10150 5150 10150 5350
@@ -338,6 +325,46 @@ Wire Wire Line
 	4300 7550 4300 7800
 Wire Wire Line
 	3300 5750 4700 5750
+Wire Wire Line
+	13250 5150 12900 5150
+Connection ~ 13100 5150
+Wire Wire Line
+	7200 4750 7000 4750
+Connection ~ 7200 4750
+Wire Wire Line
+	7000 4750 7000 4550
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4AA27062
+P 4850 4000
+F 0 "#FLG?" H 4850 4270 30  0001 C CNN
+F 1 "PWR_FLAG" H 4850 4230 30  0000 C CNN
+	1    4850 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L PWR_FLAG #FLG?
+U 1 1 4AA27055
+P 13250 5150
+F 0 "#FLG?" H 13250 5420 30  0001 C CNN
+F 1 "PWR_FLAG" H 13250 5380 30  0000 C CNN
+	1    13250 5150
+	0    1    1    0   
+$EndComp
+$Comp
+L R_US R8101
+U 1 1 4AA14C49
+P 5650 3650
+F 0 "R8101" V 5650 3850 50  0000 C CNN
+F 1 "0R" V 5750 3800 50  0000 C CNN
+	1    5650 3650
+	0    1    1    0   
+$EndComp
+NoConn ~ 7000 7750
+Text Label 9050 6850 0    60   ~ 0
+SERVICE
+Text Label 3300 5750 0    60   ~ 0
+SERVICE
 NoConn ~ 7000 7550
 Text GLabel 4100 7300 0    60   Input ~ 0
 SIM_INSERT
@@ -411,20 +438,20 @@ $EndComp
 $Comp
 L TST P8105
 U 1 1 4A9C52EA
-P 7700 4000
-F 0 "P8105" V 7700 4300 40  0000 C CNN
-F 1 " " H 7700 4250 30  0000 C CNN
-	1    7700 4000
-	0    -1   -1   0   
+P 7500 4550
+F 0 "P8105" H 7500 4800 40  0000 C CNN
+F 1 " " H 7500 4800 30  0000 C CNN
+	1    7500 4550
+	1    0    0    -1  
 $EndComp
 $Comp
 L TST P8104
 U 1 1 4A9C52CE
-P 7200 4000
-F 0 "P8104" V 7200 4300 40  0000 C CNN
-F 1 " " H 7200 4250 30  0000 C CNN
-	1    7200 4000
-	0    -1   -1   0   
+P 7000 4550
+F 0 "P8104" H 7000 4800 40  0000 C CNN
+F 1 " " H 7000 4800 30  0000 C CNN
+	1    7000 4550
+	1    0    0    -1  
 $EndComp
 $Comp
 L R_US R8103
@@ -559,15 +586,6 @@ NoConn ~ 4700 5850
 Text GLabel 13350 6850 2    60   Input ~ 0
 MODEM_SERVICE
 $Comp
-L PWR_FLAG #FLG1
-U 1 1 4A9955A5
-P 12600 2400
-F 0 "#FLG1" H 12600 2670 30  0001 C CNN
-F 1 "PWR_FLAG" H 12600 2630 30  0000 C CNN
-	1    12600 2400
-	-1   0    0    1   
-$EndComp
-$Comp
 L GSM_2V8 #PWR8
 U 1 1 4A995566
 P 10150 5150
@@ -647,7 +665,7 @@ $Comp
 L R_US R8111
 U 1 1 4A994D5D
 P 12900 4700
-F 0 "R8111" V 12900 4850 50  0000 C CNN
+F 0 "R8111" V 12900 4900 50  0000 C CNN
 F 1 "0R" V 13000 4850 50  0000 C CNN
 	1    12900 4700
 	0    1    1    0   

@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 04 Sep 2009 20:30:40 BST
+EESchema Schematic File Version 2  date Sat 05 Sep 2009 15:10:21 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -18,7 +18,7 @@ Text Notes 1100 7200 0    60   ~ 0
 $Sheet
 S 1000 7000 1500 1500
 U 4A95A67D
-F0 "Sheet4AA16A6B" 60
+F0 "MODEM" 60
 F1 "modem.sch" 60
 $EndSheet
 $Sheet
