@@ -6,4 +6,5 @@ So we can remove C3020 to create more room for other components (audio rework).
 
 
 Author: Rene Harder <rehar@saweb.de>
+Commit: SVN 5606
 

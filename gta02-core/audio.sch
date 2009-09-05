@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sun 30 Aug 2009 05:27:52 PM CDT
+EESchema Schematic File Version 2  date Sat 05 Sep 2009 02:27:54 PM CDT
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -336,9 +336,6 @@ Wire Wire Line
 	2650 2700 3000 2700
 Wire Wire Line
 	1650 3350 1650 3100
-Connection ~ 2000 2400
-Wire Wire Line
-	2000 2700 2000 2400
 Connection ~ 1300 2400
 Wire Wire Line
 	1300 2400 1300 2700
@@ -417,8 +414,6 @@ Wire Wire Line
 Connection ~ 1650 2400
 Wire Wire Line
 	1300 3350 1300 3100
-Wire Wire Line
-	2000 3350 2000 3100
 Wire Wire Line
 	2650 3000 3000 3000
 Wire Wire Line
@@ -1029,7 +1024,7 @@ F 4 "5.6Vac" V 12550 3650 60  0000 C CNN "AC-Voltage"
 	0    -1   1    0   
 $EndComp
 Text Notes 13700 1050 0    100  ~ 0
-This schematic differs from\nthe original GTA02 schematic.\n\nDone:\n- ECN0010     - ECN0015\n- ECN0019     - ECN0022\n- ECN0031\n\nToDo/Discuss:\n- ECN0018     - ECN0020\n- ECN0032     - ECN0033
+This schematic differs from\nthe original GTA02 schematic.\n\nDone:\n- ECN0010     - ECN0015\n- ECN0019     - ECN0022\n- ECN0031     - ECN0032\n- ECN0033\n\nToDo/Discuss:\n- ECN0037     - ECN0038
 Text Notes 13700 850  0    150  ~ 30
 Note:
 Text GLabel 5050 6500 2    60   Output ~ 0
@@ -1851,15 +1846,6 @@ F 1 "GND" H 1650 3280 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR0229
-U 1 1 4A3EE672
-P 2000 3350
-F 0 "#PWR0229" H 2000 3350 30  0001 C CNN
-F 1 "GND" H 2000 3280 30  0001 C CNN
-	1    2000 3350
-	1    0    0    -1  
-$EndComp
-$Comp
 L C C3015
 U 1 1 4A3EE636
 P 1300 2900
@@ -1875,15 +1861,6 @@ P 1650 2900
 F 0 "C3014" H 1700 3000 50  0000 L CNN
 F 1 "100n" H 1700 2800 50  0000 L CNN
 	1    1650 2900
-	1    0    0    -1  
-$EndComp
-$Comp
-L C C3020
-U 1 1 4A3EE62E
-P 2000 2900
-F 0 "C3020" H 2050 3000 50  0000 L CNN
-F 1 "NC" H 2050 2800 50  0000 L CNN
-	1    2000 2900
 	1    0    0    -1  
 $EndComp
 $Comp
