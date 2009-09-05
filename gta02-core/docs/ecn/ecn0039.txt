@@ -1,0 +1,33 @@
+Insert 0R resistors into SPI signals
+
+
+The SC32442B SPI interface running at 13 MHz or faster has timing problems[1]
+that we might need to patch up externally. Following ECN0001 (Glamo removal)
+and ECN0034 the SPI interface exposed at the debug connector will now be routed
+to the alternative SPI1 pins of the LCD interface. There is some uncertainty
+about the SPICLK1 signal there[2]. Finally, the SPI1 pins currently routed to the
+accelerometer have EINT capability while the debug connector ones do not, so to
+make better use of EINT pins, we should find out if the two sets of SPI pins can
+be swapped.
+
+The change is to insert a 0R resistor into all the SPI signals:
+
+SPICLK0/GPE13
+SPIMOSI0/GPE12
+SPIMISO0/GPE11
+EINT11/nSS1/GPG3
+EINT13/SPIMISO1/GPG5
+EINT14/SPIMOSI1/GPG6
+EINT15/SPICLK1/GPG7
+VD9/SPICLK1/GPD1
+VD17/SPIMOSI1/GPD9
+VD16/SPIMISO1/GPD8
+
+Impact: We won't likely have enough 0R resistors supplied by OM and therefore
+need to buy some.
+
+[1] https://lists.openmoko.org/pipermail/openmoko-kernel/2008-September/005261.html
+[2] https://lists.openmoko.org/pipermail/gta03/2009-May/000210.html
+
+
+Author: Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
