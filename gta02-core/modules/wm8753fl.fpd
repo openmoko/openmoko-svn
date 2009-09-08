@@ -1,0 +1,126 @@
+/*WM8753FL, 48 Lead QFN*/
+
+frame pad_gnd {
+
+	ur: vec @(D2/2,E2/2)
+	ll: vec @(-D2/2,-E2/2)
+	pad "GND" ur ll
+
+}
+
+frame outline {
+	set diam = 0.7mm
+	ll: vec @(-D/2-silk/2,-E/2-silk/2)
+	lr: vec @(D/2+silk/2,-E/2-silk/2)
+	ul: vec @(-D/2-silk/2,E/2+silk/2)
+	ur: vec @(D/2+silk/2,E/2+silk/2)
+	ul_cr: vec ul(diam/2,0mm)
+	ul_cl: vec ul(0mm,-diam/2)
+	line ll lr silk
+	line ul_cl ll silk
+	line ul_cr ur silk
+	line ur lr silk
+	arc  ul ul_cl ul_cr silk
+}
+
+frame pad_x {
+
+	ur: vec @(b/2,0mm)
+	ll: vec @(-b/2,-L-A3)
+	pad "$name" ur ll
+
+}
+
+frame pad_y {
+
+	ur: vec @(0mm,b/2)
+	ll: vec @(-L-A3,-b/2)
+	pad "$name" ur ll
+
+}
+
+frame pads_u {
+
+	loop dx = 0 , xpads-1
+	set pos= dx*e
+	set name = (xpads+ypads)*2-dx
+	pc: vec @(pos,0mm)
+	frame pad_x .
+
+}
+frame pads_b {
+
+	loop dx = 0 , xpads-1
+	set pos= dx*e
+	set name = (xpads+1)+dx
+	pc: vec @(pos,0mm)
+	frame pad_x .
+
+}
+
+frame pads_l {
+
+	loop dy = 0 , ypads-1
+	set pos= dy*e
+	set name = (ypads)-dy
+	pc: vec @(0mm, pos)
+	frame pad_y .
+
+}
+frame pads_r {
+
+	loop dy = 0 , ypads-1
+	set pos= dy*e
+	set name = (ypads+xpads+1)+dy
+	pc: vec @(0mm, pos)
+	frame pad_y .
+
+}
+frame pads{
+	set pin = 0
+	u: vec @(-e*(xpads-1)/2,E/2+A3)
+	b: vec @(-e*(xpads-1)/2,-E/2+L)
+	l: vec @(-D/2+L,-e*(ypads-1)/2)
+	r: vec @(D/2+A3,-e*(ypads-1)/2)
+	frame pads_u u
+	frame pads_b b
+	frame pads_l l
+	frame pads_r r
+}
+package "WM8753FL"
+
+set A1 = 0.2mm
+set A3 = 0.25mm
+set D = 7mm
+set E = 7mm
+set D2 = 5.15mm
+set E2 = 5.15mm
+set e = 0.5mm
+set b = 0.25mm
+set L = 0.4mm
+set xpads = 12
+set ypads = 12
+set silk = 0.1mm
+
+frame outline @
+frame pad_gnd @
+frame pads @
+
+/*chip outline dimensions / inner edge of silk screen*/
+outll: vec @(-D/2,-E/2)
+outlr: vec @(D/2,-E/2)
+outul: vec @(-D/2,E/2)
+outur: vec @(D/2,E/2)
+
+measx pads_u.pc -> pads_u.pc 1mm
+measx pads_u.pc >> pads_u.pc 1.5mm
+
+/*measx pad_x.ll -> pad_x.ur -1mm*/
+
+measx outll -> outlr -1.5mm
+measy outlr <- outur 1.5mm 
+measy pad_x.ll -> outll 1mm+((E-e*(xpads-1)-b)/2) 
+measy outll -> pad_x.ur 1mm
+measy pad_gnd.ur -> pad_gnd.ll -((E+E2)/2)-1mm
+measx pad_gnd.ll -> pad_gnd.ur -(E-E2)/2-1mm
+
