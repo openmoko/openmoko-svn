@@ -169,6 +169,8 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 	struct coord b = inst->u.pad.other;
 	unit_type h, w;
 
+	if (!*inst->u.pad.name)
+		return;
 	h = a.y-b.y;
 	w = a.x-b.x;
 	if (h < 0)
