@@ -1,4 +1,4 @@
-update=Sat 27 Jun 2009 17:20:39 BST
+update=Tue 08 Sep 2009 19:54:04 BST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -151,4 +151,6 @@ LibName43=./debug_con.lib
 LibName44=./ge865.lib
 LibName45=./adg3304.lib
 LibName46=./bf2520.lib
-LibName47=./wm3236aq.lib
+LibName47=./antenna
+LibName48=./wm3236aq.lib
+LibName49=gsm_antenna

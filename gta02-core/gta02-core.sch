@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 05 Sep 2009 15:10:21 BST
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Sheet
+S 1000 2000 1500 1500
+U 4A0AE5B6
+F0 "CPU" 60
+F1 "cpu.sch" 60
+$EndSheet
 Text Notes 1100 7200 0    60   ~ 0
 81xx
 $Sheet
@@ -106,12 +112,6 @@ S 8950 4500 1500 1500
 U 4A424951
 F0 "BT" 60
 F1 "bt.sch" 60
-$EndSheet
-$Sheet
-S 1000 2000 1500 1500
-U 4A0AE5B6
-F0 "CPU" 60
-F1 "cpu.sch" 60
 $EndSheet
 $Sheet
 S 7000 2000 1500 1500

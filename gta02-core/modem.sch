@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Sat 05 Sep 2009 22:20:18 BST
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 2 14
+Sheet 3 14
 Title ""
 Date "4 sep 2009"
 Rev ""
@@ -13,11 +13,20 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Connection ~ 7500 4450
+Wire Wire Line
+	7700 4450 7200 4450
+Wire Wire Line
+	7200 4450 7200 5650
+Wire Notes Line
+	4700 5600 4550 5600
+Wire Notes Line
+	4550 5600 4550 5000
 Wire Wire Line
 	12600 2100 12600 2300
 Connection ~ 7500 4750
 Wire Wire Line
-	7500 4750 7500 4550
+	7500 4950 7500 4750
 Connection ~ 4850 4100
 Wire Wire Line
 	4850 4000 4850 4300
@@ -55,7 +64,7 @@ Wire Wire Line
 Wire Wire Line
 	8500 5150 8900 5150
 Wire Wire Line
-	7350 4750 7700 4750
+	7700 4750 7350 4750
 Wire Wire Line
 	7350 4750 7350 5750
 Wire Wire Line
@@ -80,9 +89,7 @@ Connection ~ 10350 5350
 Wire Wire Line
 	10750 5350 9550 5350
 Wire Wire Line
-	2700 5050 4500 5050
-Wire Wire Line
-	4500 5050 4500 5650
+	4500 5650 4500 5050
 Wire Wire Line
 	4500 5650 4700 5650
 Wire Wire Line
@@ -100,14 +107,6 @@ Wire Wire Line
 	12900 4250 12900 4450
 Wire Wire Line
 	12600 2300 12200 2300
-Wire Wire Line
-	8850 2650 8450 2650
-Wire Wire Line
-	8450 2650 8450 3150
-Wire Wire Line
-	8450 3150 7950 3150
-Wire Wire Line
-	7900 4400 7900 4600
 Connection ~ 6200 8950
 Wire Wire Line
 	6200 8750 6200 8950
@@ -212,25 +211,7 @@ Wire Wire Line
 	5400 9150 5400 8750
 Connection ~ 5400 8950
 Wire Wire Line
-	7000 5650 7200 5650
-Wire Wire Line
-	8850 2950 8650 2950
-Wire Wire Line
-	7700 4750 7700 3600
-Wire Wire Line
-	7700 3600 7900 3600
-Wire Wire Line
-	7900 3600 7900 3800
-Wire Wire Line
-	7400 3500 7400 3700
-Wire Wire Line
-	7400 2700 7200 2700
-Wire Wire Line
-	7400 2700 7400 2900
-Wire Wire Line
-	8450 4050 8650 4050
-Wire Wire Line
-	8650 4050 8650 2950
+	7200 5650 7000 5650
 Wire Wire Line
 	11500 2100 11500 2300
 Wire Wire Line
@@ -264,8 +245,6 @@ Wire Wire Line
 	7200 6650 7000 6650
 Wire Wire Line
 	7200 6350 7000 6350
-Wire Wire Line
-	7200 2700 7200 5650
 Wire Wire Line
 	8100 6800 8300 6800
 Wire Wire Line
@@ -329,10 +308,26 @@ Wire Wire Line
 	13250 5150 12900 5150
 Connection ~ 13100 5150
 Wire Wire Line
-	7200 4750 7000 4750
-Connection ~ 7200 4750
+	7500 4250 7500 4450
 Wire Wire Line
-	7000 4750 7000 4550
+	2050 4700 2050 5050
+Wire Wire Line
+	2050 5050 4500 5050
+Wire Notes Line
+	4550 5000 2100 5000
+Wire Notes Line
+	2100 5000 2100 4750
+Text Notes 2450 4950 0    50   ~ 0
+RF trace - characteristic impedance is 50ohm
+$Comp
+L GSM_ANTENNA ANT?
+U 1 1 4AA6AAA3
+P 2050 4450
+F 0 "ANT?" H 1700 4350 60  0000 C CNN
+F 1 "GSM_ANTENNA" H 1700 4450 60  0000 C CNN
+	1    2050 4450
+	1    0    0    -1  
+$EndComp
 $Comp
 L PWR_FLAG #FLG?
 U 1 1 4AA27062
@@ -371,7 +366,7 @@ SIM_INSERT
 Text Notes 10250 5200 0    50   ~ 0
 Modem might require \n47k pullups.
 Text Notes 11150 8150 0    50   ~ 0
-TODO:\nAntenna\necn for SIM RF-bypass changes
+TODO:\necn for SIM RF-bypass changes
 $Comp
 L TST P8109
 U 1 1 4A9C5951
@@ -438,19 +433,19 @@ $EndComp
 $Comp
 L TST P8105
 U 1 1 4A9C52EA
-P 7500 4550
-F 0 "P8105" H 7500 4800 40  0000 C CNN
-F 1 " " H 7500 4800 30  0000 C CNN
-	1    7500 4550
-	1    0    0    -1  
+P 7500 4950
+F 0 "P8105" H 7500 5200 40  0000 C CNN
+F 1 " " H 7500 5200 30  0000 C CNN
+	1    7500 4950
+	-1   0    0    1   
 $EndComp
 $Comp
 L TST P8104
 U 1 1 4A9C52CE
-P 7000 4550
-F 0 "P8104" H 7000 4800 40  0000 C CNN
-F 1 " " H 7000 4800 30  0000 C CNN
-	1    7000 4550
+P 7500 4250
+F 0 "P8104" H 7500 4500 40  0000 C CNN
+F 1 " " H 7500 4500 30  0000 C CNN
+	1    7500 4250
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -670,42 +665,6 @@ F 1 "0R" V 13000 4850 50  0000 C CNN
 	1    12900 4700
 	0    1    1    0   
 $EndComp
-$Comp
-L DTC123 Q8101
-U 1 1 4A994AE0
-P 7600 3150
-F 0 "Q8101" H 7500 3375 60  0000 C CNN
-F 1 "DTC123" H 7400 2850 60  0000 C CNN
-	1    7600 3150
-	-1   0    0    -1  
-$EndComp
-$Comp
-L GND #PWR5
-U 1 1 4A994ADF
-P 7400 3700
-F 0 "#PWR5" H 7400 3700 30  0001 C CNN
-F 1 "GND" H 7400 3630 30  0001 C CNN
-	1    7400 3700
-	1    0    0    -1  
-$EndComp
-$Comp
-L DTC123 Q8102
-U 1 1 4A9949B3
-P 8100 4050
-F 0 "Q8102" H 8000 4275 60  0000 C CNN
-F 1 "DTC123" H 7900 3750 60  0000 C CNN
-	1    8100 4050
-	-1   0    0    -1  
-$EndComp
-$Comp
-L GND #PWR6
-U 1 1 4A994970
-P 7900 4600
-F 0 "#PWR6" H 7900 4600 30  0001 C CNN
-F 1 "GND" H 7900 4530 30  0001 C CNN
-	1    7900 4600
-	1    0    0    -1  
-$EndComp
 Text GLabel 8300 5950 2    60   Output ~ 0
 MODEM_MON
 $Comp
@@ -813,9 +772,9 @@ Text GLabel 4100 6100 0    60   Output ~ 0
 EARN
 Text GLabel 4100 6250 0    60   Output ~ 0
 EARP
-Text GLabel 8850 2950 2    60   Input ~ 0
+Text GLabel 7700 4750 2    60   Input ~ 0
 MODEM_ON
-Text GLabel 8850 2650 2    60   Input ~ 0
+Text GLabel 7700 4450 2    60   Input ~ 0
 MODEM_RST
 Text GLabel 4100 6850 0    60   Output ~ 0
 SIM_CLK

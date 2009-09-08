@@ -23,6 +23,11 @@ minutes of RTC during battery swaps.
 http://www.telit.com/module/infopool/download.php?id=620
 
 
+Remove GSM Power switch (U1705) and GSM_ON net.
+Route MODEM_ON and MODEM_RST to open-drain GPIO's on PMU
+Allow only for the internal antenna
+
+
 New and renamed nets:
  - MODEM_MON. Monitor modem status.  Connect to nXDREQ0/GPB10
  - MODEM_WAKE (renamed from INT0) - CPU wakes / sleeps modem

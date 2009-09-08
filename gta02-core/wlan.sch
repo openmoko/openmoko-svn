@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sun 30 Aug 2009 14:19:28 WEST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -508,7 +508,6 @@ F 1 "WLAN_3V3" H 6550 4150 50  0000 C CNN
 	1    6550 4000
 	1    0    0    -1  
 $EndComp
-Kmarq B 13500 4400 "Warning Pin passive Unconnected" F=1
 Text Notes 10550 4200 0    50   ~ 0
 RF trace - characteristic impedance is 50ohm
 $Comp

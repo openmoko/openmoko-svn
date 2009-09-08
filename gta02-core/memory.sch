@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 01 Sep 2009 02:54:22 BST
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Notes 1150 3750 0    50   ~ 0
+MODEM_RST moved to PMU - ecn0030
+NoConn ~ 2850 3850
 Wire Wire Line
 	3650 9000 3650 8350
 Wire Wire Line
@@ -479,10 +482,6 @@ Wire Wire Line
 Connection ~ 13400 3900
 Connection ~ 13850 2750
 Wire Wire Line
-	2850 3850 2850 3700
-Wire Wire Line
-	2850 3700 2350 3700
-Wire Wire Line
 	3350 8550 3350 8350
 Wire Wire Line
 	3550 8850 3550 8350
@@ -526,8 +525,6 @@ Text GLabel 2750 8700 0    60   Output ~ 0
 GPS_EXTINT
 Text GLabel 2350 3550 0    60   Output ~ 0
 BT_EN
-Text GLabel 2350 3700 0    60   Output ~ 0
-MODEM_RST
 $Comp
 L PWR_FLAG #FLG097
 U 1 1 4A4DD71E

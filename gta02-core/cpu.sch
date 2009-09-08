@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Fri 04 Sep 2009 20:35:52 BST
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 8 14
+Sheet 2 14
 Title ""
 Date "4 sep 2009"
 Rev ""
@@ -13,6 +13,9 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+NoConn ~ 3450 5050
+Text Notes 5850 5050 2    50   ~ 0
+MODEM_ON moved to PMU - ecn0030
 Wire Wire Line
 	4900 4650 3900 4650
 Wire Wire Line
@@ -481,12 +484,6 @@ Wire Wire Line
 Wire Wire Line
 	3700 6000 4900 6000
 Wire Wire Line
-	3450 5050 4100 5050
-Wire Wire Line
-	4100 5050 4100 4950
-Wire Wire Line
-	4100 4950 4900 4950
-Wire Wire Line
 	4900 4250 3700 4250
 Wire Wire Line
 	4800 7200 4600 7200
@@ -508,8 +505,6 @@ Text GLabel 4900 4650 2    60   Output ~ 0
 MODEM_SERVICE
 Text GLabel 4900 4800 2    60   Output ~ 0
 MODEM_SLEEP
-Text GLabel 4900 4950 2    60   Output ~ 0
-MODEM_ON
 Text Notes 5850 4400 2    50   ~ 0
 Removed HP_IN net - ecn0010
 Text Notes 5850 5250 2    50   ~ 0
