@@ -89,8 +89,7 @@ frame pads{
 }
 package "WM8753FL"
 
-set A1 = 0.2mm
-set A3 = 0.25mm
+set A3 = 0.2mm
 set D = 7mm
 set E = 7mm
 set D2 = 5.15mm
@@ -119,6 +118,7 @@ measx pads_u.pc >> pads_u.pc 1.5mm
 
 measx outll -> outlr -1.5mm
 measy outlr <- outur 1.5mm 
+measy pad_y.ll -> pad_y.ur 1mm-A3
 measy pad_x.ll -> outll 1mm+((E-e*(xpads-1)-b)/2) 
 measy outll -> pad_x.ur 1mm
 measy pad_gnd.ur -> pad_gnd.ll -((E+E2)/2)-1mm
