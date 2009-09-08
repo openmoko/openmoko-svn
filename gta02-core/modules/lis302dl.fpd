@@ -1,0 +1,97 @@
+/*LIS302DL LGA14*/
+
+
+frame pad_u {
+	set name = i
+	ur: vec @(w/2,0mm)
+	ll: vec @(-w/2,-l)
+	pad "$name" ur ll
+	
+}
+
+frame pad_b {
+	set name = i
+	ur: vec @(w/2,0mm)
+	ll: vec @(-w/2,l)
+	pad "$name" ur ll
+	
+}
+frame pads_u {
+	loop i=1,6
+	pos: vec @(L1/2-(i-1)*p,D1/2-s1)
+	frame pad_u pos
+
+}
+frame pads_b {
+	loop i=8,13
+	pos: vec @(-L1/2+(i-8)*p,-D1/2+s1)
+	frame pad_b pos
+
+}
+
+frame pads_s {
+
+	ur14: vec @(E1/2-s1,w/2)
+	ll14: vec .(-l,-w)
+	pad "14" ur14 ll14
+	ur7: vec @(-E1/2+s1,-w/2)
+	ll7: vec .(l,w)
+	pad "7" ur7 ll7
+
+}
+frame outline{
+	ur: vec @(E1/2,D1/2)
+	ll: vec @(-E1/2,-D1/2)
+	c:  vec @(E1/2-N,D1/2-N1)
+	dia: vec .(d/2,0mm)
+	rect ur ll silk
+	circ c dia silk
+
+}
+
+package "LIS302DL"
+
+/*design according to LIS302DL datasheet and design guidelines (see INFO)*/
+
+/*pitch*/
+set p=0.8mm
+
+/* max. pin width*/
+set T2=0.55mm
+
+/* max pin length*/
+set T1=0.85mm
+
+/*gap between pin and outline*/
+
+set s=0.1mm
+
+/*outline dimensions*/
+set E1=5mm
+set D1=3mm
+set N=1.36mm
+set N1=1.2mm
+set d=0.3mm
+set L1=4mm
+
+/*land length and width */
+set w = T2+0.1mm
+set l = T1+0.1mm
+set s1= s - 0.1mm/2
+set silk=0.1mm
+
+
+
+frame outline @
+frame pads_u @
+frame pads_b @
+frame pads_s @
+measx "E1=" outline.ll -> outline.ur -2mm
+measy "D1=" outline.ur -> outline.ll 2mm
+measx "N=" outline.c -> outline.ur N1+1mm
+measy "N1=" outline.ur -> outline.c N
+measx pads_b.pos -> pads_b.pos -s1-0.5mm
+measx "L1=" pads_b.pos >> pads_b.pos -s1-1mm
+measx "w=" pad_u.ll -> pad_u.ur l+s1+1mm
+measy "l=" pad_b.ur -> pad_b.ll (E1-L1)/2+w/2+1mm
+measy pad_b.ll -> pad_u.ll (E1-L1)/2-w/2+1mm

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Make a Library of Everything
 
-MODS="332fbga-p05 bga96-8x12-0mm8 ge865 stdpass tst wm3236aq wm8753fl"
+MODS="332fbga-p05 bga96-8x12-0mm8 ge865 stdpass tst wm3236aq wm8753fl lis302dl"
 
 LIB=gta02-core.mod
 

@@ -49,3 +49,8 @@ F: wm3236aq
 F: wm8753fl
 D: http://wolfsonmicro.com/uploads/documents/en/WAN0118.pdf
 #D: http://focus.ti.com/lit/an/slua271a/slua271a.pdf
+
+#LIS302DL
+F: lis302dl
+D: http://www.st.com/stonline/products/literature/tn/12707.pdf
+#D: http://www.st.com/stonline/products/literature/ds/12726.pdf
