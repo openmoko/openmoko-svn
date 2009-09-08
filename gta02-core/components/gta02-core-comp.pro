@@ -153,4 +153,4 @@ LibName45=./adg3304.lib
 LibName46=./bf2520.lib
 LibName47=./antenna
 LibName48=./wm3236aq.lib
-LibName49=gsm_antenna
+LibName49=./gsm_antenna

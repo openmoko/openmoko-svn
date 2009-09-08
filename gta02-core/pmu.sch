@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:31:55 BST
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -642,7 +642,7 @@ Wire Wire Line
 Wire Wire Line
 	4800 7600 7550 7600
 Text GLabel 4600 7650 0    60   Output ~ 0
-MODEM_RST
+MODEM_nRST
 Text Notes 8000 2250 0    50   ~ 0
 GSM power switch removed - ecn0030
 Text Notes 11850 800  0    60   ~ 0
@@ -870,7 +870,7 @@ F 1 "TST" V 4850 8350 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 Text GLabel 4600 7800 0    60   Output ~ 0
-MODEM_ON
+MODEM_nON
 Text GLabel 4950 8000 0    60   Input ~ 0
 PWREN
 Text GLabel 4600 7500 0    60   Output ~ 0
