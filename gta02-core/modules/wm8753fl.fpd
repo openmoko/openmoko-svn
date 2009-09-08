@@ -18,7 +18,7 @@ frame solder_paste {
 	loop y=1,count
 	ur: vec @(-D2/2+x*space_x+(x-1)*width_x,E2/2-y*space_y-(y-1)*width_y)
 	ll: vec @(-D2/2+x*(space_x+width_x),E2/2-y*(space_y+width_y))
-	pad "paste" ur ll paste
+	pad "" ur ll paste
 
 }
 frame outline {
@@ -40,7 +40,7 @@ frame pad_x {
 
 	ur: vec @(b/2,0mm)
 	ll: vec @(-b/2,-L-l)
-	pad "$name" ur ll
+	rpad "$name" ur ll
 
 }
 
@@ -48,7 +48,7 @@ frame pad_y {
 
 	ur: vec @(0mm,b/2)
 	ll: vec @(-L-l,-b/2)
-	pad "$name" ur ll
+	rpad "$name" ur ll
 
 }
 
@@ -104,16 +104,16 @@ package "WM8753FL"
 
 set D = 7mm
 set E = 7mm
-set D2 = 5.15mm
-set E2 = 5.15mm
+set D2 = 5.26mm
+set E2 = 5.26mm
 set e = 0.5mm
-set b = 0.25mm
-set L = 0.4mm
+set b = 0.26mm
+set L = 0.54mm
 set xpads = 12
 set ypads = 12
 
 /*pad exposure length*/
-set l = 0.2mm
+set l = 0.15mm
 
 /*array size for thermal land solder paste layer 4 = 4x4*/
 set paste_array = 4
@@ -131,16 +131,20 @@ outlr: vec @(D/2,-E/2)
 outul: vec @(-D/2,E/2)
 outur: vec @(D/2,E/2)
 
-measx pads_u.pc -> pads_u.pc 1mm
-measx pads_u.pc >> pads_u.pc 1.5mm
+/*pitch width*/
+measx pads_u.pc -> pads_u.pc -l+1mm
+
+/*measx pads_u.pc >> pads_u.pc 1.5mm*/
 
 /*measx pad_x.ll -> pad_x.ur -1mm*/
 
-measx outll -> outlr -1.5mm
-measy outlr <- outur 1.5mm 
+measx outll -> outlr -2mm
+measy outlr <- outur 2mm 
+measx pad_y.ur >> pad_y.ll ((ypads-1)*e-b+E)/2+1.5mm
+
 measy pad_y.ll -> pad_y.ur 1mm-l
 measy pad_x.ll -> outll 1mm+((E-e*(xpads-1)-b)/2) 
 measy outll -> pad_x.ur 1mm
-measy pad_gnd.ur -> pad_gnd.ll -((E+E2)/2)-1mm
+measy pad_gnd.ur -> pad_gnd.ll (E-E2)/2+1mm
 measx pad_gnd.ll -> pad_gnd.ur -(E-E2)/2-1mm
 

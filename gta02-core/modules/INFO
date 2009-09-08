@@ -44,3 +44,8 @@ F: wm3236aq
 # WM3236AQ_R0E_datasheet_Preliminary_0630_2007.pdf (no-public)
 # To do:
 # - define keep out area
+
+#WM8753FL
+F: wm8753fl
+D: http://wolfsonmicro.com/uploads/documents/en/WAN0118.pdf
+#D: http://focus.ti.com/lit/an/slua271a/slua271a.pdf
