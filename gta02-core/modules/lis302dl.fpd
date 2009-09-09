@@ -1,5 +1,8 @@
 /*LIS302DL LGA14*/
-
+/*
+Note: extended solder mask openings not yet defined. 
+However this is strongly recommended by ST.
+*/
 
 frame pad_u {
 	set name = i
@@ -43,9 +46,12 @@ frame outline{
 	ur: vec @(E1/2,D1/2)
 	ll: vec @(-E1/2,-D1/2)
 	c:  vec @(E1/2-N,D1/2-N1)
-	dia: vec .(d/2,0mm)
+	cll: vec c(-d/2,-d/2)
+	dia: vec c((d-silk)/2,0mm)
+	dia2: vec cll(d,d)
 	rect ur ll silk
 	circ c dia silk
+/*	rpad "" cll dia2 */
 
 }
 
@@ -56,28 +62,35 @@ package "LIS302DL"
 /*pitch*/
 set p=0.8mm
 
-/* max. pin width*/
-set T2=0.55mm
+/* pin width*/
+set T2=0.5mm
 
-/* max pin length*/
-set T1=0.85mm
+/* pin length*/
+set T1=0.8mm
+
+set L1=4mm
 
 /*gap between pin and outline*/
-
 set s=0.1mm
 
 /*outline dimensions*/
 set E1=5mm
 set D1=3mm
+
+/*pin1 marker location/diameter*/
 set N=1.36mm
 set N1=1.2mm
 set d=0.3mm
-set L1=4mm
 
-/*land length and width */
+
+/*solder land length and width */
 set w = T2+0.1mm
 set l = T1+0.1mm
-set s1= s - 0.1mm/2
+
+/*solder land distance to chip outline */
+set s1= s - (l-T1)/2
+
+/*silk screen width*/
 set silk=0.1mm
 
 
@@ -86,6 +99,7 @@ frame outline @
 frame pads_u @
 frame pads_b @
 frame pads_s @
+
 measx "E1=" outline.ll -> outline.ur -2mm
 measy "D1=" outline.ur -> outline.ll 2mm
 measx "N=" outline.c -> outline.ur N1+1mm
