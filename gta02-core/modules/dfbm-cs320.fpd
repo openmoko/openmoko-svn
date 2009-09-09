@@ -1,0 +1,85 @@
+/*DFBM-CS320 Bluetooth Module*/
+frame pad_x{
+	ur: vec @(w/2,0mm)
+	ll: vec @(-w/2,-l)
+	pad "$name" ur ll
+}
+
+frame pad_y{
+	ur: vec @(0mm,w/2)
+	ll: vec @(-l,-w/2)
+	pad "$name" ur ll
+}
+frame pad_c{
+	set w = H
+	set l = E
+	loop z=28,(i+1)
+	set name = z
+	pos: vec @(A/2-(i-19)*(G+F)-(H/2+I+G/2)-I-G/2,B/2+H)
+	frame pad_x pos
+}
+frame pad_u{
+	set w = G
+	set l = H
+	set name = i
+	pos: vec @(A/2-(i-19)*(G+F)-I-G/2,B/2+H)
+	frame pad_x pos
+}
+frame pad_b{
+	set w = G
+	set l = -H
+	set name = i
+	pos: vec @(-A/2+(i-1)*(G+F)+I+G/2,-B/2-H)
+	frame pad_x pos
+}
+frame pad_l{
+	set w = G
+	set l = H
+	set name = i
+	pos: vec @(-A/2,B/2-(i-11)*(G+F)-(E-H)-F-G/2)
+	frame pad_y pos
+}
+frame pad_r{
+	set w = G
+	set l = -H
+	set name = i
+	pos: vec @(A/2,-B/2+(i-11)*(G+F)+(E-H)+F+G/2)
+	frame pad_y pos
+}
+frame pads_u{
+	loop i=19,27
+	frame pad_u @
+	frame pad_c @
+}
+
+frame pads_l{
+	loop i=11,17
+	frame pad_l @
+
+}
+frame pads_b{
+	loop i=1,9
+	frame pad_b @
+
+}
+frame pads_r{
+	loop i=11,17
+	frame pad_r @
+
+}
+package "DFBM-CS320"
+
+set A = 6.3mm
+set B = 5.3mm
+set E = 1.025mm
+set F = 0.3mm
+set G = 0.35mm
+set H = 0.8mm
+set I = 0.375mm 
+
+frame pads_u @
+frame pads_l @
+frame pads_b @
+frame pads_r @
+measy pad_x.ll -> pad_y.ur 1mm 
+/*measy pad_u.ll -> pads_u.pos 1mm*/
