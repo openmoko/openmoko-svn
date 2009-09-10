@@ -197,6 +197,7 @@ static void kicad_inst(FILE *file, enum inst_prio prio, const struct inst *inst)
 {
 	switch (prio) {
 	case ip_pad:
+	case ip_pad_bare:
 		kicad_pad(file, inst);
 		break;
 	case ip_line:

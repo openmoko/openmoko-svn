@@ -37,7 +37,8 @@ struct bbox {
 
 enum inst_prio {
 	ip_frame,	/* frames have their own selection */
-	ip_pad,		/* pads also accept clicks inside */
+	ip_pad_bare,	/* pads also accept clicks inside */
+	ip_pad,		/* pads with solder mask on top of those without */
 	ip_circ,	/* circles don't overlap easily */
 	ip_arc,		/* arc are like circles, just shorter */
 	ip_rect,	/* rectangles have plenty of sides */

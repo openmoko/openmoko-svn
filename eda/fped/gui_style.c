@@ -25,6 +25,7 @@ GdkGC *gc_active_frame;
 GdkGC *gc_vec[mode_n];
 GdkGC *gc_obj[mode_n];
 GdkGC *gc_pad[mode_n];
+GdkGC *gc_pad_bare[mode_n];
 GdkGC *gc_ptext[mode_n];
 GdkGC *gc_meas[mode_n];
 GdkGC *gc_frame[mode_n];
@@ -59,13 +60,14 @@ void gui_setup_style(GdkDrawable *drawable)
 	gc_bg = gc("#000000", 0);
 	gc_bg_error = gc("#000040", 0);
 	gc_drag = gc("#ffffff", 2);
-	/*		inactive   active     selected */
-	style(gc_vec,	"#202000", "#b0b050", "#ffff80");
-	style(gc_obj,	"#006060", "#00ffff", "#ffff80");
-	style(gc_pad,	"#400000", "#ff0000", "#ffff80");
-	style(gc_ptext,	"#404040", "#ffffff", "#ffffff");
-	style(gc_meas,	"#280040", "#ff00ff", "#ffff80");
-	style(gc_frame,	"#005000", "#009000", "#ffff80");
+	/*			inactive   active     selected */
+	style(gc_vec,		"#202000", "#b0b050", "#ffff80");
+	style(gc_obj,		"#006060", "#00ffff", "#ffff80");
+	style(gc_pad,		"#400000", "#ff0000", "#ffff80");
+	style(gc_pad_bare,	"#402000", "#ff6000", "#ffff80");
+	style(gc_ptext,		"#404040", "#ffffff", "#ffffff");
+	style(gc_meas,		"#280040", "#ff00ff", "#ffff80");
+	style(gc_frame,		"#005000", "#009000", "#ffff80");
 
 	gc_active_frame = gc("#00ff00", 2);
 //	gc_highlight = gc("#ff8020", 2);

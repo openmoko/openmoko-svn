@@ -796,7 +796,8 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 {
 	struct inst *inst;
 
-	inst = add_inst(obj->u.pad.rounded ? &rpad_ops : &pad_ops, ip_pad, a);
+	inst = add_inst(obj->u.pad.rounded ? &rpad_ops : &pad_ops,
+	    obj->u.pad.type == pt_bare ? ip_pad_bare : ip_pad, a);
 	inst->obj = obj;
 	inst->u.pad.name = stralloc(name);
 	inst->u.pad.other = b;

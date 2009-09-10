@@ -76,9 +76,12 @@
 #define	PS_MEAS_ARROW_ANGLE	30
 #define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
 #define	PS_MEAS_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
+#define	PS_MEAS_MIN_HEIGHT	(PS_MEAS_TEXT_HEIGHT/2)
 
 #define	PS_CROSS_WIDTH		mm_to_units(0.01)
 #define	PS_CROSS_DASH		mm_to_units(0.1)
+
+#define TEXT_HEIGHT_FACTOR	1.5	/* height/width of typical text */
 
 
 struct postscript_params postscript_params = {
@@ -359,12 +362,23 @@ static void ps_vec(FILE *file, const struct inst *inst)
 }
 
 
+/* ----- Measurements ------------------------------------------------------ */
+
+
+static unit_type guesstimate_text_height(const char *s, unit_type width,
+    double zoom)
+{
+	return width/strlen(s)*TEXT_HEIGHT_FACTOR*zoom;
+}
+
+
 static void ps_meas(FILE *file, const struct inst *inst,
-    enum curr_unit unit)
+    enum curr_unit unit, double zoom)
 {
 	struct coord a0, b0, a1, b1;
 	struct coord c, d;
 	char *s;
+	unit_type height, width, offset;
 
 	a0 = inst->base;
 	b0 = inst->u.meas.end;
@@ -384,16 +398,51 @@ static void ps_meas(FILE *file, const struct inst *inst,
 
 	c = add_vec(a1, b1);
 	d = sub_vec(b1, a1);
-	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
-	fprintf(file, "    /Helvetica-Bold findfont dup\n");
-	fprintf(file, "    (%s) %d %d realsize\n", s,
-	    (int) (dist_point(a1, b1)-1.5*PS_MEAS_ARROW_LEN),
-	    PS_MEAS_TEXT_HEIGHT);
-	fprintf(file, "    boxfont\n");
-	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
-	fprintf(file, "    (%s) %d realsize hcenter\n",
-	    s, PS_MEAS_BASE_OFFSET);
-	fprintf(file, "    show grestore\n");
+
+	/*
+	 * First try: put text between the arrows
+	 */
+	width = dist_point(a1, b1)-1.5*PS_MEAS_ARROW_LEN;
+	offset = PS_MEAS_BASE_OFFSET;
+	height = 0;
+	if (guesstimate_text_height(s, width, zoom) < PS_MEAS_MIN_HEIGHT) {
+#if 0
+fprintf(stderr, "%s -> width %d height %d vs. %d\n",
+    s, width, guesstimate_text_height(s, width, zoom), PS_MEAS_MIN_HEIGHT);
+#endif
+		/*
+		 * Second try: push it above the arrows
+		 */
+		width = dist_point(a1, b1);
+		offset +=
+		    PS_MEAS_ARROW_LEN*sin(PS_MEAS_ARROW_ANGLE*M_PI/180)*zoom;
+
+		if (guesstimate_text_height(s, width, zoom) <
+		    PS_MEAS_MIN_HEIGHT) {
+			height = PS_MEAS_MIN_HEIGHT;
+			width = strlen(s)*height;
+		}
+	}
+
+	if (height) {
+		fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
+		fprintf(file, "    /Helvetica-Bold findfont dup\n");
+		fprintf(file, "    (%s) %d realsize %d realsize\n",
+		    s, width, height);
+		fprintf(file, "    boxfont\n");
+		fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
+		fprintf(file, "    (%s) %d realsize hcenter\n", s, offset);
+		fprintf(file, "    show grestore\n");
+	} else {
+		fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
+		fprintf(file, "    /Helvetica-Bold findfont dup\n");
+		fprintf(file, "    (%s) %d %d realsize\n", s, width,
+		    PS_MEAS_TEXT_HEIGHT);
+		fprintf(file, "    boxfont\n");
+		fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
+		fprintf(file, "    (%s) %d realsize hcenter\n", s, offset);
+		fprintf(file, "    show grestore\n");
+	}
 	free(s);
 }
 
@@ -422,10 +471,11 @@ static void ps_background(FILE *file, enum inst_prio prio,
 
 
 static void ps_foreground(FILE *file, enum inst_prio prio,
-     const struct inst *inst)
+     const struct inst *inst, double zoom)
 {
 	switch (prio) {
 	case ip_pad:
+	case ip_pad_bare:
 		if (inst->obj->u.pad.rounded)
 			ps_rpad(file, inst, active_params.show_pad_names);
 		else
@@ -441,7 +491,7 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 		break;
 	case ip_meas:
 		if (active_params.show_meas)
-			ps_meas(file, inst, curr_unit);
+			ps_meas(file, inst, curr_unit, zoom);
 		break;
 	default:
 		break;
@@ -479,9 +529,9 @@ static void ps_draw_package(FILE *file, const struct pkg *pkg, double zoom)
 	}
 	FOR_INST_PRIOS_UP(prio) {
 		FOR_PKG_INSTS(pkgs, prio, inst)
-			ps_foreground(file, prio, inst);
+			ps_foreground(file, prio, inst, zoom);
 		FOR_PKG_INSTS(pkg, prio, inst)
-			ps_foreground(file, prio, inst);
+			ps_foreground(file, prio, inst, zoom);
 	}
 	fprintf(file, "grestore\n");
 }
@@ -509,10 +559,10 @@ static void ps_draw_frame(FILE *file, const struct pkg *pkg,
 	FOR_INST_PRIOS_UP(prio) {
 		FOR_PKG_INSTS(pkgs, prio, inst)
 			if (inst->outer == outer)
-				ps_foreground(file, prio, inst);
+				ps_foreground(file, prio, inst, zoom);
 		FOR_PKG_INSTS(pkg, prio, inst)
 			if (inst->outer == outer)
-				ps_foreground(file, prio, inst);
+				ps_foreground(file, prio, inst, zoom);
 	}
 	fprintf(file, "grestore\n");
 }

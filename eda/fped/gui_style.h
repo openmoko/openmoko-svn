@@ -109,6 +109,7 @@ extern GdkGC *gc_active_frame;
 extern GdkGC *gc_vec[mode_n];
 extern GdkGC *gc_obj[mode_n];
 extern GdkGC *gc_pad[mode_n];
+extern GdkGC *gc_pad_bare[mode_n];
 extern GdkGC *gc_ptext[mode_n];
 extern GdkGC *gc_meas[mode_n];
 extern GdkGC *gc_frame[mode_n];
