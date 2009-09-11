@@ -227,6 +227,7 @@ Type		Layers
 (default)	copper, solder mask, and solder paste
 bare		copper and solder mask
 paste		solder paste
+mask		solder mask
 
 
 Rounded pads

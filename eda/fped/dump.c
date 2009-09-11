@@ -328,6 +328,9 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		case pt_paste:
 			s2 = " paste";
 			break;
+		case pt_mask:
+			s2 = " mask";
+			break;
 		default:
 			abort();
 		}

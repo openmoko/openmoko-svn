@@ -263,8 +263,17 @@ void gui_draw_pad(struct inst *self)
 	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
 
-	gc = self->obj->u.pad.type == pt_bare ?
-	    gc_pad_bare[get_mode(self)] : gc_pad[get_mode(self)];
+	switch (self->obj->u.pad.type) {
+	case pt_bare:
+		gc = gc_pad_bare[get_mode(self)];
+		break;
+	case pt_mask:
+		gc = gc_pad_mask[get_mode(self)];
+		break;
+	default:
+		gc = gc_pad[get_mode(self)];
+		break;		
+	}
 	sort_coord(&min, &max);
 	gdk_draw_rectangle(DA, gc, TRUE,
 	    min.x, min.y, max.x-min.x, max.y-min.y);
@@ -280,8 +289,17 @@ void gui_draw_rpad(struct inst *self)
 	GdkGC *gc;
 	unit_type h, w, r;
 
-	gc = self->obj->u.pad.type == pt_bare ?
-	    gc_pad_bare[get_mode(self)] : gc_pad[get_mode(self)];
+	switch (self->obj->u.pad.type) {
+	case pt_bare:
+		gc = gc_pad_bare[get_mode(self)];
+		break;
+	case pt_mask:
+		gc = gc_pad_mask[get_mode(self)];
+		break;
+	default:
+		gc = gc_pad[get_mode(self)];
+		break;		
+	}
 	sort_coord(&min, &max);
 	h = max.y-min.y;
 	w = max.x-min.x;

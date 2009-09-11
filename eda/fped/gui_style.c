@@ -26,6 +26,7 @@ GdkGC *gc_vec[mode_n];
 GdkGC *gc_obj[mode_n];
 GdkGC *gc_pad[mode_n];
 GdkGC *gc_pad_bare[mode_n];
+GdkGC *gc_pad_mask[mode_n];
 GdkGC *gc_ptext[mode_n];
 GdkGC *gc_meas[mode_n];
 GdkGC *gc_frame[mode_n];
@@ -65,6 +66,7 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_obj,		"#006060", "#00ffff", "#ffff80");
 	style(gc_pad,		"#400000", "#ff0000", "#ffff80");
 	style(gc_pad_bare,	"#402000", "#ff6000", "#ffff80");
+	style(gc_pad_mask,	"#000040", "#0000ff", "#ffff80");
 	style(gc_ptext,		"#404040", "#ffffff", "#ffffff");
 	style(gc_meas,		"#280040", "#ff00ff", "#ffff80");
 	style(gc_frame,		"#005000", "#009000", "#ffff80");

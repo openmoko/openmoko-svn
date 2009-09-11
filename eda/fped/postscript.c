@@ -198,6 +198,8 @@ static const char *hatch(enum pad_type type)
 		return "hatchpath";
 	case pt_paste:
 		return "backhatchpath";
+	case pt_mask:
+		return "dotpath";
 	default:
 		abort();
 	}

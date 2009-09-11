@@ -98,6 +98,9 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 	case pt_paste:
 		layers = 1 << layer_paste_top;
 		break;
+	case pt_mask:
+		layers = 1 << layer_mask_top;
+		break;
 	default:
 		abort();
 	}

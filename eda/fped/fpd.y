@@ -521,6 +521,8 @@ pad_type:
 				$$ = pt_bare;
 			else if (!strcmp($1, "paste"))
 				$$ = pt_paste;
+			else if (!strcmp($1, "mask"))
+				$$ = pt_mask;
 			else {
 				yyerrorf("unknown pad type \"%s\"", $1);
 				YYABORT;
