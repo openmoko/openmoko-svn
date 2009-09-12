@@ -20,9 +20,10 @@ gen generate:
 		$(MAKE) -C modules gen
 
 update:
-		svn update && \
-		    make -C components loe && \
-		    make -C modules loe
+		svn update
+		make -C components loe
+		make -C modules loe
+		[ ! -d "`scripts/mkdsv -d`" ] || make dsv
 
 gv:
 		gv gta02-core-all.ps.gz
