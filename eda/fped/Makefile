@@ -75,7 +75,7 @@ endif
 
 # ----- Rules -----------------------------------------------------------------
 
-.PHONY:		all dep depend clean install uninstall upload-manual
+.PHONY:		all dep depend clean install uninstall upload-manual update
 
 .SUFFIXES:	.fig .xpm
 
@@ -137,3 +137,9 @@ install:	all
 
 uninstall:
 		rm -f $(PREFIX)/bin/fped
+
+# ----- SVN update ------------------------------------------------------------
+
+update:
+		svn update
+		$(MAKE) dep all
