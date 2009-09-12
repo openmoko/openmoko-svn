@@ -27,6 +27,9 @@ extern int show_bright;
 /* update everything after a model change */
 void change_world(void);
 
+/* like change_world, but select the object again */
+void change_world_reselect(void);
+
 int gui_init(int *argc, char ***argv);
 int gui_main(void);
 

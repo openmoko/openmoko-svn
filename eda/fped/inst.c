@@ -742,6 +742,7 @@ static int validate_pad_name(const char *s, void *ctx)
 
 static void obj_pad_edit(struct obj *obj)
 {
+	edit_pad_type(&obj->u.pad.type);
 	edit_name(&obj->u.pad.name, validate_pad_name, NULL);
 }
 

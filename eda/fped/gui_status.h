@@ -31,6 +31,8 @@ enum curr_unit {
 extern enum curr_unit curr_unit;
 
 
+void edit_pad_type(enum pad_type *type);
+
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
     void *ctx);
 void edit_unique_null(const char **s, int (*validate)(const char *s, void *ctx),
@@ -86,6 +88,7 @@ void status_set_xy(struct coord coord);
 
 void status_begin_reporting(void);
 
-void make_status_area(GtkWidget *vbox) ;
+void make_status_area(GtkWidget *vbox);
+void cleanup_status_area(void);
 
 #endif /* !GUI_STATUS_H */

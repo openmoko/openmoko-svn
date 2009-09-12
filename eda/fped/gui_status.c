@@ -23,6 +23,7 @@
 #include "coord.h"
 #include "error.h"
 #include "unparse.h"
+#include "obj.h"
 #include "gui_util.h"
 #include "gui_style.h"
 #include "gui_canvas.h"
@@ -56,13 +57,17 @@ static GtkWidget *last_edit = NULL;
 
 static GtkWidget *status_name, *status_entry;
 static GtkWidget *status_type_x, *status_type_y, *status_type_entry;
-static GtkWidget *status_entry_x, *status_entry_y;
+static GtkWidget *status_box_x, *status_entry_y;
 static GtkWidget *status_x, *status_y;
 static GtkWidget *status_r, *status_angle;
 static GtkWidget *status_sys_x, *status_sys_y;
 static GtkWidget *status_user_x, *status_user_y;
 static GtkWidget *status_zoom, *status_grid, *status_unit;
 static GtkWidget *status_msg;
+
+/* The x entry area serves multiple purposes */
+
+static GtkWidget *status_entry_x;
 
 
 static void set_label(GtkWidget *label, const char *fmt, va_list ap)
@@ -159,7 +164,72 @@ static void entry_color(GtkWidget *widget, const char *color)
 }
 
 
-/* ----- helper functions -------------------------------------------------- */
+/* ----- pad type display and change --------------------------------------- */
+
+
+static enum pad_type *curr_pad_type;
+static GtkWidget *pad_type;
+
+
+static void show_pad_type(void)
+{
+	const char *s;
+
+	switch (*curr_pad_type) {
+	case pt_normal:
+		s = "normal";
+		break;
+	case pt_bare:
+		s = "bare";
+		break;
+	case pt_paste:
+		s = "paste";
+		break;
+	case pt_mask:
+		s = "mask";
+		break;
+	default:
+		abort();
+	}
+	gtk_label_set_text(GTK_LABEL(pad_type), s);
+}
+
+
+static gboolean pad_type_button_press_event(GtkWidget *widget,
+    GdkEventButton *event, gpointer data)
+{
+	switch (event->button) {
+	case 1:
+		*curr_pad_type = (*curr_pad_type+1) % pt_n;
+		show_pad_type();
+		break;
+	}
+	/*
+	 * We can't just redraw() here, because changing the pad type may also
+	 * affect the visual stacking. So we change the world and hope we end
+	 * up selecting the same pad afterwards.
+	 */
+	change_world_reselect();
+	return TRUE;
+}
+
+
+void edit_pad_type(enum pad_type *type)
+{
+	vacate_widget(status_box_x);
+	curr_pad_type = type;
+	pad_type = label_in_box_new(NULL);
+	gtk_container_add(GTK_CONTAINER(status_box_x), box_of_label(pad_type));
+	label_in_box_bg(pad_type, COLOR_SELECTOR);
+	g_signal_connect(G_OBJECT(box_of_label(pad_type)),
+	    "button_press_event", G_CALLBACK(pad_type_button_press_event),
+	    NULL);
+	show_pad_type();
+	gtk_widget_show_all(status_box_x);
+}
+
+
+/* ----- edit helper functions --------------------------------------------- */
 
 
 static void reset_edit(GtkWidget *widget)
@@ -532,6 +602,9 @@ void edit_expr(struct expr **expr)
 
 void edit_x(struct expr **expr)
 {
+	vacate_widget(status_box_x);
+	gtk_container_add(GTK_CONTAINER(status_box_x), status_entry_x);
+	gtk_widget_show(status_box_x);
 	edit_any_expr(status_entry_x, expr);
 }
 
@@ -695,7 +768,7 @@ static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
 void edit_nothing(void)
 {
 	gtk_widget_hide(status_entry);
-	gtk_widget_hide(status_entry_x);
+	gtk_widget_hide(status_box_x);
 	gtk_widget_hide(status_entry_y);
 	open_edits = NULL;
 	last_edit = NULL;
@@ -772,6 +845,17 @@ static gboolean unit_button_press_event(GtkWidget *widget,
 /* ----- setup ------------------------------------------------------------- */
 
 
+static GtkWidget *add_vbox(GtkWidget *tab, int col, int row)
+{
+	GtkWidget *vbox;
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(tab), vbox,
+	    col, col+1, row, row+1);
+	return vbox;
+}
+
+
 static GtkWidget *add_label_basic(GtkWidget *tab, int col, int row)
 {
 	GtkWidget *label;
@@ -796,20 +880,29 @@ static GtkWidget *add_label(GtkWidget *tab, int col, int row)
 }
 
 
-static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
+static GtkWidget *make_entry(void)
 {
 	GtkWidget *entry;
 
 	entry = gtk_entry_new();
 	gtk_entry_set_has_frame(GTK_ENTRY(entry), FALSE);
-	gtk_table_attach_defaults(GTK_TABLE(tab), entry,
-	    col, col+1, row, row+1);
 
 	g_signal_connect(G_OBJECT(entry), "changed",
 	    G_CALLBACK(changed), entry);
 	g_signal_connect(G_OBJECT(entry), "activate",
 	    G_CALLBACK(activate), entry);
 
+	return entry;
+}
+
+
+static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
+{
+	GtkWidget *entry;
+
+	entry = make_entry();
+	gtk_table_attach_defaults(GTK_TABLE(tab), entry,
+	    col, col+1, row, row+1);
 	return entry;
 }
 
@@ -830,10 +923,12 @@ void make_status_area(GtkWidget *vbox)
 	/* x / y */
 
 	status_x = add_label(tab, 1, 0);
-	status_entry_x = add_entry(tab, 2, 0);
+	status_box_x = add_vbox(tab, 2, 0);
 	status_y = add_label(tab, 1, 1);
 	status_entry_y = add_entry(tab, 2, 1);
 
+	status_entry_x = gtk_widget_ref(make_entry());
+	
 	/* name and input */
 
 	status_name = add_label(tab, 1, 2);
@@ -864,7 +959,7 @@ void make_status_area(GtkWidget *vbox)
 
 	/* unit selection */
 
-	label_in_box_bg(status_unit, COLOR_UNIT_SELECTOR);
+	label_in_box_bg(status_unit, COLOR_SELECTOR);
 	show_curr_unit();
 	g_signal_connect(G_OBJECT(box_of_label(status_unit)),
 	    "button_press_event", G_CALLBACK(unit_button_press_event), NULL);
@@ -876,4 +971,10 @@ void make_status_area(GtkWidget *vbox)
 
 	context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(status_msg),
 	    "messages");
+}
+
+
+void cleanup_status_area(void)
+{
+	gtk_widget_unref(status_entry_x);
 }

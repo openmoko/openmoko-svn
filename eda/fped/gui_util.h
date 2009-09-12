@@ -57,6 +57,8 @@ GtkWidget *box_of_label(GtkWidget *label);
 void label_in_box_fg(GtkWidget *box, const char *color);
 void label_in_box_bg(GtkWidget *box, const char *color);
 
+void vacate_widget(GtkWidget *widget);
+
 GtkWidget *make_image(GdkDrawable *drawable, char **xpm);
 void set_image(GtkWidget *widget, GtkWidget *image);
 GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,

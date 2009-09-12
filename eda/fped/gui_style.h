@@ -96,7 +96,7 @@
 #define	COLOR_ITEM_SELECTED	COLOR_FRAME_SELECTED
 #define	COLOR_ITEM_ERROR	"red"
 
-#define	COLOR_UNIT_SELECTOR	"white"
+#define	COLOR_SELECTOR		"white"
 
 
 /* ----- canvas drawing styles --------------------------------------------- */

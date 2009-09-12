@@ -190,9 +190,15 @@ static void remove_child(GtkWidget *widget, gpointer data)
 }
 
 
-void set_image(GtkWidget *widget, GtkWidget *image)
+void vacate_widget(GtkWidget *widget)
 {
 	gtk_container_foreach(GTK_CONTAINER(widget), remove_child, widget);
+}
+
+
+void set_image(GtkWidget *widget, GtkWidget *image)
+{
+	vacate_widget(widget);
 	gtk_container_add(GTK_CONTAINER(widget), image);
 	gtk_widget_show_all(widget);
 }

@@ -144,6 +144,7 @@ enum pad_type {
 	pt_bare,	/* only copper (and finish) */
 	pt_paste,	/* only solder paste */
 	pt_mask,	/* only solder mask */
+	pt_n
 };
 
 struct frame_ref {

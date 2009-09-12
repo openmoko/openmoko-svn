@@ -261,6 +261,16 @@ void change_world(void)
 }
 
 
+void change_world_reselect(void)
+{
+	struct obj *selected_obj;
+
+	selected_obj = selected_inst->obj;
+	change_world();
+	inst_select_obj(selected_obj);
+}
+
+
 static void make_screen(GtkWidget *window)
 {
 	GtkWidget *vbox;
@@ -309,6 +319,7 @@ int gui_main(void)
 	gui_cleanup_style();
 	gui_cleanup_tools();
 	cleanup_tool_bar();
+	cleanup_status_area();
 
 	return 0;
 }
