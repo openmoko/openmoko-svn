@@ -33,31 +33,42 @@ sub dl
     $ds_dir = "$DSV_HOME/ds/$sym";
     $url =~ /[^\/?&]*$/;
     $name = $&;
-    if (-r "$ds_dir/$name" && -x "$bin_dir/dsv-$sym") {
-	return unless defined $alias;
-	return if -x "$bin_dir/dsv-$alias";
-    }
-    &mkdir($ds_dir);
 
     local ($p) = "$ds_dir/$name";
-    if (system("wget -nv -O \"$p-tmp\" \"$url\"")) {
-	print STDERR "FAILED: $sym -> $url\n";
-    } else {
-	rename("$p-tmp", $p) || die "rename: $!\n";
+
+    if (!-r "$p") {
+	&mkdir($ds_dir);
+	if (system("wget -nv -O \"$p-tmp\" \"$url\"")) {
+	    print STDERR "FAILED: $sym -> $url\n";
+	} else {
+	    rename("$p-tmp", $p) || die "rename: $!\n";
+	}
     }
-    &mkbin("$bin_dir/dsv-$sym", $p);
-    &mkbin("$bin_dir/dsv-$alias", $p) if defined $alias;
+    if (!-x "$bin_dir/dsv-$sym") {
+	print STDERR "adding dsv-$sym\n";
+	&mkbin("$bin_dir/dsv-$sym", $p);
+    }
+    for (@alias) {
+	if (!-x "$bin_dir/dsv-$_") {
+	    print STDERR "adding dsv-$_\n";
+	    &mkbin("$bin_dir/dsv-$_", $p);
+	}
+    }
 }
 
 
 sub flush
 {
     &dl if defined($sym) && defined($url);
-    undef $sym;
-    undef $alias;
+    undef @alias;
     undef $url;
 }
 
+
+if ($ARGV[0] eq "-d") {
+	print "$DSV_HOME\n";
+	exit(0);
+}
 
 &mkdir("$DSV_HOME");
 &mkdir("$DSV_HOME/ds");
@@ -70,9 +81,11 @@ while (<>) {
 	&flush if defined $sym;
 	$sym = $1;
     } elsif (/^A:\s+(\S+)\s*$/) {
-	$alias = $1;
+	push(@alias, $1);
     } elsif (/^D:\s+(.*?)\s*$/) {
 	$url = $1 unless defined $url;
+	die unless defined $sym;
+	&flush;
     } elsif (/^M:\s+(.*?)\s*$/) {
 	# ignore
     } else {

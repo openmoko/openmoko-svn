@@ -1,5 +1,5 @@
 .PHONY:		all gen generate gv sch brd update upload xpdf bom-by-ref
-.PHONY:		dsv
+.PHONY:		dsv dsv-rebuild
 
 UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
 COPY=rsync -e ssh --progress
@@ -48,3 +48,6 @@ bom-by-ref:
 
 dsv:
 		$(MAKE) -C scripts dsv
+
+dsv-rebuild:
+		$(MAKE) -C scripts dsv-rebuild
