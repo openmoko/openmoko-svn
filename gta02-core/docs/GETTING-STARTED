@@ -108,6 +108,10 @@ Setting things up
   data sheets with commands like dsv-sc32442, dsv-cpu, etc. See
   $DSV_HOME/bin/ and components/INFO for the complete collection.
 
+  If a data sheet or one of its aliases is renamed, run
+
+  DSV_HOME=/home/moko/dsv make dsv-rebuild
+
 - Things to see and do:
 
   - (re)view and edit components (schematics symbols)
