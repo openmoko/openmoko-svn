@@ -88,6 +88,16 @@ S: ge865
 A: gsm
 A: telit-gsm
 D: http://www.telit.com/module/infopool/download.php?id=1666
+A: telit-sim-holder
+D: http://www.telit.com/module/infopool/download.php?id=590
+A: telit-at
+D: http://www.telit.com/module/infopool/download.php?id=542
+A: telit-sw
+D: http://www.telit.com/module/infopool/download.php?id=522
+A: telit-audio
+D: http://www.telit.com/module/infopool/download.php?id=900
+A: ge864
+D: http://www.telit.com/module/infopool/download.php?id=550
 
 # WLAN Socket
 S: gta02_wlan_s
