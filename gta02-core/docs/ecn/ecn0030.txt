@@ -23,7 +23,7 @@ minutes of RTC during battery swaps.
 http://www.telit.com/module/infopool/download.php?id=620
 
 
-Remove GSM Power switch (U1705) and GSM_ON net.
+Replace GSM Power switch (U1705) with NTGD1100L, remove GSM_ON net.
 Route MODEM_ON and MODEM_RST to open-drain GPIO's on PMU
 Allow only for the internal antenna
 

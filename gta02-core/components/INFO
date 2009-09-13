@@ -151,6 +151,11 @@ S: ms2v-t1s
 A: pmu-xtal
 D: http://www.mcrystal.ch/CMSPages/GetFile.aspx?nodeguid=fdbd2648-e362-4783-9812-bde5df5df8c8
 
+# new GSM power switch
+S: ntgd1100l
+A: gsm-switch
+D: http://www.onsemi.com/pub_link/Collateral/NTGD1100L-D.PDF
+
 # PMU
 S: pcf50633-04-n3
 A: pmu
@@ -168,7 +173,7 @@ D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJ
 
 # GSM switch
 S: rt9702
-A: gsm-switch
+#A: gsm-switch
 D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcwMiUzRFJUOTcwMkElMkZEUzk3MDJBLTEy%0ALnBkZiUzRCUzRCUzRERTOTcwMkEtMTJD
 
 # USB Switch

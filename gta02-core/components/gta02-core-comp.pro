@@ -1,4 +1,4 @@
-update=Tue 08 Sep 2009 19:54:04 BST
+update=Sun 13 Sep 2009 22:57:58 BST
 version=1
 last_client=eeschema
 [pcbnew]
@@ -154,3 +154,4 @@ LibName46=./bf2520.lib
 LibName47=./antenna
 LibName48=./wm3236aq.lib
 LibName49=./gsm_antenna
+LibName50=ntgd1100l
