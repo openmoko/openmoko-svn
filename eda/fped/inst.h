@@ -14,6 +14,7 @@
 #ifndef INST_H
 #define INST_H
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "coord.h"
@@ -95,6 +96,7 @@ struct inst {
 		struct {
 			char *name;
 			struct coord other;
+			layer_type layers; /* bit-set of layers */
 		} pad;
 		struct {
 			unit_type r;

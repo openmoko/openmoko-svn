@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "coord.h"
 #include "meas.h"
+#include "layer.h"
 
 
 struct var {
@@ -137,14 +138,6 @@ enum obj_type {
 	ot_line,
 	ot_arc,
 	ot_meas,
-};
-
-enum pad_type {
-	pt_normal,	/* copper and solder mask */
-	pt_bare,	/* only copper (and finish) */
-	pt_paste,	/* only solder paste */
-	pt_mask,	/* only solder mask */
-	pt_n
 };
 
 struct frame_ref {

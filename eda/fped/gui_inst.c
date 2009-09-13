@@ -107,7 +107,7 @@ static void draw_arrow(GdkGC *gc, int fill,
 }
 
 
-static enum mode get_mode(struct inst *self)
+static enum mode get_mode(const struct inst *self)
 {
 	if (selected_inst == self)
 		return mode_selected;
@@ -257,23 +257,26 @@ static void gui_draw_pad_text(struct inst *self)
 }
 
 
+static GdkGC *pad_gc(const struct inst *inst)
+{
+	switch (layers_to_pad_type(inst->u.pad.layers)) {
+	case pt_bare:
+		return gc_pad_bare[get_mode(inst)];
+	case pt_mask:
+		return gc_pad_mask[get_mode(inst)];
+	default:
+		return gc_pad[get_mode(inst)];
+	}
+}
+
+
 void gui_draw_pad(struct inst *self)
 {
 	struct coord min = translate(self->base);
 	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
 
-	switch (self->obj->u.pad.type) {
-	case pt_bare:
-		gc = gc_pad_bare[get_mode(self)];
-		break;
-	case pt_mask:
-		gc = gc_pad_mask[get_mode(self)];
-		break;
-	default:
-		gc = gc_pad[get_mode(self)];
-		break;		
-	}
+	gc = pad_gc(self);
 	sort_coord(&min, &max);
 	gdk_draw_rectangle(DA, gc, TRUE,
 	    min.x, min.y, max.x-min.x, max.y-min.y);
@@ -289,17 +292,7 @@ void gui_draw_rpad(struct inst *self)
 	GdkGC *gc;
 	unit_type h, w, r;
 
-	switch (self->obj->u.pad.type) {
-	case pt_bare:
-		gc = gc_pad_bare[get_mode(self)];
-		break;
-	case pt_mask:
-		gc = gc_pad_mask[get_mode(self)];
-		break;
-	default:
-		gc = gc_pad[get_mode(self)];
-		break;		
-	}
+	gc = pad_gc(self);
 	sort_coord(&min, &max);
 	h = max.y-min.y;
 	w = max.x-min.x;

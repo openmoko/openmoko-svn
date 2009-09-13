@@ -20,44 +20,10 @@
 #include "kicad.h"
 
 
-enum kicad_layer {
-	layer_bottom,		/* "copper" */
-	layer_l15,
-	layer_l14,
-	layer_l13,
-	layer_l12,
-	layer_l11,
-	layer_l10,
-	layer_l9,
-	layer_l8,
-	layer_l7,
-	layer_l6,
-	layer_l5,
-	layer_l4,
-	layer_l3,
-	layer_l2,
-	layer_top,		/* "component" */
-	layer_glue_bottom,	/* adhesive, copper side */
-	layer_glue_top,		/* adhesive, component side */
-	layer_paste_bottom,	/* solder paste */
-	layer_paste_top,
-	layer_silk_bottom,	/* silk screen */
-	layer_silk_top,
-	layer_mask_bottom,	/* solder mask */
-	layer_mask_top,
-	layer_draw,		/* general drawing */
-	layer_comment,
-	layer_eco1,
-	layer_eco2,
-	layer_edge,		/* edge */
-};
-
-
 static void kicad_pad(FILE *file, const struct inst *inst)
 {
 	struct coord min, max;
 	unit_type tmp;
-	int layers;
 
 	min.x = units_to_kicad(inst->base.x);
 	min.y = units_to_kicad(inst->base.y);
@@ -87,24 +53,7 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 	/*
 	 * Attributes: pad type, N, layer mask
 	 */
-	layers = 0;
-	switch (inst->obj->u.pad.type) {
-	case pt_normal:
-		layers = 1 << layer_paste_top;
-		/* fall through */
-	case pt_bare:
-		layers |= (1 << layer_top) | (1 << layer_mask_top);
-		break;
-	case pt_paste:
-		layers = 1 << layer_paste_top;
-		break;
-	case pt_mask:
-		layers = 1 << layer_mask_top;
-		break;
-	default:
-		abort();
-	}
-	fprintf(file, "At SMD N %8.8X\n", layers);
+	fprintf(file, "At SMD N %8.8X\n", (unsigned) inst->u.pad.layers);
 
 	/*
 	 * Position: Xpos, Ypos

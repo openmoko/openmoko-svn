@@ -18,6 +18,7 @@
 #include "util.h"
 #include "coord.h"
 #include "expr.h"
+#include "layer.h"
 #include "obj.h"
 #include "delete.h"
 #include "gui_util.h"
@@ -802,6 +803,7 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 	inst->obj = obj;
 	inst->u.pad.name = stralloc(name);
 	inst->u.pad.other = b;
+	inst->u.pad.layers = pad_type_to_layers(obj->u.pad.type);
 	update_bbox(&inst->bbox, b);
 	propagate_bbox(inst);
 	return 1;
