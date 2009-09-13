@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Sun 13 Sep 2009 23:57:35 BST
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -662,7 +662,7 @@ WLAN_SS
 Text GLabel 11550 6900 0    60   Input ~ 0
 nACCEL_INT2
 Text GLabel 11550 6000 0    60   Input ~ 0
-PWR_IRQ
+nPWR_IRQ
 Text GLabel 11550 5400 0    60   Input ~ 0
 WLAN_GPIO1
 Text GLabel 11550 5250 0    60   Input ~ 0
