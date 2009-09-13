@@ -127,7 +127,7 @@ static int do_rect(const struct inst *next, const struct shape *other,
 		},
 		.max = {
 			.x = x+w,
-			.y = y+w,
+			.y = y+h,
 		},
 	};
 
@@ -160,9 +160,9 @@ static int test_overlap(const struct inst *a, const struct inst *b,
 		    do_circle(b, other, min.x+r, min.y+r, r);
 	} else {
 		r = h/2;
-		return do_circle(b, other, min.x+r, max.y+r, r) ||
+		return do_circle(b, other, min.x+r, min.y+r, r) ||
 		    do_rect(b, other, min.x+r, min.y, w-2*r, h) ||
-		    do_circle(b, other, min.x-r, min.y+r, r);
+		    do_circle(b, other, max.x-r, min.y+r, r);
 	}
 }
 

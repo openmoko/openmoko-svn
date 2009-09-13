@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "meas.h"
 #include "inst.h"
+#include "layer.h"
 #include "delete.h"
 #include "obj.h"
 
@@ -303,6 +304,8 @@ int instantiate(void)
 	instantiation_error = NULL;
 	reset_all_loops();
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
+	if (ok)
+		ok = refine_layers();
 	if (ok)
 		ok = instantiate_meas();
 	if (ok)

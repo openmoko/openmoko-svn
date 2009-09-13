@@ -477,8 +477,8 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
      const struct inst *inst, double zoom)
 {
 	switch (prio) {
-	case ip_pad:
-	case ip_pad_bare:
+	case ip_pad_copper:
+	case ip_pad_special:
 		if (inst->obj->u.pad.rounded)
 			ps_rpad(file, inst, active_params.show_pad_names);
 		else

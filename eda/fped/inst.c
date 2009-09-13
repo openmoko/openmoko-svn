@@ -799,7 +799,8 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 	struct inst *inst;
 
 	inst = add_inst(obj->u.pad.rounded ? &rpad_ops : &pad_ops,
-	    obj->u.pad.type == pt_bare ? ip_pad_bare : ip_pad, a);
+	    obj->u.pad.type == pt_normal || obj->u.pad.type == pt_bare ?
+	    ip_pad_copper : ip_pad_special, a);
 	inst->obj = obj;
 	inst->u.pad.name = stralloc(name);
 	inst->u.pad.other = b;
@@ -1105,7 +1106,8 @@ struct bbox inst_get_bbox(void)
 static void cleanup_inst(enum inst_prio prio, const struct inst *inst)
 {
 	switch (prio) {
-	case ip_pad:
+	case ip_pad_copper:
+	case ip_pad_special:
 		free(inst->u.pad.name);
 		break;
 	default:

@@ -62,15 +62,6 @@ enum pad_type {
 
 
 /*
- * Shorthands for the layers we use in a general sense.
- */
-
-#define	LAYER_COPPER	(1 << layer_top)
-#define	LAYER_PASTE	(1 << layer_paste_top)
-#define	LAYER_MASK	(1 << layer_mask_top)
-
-
-/*
  * pad_type_to_layers returns the initial set of layers. This set can then be
  * modified by overlaying other pads. For display purposes, we translate back
  * to the effective pad type with layers_to_pad_type.
@@ -81,5 +72,7 @@ enum pad_type {
 
 layer_type pad_type_to_layers(enum pad_type type);
 enum pad_type layers_to_pad_type(layer_type layers);
+
+int refine_layers(void);
 
 #endif /* !LAYER_H */

@@ -38,8 +38,8 @@ struct bbox {
 
 enum inst_prio {
 	ip_frame,	/* frames have their own selection */
-	ip_pad_bare,	/* pads also accept clicks inside */
-	ip_pad,		/* pads with solder mask on top of those without */
+	ip_pad_copper,	/* pads also accept clicks inside; pads with copper */
+	ip_pad_special,	/* pads with only solder paste or mask, on top */
 	ip_circ,	/* circles don't overlap easily */
 	ip_arc,		/* arc are like circles, just shorter */
 	ip_rect,	/* rectangles have plenty of sides */
@@ -132,7 +132,7 @@ extern struct bbox active_frame_bbox;
  * frame being instantiated - we need to export this one for meas.c, so that
  * measurement scan update the root frame's bounding box.
  */
-extern	struct inst *curr_frame;
+extern struct inst *curr_frame;
 
 /*
  * @@@ Note that we over-generalize a bit here: the only item that ever ends up

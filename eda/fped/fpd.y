@@ -128,6 +128,7 @@ static struct obj *new_obj(enum obj_type type)
 	obj->type = type;
 	obj->frame = curr_frame;
 	obj->next = NULL;
+	obj->lineno = lineno;
 	return obj;
 }
 

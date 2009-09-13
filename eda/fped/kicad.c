@@ -148,8 +148,8 @@ static void kicad_arc(FILE *file, const struct inst *inst)
 static void kicad_inst(FILE *file, enum inst_prio prio, const struct inst *inst)
 {
 	switch (prio) {
-	case ip_pad:
-	case ip_pad_bare:
+	case ip_pad_copper:
+	case ip_pad_special:
 		kicad_pad(file, inst);
 		break;
 	case ip_line:
