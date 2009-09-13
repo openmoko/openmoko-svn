@@ -17,8 +17,11 @@ Footprints tend to be highly repetitive, with many pads placed in a
 simple geometrical pattern. With fped, the user specifies the elements
 to repeat and the way they are repeated. Fped then generates the
 repetitions automatically.
+
+<H2>Hands-on example</H2>
 <P>
-Here is a simple example:
+Here is a simple example that illustrated the basic steps of constructing
+things with fled:
 <UL>
   <LI> Start fped without a command-line argument.
   <LI> Right-click on the yellow field that says "(root)" and select
@@ -63,6 +66,19 @@ value. We call the item that have been drawn "instances".
 The innermost vector and circle are highlighted. You can highlight other
 instances of the same objects by clicking on the numbers (1 2 3 4 5) shown
 next to the loop.
+
+<H2>Conceptual view</H2>
+The following picture illustrates the concept: the model is defined in
+terms of objects, in this case a vector from the origin to the circle's
+center, a vector for the radius, and the circle itself.
+<P>
+<IMG src="manual/concept-inst.png">
+<P>
+The vector to the center uses a variable that gets iterated through the
+values 0, 1, and 2. For each iteration, an instance is generated.
+<P>
+Only the instances of silk screen objects and pads are exported to KiCad.
+Elements used for construction, such as vectors, only appear in fped.
 
 
 <H1>Frames</H1>

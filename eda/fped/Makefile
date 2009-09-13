@@ -76,7 +76,8 @@ endif
 
 # ----- Rules -----------------------------------------------------------------
 
-.PHONY:		all dep depend clean install uninstall upload-manual update
+.PHONY:		all dep depend clean install uninstall manual upload-manual
+.PHONY:		update
 
 .SUFFIXES:	.fig .xpm
 
@@ -109,10 +110,14 @@ gui_tool.o gui.o: $(XPMS:%=icons/%)
 
 # ----- Upload the GUI manual -------------------------------------------------
 
-upload-manual:	$(XPMS:%=icons/%)
-		scp gui.html README $(UPLOAD)/
+manual:		$(XPMS:%=icons/%)
 		for n in $(XPMS:%.xpm=%); do \
 		    convert icons/$$n.xpm manual/$$n.png || exit 1; done
+		fig2dev -L png -S 4 manual/concept-inst.fig \
+		    >manual/concept-inst.png
+
+upload-manual:	manual
+		scp gui.html README $(UPLOAD)/
 		scp $(XPMS:%.xpm=manual/%.png) $(PNGS:%=manual/%) \
 		  $(UPLOAD)/manual/
 
