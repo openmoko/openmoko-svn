@@ -34,7 +34,7 @@ Number	Status	Description
 0032	Execute	Add EMI and ESD protection to headset jack
 0033	Execute	Replace coupling capacitors for input/output lines
 0034	Discuss	Route additional SPI/GPIO pins to debug connector
-0035	Execute Kill WLAN unused RF components
+0035	Done    Kill WLAN unused RF components
 0036    Execute Removal of decoupling capacitor C3020
 0037    Execute Route ROUT1/LOUT1 back to LINE1/LINE2 input
 0038    Discuss Loudspeaker EMI filter

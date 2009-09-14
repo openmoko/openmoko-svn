@@ -1,9 +1,9 @@
-EESchema Schematic File Version 2  date Tue 08 Sep 2009 20:17:30 BST
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Mon 14 Sep 2009 10:33:26 WEST
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
-Sheet 3 14
+Sheet 4 14
 Title ""
 Date ""
 Rev ""
@@ -13,6 +13,8 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Wire Notes Line
+	12250 4350 10750 4350
 Wire Notes Line
 	15100 3950 15100 4350
 Wire Notes Line
@@ -35,10 +37,6 @@ Wire Wire Line
 Wire Wire Line
 	10600 7500 10400 7500
 Wire Notes Line
-	11950 4350 12050 4350
-Wire Notes Line
-	11150 4350 10750 4350
-Wire Notes Line
 	10750 4350 10750 5650
 Wire Notes Line
 	10750 5650 10450 5650
@@ -49,12 +47,7 @@ Wire Wire Line
 Wire Wire Line
 	12800 5100 12800 4900
 Wire Wire Line
-	11900 4400 12300 4400
-Connection ~ 11200 4400
-Wire Wire Line
-	11400 4400 10800 4400
-Wire Wire Line
-	10800 4400 10800 5700
+	10800 5700 10800 4400
 Wire Wire Line
 	10800 5700 10400 5700
 Wire Wire Line
@@ -423,21 +416,8 @@ Wire Wire Line
 Wire Wire Line
 	6750 7300 7200 7300
 Wire Wire Line
-	11200 4400 11200 4650
-Wire Wire Line
-	11200 5050 11200 5250
-Wire Wire Line
-	12100 4400 12100 4650
-Wire Wire Line
-	12100 5050 12100 5250
-Wire Wire Line
 	12900 5100 12900 5250
 Connection ~ 12900 5100
-Connection ~ 12100 4400
-Wire Notes Line
-	11250 4350 11350 4350
-Wire Notes Line
-	12150 4350 12250 4350
 Wire Wire Line
 	9900 8750 9700 8750
 Wire Wire Line
@@ -463,6 +443,10 @@ Wire Wire Line
 	15150 3900 15150 4400
 Wire Wire Line
 	15150 4400 14900 4400
+Wire Wire Line
+	10800 4400 12300 4400
+Text Notes 10650 4250 0    50   ~ 0
+ecn0035: remove R8001,C8002 and C8003
 $Comp
 L GND #PWR?
 U 1 1 4A9A7C2F
@@ -508,8 +492,8 @@ F 1 "WLAN_3V3" H 6550 4150 50  0000 C CNN
 	1    6550 4000
 	1    0    0    -1  
 $EndComp
-Text Notes 10550 4200 0    50   ~ 0
-RF trace - characteristic impedance is 50ohm
+Text Notes 10900 4550 0    50   ~ 0
+RF trace - characteristic \nimpedance is 50ohm
 $Comp
 L WLAN_3V3 #PWR02
 U 1 1 4A991B94
@@ -539,60 +523,12 @@ F 1 "GND" H 12900 5180 30  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR04
-U 1 1 4A991AD0
-P 12100 5250
-F 0 "#PWR04" H 12100 5250 30  0001 C CNN
-F 1 "GND" H 12100 5180 30  0001 C CNN
-	1    12100 5250
-	1    0    0    -1  
-$EndComp
-$Comp
-L C C8002
-U 1 1 4A991ACF
-P 12100 4850
-F 0 "C8002" H 12150 4950 50  0000 L CNN
-F 1 "NC" H 12150 4750 50  0000 L CNN
-F 2 "0402" H 12100 4850 60  0001 C CNN
-	1    12100 4850
-	1    0    0    -1  
-$EndComp
-$Comp
-L GND #PWR05
-U 1 1 4A991A92
-P 11200 5250
-F 0 "#PWR05" H 11200 5250 30  0001 C CNN
-F 1 "GND" H 11200 5180 30  0001 C CNN
-	1    11200 5250
-	1    0    0    -1  
-$EndComp
-$Comp
 L BF2520-B2R4CAB U8002
 U 1 1 4A991A70
 P 12900 4400
 F 0 "U8002" H 12900 4750 60  0000 C CNN
 F 1 "BF2520-B2R4CAB" H 13500 4000 60  0000 C CNN
 	1    12900 4400
-	1    0    0    -1  
-$EndComp
-$Comp
-L R_US R8001
-U 1 1 4A991A53
-P 11650 4400
-F 0 "R8001" H 11650 4500 50  0000 C CNN
-F 1 "0R" H 11650 4300 50  0000 C CNN
-F 2 "0402" H 11650 4400 60  0001 C CNN
-	1    11650 4400
-	1    0    0    -1  
-$EndComp
-$Comp
-L C C8003
-U 1 1 4A991A4C
-P 11200 4850
-F 0 "C8003" H 11250 4950 50  0000 L CNN
-F 1 "NC" H 11250 4750 50  0000 L CNN
-F 2 "0402" H 11200 4850 60  0001 C CNN
-	1    11200 4850
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -893,7 +829,7 @@ U 1 1 4A990A43
 P 10150 4350
 F 0 "C8004" H 10200 4450 50  0000 L CNN
 F 1 "1U" H 10200 4250 50  0000 L CNN
-F 2 "0402" H 10150 4350 60  0001 C CNN
+F 2 "0603" H 10150 4350 60  0001 C CNN
 	1    10150 4350
 	1    0    0    -1  
 $EndComp
@@ -942,7 +878,7 @@ U 1 1 4A990927
 P 6900 4350
 F 0 "C8005" H 6950 4450 50  0000 L CNN
 F 1 "1U" H 6950 4250 50  0000 L CNN
-F 2 "0402" H 6900 4350 60  0001 C CNN
+F 2 "0603" H 6900 4350 60  0001 C CNN
 	1    6900 4350
 	1    0    0    -1  
 $EndComp
