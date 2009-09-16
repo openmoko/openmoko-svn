@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sun 13 Sep 2009 23:30:32 BST
+EESchema Schematic File Version 2  date Wed 16 Sep 2009 13:20:50 BST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -810,8 +810,8 @@ $Comp
 L NTGD1100L U1704
 U 1 1 4AAD6C5B
 P 9050 2350
-F 0 "U1704" H 9050 2400 60  0000 C CNN
-F 1 "NTGD1100L" H 9050 2250 60  0000 C CNN
+F 0 "U1704" H 8600 2900 60  0000 C CNN
+F 1 "NTGD1100L" H 8700 1800 60  0000 C CNN
 	1    9050 2350
 	1    0    0    -1  
 $EndComp
