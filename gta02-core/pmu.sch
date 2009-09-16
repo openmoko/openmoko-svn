@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed 16 Sep 2009 13:20:50 BST
+EESchema Schematic File Version 2  date Wed 16 Sep 2009 15:07:22 BST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,17 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L VBAT_GSM #PWR?
+U 1 1 4AB0F102
+P 11000 1300
+F 0 "#PWR?" H 11000 1200 50  0001 C CNN
+F 1 "VBAT_GSM" H 11000 1450 50  0000 C CNN
+	1    11000 1300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11000 1750 11000 1300
 Text Notes 14150 7600 0    50   ~ 0
 New 2v8 power net for GSM - ecn0030
 Wire Wire Line
@@ -29,8 +40,6 @@ Wire Wire Line
 	11000 2350 11000 2150
 Connection ~ 10600 2350
 Connection ~ 11000 1550
-Wire Wire Line
-	11000 1750 11000 1300
 Wire Wire Line
 	9900 1550 9900 2150
 Wire Wire Line
@@ -1313,15 +1322,6 @@ P 4600 1950
 F 0 "#PWR0149" H 4600 1950 30  0001 C CNN
 F 1 "GND" H 4600 1880 30  0001 C CNN
 	1    4600 1950
-	1    0    0    -1  
-$EndComp
-$Comp
-L VBAT #PWR0154
-U 1 1 4A3B50B1
-P 11000 1300
-F 0 "#PWR0154" H 11000 1200 50  0001 C CNN
-F 1 "VBAT" H 11000 1450 50  0000 C CNN
-	1    11000 1300
 	1    0    0    -1  
 $EndComp
 $Comp

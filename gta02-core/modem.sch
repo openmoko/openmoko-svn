@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Mon 14 Sep 2009 01:01:31 BST
+EESchema Schematic File Version 2  date Wed 16 Sep 2009 15:07:40 BST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -13,6 +13,15 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+$Comp
+L VBAT_GSM #PWR?
+U 1 1 4AB0F129
+P 5650 3200
+F 0 "#PWR?" H 5650 3100 50  0001 C CNN
+F 1 "VBAT_GSM" H 5650 3350 50  0000 C CNN
+	1    5650 3200
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
 	11550 6650 9350 6650
 Wire Wire Line
@@ -286,15 +295,6 @@ Wire Wire Line
 	9350 6550 9350 6650
 Text Notes 7200 7200 0    50   ~ 0
 R8102 - R8105 should be placed close to the CPU
-$Comp
-L VBAT #PWR?
-U 1 1 4AAD6ED5
-P 5650 3200
-F 0 "#PWR?" H 5650 3100 50  0001 C CNN
-F 1 "VBAT" H 5650 3350 50  0000 C CNN
-	1    5650 3200
-	1    0    0    -1  
-$EndComp
 Text Notes 2450 4950 0    50   ~ 0
 RF trace - characteristic impedance is 50ohm
 $Comp
