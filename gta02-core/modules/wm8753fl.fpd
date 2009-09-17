@@ -1,10 +1,18 @@
 /*WM8753FL, 48 Lead QFN*/
 
+frame solder_mask {
+
+	ur: vec @(D2/2-s-kicad_extend,E2/2-s-kicad_extend)
+	ll: vec @(-D2/2+s+kicad_extend,-E2/2+s+kicad_extend)
+	pad "GND" ur ll mask
+
+}
 frame pad_gnd {
 
 	ur: vec @(D2/2,E2/2)
 	ll: vec @(-D2/2,-E2/2)
 	pad "GND" ur ll bare
+	frame solder_mask @
 
 }
 
@@ -117,6 +125,11 @@ set l = 0.15mm
 
 /*array size for thermal land solder paste layer 4 = 4x4*/
 set paste_array = 4
+
+
+/*solder mask*/
+set s=0.1mm
+set kicad_extend=3mil
 
 set silk = 0.1mm
 

@@ -3,13 +3,21 @@
 Note: extended solder mask openings not yet defined. 
 However this is strongly recommended by ST.
 */
-
+frame solder_mask{
+	mask_ur: vec @(mask_dx1,mask_dy1)
+	mask_ll: vec @(mask_dx2,mask_dy2)
+	pad "" mask_ur mask_ll mask
+}
 frame pad_u {
 	set name = i
 	ur: vec @(w/2,0mm)
 	ll: vec @(-w/2,-l)
 	pad "$name" ur ll
-	
+	set mask_dx1=w/2+mask_x
+	set mask_dy1=mask_y2
+	set mask_dx2=-w/2-mask_x
+	set mask_dy2=-l-mask_y1
+	frame solder_mask @
 }
 
 frame pad_b {
@@ -17,12 +25,18 @@ frame pad_b {
 	ur: vec @(w/2,0mm)
 	ll: vec @(-w/2,l)
 	pad "$name" ur ll
+	set mask_dx1=w/2+mask_x
+	set mask_dy1=-mask_y2
+	set mask_dx2=-w/2-mask_x
+	set mask_dy2=l+mask_y1
+	frame solder_mask @
 	
 }
 frame pads_u {
 	loop i=1,6
 	pos: vec @(L1/2-(i-1)*p,D1/2-s1)
 	frame pad_u pos
+
 
 }
 frame pads_b {
@@ -32,15 +46,29 @@ frame pads_b {
 
 }
 
+frame pad_r {
+	ur: vec @(E1/2-s1,w/2)
+	ll: vec .(-l,-w)
+	pad "14" ur ll
+	set mask_dx1=E1/2-s1+mask_y2
+	set mask_dy1=w/2+mask_x
+	set mask_dx2=E1/2-s1-l-mask_y1
+	set mask_dy2=-w/2-mask_x
+	frame solder_mask @
+}
+frame pad_l{
+	ur: vec @(-E1/2+s1,-w/2)
+	ll: vec .(l,w)
+	pad "7" ur ll
+	set mask_dx1=-E1/2+s1-mask_y2
+	set mask_dy1=-w/2-mask_x
+	set mask_dx2=-E1/2+s1+l+mask_y1
+	set mask_dy2=w/2+mask_x
+	frame solder_mask @
+}
 frame pads_s {
-
-	ur14: vec @(E1/2-s1,w/2)
-	ll14: vec .(-l,-w)
-	pad "14" ur14 ll14
-	ur7: vec @(-E1/2+s1,-w/2)
-	ll7: vec .(l,w)
-	pad "7" ur7 ll7
-
+	frame pad_r @
+	frame pad_l @
 }
 frame outline{
 	ur: vec @(E1/2,D1/2)
@@ -92,6 +120,13 @@ set s1= s - (l-T1)/2
 
 /*silk screen width*/
 set silk=0.1mm
+
+/*solder mask specs*/
+
+set kicad_extend=3mil
+set mask_y1=0.05mm-kicad_extend
+set mask_y2=0.25mm-kicad_extend
+set mask_x=0.05mm-kicad_extend
 
 
 
