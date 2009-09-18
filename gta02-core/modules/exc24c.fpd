@@ -1,0 +1,65 @@
+/*EXC24CB102U*/
+
+frame pad {
+	ur: vec @(w/2, 0mm)
+	ll: vec .(-w, l)
+	pad "$name" ur .
+}
+
+frame pad_u {
+	set name = 5-i
+	set w = E
+	set l = -D
+	frame pad @
+}
+
+frame pad_b {
+	set name = i
+	set w = E
+	set l = D
+	frame pad @
+}
+
+frame pads {
+	loop i = 1, 2
+
+	pos0: vec @((E+F)*(i-1.5), D+C/2)
+	frame pad_u .
+	pos1: vec @((E+F)*(i-1.5), -D-C/2)
+	frame pad_b .
+}
+
+frame outline {
+	ur: vec @((B1+silk)/2, (A1+silk)/2)
+	ll: vec .(-(B1+silk), -(A1+silk))
+	rect ur . silk
+}
+
+package "EXC24C"
+unit mm
+
+
+set B = 1.1mm
+set C = 0.5mm
+set D = 0.6mm
+set E = 0.4mm
+set F = B-2*E
+set A = C+2*D
+
+/*outline*/
+set A1 = 1mm
+set B1 = 1.25mm
+set silk = 0.1mm
+
+out_ur: vec @(B1/2, A1/2)
+out_ll: vec .(-B1, -A1)
+
+frame pads @
+frame outline @
+
+measx "B1=" out_ur <- out_ll A1/2-C/2-D-1mm
+measy "A1="out_ur -> out_ll 1mm
+measx "E=" pad.ll -> pad.ur -D-0.5mm
+measx "F=" pad.ur -> pad.ll -0.5mm
+measy "C=" pad.ll >> pad.ll B1/2-E-F/2+0.5mm
+measy "D=" pads.pos0 << pad.ll F/2+B1/2+0.5mm
