@@ -1,4 +1,4 @@
-/*SC70-5, SN74AHC1G125DCKR, SN74AUP1G00DCK*/
+/*VSSOP8, SN74LVC2G126DCUR*/
 
 frame pad {
 	set name = i
@@ -10,16 +10,16 @@ frame pad {
 frame pads_b{
 	set a=w
 	set b=l
-	loop i=1,3
-	__0: vec @(-p+p*(i-1),-B1/2)
+	loop i=1,4
+	__0: vec @(-1.5*p+p*(i-1),-B1/2)
 	frame pad .
 
 }
 frame pads_u{
 	set a=w
 	set b=-l
-	loop i=4,5
-	__0: vec @(p-2*p*(i-4),B1/2)
+	loop i=5,8
+	__0: vec @(1.5*p-p*(i-5),B1/2)
 	frame pad .
 }
 frame pads {
@@ -33,30 +33,29 @@ frame outline {
 
 	ur: vec @(A/2,B/2)
 	ll: vec @(-A/2,-B/2)
-	c: vec @(-p,-B1/2+l+0.3mm)
+	c: vec @(-1.5*p,-B1/2+l+0.3mm)
 	d: vec .(0mm,silk)
 	rect ur ll silk
 	circ c d silk
-	
 
 }
-package "SC70-5"
+package "VSSOP8"
 
 /*pitch*/
-set p=0.65mm
+set p=0.5mm
 
 /*pad width*/
 set w=0.3mm
 
 /*pad lentgh*/
-set l=0.76mm
+set l=0.75mm
 
 /*distance between outer pad edges*/
-set B1=2.61mm
+set B1=3.5mm
 
 /*outline*/
-set A=2.15mm
-set B=1.4mm
+set A=2.10mm
+set B=2.4mm
 set silk=0.1mm
 
 frame pads @
@@ -65,7 +64,7 @@ frame outline @
 measy pads_b.__0 -> pads_u.__0 1mm
 measy pads_u.__0 <- pad.ll -w-0.5mm
 measx pads_b.__0 -> pads_b.__0 -0.5mm
-measx pad.ll -> pad.ur 0.3mm
+measx pad.ll -> pad.ur 0.5mm
 measy pad.ll -> pad.ll 0.5mm
 measx pads_u.__0 -> pads_u.__0 0.5mm
 

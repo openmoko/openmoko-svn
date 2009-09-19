@@ -65,3 +65,8 @@ D: http://www.hittite.com/content/documents/package_pcb_layout/sc70_package_info
 #D: http://focus.ti.com/lit/ml/mpds025f/mpds025f.pdf
 #different pcb land pattern
 #D: http://www.fairchildsemi.com/products/discrete/pdf/sc705_dim.pdf
+
+#VSSOP8 (SN74LVC2G126DCUR)
+F: vssop8
+D: http://www.nxp.com/acrobat_download/packages/footprint/SOT765-1_fp_reflow.pdf
+#D: http://focus.ti.com/lit/ml/mpds050d/mpds050d.pdf
