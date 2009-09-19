@@ -1,0 +1,85 @@
+/*TDFN34-16, AAT1275IRN-5.0-T1*/
+
+frame pad_center{
+	ur: vec @(A2/2,B2/2)
+	ll: vec @(-A2/2,-B2/2)
+	pad "" ur ll
+
+}
+frame pad {
+	set name = i
+	ur: vec @(a/2, 0mm)
+	ll: vec .(-a, b)
+	pad "$name" ur .
+}
+
+frame pads_b{
+	set a=w
+	set b=l
+	loop i=1,nr_b
+	__0: vec @(-(nr_b-1)/2*p+p*(i-1),-B1/2)
+	frame pad .
+
+}
+frame pads_u{
+	set a=w
+	set b=-l
+	loop i=nr_b+1,nr_b+nr_u
+	__0: vec @((nr_u-1)/2*p-p*(i-(nr_u+1)),B1/2)
+	frame pad .
+}
+frame pads {
+
+	frame pads_b @
+	frame pads_u @
+
+}
+
+frame outline {
+
+	ur: vec @(A/2,B/2)
+	ll: vec @(-A/2,-B/2)
+	c: vec @(-A/2,0mm)
+	p1: vec .(0mm,B/10)
+	p2: vec c(0mm,-B/10)	
+	rect ur ll silk
+	arc c p2 p1 silk
+
+}
+package "TDFN34-16"
+unit mm
+/*pitch*/
+set p=0.45mm
+
+/*pad width*/
+set w=0.25mm
+
+/*pad lentgh*/
+set l=0.61mm
+
+/*distance between outer pad edges*/
+set B1=3.51mm
+
+/*pin numbers per side*/
+set nr_u=8
+set nr_b=nr_u
+
+/*outline*/
+set A=4.05mm
+set B=3.05mm
+set silk=0.1mm
+
+/*center pad*/
+set A2=3.20mm
+set B2=1.6mm
+
+frame pads @
+frame outline @
+frame pad_center @
+
+measy pads_b.__0 -> pads_u.__0 1mm
+measy pads_u.__0 <- pad.ll -w-1mm
+measx pad.ll -> pad.ur -l-0.5mm
+measy pad.ll -> pad.ll 0.5mm
+measx pads_u.__0 -> pads_u.__0 0.5mm
+
