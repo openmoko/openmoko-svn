@@ -71,7 +71,7 @@ F: vssop8
 D: http://www.nxp.com/acrobat_download/packages/footprint/SOT765-1_fp_reflow.pdf
 #D: http://focus.ti.com/lit/ml/mpds050d/mpds050d.pdf
 
-#SOT23-5 (RT9711BPB)
+#SOT23-5 (RT9711BPB,RT9013-12PB)
 F:sot23-5
 D: http://eshop.engineering.uiowa.edu/NI/pdfs/07/02/PD070200.pdf
 #D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD
@@ -87,4 +87,9 @@ D: http://www.reichelt.de/?;ACTION=7;LA=6;OPEN=0;INDEX=0;FILENAME=C120%252FUSBBW
 #TSOP-6 (NTGD1100L)
 F: tsop-6
 D: http://www.onsemi.com/pub_link/Collateral/NTGD1100L-D.PDF
+
+#SC89-6 (SI1040X)
+F: sc89-6
+D: http://www.vishay.com/docs/72605/72605.pdf
+# D: http://www.vishay.com/docs/71612/71612.pdf
 
