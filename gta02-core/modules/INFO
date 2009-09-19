@@ -70,3 +70,8 @@ D: http://www.hittite.com/content/documents/package_pcb_layout/sc70_package_info
 F: vssop8
 D: http://www.nxp.com/acrobat_download/packages/footprint/SOT765-1_fp_reflow.pdf
 #D: http://focus.ti.com/lit/ml/mpds050d/mpds050d.pdf
+
+#SOT23-5 (RT9711BPB)
+F:sot23-5
+D: http://eshop.engineering.uiowa.edu/NI/pdfs/07/02/PD070200.pdf
+#D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJUOTcxMUElM0RSVDk3MTFCJTNEUlQ5NzExQyUz%0ARFJUOTcxMUQlMkZEUzk3MTFBQkNELTAxLnBkZiUzRCUzRCUzRERTOTcxMUFCQ0QtMDFD

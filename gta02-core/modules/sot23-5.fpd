@@ -1,0 +1,73 @@
+/*SOT23-5, RT9711BPB*/
+
+frame pad {
+	set name = i
+	ur: vec @(a/2, 0mm)
+	ll: vec .(-a, b)
+	pad "$name" ur .
+}
+
+frame pads_b{
+	set a=w
+	set b=l
+	loop i=1,3
+	__0: vec @(-p+p*(i-1),-B1/2)
+	frame pad .
+
+}
+frame pads_u{
+	set a=w
+	set b=-l
+	loop i=4,5
+	__0: vec @(p-2*p*(i-4),B1/2)
+	frame pad .
+}
+frame pads {
+
+	frame pads_b @
+	frame pads_u @
+
+}
+
+frame outline {
+
+	ur: vec @(A/2,B/2)
+	ll: vec @(-A/2,-B/2)
+	c: vec @(-p,-B1/2+l+0.2mm+2.5*silk)
+	d: vec .(0mm,2*silk)
+	rect ur ll silk
+	circ c d silk
+	
+
+}
+package "SOT23-5"
+unit mil
+
+/*pitch*/
+set p=37.5mil
+
+/*pad width*/
+set w=27mil
+
+/*pad lentgh*/
+set l=39mil
+
+/*distance between outer pad edges (vertical)*/
+set B1=141mil
+
+/*outline*/
+set A=122mil
+set B=71mil
+set silk=0.1mm
+
+frame pads @
+frame outline @
+
+measy pads_b.__0 -> pads_u.__0 1mm+w/2
+measy pads_u.__0 <- pad.ll -w-0.5mm
+measx pads_b.__0 -> pads_b.__0 -0.5mm
+measx pad.ll -> pad.ur l
+measy pad.ll -> pad.ll 0.5mm
+measx pads_u.__0 -> pads_u.__0 0.5mm
+
+
