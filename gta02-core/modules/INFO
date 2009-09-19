@@ -58,3 +58,10 @@ D: http://www.st.com/stonline/products/literature/tn/12707.pdf
 #DFBM-CS320
 F: dfbm-cs320
 D: http://www.china-jtty.com/pdf/lymz/DFBM-CS320-060301.pdf
+
+#SC70-5 (SN74AHC1G125DCKR, SN74AUP1G00DCK)
+F: sc70-5
+D: http://www.hittite.com/content/documents/package_pcb_layout/sc70_package_info.pdf
+#D: http://focus.ti.com/lit/ml/mpds025f/mpds025f.pdf
+#different pcb land pattern
+#D: http://www.fairchildsemi.com/products/discrete/pdf/sc705_dim.pdf
