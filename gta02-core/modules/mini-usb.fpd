@@ -1,0 +1,114 @@
+/*Mini USB Type B connector*/
+
+frame pad{
+	set name=i
+	ur: vec @(0mm,w/2)
+	ll: vec @(-l,-w/2)
+	pad "$name" ur ll
+}
+frame pad_gnd {
+	set name1=i
+	set name2=i+2
+	pos1_ur: vec @(gnd_x/2,gnd_y/2)
+	pos2_ur: vec .(0mm,-b_y)
+	pos1_ll: vec @(-gnd_x/2,-gnd_y/2)
+	pos2_ll: vec .(0mm,-b_y)
+	center: vec  @(0mm,-b_y)
+	pad "$name1" pos1_ur pos1_ll
+	pad "$name2" pos2_ur pos2_ll
+}
+
+frame pads {
+
+	loop i=1,5
+	pos: vec @(0mm,2*p-(i-1)*p)
+	frame pad .
+
+}
+
+frame pads_gnd{
+
+	loop i=6,7
+	pos: vec @(-gnd_x/2-a_x*(i-6),b_y/2)
+	frame pad_gnd .
+
+
+}
+frame holes {
+	c1: vec @(-f,c/2)
+	d1: vec .(0mm,d/2)
+	c2: vec @(-f,-c/2)
+	d2: vec .(0mm,d/2)
+	circ c1 d1 0.01mm
+	circ c2 d2 0.01mm
+
+}
+frame outline {
+	ur: vec @(-f+A1_x,B_y/2)
+	ll: vec @(-e,-B_y/2)
+	rect ur ll silk
+	ur2: vec @(-e,B_y/2)
+	ll2: vec @(-f-A2_x,-B_y/2)
+	rect ur2 ll2 silk
+
+}
+
+package "miniUSB_B"
+unit mm
+
+/*GND pad size*/
+set gnd_y = 2mm
+set gnd_x = 2.5mm
+
+/*pad size*/
+set w=0.5mm
+set l=2.3mm
+
+/*pitch*/
+set p = 0.8mm
+
+/*distance center GND pad -> center pin1 */
+set a=2.85mm
+
+/*distance GND pad -> GND pad*/
+set a_x=5.5mm
+set b_y=8.9mm
+
+/*distance between drill holes*/
+set c=4.4mm
+/*x distance drill hole -> outer edge pin 1*/
+set f=3.75mm
+
+/*drill hole diameter*/
+set d=0.9mm
+
+/*distance outer edge of pin1 -> PCB edge*/
+set e=9mm
+/*outline x direction, center holes -> edges*/
+set A1_x=3.3mm
+set A2_x=5.9mm
+/*outline y direction*/
+set B_y=7.7mm
+
+set silk=0.1mm
+
+__0: vec @(0mm, 0mm)
+frame pads @
+frame pads_gnd @
+frame holes @
+frame outline @
+
+
+measy pad.ll -> pad.ur -l-2mm
+measy pad_gnd.pos2_ll -> pad_gnd.pos2_ur 0.3mm
+measx pad_gnd.pos1_ll -> pad_gnd.pos1_ur -1mm
+measy __0 -> pads.pos -0.5mm
+measy pads.pos >> pads.pos -1.5mm
+measx pads_gnd.pos >> pads_gnd.pos 2mm
+measx outline.ur2 >> pad.ur 3.5mm
+measx outline.ll >> holes.c2 -3mm
+measy holes.c2 >> holes.c1 A2_x+1mm
+measy outline.ll2 >> outline.ur2 2mm
+measx pad.ll -> pads.pos -1mm
+measy pads_gnd.pos << pad_gnd.center -5mm
+
