@@ -84,4 +84,7 @@ D: http://www.analogictech.com/uploads/packaginginfo/TDFN34-16.pdf
 F: mini-usb
 D: http://www.reichelt.de/?;ACTION=7;LA=6;OPEN=0;INDEX=0;FILENAME=C120%252FUSBBWMSMD%2523ASS.pdf
 
+#TSOP-6 (NTGD1100L)
+F: tsop-6
+D: http://www.onsemi.com/pub_link/Collateral/NTGD1100L-D.PDF
 
