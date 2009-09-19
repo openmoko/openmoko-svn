@@ -65,7 +65,7 @@ frame outline @
 measy pads_b.__0 -> pads_u.__0 1mm
 measy pads_u.__0 <- pad.ll -w-0.5mm
 measx pads_b.__0 -> pads_b.__0 -0.5mm
-measx pad.ll -> pad.ur 0.3mm
+measx pad.ll -> pad.ur l
 measy pad.ll -> pad.ll 0.5mm
 measx pads_u.__0 -> pads_u.__0 0.5mm
 

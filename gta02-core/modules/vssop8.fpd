@@ -33,8 +33,8 @@ frame outline {
 
 	ur: vec @(A/2,B/2)
 	ll: vec @(-A/2,-B/2)
-	c: vec @(-1.5*p,-B1/2+l+0.3mm)
-	d: vec .(0mm,silk)
+	c: vec @(-1.5*p,-B1/2+l+0.2mm+2*silk)
+	d: vec .(0mm,1.5*silk)
 	rect ur ll silk
 	circ c d silk
 
@@ -64,7 +64,7 @@ frame outline @
 measy pads_b.__0 -> pads_u.__0 1mm
 measy pads_u.__0 <- pad.ll -w-0.5mm
 measx pads_b.__0 -> pads_b.__0 -0.5mm
-measx pad.ll -> pad.ur 0.5mm
+measx pad.ll -> pad.ur l
 measy pad.ll -> pad.ll 0.5mm
 measx pads_u.__0 -> pads_u.__0 0.5mm
 
