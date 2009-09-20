@@ -20,7 +20,7 @@ frame pads_u{
 	set a=w
 	set b=-l
 	loop i=nr_b+1,nr_b+nr_u
-	__0: vec @((nr_u-1)/2*p-p*(i-(nr_u+1)),B1/2)
+	__0: vec @((nr_u-1)/2*p-p*(i-(nr_b+1)),B1/2)
 	frame pad .
 }
 frame pads {
@@ -34,7 +34,7 @@ frame outline {
 
 	ur: vec @(A/2,B/2)
 	ll: vec @(-A/2,-B/2)
-	c: vec @(-(nr_u-1)/2*p,-B1/2+l+0.1mm+1*silk)
+	c: vec @(-(nr_b-1)/2*p,-B1/2+l+0.1mm+1*silk)
 	d: vec .(0mm,silk/2)
 	rect ur ll silk
 	circ c d silk

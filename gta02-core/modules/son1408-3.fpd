@@ -1,4 +1,4 @@
-/*TSOP-6, NTGD1100L*/
+/*SON1408-3, R3113D*/
 
 frame pad {
 	set name = i
@@ -34,42 +34,41 @@ frame outline {
 
 	ur: vec @(A/2,B/2)
 	ll: vec @(-A/2,-B/2)
-	c: vec @(-(nr_u-1)/2*p,-B1/2+l+0.2mm+2*silk)
-	d: vec .(0mm,1.5*silk)
+	c: vec @(-(nr_b-1)/2*p,-B1/2+l+0.1mm+1*silk)
+	d: vec .(0mm,silk/2)
 	rect ur ll silk
-	circ c d silk
+	/*circ c d silk*/
 
 }
-package "TSOP-6"
+package "SON1408-3"
 unit mm
 /*pitch*/
-set p=0.95mm
+set p=0.9mm
 
 /*pad width*/
-set w=0.7mm
+set w=0.26mm
 
 /*pad lentgh*/
-set l=1mm
+set l=0.45mm
 
 /*distance between outer pad edges*/
-set B1=3.4mm
+set B1=1.4mm
 
 /*pin numbers per side*/
-set nr_u=3
-set nr_b=nr_u
+set nr_u=1
+set nr_b=2
 
 /*outline*/
-set A=3.1mm
-set B=1.7mm
+set A=1.405mm
+set B=0.81mm
 set silk=0.1mm
 
 frame pads @
 frame outline @
 
-measy pads_b.__0 -> pads_u.__0 2mm
-measy pads_u.__0 <- pad.ll -w-1mm
-measx pad.ll -> pad.ur -l-0.5mm
+measy pads_b.__0 -> pads_u.__0 1mm
+measy pads_u.__0 <- pad.ll 1mm
+measx pad.ll -> pad.ur 0.25mm
 measy pad.ll -> pad.ll 0.5mm
-measx pads_u.__0 -> pads_u.__0 0.5mm
-measy pad.center -> pad.center 1.5mm
-
+measx pads_b.__0 -> pad.center -0.5mm
+measx pads_u.__0 >> pads_b.__0 -B1-0.5mm

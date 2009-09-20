@@ -93,3 +93,6 @@ F: sc89-6
 D: http://www.vishay.com/docs/72605/72605.pdf
 # D: http://www.vishay.com/docs/71612/71612.pdf
 
+#SON1408-3 (R3113D)
+F: son1408-3
+D: http://www.ricoh.com/LSI/product_power/pkg/son-1408-3.pdf
