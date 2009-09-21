@@ -30,9 +30,9 @@ Allow only for the internal antenna
 
 New and renamed nets:
  - MODEM_MON. Monitor modem status.  Connect to nXDREQ0/GPB10
- - MODEM_WAKE (renamed from INT0) - CPU wakes / sleeps modem
- - MODEM_INT  (renamed from IO1)  - modem wakes CPU
- - MODEM_SERVICE 
+ - MODEM_SLEEP - CPU nWakes modem.   Connect to VD0/GPC8
+ - MODEM_INT   - modem wakes CPU.    Connect to EINT1/GPF1
+ - MODEM_SERVICE                     Connect to VD1/GPC9
  - SIM_INSERT Short to ground when Sim is inserted.
 
 
