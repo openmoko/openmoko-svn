@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue 22 Sep 2009 00:59:56 BST
+EESchema Schematic File Version 2  date Tue 22 Sep 2009 01:49:25 BST
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -16,7 +16,7 @@ $EndDescr
 Text Notes 2300 1950 0    50   ~ 0
 new signals for Telit Modem - ecn0030
 Text GLabel 3950 9600 2    60   Output ~ 0
-DEBUG_MOSI
+DEBUG_SPIMOSI
 Text GLabel 3950 9450 2    60   Input ~ 0
 DEBUG_SPIMISO
 Text GLabel 3950 9300 2    60   Output ~ 0
