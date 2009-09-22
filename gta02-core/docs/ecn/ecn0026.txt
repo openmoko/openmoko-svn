@@ -25,11 +25,11 @@ To reduce ds EMF interference in gta02-core, we should:
 
  - reduce 75R series resistors R7503-R7508 to 33R
 
-
+http://wiki.openmoko.org/wiki/GPS_Problems
+http://wiki.openmoko.org/images/5/5b/SOP_for_GPS_capacitor_rework.pdf
 
 
 Author: Dave (openmoko@daveball.org.uk)
+Commit: 5657
 
 
-http://wiki.openmoko.org/wiki/GPS_Problems
-http://wiki.openmoko.org/images/5/5b/SOP_for_GPS_capacitor_rework.pdf

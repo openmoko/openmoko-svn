@@ -15,7 +15,7 @@ Changes:
  - move LCD_nRES from VD17/SPIMOSI1/GPD9 to LEND/GPC0
  - move WLAN_INT from EINT11/nSS1/GPG3 to EINT8/GPG0
  - route VD17/SPIMOSI1/GPD9, VD16/SPIMISO1/GPD8, VD9/SPICLK1/GPD1,
-   EINT11/nSS1/GPG3 and VD8/nSPICS1/GPD0 to pins 9-12 on the
+   EINT11/nSS1/GPG3 and VD8/nSPICS1/GPD0 to pins 8-12 on the
    debug connector
 
 LCD_nRES, WLAN_INT and HDQ have both been moved since gta02 to accomodate the
@@ -30,3 +30,4 @@ for the idea and details in this ecn.
 
 
 Author: Dave Ball <openmoko@daveball.org.uk>
+Commit: 5657
