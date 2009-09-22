@@ -1,29 +1,40 @@
 /*FH23-39S-0.3SHW, LCM connector*/
 
 frame pad {
-
 	ur: vec @(a/2, 0mm)
 	ll: vec .(-a, b)
 	center: vec @(0mm,b/2)
 	pad "$name" ur ll
 }
 
+frame solder_paste {
+	ur: vec @(a/2-0.025mm, 0.1mm*e*-1)
+	ll: vec .(-a+0.05mm, b+0.2mm*e)
+	center: vec @(0mm,b/2)
+	pad "" ur ll paste
+}
+
 frame pads_b{
 	set a=w
 	set b=l_b
+	set e=-1
 	loop i=1,nr_b
 	__0: vec @((nr_b-1)/2*p-p*(i-1),-C/2)
 	set name = (i*2)-1
 	frame pad .
+	frame solder_paste .
 
 }
 frame pads_u{
 	set a=w
 	set b=-l_u
+	set e=1
 	loop i=nr_b+1,nr_b+nr_u
 	__0: vec @((nr_u-1)/2*p-p*(i-(nr_b+1)),C/2)
 	set name = ((i-nr_b)*2)
 	frame pad .
+	frame solder_paste .
+
 }
 frame pads {
 
