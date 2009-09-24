@@ -45,7 +45,7 @@ fi
 
 
 for n in $MODS; do
-    fped -k $n.fpd -
+    fped -k $n.fpd - || { echo "$n" 1>&2; exit 1; }
 done |
 perl -e '
 while (<>) {
