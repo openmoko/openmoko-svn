@@ -1,0 +1,38 @@
+Remove backup battery (BAT1701)
+
+
+The backup battery is a problematic device: it's large, difficult to
+solder, and it's prone to aging. Replacing a defective backup battery
+is difficult at best.
+
+If we could avoid having a backup battery at all, this would improve
+the reliability of the entire system.
+
+Furthermore, a working backup battery prevents the PMU from entering
+NoPower state, so some of the PMU settings may or may not be preserved
+when main battery and USB power are removed. We can neither assume that
+settings different from NoPower defaults have been preserved, nor can
+we assume that they have. This complicates the overall power on
+behaviour and may introduce subtle problems.
+
+From a software point of view, having a single well-defined power on
+state would therefore be beneficial.
+
+We depend on the backup battery for powering the RTC clock in the PMU.
+This clock is also supplied if the PMU is in Standby mode, running from
+USB or main battery. We therefore only need the backup battery if there
+is no USB power and main battery has either cut itself off or is absent.
+
+Software could preserve time by synchronizing the modem's RTC with the
+system time, and setting the PMU's RTC from that source if starting from
+NoPower.
+
+Furthermore, time information can be obtained via GPS, sometimes GSM,
+and - if Internet connectivity is available - also via NTP.
+
+According to the formula given in Telit's RTC Application Note (can't
+find it anymore ?!?), a 100 uF capacitor would supply the modem's RTC
+for one minute, which should be sufficient for battery removal.
+
+
+Author: Werner Almesberger <werner@openmoko.org>

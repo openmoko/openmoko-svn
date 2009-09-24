@@ -39,6 +39,8 @@ Number	Status	Description
 0037    Execute Route ROUT1/LOUT1 back to LINE1/LINE2 input
 0038    Discuss Loudspeaker EMI filter
 0039	Discuss	Insert 0R resistors into SPI signals
+0040	Discuss	Remove backup battery (BAT1701)
+
 
 Open ECNs
 ---------
@@ -63,3 +65,4 @@ Open ECNs
 0037    AUDIO
 0038    AUDIO
 0039	CPU, LCM
+0040	PMU, MODEM
