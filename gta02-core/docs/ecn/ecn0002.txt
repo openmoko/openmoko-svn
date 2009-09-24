@@ -5,6 +5,8 @@ Remove U2502
 
 Remove signals GCS0, GCS3, nNOR_WP, nFLASH_CE, nOE 
 
+Note that the connection from IO_1V8 via R2504 to FLASH_1V8 (sheet 25xx 
+f the Openmoko GTA02 schematics) remains for the NAND in the CPU.
+
 To do:
-- chips to remove
 - software impact of not having NOR on Qi and kernel
