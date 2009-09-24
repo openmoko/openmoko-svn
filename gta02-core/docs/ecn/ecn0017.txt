@@ -1,7 +1,17 @@
 Move Bluetooth module (U2) to main PCB
 
 
-To do:
-- explain FPC issues
-- good old times of GTA01Bv2:
-  http://people.openmoko.org/werner/retro/gta01-bt.jpg
+In all GTA01 devices since GTA01Bv3 and all GTA02 devices, the Bluetooth
+module resided on an FPC mounted on the main shield. This complicates
+assembly and introduces production risk. Furthermore, the Bluetooth FPCs
+had at least at some point in time a low yield, further complicating
+production.
+
+With the removal of the second acceleration sensor and the ability to
+relocate (remove ?) the backup battery, we now have room for placing the
+Bluetooth circuit on the main PCB, like it was done in GTA01Bv2.
+
+http://people.openmoko.org/werner/retro/gta01-bt.jpg
+
+
+Author: Werner Almesberger <werner@openmoko.org>
