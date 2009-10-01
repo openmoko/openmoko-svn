@@ -40,6 +40,7 @@ Number	Status	Description
 0038    Discuss Loudspeaker EMI filter
 0039	Discuss	Insert 0R resistors into SPI signals
 0040	Discuss	Remove backup battery (BAT1701)
+0041	Discuss	Test points and 0R resistors for camera interface
 
 
 Open ECNs
@@ -66,3 +67,4 @@ Open ECNs
 0038    AUDIO
 0039	CPU, LCM
 0040	PMU, MODEM
+0041	CPU

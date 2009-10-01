@@ -1,0 +1,41 @@
+Test points and 0R resistors for camera interface
+
+
+We should allow for experimentation with the camera interface. The
+24xx/64xx camera interface would be the obvious choice of interface to
+connect a camera to, but a few details need verification:
+
+The SC32442B manual specifies a short VSYNC pulse (high) between lines. 
+Several camera modules instead keep VSYNC high during lines. It is not clear
+from the manual if simply inverting VSYNC polarity is enough to make it
+work.
+
+The SC32442B manual isn't quite clear on how to receive e.g. JPEG compressed
+data as offered by some cameras. E.g. will we need a separate VSYNC
+interrupt pin to deal with variable frame data lengths?
+
+The change is to route unused pins to test points and insert 0R into the
+rest. Current status:
+
+CAMDATA0/GPJ0	Insert 0R (BT_PIO5).
+CAMDATA1/GPJ1	Add test point.
+...
+CAMDATA6/GPJ6	Add test point.
+CAMDATA7/GPJ7	Insert 0R (WLAN_GPIO0).
+CAMPCLK/GPJ8	Add test point.
+CAMVSYNC/GPJ9	Add test point.
+CAMHREF/GPJ10	Insert 0R (WLAN_DATA2).
+CAMCLKOUT/GPJ11	Has 0R and test point (CHIP_PWD).
+CAMRESET/GPJ12	Insert 0R (WLAN_nRESET).
+
+CAMRESET is not really a special function, any GPIO could be used for the
+camera reset signal.
+
+Would it be better to route the camera signals to the debug connector to save
+PCB space and reduce the need to solder wires to the main PCB?
+
+Impact: Little if any. The signals currently routed to the camera port are
+less than 1 Hz or not used at all.
+
+
+Author: Rask Ingemann Lambertsen <ccc94453@vip.cybercity.dk>
