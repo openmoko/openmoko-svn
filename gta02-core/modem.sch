@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed 16 Sep 2009 15:07:40 BST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Sat 03 Oct 2009 03:11:40 PM CDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -725,6 +725,7 @@ U 1 1 4A993F8F
 P 5850 6850
 F 0 "U8101" H 5850 6750 60  0000 C CNN
 F 1 "GE865" H 5850 6950 60  0000 C CNN
+F 2 "GE865" H 5790 6690 60  0001 C CNN
 	1    5850 6850
 	1    0    0    -1  
 $EndComp

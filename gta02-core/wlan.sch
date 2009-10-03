@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Mon 14 Sep 2009 10:33:26 WEST
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Sat 03 Oct 2009 03:10:44 PM CDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -888,6 +888,7 @@ U 1 1 4A990873
 P 8800 6550
 F 0 "U8001" H 8800 6700 60  0000 C CNN
 F 1 "WM3236AQ" H 8800 6400 60  0000 C CNN
+F 2 "WM3236AQ" H 8740 6760 60  0001 C CNN
 	1    8800 6550
 	1    0    0    -1  
 $EndComp
