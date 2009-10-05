@@ -8,8 +8,15 @@ Remove signals GCS0, GCS3, nNOR_WP, nFLASH_CE, nOE
 Note that the connection from IO_1V8 via R2504 to FLASH_1V8 (sheet 25xx 
 of the Openmoko GTA02 schematics) remains for the NAND in the CPU.
 
-To do:
-- software impact of not having NOR on Qi and kernel
+Software impact: Qi must pass an "mtdparts=" parameter without the
+"physmap-flash" entry and the kernel must not register a NOR device
+(arch/arm/mach-s3c2442/mach-gta02.c:gta02_devices).
+
+On the Linux side, the absence of NOR means that the MTD device numbers
+change. However, if we assume a legacy-free configuration (i.e., no
+u-boot), the partition layout changes anyway, and only a single Qi
+partition is needed for now. (Later, "factory" data may be stored as
+well.)
 
 
 Author: Werner Almesberger <werner@openmoko.org>
