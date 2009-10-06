@@ -1,5 +1,6 @@
 Consider applying buzz fix
 
+
 RF feeds into the microphone line of the headset jack JK4401. This RF causes
 ripples on the microphone bias line of the codec which leads to a poor audio
 quality of the microphone.
@@ -18,3 +19,4 @@ the beads fails and we still get ripple on the mic bias line.
 
 
 Author: Rene Harder <rehar@saweb.de>
+Review: Werner Almesberger <werner@openmoko.org>, SVN5674
