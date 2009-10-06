@@ -1,0 +1,13 @@
+Reduce number of varistors on USB_VBUS (C4902, C4909)
+
+
+C4902 and C4909 are identical TVSs protecting USB_VBUS. We don't really
+need two varistors here. Also, we generally consider TSVs to be diodes,
+so we should call them Dxxxx, not Cxxxx.
+
+Changes:
+- remove C4909
+- rename C4902 to D4909
+
+
+Author: Werner Almesberger <werner@openmoko.org>
