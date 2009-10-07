@@ -6,9 +6,9 @@ a separate power amplifier. Therefore the output section of the audio subsystem
 gets heavily reconstructed.
 
 Removing the external amplifier (U4101) as well as the amplifier specific
-components R4114, R4112, R4109, R4108, R4110, R4113, C4117, C4111, C4110, C4110
-and C4115. Also there is no need for the AMP_SHUTDOWN and HP_IN signals anymore,
-the external speaker and headphone can be fully controlled by the corresponding
+components R4115, R4114, R4112, R4109, R4108, R4110, R4113, C4117,and C4115. 
+Also there is no need for the AMP_SHUTDOWN and HP_IN signals anymore,the 
+external speaker and headphone can be fully controlled by the corresponding
 register settings of the codec. (see [1])
 
 The GTA02 earpiece will be connected between OUT3 and LOUT1 of the codec, there
@@ -17,8 +17,7 @@ will be no change of the filter and bypass capacitors.
 The external speaker will be connected directly between ROUT2 and LOUT2.
 Filter, capacitors, and varistors will not be changed or replaced.
 
-The external headphone will be connected between ROUT1 and LOUT2, the common
-mode choke B4102 will be inserted in the stereo path of the headphone.
+The external headphone will be connected between ROUT1 and LOUT1.
 The common mode choke B4102 will be removed with ECN0032.
 
 
