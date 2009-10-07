@@ -27,3 +27,4 @@ The common mode choke B4102 will be removed with ECN0032.
 
 Author: Rene Harder <rehar@saweb.de>
 Commit: SVN 5118
+Review: Werner Almesberger <werner@openmoko.org>, SVN5675
