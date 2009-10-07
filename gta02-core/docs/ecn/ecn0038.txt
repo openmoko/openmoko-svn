@@ -5,13 +5,13 @@ To protect the codec from incoming interferences it would be more efficient to
 place the filter caps C4119-C4122 and C4128 on the codec side of the common 
 mode coke. So they act in combination with B4105 as a lowpass filter who 
 removes incoming RF on the audio lines. I also would combine R4119/20 and 
-R4121/22 (39pF+18pF) to one 47pF capacitor (like the EMI filter in the earpiece
-path) so we can remove at least one unique component from the BOM.
+R4121/22 (39 pF+18 pF) to one 56 pF capacitor (like the EMI filter in the
+earpiece path) so we can remove at least one unique component from the BOM.
 
 To do:
-I do not see any particular reason why C4128 is 10pF it's there since GTA01.
-This needs to be clarified because this value is rarely used (vibrator) in GTA02
-schematics and might be worth replacing it.
+I do not see any particular reason why C4128 is 10 pF it's there since GTA01.
+This needs to be clarified because this value is rarely used (vibrator) in
+GTA02 schematics and might be worth replacing it.
 
 
 Author: Rene Harder <rehar@saweb.de> 
