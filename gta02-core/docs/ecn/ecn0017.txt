@@ -15,3 +15,4 @@ http://people.openmoko.org/werner/retro/gta01-bt.jpg
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Review: Werner Almesberger <werner@openmoko.org>, SVN5677
