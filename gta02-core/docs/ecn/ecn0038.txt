@@ -5,8 +5,9 @@ To protect the codec from incoming interferences it would be more efficient to
 place the filter caps C4119-C4122 and C4128 on the codec side of the common 
 mode coke. So they act in combination with B4105 as a lowpass filter who 
 removes incoming RF on the audio lines. I also would combine R4119/20 and 
-R4121/22 (39 pF+18 pF) to one 56 pF capacitor (like the EMI filter in the
+R4121/22 (39 pF+18 pF) to one 47 pF capacitor (like the EMI filter in the
 earpiece path) so we can remove at least one unique component from the BOM.
+(56 pF would be closer to 39+18 pF, but 47 pF should be good enough.)
 
 To do:
 I do not see any particular reason why C4128 is 10 pF it's there since GTA01.
