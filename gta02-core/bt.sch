@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sat 03 Oct 2009 01:35:18 PM CDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed Oct  7 04:58:02 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -360,7 +360,7 @@ L C C7701
 U 1 1 4A42A222
 P 6750 4000
 F 0 "C7701" H 6800 4100 50  0000 L CNN
-F 1 "8.2p" H 6800 3900 50  0000 L CNN
+F 1 "8p2" H 6800 3900 50  0000 L CNN
 F 2 "0402" H 6850 4150 60  0001 C CNN
 	1    6750 4000
 	1    0    0    -1  
@@ -388,7 +388,7 @@ L C C3
 U 1 1 4A42A061
 P 7100 4000
 F 0 "C3" H 7150 4100 50  0000 L CNN
-F 1 "2.2u" H 7150 3900 50  0000 L CNN
+F 1 "2u2" H 7150 3900 50  0000 L CNN
 F 2 "0603" H 7200 4150 60  0001 C CNN
 	1    7100 4000
 	1    0    0    -1  

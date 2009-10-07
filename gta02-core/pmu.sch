@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sat 03 Oct 2009 01:05:00 PM CDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed Oct  7 05:01:32 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -792,7 +792,7 @@ L R_US R1754
 U 1 1 4AAD6D8E
 P 7900 3000
 F 0 "R1754" V 7850 3200 50  0000 C CNN
-F 1 "100K" V 7950 3150 50  0000 C CNN
+F 1 "100k" V 7950 3150 50  0000 C CNN
 F 2 "0402" H 7900 3000 60  0001 C CNN
 	1    7900 3000
 	0    1    1    0   

@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sat 03 Oct 2009 03:11:40 PM CDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Wed Oct  7 05:01:14 2009
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -386,7 +386,7 @@ L R_US R8103
 U 1 1 4A9985FD
 P 7450 6350
 F 0 "R8103" H 7700 6300 50  0000 C CNN
-F 1 "1K" H 7200 6300 50  0000 C CNN
+F 1 "1k" H 7200 6300 50  0000 C CNN
 	1    7450 6350
 	1    0    0    -1  
 $EndComp
@@ -395,7 +395,7 @@ L R_US R8104
 U 1 1 4A9985F9
 P 7450 6650
 F 0 "R8104" H 7700 6600 50  0000 C CNN
-F 1 "1K" H 7200 6600 50  0000 C CNN
+F 1 "1k" H 7200 6600 50  0000 C CNN
 	1    7450 6650
 	1    0    0    -1  
 $EndComp
@@ -404,7 +404,7 @@ L R_US R8105
 U 1 1 4A9985B9
 P 7450 6950
 F 0 "R8105" H 7700 6900 50  0000 C CNN
-F 1 "1K" H 7200 6900 50  0000 C CNN
+F 1 "1k" H 7200 6900 50  0000 C CNN
 	1    7450 6950
 	1    0    0    -1  
 $EndComp
@@ -413,7 +413,7 @@ L R_US R8102
 U 1 1 4A998616
 P 7450 5950
 F 0 "R8102" H 7700 5900 50  0000 C CNN
-F 1 "1K" H 7200 5900 50  0000 C CNN
+F 1 "1k" H 7200 5900 50  0000 C CNN
 	1    7450 5950
 	1    0    0    -1  
 $EndComp
