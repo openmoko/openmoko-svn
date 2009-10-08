@@ -8,7 +8,7 @@ phone.
 
 
 We need to connect the codec side of the coupling capacitors C4110 and C4411 
-trough a 1k series resistor (R3030/R3031) to the line input (LINE1 and LINE2)
+through a 1k series resistor (R3030/R3031) to the line input (LINE1 and LINE2)
 of the codec. To be within the standard of line compatible audio inputs we need
 to increase the input impedance to 10k Ohm for a low impedance input. Therefore
 we have to change R4416 and R4417 to at least 10k. 
@@ -20,6 +20,7 @@ is formed out of the codec's internal 100k Ohm pull-up the 10k Ohm series
 resistance R4402 and the pulldown resistor R4116. If we increase R4416 to 47k 
 Ohm the low level voltage would be around 1.2V, the codec maximum low level is
 at 0.8V so we would not be able to generate an interrupt during jack insert.
+With R4416 = 10k, the low level voltage is 0.55 V.
 
 Comments:
 To use this feature you would still need a special (probably self made) adapter
@@ -29,3 +30,4 @@ cable, because a 2.5mm audio jack is very uncommon for any audio equipment.
 
 Author: Rene Harder <rehar@saweb.de>
 Commit: SVN 5607
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5685
