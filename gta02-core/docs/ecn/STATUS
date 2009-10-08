@@ -30,9 +30,9 @@ Number	Status	Description
 0028	Cancel	Remove USB "charge path" power switch U4905
 0029	Done	Move 0R resistors next to PMU after caps
 0030	Execute	Replace Calypso with Telit GE865
-0031	Execute	Use codec to detect jack insertion and HOLD button
+0031	Done	Use codec to detect jack insertion and HOLD button
 0032	Execute	Add EMI and ESD protection to headset jack
-0033	Execute	Replace coupling capacitors for input/output lines
+0033	Done	Replace coupling capacitors for input/output lines
 0034	Execute	Route additional SPI/GPIO pins to debug connector
 0035	Done    Kill WLAN unused RF components
 0036    Execute Removal of decoupling capacitor C3020
@@ -55,9 +55,7 @@ Open ECNs
 0026	SD-SIM
 0027	General
 0030	MODEM
-0031	AUDIO
 0032    AUDIO
-0033    AUDIO
 0034	IO
 0036    AUDIO
 0037    AUDIO
