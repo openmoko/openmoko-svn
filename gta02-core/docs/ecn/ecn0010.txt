@@ -6,10 +6,11 @@ a separate power amplifier. Therefore the output section of the audio subsystem
 gets heavily reconstructed.
 
 Removing the external amplifier (U4101) as well as the amplifier specific
-components R4115, R4114, R4112, R4109, R4108, R4110, R4113, C4117,and C4115. 
-Also there is no need for the AMP_SHUTDOWN and HP_IN signals anymore,the 
-external speaker and headphone can be fully controlled by the corresponding
-register settings of the codec. (see [1])
+components R4114 (pull-up HP_IN), R4112, R4115 (feedback), R4109 (pull-up 
+AMP_SHUT), R4108 (power supply IO_3V3), R4110, R4113 (input), C4117 (bypass),
+C4114 and C4115 (input decoupling). Also there is no need for the AMP_SHUTDOWN
+and HP_IN signals any more,the external speaker and headphone can be fully 
+controlled by the corresponding register settings of the codec. (see [1])
 
 The GTA02 earpiece will be connected between OUT3 and LOUT1 of the codec, there
 will be no change of the filter and bypass capacitors.
@@ -19,6 +20,10 @@ Filter, capacitors, and varistors will not be changed or replaced.
 
 The external headphone will be connected between ROUT1 and LOUT1.
 The common mode choke B4102 will be removed with ECN0032.
+
+R4404 (MIC_BIAS pull down, NC) does not seem to have any special purpose, 
+therefore it can be removed to free more space in the already crowded area of 
+the hs jack.
 
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
