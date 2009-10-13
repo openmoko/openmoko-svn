@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Wed 07 Oct 2009 13:30:01 CDT
-LIBS:power,device,conn,gta02-core,gta02-core-cache
+EESchema Schematic File Version 2  date Mon 12 Oct 2009 11:40:06 PM CDT
+LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -143,15 +143,6 @@ Wire Wire Line
 Connection ~ 9350 3950
 Wire Wire Line
 	9350 3950 9350 3650
-Connection ~ 9400 8150
-Wire Wire Line
-	9400 8150 9400 7950
-Wire Wire Line
-	9750 7450 9750 7250
-Wire Wire Line
-	9750 7250 9400 7250
-Wire Wire Line
-	9400 7250 9400 7450
 Wire Wire Line
 	9600 5200 9400 5200
 Wire Wire Line
@@ -1470,25 +1461,6 @@ F 1 "2k2" V 10100 7850 50  0000 C CNN
 F 2 "0402" H 10100 7900 60  0001 C CNN
 	1    10050 7700
 	0    1    1    0   
-$EndComp
-$Comp
-L GND #PWR0213
-U 1 1 4A413C2B
-P 9750 7450
-F 0 "#PWR0213" H 9750 7450 30  0001 C CNN
-F 1 "GND" H 9750 7380 30  0001 C CNN
-	1    9750 7450
-	1    0    0    -1  
-$EndComp
-$Comp
-L R_US R4404
-U 1 1 4A413B2E
-P 9400 7700
-F 0 "R4404" V 9350 7500 50  0000 C CNN
-F 1 "NC" V 9450 7570 50  0000 C CNN
-F 2 "0402" H 9350 7850 60  0001 C CNN
-	1    9400 7700
-	0    -1   1    0   
 $EndComp
 $Comp
 L R_US R4401
