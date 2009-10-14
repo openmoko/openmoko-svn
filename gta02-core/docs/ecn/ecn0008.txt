@@ -4,11 +4,18 @@ Remove external GPS antenna connector and circuit (CON7602)
 Changes to implement in order to remove the external GPS antenna:
 
 - Remove U7606 and C7620
-- Merge C7601 and C7630 into a single capacitor, or remove them completely
+- Merge C7601 and C7630 into a single capacitor.
+
+  Following the reference designs from Atmel and u-blox which put a
+  value between 8.6 pF and 47 pF, with the remark that exact values
+  depend on the layout, we use 22 pF.
+
 - Remove U7605, R7620, C7623, R7613, R7614, C7629, C7628 (external
   antenna power sense)
 - Remove R7615, Q7602 and R7617. Connect R7610 to LNA_AVDD.
-
+- Remove R7617 and C7623 (pull-down and buffer for VCONT)
+- Remove CON7602, C7631, and L7609 (external antenna connection)
 
 
 Author: Alvaro Lopes <alvieboy@alvie.com>
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5689
