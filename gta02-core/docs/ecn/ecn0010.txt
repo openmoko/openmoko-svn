@@ -25,11 +25,28 @@ R4404 (MIC_BIAS pull down, NC) does not seem to have any special purpose,
 therefore it can be removed to free more space in the already crowded area of 
 the hs jack.
 
+Since HPVDD and SPKRVDD may draw about 150 mA in normal operation,
+CODEC_3V3 needs to be supplied from a more powerful source than LDO2
+(limited to 50 mA). We can use LDO4 (capable of supplying 150 mA) if
+we move BT_3V2 to LDO2. The Bluetooth modules draws only up to 35 mA,
+so the 50 mA of LDO2 are sufficient.
+
+Testing [2] showed that shorting LDO4 will cause it to limit the current
+to about 500 mA, which is still low enough to prevent immediate problems
+for the rest of the system.
+
+Open issue: do we continue feeding LDOs 3 and 4 from Vsys or do we move
+them to IO_3V3 for better efficiency ? (In the latter case, AVDD etc al.
+would have to operate at 3.05 V or less, due to the 250 mV voltage drop
+of the LDO.) [3]
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
+[2] http://lists.openmoko.org/pipermail/gta02-core/2009-October/000744.html
+[3] http://lists.openmoko.org/pipermail/gta02-core/2009-October/000746.html
 
 
 Author: Rene Harder <rehar@saweb.de>
 Commit: SVN 5118
 Review: Werner Almesberger <werner@openmoko.org>, SVN5675
 Commit: SVN 5689, removed R4404
+Commit: SVN 5692, reopened and added power supply
