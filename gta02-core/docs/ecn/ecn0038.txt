@@ -14,5 +14,5 @@ This value is rarely used (vibrator) in GTA02 and a 47 pF capacitor will do
 the job just as good. So C4128 will be replaced by 47 pF.
 
 
-
 Author: Rene Harder <rehar@saweb.de> 
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5690
