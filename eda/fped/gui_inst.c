@@ -257,12 +257,14 @@ static void gui_draw_pad_text(struct inst *self)
 }
 
 
-static GdkGC *pad_gc(const struct inst *inst)
+static GdkGC *pad_gc(const struct inst *inst, int *fill)
 {
+	*fill = TRUE;
 	switch (layers_to_pad_type(inst->u.pad.layers)) {
 	case pt_bare:
 		return gc_pad_bare[get_mode(inst)];
 	case pt_mask:
+		*fill = FALSE;
 		return gc_pad_mask[get_mode(inst)];
 	default:
 		return gc_pad[get_mode(inst)];
@@ -275,10 +277,11 @@ void gui_draw_pad(struct inst *self)
 	struct coord min = translate(self->base);
 	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
+	int fill;
 
-	gc = pad_gc(self);
+	gc = pad_gc(self, &fill);
 	sort_coord(&min, &max);
-	gdk_draw_rectangle(DA, gc, TRUE,
+	gdk_draw_rectangle(DA, gc, fill,
 	    min.x, min.y, max.x-min.x, max.y-min.y);
 
 	gui_draw_pad_text(self);
@@ -290,22 +293,23 @@ void gui_draw_rpad(struct inst *self)
 	struct coord min = translate(self->base);
 	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
+	int fill;
 	unit_type h, w, r;
 
-	gc = pad_gc(self);
+	gc = pad_gc(self, &fill);
 	sort_coord(&min, &max);
 	h = max.y-min.y;
 	w = max.x-min.x;
 	if (h > w) {
 		r = w/2;
-		draw_arc(DA, gc, TRUE, min.x+r, max.y-r, r, 180, 0);
-		gdk_draw_rectangle(DA, gc, TRUE, min.x, min.y+r, w, h-2*r);
-		draw_arc(DA, gc, TRUE, min.x+r, min.y+r, r, 0, 180);
+		draw_arc(DA, gc, fill, min.x+r, max.y-r, r, 180, 0);
+		gdk_draw_rectangle(DA, gc, fill, min.x, min.y+r, w, h-2*r);
+		draw_arc(DA, gc, fill, min.x+r, min.y+r, r, 0, 180);
 	} else {
 		r = h/2;
-		draw_arc(DA, gc, TRUE, min.x+r, min.y+r, r, 90, 270);
-		gdk_draw_rectangle(DA, gc, TRUE, min.x+r, min.y, w-2*r, h);
-		draw_arc(DA, gc, TRUE, max.x-r, min.y+r, r, 270, 90);
+		draw_arc(DA, gc, fill, min.x+r, min.y+r, r, 90, 270);
+		gdk_draw_rectangle(DA, gc, fill, min.x+r, min.y, w-2*r, h);
+		draw_arc(DA, gc, fill, max.x-r, min.y+r, r, 270, 90);
 	}
 
 	gui_draw_pad_text(self);

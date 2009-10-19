@@ -41,7 +41,7 @@ enum inst_prio {
 	ip_pad_copper,	/* pads also accept clicks inside; pads with copper */
 	ip_pad_special,	/* pads with only solder paste or mask, on top */
 	ip_circ,	/* circles don't overlap easily */
-	ip_arc,		/* arc are like circles, just shorter */
+	ip_arc,		/* arcs are like circles, just shorter */
 	ip_rect,	/* rectangles have plenty of sides */
 	ip_meas,	/* mesurements are like lines but set a bit apart */
 	ip_line,	/* lines are easly overlapped by other things */

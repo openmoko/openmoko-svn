@@ -28,7 +28,8 @@ XPMS = point.xpm delete.xpm delete_off.xpm \
        stuff.xpm stuff_off.xpm meas_off.xpm \
        bright.xpm bright_off.xpm all.xpm all_off.xpm
 
-PNGS = intro-1.png intro-2.png intro-3.png intro-4.png intro-5.png intro-6.png
+PNGS = intro-1.png intro-2.png intro-3.png intro-4.png intro-5.png \
+       intro-6.png concept-inst.png
 
 SHELL = /bin/bash
 CFLAGS_GTK = `pkg-config --cflags gtk+-2.0`
