@@ -43,9 +43,12 @@ static void load_file(const char *name)
 
 static void usage(const char *name)
 {
-	fprintf(stderr, "usage: %s [-k|-p] [in_file [out_file]]\n\n", name);
-	fprintf(stderr, "  -k  write KiCad output, then exit\n");
-	fprintf(stderr, "  -p  write Postscript output, then exit\n");
+	fprintf(stderr,
+"usage: %s [-k|-p] [cpp_option ...] [in_file [out_file]]\n\n"
+"  -k          write KiCad output, then exit\n"
+"  -p          write Postscript output, then exit\n"
+"  cpp_option  -Idir, -Dname[=value], or -Uname\n"
+    , name);
 	exit(1);
 }
 
@@ -56,17 +59,25 @@ int main(int argc, char **argv)
 	char **fake_argv;
 	char *args[2];
 	int fake_argc;
+	char opt[] = "-?";
 	int error, batch;
 	int batch_write_kicad = 0, batch_write_ps = 0;
 	int c;
 
-	while ((c = getopt(argc, argv, "kp")) != EOF)
+	while ((c = getopt(argc, argv, "kpD:U:I:")) != EOF)
 		switch (c) {
 		case 'k':
 			batch_write_kicad = 1;
 			break;
 		case 'p':
 			batch_write_ps = 1;
+			break;
+		case 'D':
+		case 'U':
+		case 'I':
+			opt[1] = c;
+			add_cpp_arg(opt);
+			add_cpp_arg(optarg);
 			break;
 		default:
 			usage(name);
