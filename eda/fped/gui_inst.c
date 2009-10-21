@@ -303,12 +303,24 @@ void gui_draw_rpad(struct inst *self)
 	if (h > w) {
 		r = w/2;
 		draw_arc(DA, gc, fill, min.x+r, max.y-r, r, 180, 0);
-		gdk_draw_rectangle(DA, gc, fill, min.x, min.y+r, w, h-2*r);
+		if (fill)
+			gdk_draw_rectangle(DA, gc, fill,
+			    min.x, min.y+r, w, h-2*r);
+		else {
+			gdk_draw_line(DA, gc, min.x, min.y+r, min.x, max.y-r);
+			gdk_draw_line(DA, gc, max.x, min.y+r, max.x, max.y-r);
+		}
 		draw_arc(DA, gc, fill, min.x+r, min.y+r, r, 0, 180);
 	} else {
 		r = h/2;
 		draw_arc(DA, gc, fill, min.x+r, min.y+r, r, 90, 270);
-		gdk_draw_rectangle(DA, gc, fill, min.x+r, min.y, w-2*r, h);
+		if (fill)
+			gdk_draw_rectangle(DA, gc, fill,
+			    min.x+r, min.y, w-2*r, h);
+		else {
+			gdk_draw_line(DA, gc, min.x+r, min.y, max.x-r, min.y);
+			gdk_draw_line(DA, gc, min.x+r, max.y, max.x-r, max.y);
+		}
 		draw_arc(DA, gc, fill, max.x-r, min.y+r, r, 270, 90);
 	}
 
