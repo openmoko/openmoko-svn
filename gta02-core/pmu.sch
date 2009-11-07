@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed Oct  7 05:01:32 2009
+EESchema Schematic File Version 2  date Sat 07 Nov 2009 16:51:45 GMT
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -14,18 +14,22 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L VBAT_GSM #PWR?
-U 1 1 4AB0F102
-P 11000 1300
-F 0 "#PWR?" H 11000 1200 50  0001 C CNN
-F 1 "VBAT_GSM" H 11000 1450 50  0000 C CNN
-	1    11000 1300
+L PWR_FLAG #FLG?
+U 1 1 4AF5A587
+P 8100 1350
+F 0 "#FLG?" H 8100 1620 30  0001 C CNN
+F 1 "PWR_FLAG" H 8100 1580 30  0000 C CNN
+	1    8100 1350
 	1    0    0    -1  
 $EndComp
+Connection ~ 8100 1550
+Wire Wire Line
+	8100 1550 8100 1350
+Connection ~ 6650 1550
+Wire Wire Line
+	6650 1550 6650 1150
 Wire Wire Line
 	11000 1750 11000 1300
-Text Notes 14150 7600 0    50   ~ 0
-New 2v8 power net for GSM - ecn0030
 Wire Wire Line
 	9900 3500 7900 3500
 Wire Wire Line
@@ -234,8 +238,6 @@ Wire Wire Line
 Wire Wire Line
 	5400 1550 7050 1550
 Connection ~ 6850 1550
-Wire Wire Line
-	6850 1150 6850 1750
 Wire Wire Line
 	6450 1550 6450 1750
 Wire Wire Line
@@ -545,8 +547,8 @@ Wire Wire Line
 	6850 2350 6850 2150
 Connection ~ 6450 1550
 Wire Wire Line
-	6850 1300 6650 1300
-Connection ~ 6850 1300
+	6650 1300 6450 1300
+Connection ~ 6650 1300
 Wire Wire Line
 	4600 1600 4800 1600
 Wire Wire Line
@@ -701,6 +703,19 @@ Wire Wire Line
 Wire Wire Line
 	10600 1550 10600 1750
 Connection ~ 10600 1550
+Wire Wire Line
+	6850 1550 6850 1750
+$Comp
+L VBAT_GSM #PWR?
+U 1 1 4AB0F102
+P 11000 1300
+F 0 "#PWR?" H 11000 1200 50  0001 C CNN
+F 1 "VBAT_GSM" H 11000 1450 50  0000 C CNN
+	1    11000 1300
+	1    0    0    -1  
+$EndComp
+Text Notes 14150 7600 0    50   ~ 0
+New 2v8 power net for GSM - ecn0030
 $Comp
 L GND #PWR?
 U 1 1 4AAD70D1
@@ -827,7 +842,7 @@ F 2 "TSOP-6" H 8540 2960 60  0001 C CNN
 $EndComp
 Text GLabel 4600 7650 0    60   Output ~ 0
 MODEM_nRST
-Text Notes 8150 1300 0    50   ~ 0
+Text Notes 8300 1300 0    50   ~ 0
 GSM power switch replaced - ecn0030
 Text Notes 11850 800  0    60   ~ 0
 ecn0029: move 0R resistors after filter/buffer caps
@@ -1340,20 +1355,20 @@ $EndComp
 $Comp
 L TST TP1701
 U 1 1 4A3B4E04
-P 6650 1300
-F 0 "TP1701" V 6750 1450 50  0000 C CNN
-F 1 "TST" V 6700 1350 50  0001 C CNN
-F 2 "TST" V 6800 1500 60  0001 C CNN
-	1    6650 1300
+P 6450 1300
+F 0 "TP1701" V 6550 1450 50  0000 C CNN
+F 1 "TST" V 6500 1350 50  0001 C CNN
+F 2 "TST" V 6600 1500 60  0001 C CNN
+	1    6450 1300
 	0    -1   -1   0   
 $EndComp
 $Comp
 L VB #PWR0157
 U 1 1 4A3B4DFD
-P 6850 1150
-F 0 "#PWR0157" H 6850 1050 50  0001 C CNN
-F 1 "VB" H 6850 1300 50  0000 C CNN
-	1    6850 1150
+P 6650 1150
+F 0 "#PWR0157" H 6650 1050 50  0001 C CNN
+F 1 "VB" H 6650 1300 50  0000 C CNN
+	1    6650 1150
 	1    0    0    -1  
 $EndComp
 $Comp
