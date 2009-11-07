@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Tue Oct  6 03:24:34 2009
+EESchema Schematic File Version 2  date Sat 07 Nov 2009 17:28:15 GMT
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -546,6 +546,7 @@ U 1 1 4A4DE542
 P 12000 7500
 F 0 "R1551" H 11870 7420 50  0000 C CNN
 F 1 "NC" H 12130 7420 50  0000 C CNN
+F 2 "0402" H 12000 7500 60  0001 C CNN
 	1    12000 7500
 	1    0    0    -1  
 $EndComp
@@ -555,6 +556,7 @@ U 1 1 4A4DE541
 P 12000 7350
 F 0 "R1550" H 11870 7430 50  0000 C CNN
 F 1 "NC" H 12130 7430 50  0000 C CNN
+F 2 "0402" H 12000 7350 60  0001 C CNN
 	1    12000 7350
 	1    0    0    -1  
 $EndComp
