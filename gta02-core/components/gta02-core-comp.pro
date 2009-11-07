@@ -1,4 +1,4 @@
-update=Wed 16 Sep 2009 12:43:23 BST
+update=Sat 07 Nov 2009 14:39:17 GMT
 version=1
 last_client=eeschema
 [pcbnew]
@@ -156,3 +156,4 @@ LibName48=./wm3236aq.lib
 LibName49=./gsm_antenna
 LibName50=./ntgd1100l
 LibName51=./si1040x
+LibName52=./wte06016
