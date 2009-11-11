@@ -35,18 +35,10 @@ Testing [2] showed that shorting LDO4 will cause it to limit the current
 to about 500 mA, which is still low enough to prevent immediate problems
 for the rest of the system.
 
-Open issue: do we continue feeding LDOs 3 and 4 from Vsys or do we move
-them to IO_3V3 for better efficiency ? (In the latter case, AVDD etc al.
-would have to operate at 3.05 V or less, due to the 250 mV voltage drop
-of the LDO.) [3]
-
-Compromise: connect LDO34IN via a 0R to IO_3V3, so we can rework to
-using Vsys (e.g., by running a wire from the SYS1/SYS2 end of C1767),
-if this should turn out to be necessary.
-
-Since CODEC_3V3 now has a worst-case drop of 250 mV from 3.3 V, we
-should rename it to CODEC_3V or, perhaps better, CODEC_VDD. (And add
-a comment stating the nominal voltage of 3 V.)
+The possibility of feeding LDOs 3 and 4 from IO_3V3 instead of Vsys was
+considered but rejected. It would buy us little or no efficiency gain,
+would increase the load on IO_3V3, with potentially high peaks, and it
+would also limit the output voltage range to 3.05 V.
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
 [2] http://lists.openmoko.org/pipermail/gta02-core/2009-October/000744.html
