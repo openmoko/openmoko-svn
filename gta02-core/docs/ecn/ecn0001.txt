@@ -10,12 +10,13 @@ Changes:
 - SD/MMC moved to CPU SDIO interface
 - WLAN moved to SPI0
 - Moved BT PIO_5 from LCDVF0/GPC5 to CAMDATA0/GPJ0
-- Move board-revision detection from VD5/GPC13 & VD12/GPD3 to EINT19/GPG11 & EINT20/GPG12
+- Move board-revision detection from VD5/GPC13 & VD12/GPD3 to EINT19/GPG11 &
+  EINT20/GPG12
 - Remove 3D_RST and 3D_INT nets
 - Move HDQ to nXBACK/GPB5
 
 To do:
-- software impact of LCM pixel change on kernel
+- software impact of LCM frame buffer change on kernel
 - software impact of LCM controller SPI change on kernel
 - software impact of SD/MMC change on Qi and kernel
 - software impact of WLAN move on kernel

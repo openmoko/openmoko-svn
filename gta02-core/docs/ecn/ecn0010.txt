@@ -40,6 +40,13 @@ considered but rejected. It would buy us little or no efficiency gain,
 would increase the load on IO_3V3, with potentially high peaks, and it
 would also limit the output voltage range to 3.05 V.
 
+Software impact:
+- Qi initializes LDO2ENA and LDO4ENA for different suspend behaviour,
+  so this has to be swapped
+- in the kernel, swap LDO2 and LDO4 in
+  arch/arm/mach-s3c2442/mach-gta02.c:gta02_pcf_pdata and
+  arch/arm/mach-s3c2442/mach-gta02.c:gta02_pmu_regulator_registered
+
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf
 [2] http://lists.openmoko.org/pipermail/gta02-core/2009-October/000744.html
 [3] http://lists.openmoko.org/pipermail/gta02-core/2009-October/000746.html
@@ -50,3 +57,4 @@ Commit: SVN 5118
 Review: Werner Almesberger <werner@openmoko.org>, SVN5675
 Commit: SVN 5689, removed R4404
 Commit: SVN 5692, reopened and added power supply
+Commit: SVN 5712, swapped LDO2 and LDO4
