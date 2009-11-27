@@ -260,41 +260,51 @@ static void dump_loop(FILE *file, const struct loop *loop, const char *indent)
 /* ----- vectors and objects ----------------------------------------------- */
 
 
-static char *generate_name(const struct vec *base)
+static void generate_name(struct vec *base)
 {
-	const struct vec *walk;
-	int n;
+	char tmp[10]; /* plenty */
+	const char *s;
+	struct vec *walk;
+	int n = 0;
 
-	n = 0;
-	for (walk = base->frame->vecs; walk != base; walk = walk->next)
+	while (1) {
+		sprintf(tmp, "__%d", n);
+		s = unique(tmp);
+		for (walk = base->frame->vecs; walk; walk = walk->next)
+			if (walk->name == s)
+				break;
+		if (!walk)
+			break;
 		n++;
-	return stralloc_printf("__%d", n);
+	}
+	base->name = s;
 }
 
 
-static char *base_name(const struct vec *base, const struct vec *next)
+static const char *base_name(struct vec *base, const struct vec *next)
 {
 	if (!base)
-		return stralloc("@");
+		return "@";
 	if (next && base->next == next)
-		return stralloc(".");
-	if (base->name)
-		return stralloc(base->name);
-	return generate_name(base);
+		return ".";
+	if (!base->name)
+		generate_name(base);
+	return base->name;
 }
 
 
-static char *obj_base_name(const struct vec *base, const struct vec *prev)
+static const char *obj_base_name(struct vec *base, const struct vec *prev)
 {
 	if (base && base == prev)
-		return stralloc(".");
+		return ".";
 	return base_name(base, NULL);
 }
 
 
 char *print_obj(const struct obj *obj, const struct vec *prev)
 {
-	char *base, *s, *s1, *s2, *s3;
+	const char *base, *s1, *s3;
+	char *s, *s2;
 
 	base = obj_base_name(obj->base, prev);
 	switch (obj->type) {
@@ -306,14 +316,12 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		s1 = obj_base_name(obj->u.line.other, prev);
 		s2 = unparse(obj->u.line.width);
 		s = stralloc_printf("line %s %s %s", base, s1, s2);
-		free(s1);
 		free(s2);
 		break;
 	case ot_rect:
 		s1 = obj_base_name(obj->u.rect.other, prev);
 		s2 = unparse(obj->u.rect.width);
 		s = stralloc_printf("rect %s %s %s", base, s1, s2);
-		free(s1);
 		free(s2);
 		break;
 	case ot_pad:
@@ -337,26 +345,23 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		s = stralloc_printf("%spad \"%s\" %s %s%s",
 		    obj->u.pad.rounded ? "r" : "",
 		    obj->u.pad.name, base, s1, s2);
-		free(s1);
 		break;
 	case ot_arc:
 		s1 = obj_base_name(obj->u.arc.start, prev);
-		s3 = unparse(obj->u.arc.width);
+		s2 = unparse(obj->u.arc.width);
 		if (obj->u.arc.start == obj->u.arc.end) {
-			s = stralloc_printf("circ %s %s %s", base, s1, s3);
+			s = stralloc_printf("circ %s %s %s", base, s1, s2);
 		} else {
-			s2 = obj_base_name(obj->u.arc.end, prev);
+			s3 = obj_base_name(obj->u.arc.end, prev);
 			s = stralloc_printf("arc %s %s %s %s",
-			    base, s1, s2, s3);
+			    base, s1, s3, s2);
 			free(s2);
 		}
-		free(s1);
-		free(s3);
+		free(s2);
 		break;
 	default:
 		abort();
 	}
-	free(base);
 	return s;
 }
 
@@ -373,14 +378,12 @@ static const char *meas_type_name[mt_n] = {
 
 static char *print_meas_base(struct vec *base)
 {
-	char *name, *res;
+	const char *name;
 
 	name = base_name(base, NULL);
 	if (base->frame == root_frame)
-		return name;
-	res = stralloc_printf("%s.%s", base->frame->name, name);
-	free(name);
-	return res;
+		return stralloc(name);
+	return stralloc_printf("%s.%s", base->frame->name, name);
 }
 
 
@@ -423,18 +426,18 @@ char *print_meas(const struct obj *obj)
 /* ----- print vector ------------------------------------------------------ */
 
 
-char *print_label(const struct vec *vec)
+const char *print_label(struct vec *vec)
 {
-	if (vec->name)
-		return stralloc(vec->name);
-	else
-		return generate_name(vec);
+	if (!vec->name)
+		generate_name(vec);
+	return vec->name;
 }
 
 
 char *print_vec(const struct vec *vec)
 {
-	char *base, *x, *y, *s;
+	const char *base;
+	char *x, *y, *s;
 
 	base = base_name(vec->base, vec);
 	x = unparse(vec->x);
@@ -444,7 +447,6 @@ char *print_vec(const struct vec *vec)
 	else {
 		s = stralloc_printf("vec %s(%s, %s)", base, x, y);
 	}
-	free(base);
 	free(x);
 	free(y);
 	return s;
@@ -461,7 +463,8 @@ static void dump_frame(FILE *file, struct frame *frame, const char *indent)
 	struct obj *obj;
 	struct order *order;
 	const struct order *item;
-	char *s, *s1;
+	char *s;
+	const char *s1;
 
 	if (frame->dumped)
 		return;

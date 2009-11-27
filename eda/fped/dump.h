@@ -34,7 +34,7 @@ struct order {
 };
 
 
-char *print_label(const struct vec *vec);
+const char *print_label(struct vec *vec);
 char *print_vec(const struct vec *vec);
 char *print_obj(const struct obj *obj, const struct vec *prev);
 char *print_meas(const struct obj *obj);

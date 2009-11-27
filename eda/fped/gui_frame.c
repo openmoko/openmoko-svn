@@ -1167,9 +1167,7 @@ static GtkWidget *build_items(struct frame *frame)
 				label_in_box_fg(item->obj->list_widget,
 				    COLOR_ITEM_ERROR);
 		} else {
-			s = print_label(item->vec);
-			t = stralloc_printf("%s: ", s);
-			free(s);
+			t = stralloc_printf("%s: ", print_label(item->vec));
 			item_label(tab, t, 0, n, NULL, NULL);
 
 			s = print_vec(item->vec);
