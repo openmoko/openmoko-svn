@@ -226,13 +226,13 @@ int inst_select(struct coord pos)
 				}
 			}
 		}
-		if (select_next) {
-			selected_inst = next ? next : first;
-			goto selected;
-		}
-		if (selected_inst)
-			goto selected;
 	}
+	if (select_next) {
+		selected_inst = next ? next : first;
+		goto selected;
+	}
+	if (selected_inst)
+		goto selected;
 
 	/* give vectors a second chance */
 
