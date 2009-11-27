@@ -635,11 +635,14 @@ static void do_move_to_vec(struct inst *inst, struct inst *to, int i)
 	 * Mark the vector that's being rebased and all vectors that
 	 * (recursively) depend on it.
 	 *
-	 * We're only interested in the range between the vector being moved
+	 * We're mainly interested in the range between the vector being moved
 	 * and the new base. If the vector follows the base, the list is
 	 * already in the correct order and nothing needs moving.
 	 */
-	for (v = vec; v && v != to_vec; v = v->next)
+	for (v = frame->vecs; v != vec; v = v->next)
+		v->mark = 0;
+	vec->mark = 1;
+	for (v = vec->next; v && v != to_vec; v = v->next)
 		v->mark = v->base ? v->base->mark : 0;
 	if (!v)
 		return;
@@ -647,6 +650,9 @@ static void do_move_to_vec(struct inst *inst, struct inst *to, int i)
 	/*
 	 * All the marked vectors appearing on the list before the new base
 	 * are moved after the new base, preserving their order.
+	 *
+	 * Start at frame->vecs, not "vec", so that we move the the vector
+	 * being rebased as well.
 	 */
 	anchor = &to_vec->next;
 	walk = &frame->vecs;
