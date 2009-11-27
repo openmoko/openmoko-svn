@@ -612,6 +612,58 @@ static int vec_op_anchors(struct inst *inst, struct vec ***anchors)
 }
 
 
+/*
+ * When instantiating and when dumping, we assume that bases appear in the
+ * frame->vecs list before vectors using them. A move may change this order.
+ * We therefore have to sort the list after the move.
+ *
+ * Since the list is already ordered, cleaning it up is just O(n).
+ */
+
+
+static void do_move_to_vec(struct inst *inst, struct inst *to, int i)
+{
+	struct vec *to_vec = inst_get_vec(to);
+	struct vec *vec = inst->vec;
+	struct frame *frame = vec->frame;
+	struct vec *v, **anchor, **walk;
+
+	assert(!i);
+	vec->base = to_vec;
+
+	/*
+	 * Mark the vector that's being rebased and all vectors that
+	 * (recursively) depend on it.
+	 *
+	 * We're only interested in the range between the vector being moved
+	 * and the new base. If the vector follows the base, the list is
+	 * already in the correct order and nothing needs moving.
+	 */
+	for (v = vec; v && v != to_vec; v = v->next)
+		v->mark = v->base ? v->base->mark : 0;
+	if (!v)
+		return;
+
+	/*
+	 * All the marked vectors appearing on the list before the new base
+	 * are moved after the new base, preserving their order.
+	 */
+	anchor = &to_vec->next;
+	walk = &frame->vecs;
+	while (*walk != to_vec) {
+		v = *walk;
+		if (!v->mark)
+			walk = &v->next;
+		else {
+			*walk = v->next;
+			v->next = *anchor;
+			*anchor = v;
+			anchor = &v->next;
+		}
+	}
+}
+
+
 static struct inst_ops vec_ops = {
 	.draw		= gui_draw_vec,
 	.hover		= gui_hover_vec,
@@ -620,6 +672,7 @@ static struct inst_ops vec_ops = {
 	.find_point	= find_point_vec,
 	.anchors	= vec_op_anchors,
 	.draw_move	= draw_move_vec,
+	.do_move_to	= do_move_to_vec,
 };
 
 

@@ -918,7 +918,6 @@ void tool_drag(struct coord to)
 void tool_cancel_drag(void)
 {
 	if (drag.anchors_n && drag.inst->ops->end_drag_move)
-	if (drag.anchors_n && drag.inst->ops->end_drag_move)
 		drag.inst->ops->end_drag_move();
 	drag.new = NULL;
 	active_ops = NULL;

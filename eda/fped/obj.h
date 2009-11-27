@@ -105,6 +105,9 @@ struct vec {
 	/* index into table of samples */
 	int n;
 
+	/* for re-ordering after a move */
+	int mark;
+
 	/* for the GUI */
 	GtkWidget *list_widget; /* NULL if items aren't shown */
 };
