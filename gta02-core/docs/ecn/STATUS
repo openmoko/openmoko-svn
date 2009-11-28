@@ -18,7 +18,7 @@ Number	Status	Description
 0016	Done	Remove upper acceleration sensor (U7801)
 0017	Done	Move Bluetooth module (U2) to main PCB
 0018	Cancel	Add beads/filters to audio signals leaving/entering can
-0019	Done	Consider applying buzz fix
+0019	Discuss	Consider applying buzz fix
 0020	Cancel	No common mode choke on stereo signals (B4102)
 0021	Defer	Use EMI-hardened microphone (MC4301)
 0022	Done	Apply bass fix
@@ -41,6 +41,7 @@ Number	Status	Description
 0039	Discuss	Insert 0R resistors into SPI signals
 0040	Discuss	Remove backup battery (BAT1701)
 0041	Discuss	Test points and 0R resistors for camera interface
+0042	Discuss	Changing internal microphone to symmetrical configuration
 
 
 Open ECNs
@@ -51,6 +52,7 @@ Open ECNs
 0008	GPS
 0010	AUDIO
 0011	USB
+0019	AUDIO
 0024	GPS
 0026	SD-SIM
 0027	General
@@ -61,3 +63,5 @@ Open ECNs
 0039	CPU, LCM
 0040	PMU, MODEM
 0041	CPU
+0042    AUDIO
+

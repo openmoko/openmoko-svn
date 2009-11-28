@@ -11,6 +11,7 @@ Replace the following capacitors with 1uF/6.3V SMD-0402 :
 - C3007 and C3006 (GSM modem input)
 - C3018 and C3011 (GSM modem output)
 - C3016 and C4406 (headset MIC)
+- C3017 (ACOP/ACIN coupling)
 
 
 [1] http://www.wolfsonmicro.com/uploads/documents/en/WM8753.pdf (p. 88)

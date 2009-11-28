@@ -1,0 +1,16 @@
+Changing internal microphone to symmetrical configuration
+
+According to Joerg, the internal microphone was switched to an asymmetrical 
+configuration in GTA02-Rev06. It was expected that this would influence the 
+noise (Buzz) dramatically. However a real improvement of the noise could not be
+achieved.
+
+In most cases a symmetrical configuration offers a better common mode noise 
+rejection than an asymmetrical one. Therefore it is prefered to operate the 
+internal microphone in a symmetrical configuration.
+
+Changes:
+	- replace R4304 with a 2k2 resistor
+
+
+Author Rene Harder <rehar@saweb.de>
