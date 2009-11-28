@@ -37,7 +37,7 @@ Number	Status	Description
 0035	Done    Kill WLAN unused RF components
 0036    Done	Removal of decoupling capacitor C3020
 0037    Done	Route ROUT1/LOUT1 back to LINE1/LINE2 input
-0038    Execute	Loudspeaker EMI filter
+0038    Done	Loudspeaker EMI filter
 0039	Discuss	Insert 0R resistors into SPI signals
 0040	Discuss	Remove backup battery (BAT1701)
 0041	Discuss	Test points and 0R resistors for camera interface
@@ -59,7 +59,6 @@ Open ECNs
 0030	MODEM
 0032    AUDIO
 0034	IO
-0038    AUDIO
 0039	CPU, LCM
 0040	PMU, MODEM
 0041	CPU
