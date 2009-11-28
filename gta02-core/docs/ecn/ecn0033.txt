@@ -24,3 +24,4 @@ or AVX 04026D105KAT2A (Digi-Key & Farnell)
 Author: Rene Harder <rehar@saweb.de>
 Commit: SVN 5589
 Review: Werner Almesberger <werner@openmoko.org>, SVN 5684
+Commit: SVN 5719, added C3017

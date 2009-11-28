@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 28 Nov 2009 02:20:32 PM CST
+EESchema Schematic File Version 2  date Sat 28 Nov 2009 02:26:03 PM CST
 LIBS:power,device,conn,gta02-core
 EELAYER 24  0
 EELAYER END
@@ -1825,7 +1825,7 @@ L C C3017
 U 1 1 4A3EE484
 P 3950 4450
 F 0 "C3017" V 3850 4250 50  0000 L CNN
-F 1 "100n" V 4000 4600 50  0000 L CNN
+F 1 "1u" V 4000 4600 50  0000 L CNN
 F 2 "0402" H 4050 4600 60  0001 C CNN
 	1    3950 4450
 	0    1    1    0   
