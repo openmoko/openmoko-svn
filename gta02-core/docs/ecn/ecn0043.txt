@@ -1,0 +1,18 @@
+Assorted audio cleanup
+
+
+A number of components are leftovers from earlier designs and experiments,
+and don't serve a purpose anymore. We can thus safely remove them.
+
+They are:
+
+- C4307: unlike the "buzzfix" capacitor C4306 that stabilizes MICBIAS in
+  the presence of interferences, the filter capacitor on MIC2 (C4307)
+  serves no purpose
+
+- R3004 and R3005: since we don't perceive a need to cut off the speaker,
+  these 0R resistors in the speaker audio path serve no real purpose and
+  should be removed
+
+
+Author: Werner Almesberger <werner@openmoko.org>

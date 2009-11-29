@@ -17,3 +17,4 @@ the job just as good. So C4128 will be replaced by 47 pF.
 Author: Rene Harder <rehar@saweb.de> 
 Review: Werner Almesberger <werner@openmoko.org>, SVN 5690
 Commit: SVN 5718
+Review: Werner Almesberger <werner@openmoko.org>, SVN 5719

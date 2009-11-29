@@ -42,6 +42,7 @@ Number	Status	Description
 0040	Discuss	Remove backup battery (BAT1701)
 0041	Discuss	Test points and 0R resistors for camera interface
 0042	Discuss	Changing internal microphone to symmetrical configuration
+0043	Discuss	Assorted audio cleanup
 
 
 Open ECNs
@@ -63,4 +64,4 @@ Open ECNs
 0040	PMU, MODEM
 0041	CPU
 0042    AUDIO
-
+0043	AUDIO
