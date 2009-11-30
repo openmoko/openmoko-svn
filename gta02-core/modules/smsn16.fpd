@@ -1,0 +1,108 @@
+/* SMSN16 - SD & SIM */
+
+frame P9_A{
+	lr: vec @(0mm, -2mm/2)
+	ul: vec .(-2.23mm, 2.0mm)
+	pad "9" lr ul
+}
+
+frame P9_B{
+	lr: vec @(0mm, -2mm/2)
+	ul: vec .(-2.35mm, 2.0mm)
+	pad "9" lr ul
+}
+
+frame P9_C{
+	ll: vec @(-2.10mm/2, 0mm)
+	ur: vec .(2.10mm, 2.32mm)
+	pad "9" ll ur
+}
+
+frame P9_D{
+	ll: vec @(-2.10mm/2, 0mm)
+	ur: vec .(2.10mm, 2.23mm)
+	pad "9" ll ur
+}
+
+frame P9_E{
+	ll: vec @(-1.8mm/2,0mm)
+	ur: vec .(1.8mm,2.23mm)
+	pad "9" ll ur
+}
+
+
+frame SDPAD {
+	set name = i+1
+
+	ll: vec @(-sd_w/2, 0mm)
+	ur: vec .(sd_w, sd_l)
+	pad "$name" . ll
+	center: vec @(0mm, sd_l/2)
+}
+
+frame SD {
+	loop i = 0, 7
+
+	__0: vec @(-1.5mm-i*1.1mm, -2.56mm)
+	frame SDPAD .
+}
+
+frame BR {
+
+	frame SD @
+
+	__0: vec @(1.75mm, -2.48mm)
+	frame P9_A .
+
+	__1: vec @(1.75mm, 12.33mm)
+	frame P9_B .
+}
+
+frame SIMPAD {
+	set name = 10+n
+
+	ll: vec @(0mm, -sim_w/2)
+	ur: vec .(sim_l, sim_w)
+	pad "$name" . ll
+	center: vec @(sim_l/2, 0mm)
+}
+
+frame SIM {
+	loop n = 0, 7
+
+	__0: vec @(-4.25mm, -11.43mm+n*1.27mm)
+	frame SIMPAD .
+}
+
+package "SMSN16"
+unit mm
+set sim_w = 0.9mm
+
+set sim_l = 2.3mm
+
+set sd_w = 0.7mm
+
+set sd_l = 1.85mm
+
+__0: vec @(19.8mm, -12.5mm)
+frame BR .
+
+__1: vec @(4mm, -0.99mm)
+frame P9_C .
+
+__2: vec @(2mm, -16.52mm)
+frame P9_D .
+
+__3: vec @(7.23mm, -16.52mm)
+frame P9_E .
+
+
+frame SIM @
+measy SIM.__0 >> SIM.__0 1mm
+measy SIM.__0 -> SIM.__0 0.3mm
+measy SIMPAD.ll -> SIMPAD.ur 1.5mm
+measx SIMPAD.ll -> SIMPAD.ur -0.5mm
+measx SDPAD.ll -> SDPAD.ur -1.5mm
+measx SD.__0 -> SD.__0 -0.5mm
+measx SD.__0 >> SD.__0 -1mm
+measy SDPAD.ll -> SDPAD.ur 0.5mm

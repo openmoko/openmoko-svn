@@ -2,22 +2,23 @@ Footprint (file name)		Author	Review	2nd rv.	3rd rv.	Remarks
 -----------------------		-------	-------	-------	-------	-------------
 332fbga-p05			Werner	EXPERIMENTAL - DO NOT USE YET
 bga96-8x12-0mm8			Werner
-ge865				Werner
-stdpass				Werner	EXPERIMENTAL - DO NOT USE YET
-tst				Werner
-wm3236aq			Werner	EXPERIMENTAL - DO NOT USE YET
-wm8753FL			Rene	DRAFT
-lis302dl			Rene	DRAFT
 dfbm-cs320			Rene
 exc24c				Rene
-sc70-5				Rene
-vssop8				Rene
-sot23-5				Rene
-tdfn34-16			Rene
+fa2012				Rene
+fh23-39s-0.3shw			Rene	pin numbering needs to be verified
+ge865				Werner
+lis302dl			Rene	DRAFT
 mini-usb			Rene	drill holes still missing!
-tsop-6				Rene
+smsn16				Dave	DRAFT
+sc70-5				Rene
 sc89-6				Rene
 son1408-3			Rene
-fh23-39s-0.3shw			Rene	pin numbering needs to be verified
-fa2012				Rene
+sot23-5				Rene
+stdpass				Werner	EXPERIMENTAL - DO NOT USE YET
+tdfn34-16			Rene
+tsop-6				Rene
+tst				Werner
+vssop8				Rene
+wm3236aq			Werner	EXPERIMENTAL - DO NOT USE YET
+wm8753FL			Rene	DRAFT
 
