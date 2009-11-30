@@ -1,38 +1,37 @@
-/* SMSN16 - SD & SIM */
+/* MACHINE-GENERATED ! */
 
-frame P9_A{
+frame P9_A {
 	lr: vec @(0mm, -2mm/2)
-	ul: vec .(-2.23mm, 2.0mm)
-	pad "9" lr ul
+	ul: vec .(-2.23mm, 2mm)
+	pad "9" lr .
 }
 
-frame P9_B{
+frame P9_B {
 	lr: vec @(0mm, -2mm/2)
-	ul: vec .(-2.35mm, 2.0mm)
-	pad "9" lr ul
+	ul: vec .(-2.35mm, 2mm)
+	pad "9" lr .
 }
 
-frame P9_C{
-	ll: vec @(-2.10mm/2, 0mm)
-	ur: vec .(2.10mm, 2.32mm)
-	pad "9" ll ur
+frame P9_C {
+	ll: vec @(-2.1mm/2, 0mm)
+	ur: vec .(2.1mm, 2.32mm)
+	pad "9" ll .
 }
 
-frame P9_D{
-	ll: vec @(-2.10mm/2, 0mm)
-	ur: vec .(2.10mm, 2.23mm)
-	pad "9" ll ur
+frame P9_D {
+	ll: vec @(-2.1mm/2, 0mm)
+	ur: vec .(2.1mm, 2.23mm)
+	pad "9" ll .
 }
 
-frame P9_E{
-	ll: vec @(-1.8mm/2,0mm)
-	ur: vec .(1.8mm,2.23mm)
-	pad "9" ll ur
+frame P9_E {
+	ll: vec @(-1.8mm/2, 0mm)
+	ur: vec .(1.8mm, 2.23mm)
+	pad "9" ll .
 }
-
 
 frame SDPAD {
-	set name = i+1
+	set name = n+1
 
 	ll: vec @(-sd_w/2, 0mm)
 	ur: vec .(sd_w, sd_l)
@@ -41,21 +40,21 @@ frame SDPAD {
 }
 
 frame SD {
-	loop i = 0, 7
+	loop n = 0, 7
 
-	__0: vec @(-1.5mm-i*1.1mm, -2.56mm)
+	__0: vec @(-1.5mm-n*1.1mm, -2.56mm)
 	frame SDPAD .
 }
 
 frame BR {
-
-	frame SD @
-
 	__0: vec @(1.75mm, -2.48mm)
 	frame P9_A .
-
 	__1: vec @(1.75mm, 12.33mm)
 	frame P9_B .
+	__2: vec @(-9.48mm, 9.44mm)
+	__3: vec .(8.25mm, -2.9mm)
+	pad "np" __2 .
+	frame SD @
 }
 
 frame SIMPAD {
@@ -74,6 +73,19 @@ frame SIM {
 	frame SIMPAD .
 }
 
+frame np_pad {
+	lr: vec @(0mm, 0.9mm/2)
+	ul: vec .(-0.9mm, 0.9mm)
+	pad "np" . lr
+}
+
+frame patProhib {
+	loop n = 0, 3
+
+	__0: vec @(0mm, 2.54mm*n)
+	frame np_pad .
+}
+
 package "SMSN16"
 unit mm
 set sim_w = 0.9mm
@@ -86,17 +98,17 @@ set sd_l = 1.85mm
 
 __0: vec @(19.8mm, -12.5mm)
 frame BR .
-
 __1: vec @(4mm, -0.99mm)
 frame P9_C .
-
 __2: vec @(2mm, -16.52mm)
 frame P9_D .
-
 __3: vec @(7.23mm, -16.52mm)
 frame P9_E .
-
-
+__4: vec @(-4.9mm, 1mm)
+__5: vec .(26.6mm, -17.7mm)
+rect __4 . 0.1mm
+__6: vec @(9mm, -11.49mm)
+frame patProhib .
 frame SIM @
 measy SIM.__0 >> SIM.__0 1mm
 measy SIM.__0 -> SIM.__0 0.3mm
