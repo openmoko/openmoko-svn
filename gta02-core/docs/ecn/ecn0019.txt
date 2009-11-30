@@ -10,7 +10,7 @@ taken care of by adding C4306/C4307 to the microphone lines [1].
 
 C4306 in conjunction with R4305(2.2k) acts as a low-pass filter and keeps
 any RF from entering the internal microphone path. It would be a good idea to 
-move C4307 before R4305 to protect against RF entering the MICBIAS line at all.
+move C4306 before R4305 to protect against RF entering the MICBIAS line at all.
 However to be on the save side we could add a 0R resistor(R4310) in series to 
 be able to switch back to the current configuration if necessary. 
 I also would consider removing the C4307 footprint completely because it does not
