@@ -4,7 +4,7 @@
 MODS="332fbga-p05 bga96-8x12-0mm8 ge865 stdpass tst wm3236aq wm8753fl lis302dl"
 MODS="$MODS dfbm-cs320 exc24c sc70-5 vssop8 sot23-5 tdfn34-16 mini-usb tsop-6"
 MODS="$MODS sc89-6 son1408-3 fh23-39s-0.3shw fa2012 smsn16 wlcsp12-p05 sod-523"
-MODS="$MODS u.fl-r-smt-1 ht210 k4m51323pe.fpd"
+MODS="$MODS u.fl-r-smt-1 ht210 k4m51323pe pcf50633-04-n3"
 
 LIB=gta02-core.mod
 
