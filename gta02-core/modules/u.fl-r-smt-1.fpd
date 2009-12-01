@@ -1,0 +1,16 @@
+/* MACHINE-GENERATED ! */
+
+package "u.fl-r-smt-1"
+unit mm
+__0: vec @(1.9mm/2, -1.1mm)
+__1: vec __0((4mm-1.9mm)/2, 2.2mm)
+pad "2" __0 .
+__2: vec @(-1.9mm/2, -1.1mm)
+__3: vec __2(-(4mm-1.9mm)/2, 2.2mm)
+pad "3" . __2
+__4: vec @(0.5mm, -1mm)
+__5: vec .(-1mm, -1.05mm)
+pad "1" __4 .
+measx __3 >> __1 1mm
+measx __2 >> __0 2.7mm
+measy __5 >> __4 2mm
