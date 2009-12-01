@@ -1,0 +1,67 @@
+/* MACHINE-GENERATED ! */
+
+frame pad {
+	__0: vec @(-Px/2, -Py/2)
+	__1: vec @(Px/2, Py/2)
+	pad "$name" __0 .
+}
+
+frame cathode {
+	set name = 2
+
+	__0: vec @(0mm, d/2)
+	frame pad .
+}
+
+frame anode {
+	set name = 1
+
+	__0: vec @(0mm, -d/2)
+	frame pad .
+}
+
+frame symbol {
+	set r = 0.3mm
+
+	__5: vec @(0mm, r*(cos(60)-1)/2)
+	__0: vec .(0mm, r)
+	__3: vec .(r*-sin(60), 0mm)
+	__4: vec __0(r*sin(60), 0mm)
+	line __3 . width
+	__2: vec __5(r*sin(60), r*-cos(60))
+	line . __0 width
+	__1: vec __5(r*-sin(60), r*-cos(60))
+	line . __0 width
+	line . __2 width
+}
+
+frame outline {
+	set Ox = 0.8mm+2*clear
+
+	set Oy = d+Py+2*clear
+
+	set clear = 5mil
+
+	__0: vec @(-Ox/2, -Oy/2)
+	__1: vec @(Ox/2, Oy/2)
+	rect __0 . width
+	frame symbol @
+}
+
+package "SOD-523"
+unit mm
+set d = 1.7mm
+
+set Px = 0.8mm
+
+set Py = 0.6mm
+
+set width = 6mil
+
+frame anode @
+frame cathode @
+frame outline @
+measx pad.__0 -> pad.__1 -0.5mm
+measy pad.__0 -> pad.__1 0.5mm
+measy cathode.__0 >> anode.__0 1mm
+measy pad.__0 >> pad.__1 0.8mm

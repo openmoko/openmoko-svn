@@ -110,3 +110,7 @@ D: http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
 F: wlcsp12-p05
 S: adg3304
 # ADG3304 data sheet page 19
+
+# Rohm 1SS400 diode, SOD-523 (JEDEC) aka EMD2 (Rohm) aka SC-79 (JEITA)
+F: sod-523
+S: 1ss400
