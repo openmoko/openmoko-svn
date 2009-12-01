@@ -438,8 +438,17 @@ Expressions
 -----------
 
 Expressions can contain numeric constants (in non-exponential notation),
-variable names, the arithmetic operations +, -, *, /, and unary -.
+variable names, the arithmetic operations +, -, *, /, unary -, and the
+functions sin(), cos(), and sqrt().
+
 Parentheses can be used to change precedence.
+
+The argument of sin and cos is a dimensionless number that specifies the
+angle in degrees. E.g., sin(90) yields 1.
+
+The argument of sqrt() can be dimensionless or have a dimension with an
+exponent that's a multiple of two. E.g., sqrt(2) and sqrt(2mm*3mm) are
+valid expressions, sqrt(2mm) isn't.
 
 
 GUI

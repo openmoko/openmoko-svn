@@ -111,6 +111,10 @@ struct num op_num(const struct expr *self, const struct frame *frame);
 struct num op_var(const struct expr *self, const struct frame *frame);
 struct num op_string(const struct expr *self, const struct frame *frame);
 
+struct num op_sin(const struct expr *self, const struct frame *frame);
+struct num op_cos(const struct expr *self, const struct frame *frame);
+struct num op_sqrt(const struct expr *self, const struct frame *frame);
+
 struct num op_minus(const struct expr *self, const struct frame *frame);
 
 struct num op_add(const struct expr *self, const struct frame *frame);

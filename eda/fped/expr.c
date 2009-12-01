@@ -249,6 +249,56 @@ static struct num compatible_mult(struct num *a, struct num *b,
 }
 
 
+static struct num sin_cos(const struct expr *self,
+    const struct frame *frame, double (*fn)(double arg))
+{
+	struct num res;
+
+	res = eval_num(self->u.op.a, frame);
+	if (is_undef(res))
+		return undef;
+	if (!is_dimensionless(res)) {
+		fail("angle must be dimensionless");	
+		return undef;
+	}
+	res.n = fn(res.n/180.0*M_PI);
+	return res;
+}
+
+
+struct num op_sin(const struct expr *self, const struct frame *frame)
+{
+	return sin_cos(self, frame, sin);
+}
+
+
+struct num op_cos(const struct expr *self, const struct frame *frame)
+{
+	return sin_cos(self, frame, cos);
+}
+
+
+struct num op_sqrt(const struct expr *self, const struct frame *frame)
+{
+	struct num res;
+
+	res = eval_num(self->u.op.a, frame);
+	if (is_undef(res))
+		return undef;
+	if (res.exponent & 1) {
+		fail("exponent of sqrt argument must be a multiple of two");	
+		return undef;
+	}
+	if (res.n < 0) {
+		fail("argument of sqrt must be positive");	
+		return undef;
+	}
+	res.n = sqrt(res.n);
+	res.exponent >>= 1;
+	return res;
+}
+
+
 struct num op_minus(const struct expr *self, const struct frame *frame)
 {
 	struct num res;
@@ -306,7 +356,7 @@ struct num op_div(const struct expr *self, const struct frame *frame)
 {
 	BINARY;
 	if (!b.n) {
-		fail("Division by zero");
+		fail("division by zero");
 		return undef;
 	}
 	res = compatible_mult(&a, &b, a.exponent-b.exponent);
@@ -471,7 +521,8 @@ static void vacate_op(struct expr *expr)
 		free(expr->u.str);
 		return;
 	}
-	if (expr->op == op_minus) {
+	if (expr->op == op_minus ||
+	    expr->op == op_sin || expr->op == op_cos || expr->op == op_sqrt) {
 		free_expr(expr->u.op.a);
 		return;
 	}

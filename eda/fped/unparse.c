@@ -38,7 +38,8 @@ static int precedence(op_type op)
 		return prec_mult;
 	if (op == op_minus)
 		return prec_unary;
-	if (op == op_num || op == op_string || op == op_var)
+	if (op == op_num || op == op_string || op == op_var ||
+	    op == op_sin || op == op_cos || op == op_sqrt)
 		return prec_primary;
 	abort();
 }
@@ -63,6 +64,21 @@ static char *merge2(const char *op, char *a)
 	buf = alloc_size(strlen(op)+strlen(a)+1);
 	sprintf(buf, "%s%s", op, a);
 	free(a);
+	return buf;
+}
+
+
+static char *unparse_op(const struct expr *expr, enum prec prec);
+
+
+static char *unparse_fn(const char *name, const struct expr *expr)
+{
+	char *buf, *tmp;
+
+	tmp = unparse_op(expr->u.op.a, prec_add);
+	buf = alloc_size(strlen(name)+strlen(tmp)+3);
+	sprintf(buf, "%s(%s)", name, tmp);
+	free(tmp);
 	return buf;
 }
 
@@ -103,6 +119,12 @@ static char *unparse_op(const struct expr *expr, enum prec prec)
 	if (expr->op == op_div)
 		return merge3(unparse_op(expr->u.op.a, prec_mult), "/",
 		    unparse_op(expr->u.op.b, prec_primary));
+	if (expr->op == op_sin)
+		return unparse_fn("sin", expr);
+	if (expr->op == op_cos)
+		return unparse_fn("cos", expr);
+	if (expr->op == op_sqrt)
+		return unparse_fn("sqrt", expr);
 	abort();
 }
 

@@ -43,6 +43,8 @@ static struct obj **next_obj;
 
 static int n_vars, n_values;
 
+static const char *id_sin, *id_cos, *id_sqrt;
+
 
 static struct frame *find_frame(const char *name)
 {
@@ -186,6 +188,9 @@ all:
 		{
 			root_frame = zalloc_type(struct frame);
 			set_frame(root_frame);
+			id_sin = unique("sin");
+			id_cos = unique("cos");
+			id_sqrt = unique("sqrt");
 		}
 	    fpd
 		{
@@ -703,6 +708,19 @@ primary_expr:
 	| '(' expr ')'
 		{
 			$$ = $2;
+		}
+	| ID '(' expr ')'
+		{
+			if ($1 == id_sin)
+				$$ = binary_op(op_sin, $3, NULL);
+			else if ($1 == id_cos)
+				$$ = binary_op(op_cos, $3, NULL);
+			else if ($1 == id_sqrt)
+				$$ = binary_op(op_sqrt, $3, NULL);
+			else {
+				yyerrorf("unknown function \"%s\"", $1);
+				YYABORT;
+			}
 		}
 	;
 
