@@ -91,4 +91,5 @@ Werner Almesberger <werner@openmoko.org>
   modules/ge865.fpd
   modules/stdpass.fpd
   modules/tst.fpd
+  modules/wlcsp12-p05.fpd
   modules/wm3236aq.fpd

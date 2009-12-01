@@ -1,0 +1,59 @@
+/* MACHINE-GENERATED ! */
+
+frame ball {
+	__0: vec @(-d/2, -d/2)
+	__1: vec @(d/2, d/2)
+	rpad "$cname$row" __0 .
+}
+
+frame balls {
+	table
+	    { row }
+	    { 1 }
+	    { 2 }
+	    { 3 }
+	    { 4 }
+
+	table
+	    { cname, col }
+	    { "A", 1 }
+	    { "B", 2 }
+	    { "C", 3 }
+
+	__0: vec @(e*(col-2), e*(2.5-row))
+	frame ball .
+}
+
+frame outline {
+	set width = 4mil
+
+	set r = d/2
+
+	__0: vec @(-Ox/2, -Oy/2)
+	__1: vec @(Ox/2, Oy/2)
+	rect __0 . width
+	__2: vec @(Ox/2, -Oy/2)
+	__3: vec @(-Ox/2, Oy/2)
+	__4: vec .(r, -r)
+	__5: vec .(-r, 0mm)
+	__6: vec __4(0mm, r)
+	arc __4 . __5 width
+}
+
+package "WLCSP12-P0.5"
+unit mm
+set e = 0.5mm
+
+set d = 0.32mm
+
+set Ox = 1.61mm
+
+set Oy = 2.01mm
+
+frame balls @
+frame outline @
+measx outline.__3 >> outline.__1 0.3mm
+measy outline.__1 >> outline.__2 0.3mm
+measx ball.__0 -> ball.__1 -0.5mm
+measy balls.__0 -> balls.__0 0.5mm
+measx outline.__0 -> ball.__0 -0.4mm
