@@ -10,7 +10,7 @@ Number	Status	Description
 0008	Execute	Remove external GPS antenna connector and circuit (CON7602)
 0009	Done	Remove LED transistors (Q1501 and Q1502)
 0010	Execute	Remove audio amplifier (U4101)
-0011	Execute	Reduce number of varistors on USB_VBUS (C4902, C4909)
+0011	Done	Reduce number of varistors on USB_VBUS (C4902, C4909)
 0012	Defer	Add fuse to USB_VBUS
 0013	Defer	Increase rated current of B4902
 0014	Defer	Limit non-ESD overvoltage on USB_VBUS (U4905)

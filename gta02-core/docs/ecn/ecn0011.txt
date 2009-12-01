@@ -12,3 +12,4 @@ Changes:
 
 Author: Werner Almesberger <werner@openmoko.org>
 Commit: SVN 5687, removed C4909 and renamed C4902 to D4905
+Review: Dave Ball <openmoko@daveball.org.uk>, Rev 5737
