@@ -56,7 +56,7 @@ static void update_zoom(void)
 static void update_pos(struct coord pos)
 {
 	set_with_units(status_set_sys_x, "X ", pos.x);
-	set_with_units(status_set_sys_y, "Y ", pos.x);
+	set_with_units(status_set_sys_y, "Y ", pos.y);
 	set_with_units(status_set_user_x, "x ", pos.x-user_origin.x);
 	set_with_units(status_set_user_y, "y ", pos.y-user_origin.y);
 }
