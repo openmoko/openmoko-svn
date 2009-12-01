@@ -355,7 +355,6 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 			s3 = obj_base_name(obj->u.arc.end, prev);
 			s = stralloc_printf("arc %s %s %s %s",
 			    base, s1, s3, s2);
-			free(s2);
 		}
 		free(s2);
 		break;
