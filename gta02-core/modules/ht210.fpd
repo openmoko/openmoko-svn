@@ -1,0 +1,13 @@
+/* MACHINE-GENERATED ! */
+
+package "ht210"
+unit mm
+__0: vec @(-1.8mm/2, -0.8mm/2)
+__3: vec .(-1.2mm, 0.8mm)
+pad "2" . __0
+__1: vec @(1.8mm/2, -0.8mm/2)
+__4: vec .(1.2mm, 0.8mm)
+pad "3" __1 .
+__2: vec @(-0.9mm/2, 0.8mm/2+0.6mm)
+__5: vec .(0.9mm, -(0.6mm+0.8mm))
+pad "1" __2 .
