@@ -792,6 +792,7 @@ static int validate_pad_name(const char *s, void *ctx)
 {
 	char *tmp;
 
+	status_begin_reporting();
 	tmp = expand(s, NULL);
 	if (!tmp)
 		return 0;

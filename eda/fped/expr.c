@@ -380,8 +380,14 @@ char *expand(const char *name, const struct frame *frame)
 		if (*s != '{') {
 			while (is_id_char(*s, s == s0))
 				s++;
-			if (s == s0)
-				goto invalid;
+			if (s == s0) {
+				if (*s)
+					goto invalid;
+				else {
+					fail("incomplete variable name");
+					goto fail;
+				}
+			}
 			var = strnalloc(s0, s-s0);
 			len -= s-s0+1;
 			s--;
