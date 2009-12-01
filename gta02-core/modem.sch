@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 07 Nov 2009 17:20:26 GMT
+EESchema Schematic File Version 2  date Sat 07 Nov 2009 17:40:37 GMT
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -443,6 +443,7 @@ U 1 1 4A99855B
 P 8300 5150
 F 0 "C8103" V 8350 5350 50  0000 L CNN
 F 1 "220u" V 8350 4950 50  0000 L CNN
+F 2 "1206" H 8300 5150 60  0001 C CNN
 	1    8300 5150
 	0    1    1    0   
 $EndComp

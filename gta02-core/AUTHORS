@@ -12,6 +12,10 @@ Dave Ball <openmoko@daveball.org.uk>
   components/pcf50633-04-n3.lib
   components/sc32442.lib
   components/wm8753lgefl.lib
+  modules/ht210.fpd
+  modules/k4m51323pe.fpd
+  modules/smsn16.fpd
+  modules/u.fl-r-smt-1.fpd
 
   Compilations:
   components/gta02-core-expanded.lib

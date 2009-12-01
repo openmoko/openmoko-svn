@@ -111,6 +111,10 @@ F: wlcsp12-p05
 S: adg3304
 # ADG3304 data sheet page 19
 
+# SDRAM module
+F: k4m51323pe
+S: k4m51323pe
+
 # Rohm 1SS400 diode, SOD-523 (JEDEC) aka EMD2 (Rohm) aka SC-79 (JEITA)
 F: sod-523
 S: 1ss400

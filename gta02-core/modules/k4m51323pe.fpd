@@ -1,0 +1,69 @@
+/* MACHINE-GENERATED ! */
+
+frame col {
+	table
+	    { rname, row }
+	    { "A", 0 }
+	    { "B", 1 }
+	    { "C", 2 }
+	    { "D", 3 }
+	    { "E", 4 }
+	    { "F", 5 }
+	    { "G", 6 }
+	    { "H", 7 }
+	    { "J", 8 }
+	    { "K", 9 }
+	    { "L", 10 }
+	    { "M", 11 }
+	    { "N", 12 }
+	    { "P", 13 }
+	    { "R", 14 }
+
+	y: vec @(0mm, -e*row)
+	tl: vec .(-b/2, b/2)
+	br: vec .(b, -b)
+	rpad "$rname$cname" . tl
+}
+
+frame col_l {
+	set cname = 9-col
+
+	frame col @
+}
+
+frame col_r {
+	set cname = col+1
+
+	frame col @
+}
+
+frame Pads {
+	loop col = 0, 2
+
+	__0: vec @((4-col)*e, 7*e)
+	frame col_r .
+	__1: vec @(-(4-col)*e, 7*e)
+	frame col_l .
+}
+
+package "k2m51323pe"
+unit mm
+set E = 11mm
+
+set D = 13mm
+
+set e = 0.8mm
+
+set b = 0.5mm
+
+__0: vec @(-E/2, -D/2)
+__1: vec .(E, D)
+rect __0 . 0.1mm
+frame Pads @
+measy col.y -> col.y 0.5mm
+measx Pads.__0 -> Pads.__0 1.5mm
+measx Pads.__1 >> Pads.__0 2mm
+measy col.y -> Pads.__1 1mm
+measx Pads.__0 << Pads.__1 1.5mm
+measx __0 >> __1 -0.5mm
+measy __0 >> __1 0.5mm
