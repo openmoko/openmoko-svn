@@ -998,6 +998,7 @@ static void epilogue(FILE *file)
 }
 
 
+#if 1
 int postscript(FILE *file)
 {
 	struct pkg *pkg;
@@ -1016,3 +1017,28 @@ int postscript(FILE *file)
 	fflush(file);
 	return !ferror(file);
 }
+#else
+
+/*
+ * Experimental. Doesn't work properly.
+ */
+int postscript(FILE *file)
+{
+	unit_type cx, cy;
+	struct bbox bbox;
+	double f = 0.2;
+
+	prologue(file, 1);
+	ps_page(file, 1, pkgs);
+	active_params = postscript_params;
+	bbox = inst_get_bbox();
+	cx = (bbox.min.x+bbox.max.x)/2;
+	cy = (bbox.min.y+bbox.max.y)/2;
+	fprintf(file, "%d %d translate\n", (int) (-cx*f), (int) (-cy*f));
+	ps_draw_package(file, pkgs->next, f);
+	fprintf(file, "showpage\n");
+	epilogue(file);
+	fflush(file);
+	return !ferror(file);
+}
+#endif

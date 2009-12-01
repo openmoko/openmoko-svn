@@ -443,6 +443,7 @@ static int end_new_rpad(struct inst *from, struct inst *to)
 	obj->u.pad.other = inst_get_vec(to);
 	obj->u.pad.name = stralloc("?");
 	obj->u.pad.rounded = 1;
+	obj->u.pad.type = pt_normal;
 	return 1;
 }
 
