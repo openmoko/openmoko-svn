@@ -276,3 +276,9 @@ D: http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0110S0101BLM15H.pdf
 #S: FILTER
 #A: glamo-bead
 #D: http://www.inpaq.com.tw/en/specification/Specification-MCB-S&B%20Series-Updated20090331.pdf
+
+# Rohm 1SS400 Switching Diode (D4603)
+# Amazingly, this is the only switching diode we use.
+S: DIODE
+A: 1ss400
+D: http://www.rohm.com/products/databook/di/pdf/1ss400.pdf
