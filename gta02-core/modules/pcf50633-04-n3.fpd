@@ -1,0 +1,126 @@
+/* MACHINE-GENERATED ! */
+
+frame left_l_pad {
+	a: vec @(0mm, -b1/2)
+	b: vec .(L3-L, b1)
+	pad "." a .
+}
+
+frame left_l {
+	loop n = 0, 10
+	__0: vec @(-D/2+(L+0.01mm), (n-5)*e)
+	frame left_l_pad .
+}
+
+frame top_l_pad {
+	a: vec @(-b1/2, 0mm)
+	b: vec .(b1, -L2+L)
+	pad "." a .
+}
+
+frame top_l {
+	loop n = 0, 10
+	__0: vec @((n-5)*e, E/2-(L+0.01mm))
+	frame top_l_pad .
+}
+
+frame right_l_pad {
+	a: vec @(0mm, b1/2)
+	b: vec .(-L3+L, -b1)
+	pad "." a .
+}
+
+frame right_l {
+	loop n = 0, 10
+	__0: vec @(D/2-(L+0.01mm), (5-n)*e)
+	frame right_l_pad .
+}
+
+frame bottom_l_pad {
+	a: vec @(b1/2, 0mm)
+	b: vec .(-b1, L2-L)
+	pad "." a .
+}
+
+frame bottom_l {
+	loop n = 0, 10
+	__0: vec @((5-n)*e, -E/2+(L+0.01mm))
+	frame bottom_l_pad .
+}
+frame left_s_pad {
+	a: vec @(0mm, -b/2)
+	b: vec .(L, b)
+	pad "$name" a .
+}
+
+frame left {
+	loop n = 0, 16
+	__0: vec @(-D/2, (n-8)*e)
+	set name = n + 1
+	frame left_s_pad .
+}
+
+frame top_s_pad {
+	a: vec @(-b/2, 0mm)
+	b: vec .(b, -L)
+	pad "$name" a .
+}
+
+frame top {
+	loop n = 0, 16
+	__0: vec @((n-8)*e, E/2)
+	set name = n + 18
+	frame top_s_pad .
+}
+
+frame right_s_pad {
+	a: vec @(0mm, b/2)
+	b: vec .(-L, -b)
+	pad "$name" a .
+}
+
+frame right {
+	loop n = 0, 16
+	__0: vec @(D/2, (8-n)*e)
+	set name = n + 35
+	frame right_s_pad .
+}
+
+frame bottom_s_pad {
+	a: vec @(b/2, 0mm)
+	b: vec .(-b, L)
+	pad "$name" a .
+}
+
+frame bottom {
+	loop n = 0, 16
+	__0: vec @((8-n)*e, -E/2)
+	set name = n + 52
+	frame bottom_s_pad .
+}
+
+package "pcf50633-04-n3"
+unit mm
+set b = 0.2mm
+set b1 = 0.18mm
+set D = 8mm
+set E = 8mm
+set e = 0.4mm
+set L = 0.4mm
+set L2 = 1.55mm
+set L3 = 1.3mm
+set v = 0.1mm
+set w = 0.05mm
+
+__0: vec @(-D/2, -E/2)
+__1: vec .(D, E)
+rect __0 . 0.01mm
+
+frame left @
+frame left_l @
+frame top @
+frame top_l @
+frame right @
+frame right_l @
+frame bottom @
+frame bottom_l @

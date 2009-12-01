@@ -14,6 +14,7 @@ Dave Ball <openmoko@daveball.org.uk>
   components/wm8753lgefl.lib
   modules/ht210.fpd
   modules/k4m51323pe.fpd
+  modules/pcf50633-04-n3.fpd
   modules/smsn16.fpd
   modules/u.fl-r-smt-1.fpd
 

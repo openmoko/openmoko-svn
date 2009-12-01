@@ -53,7 +53,8 @@ frame BR {
 	frame P9_B .
 	__2: vec @(-9.48mm, 9.44mm)
 	__3: vec .(8.25mm, -2.9mm)
-	pad "np" __2 .
+	rect __2 . 
+	line . __2 
 	frame SD @
 }
 
@@ -74,9 +75,10 @@ frame SIM {
 }
 
 frame np_pad {
-	lr: vec @(0mm, 0.9mm/2)
-	ul: vec .(-0.9mm, 0.9mm)
-	pad "np" . lr
+	a: vec @(0mm, 0.9mm/2)
+	b: vec .(-0.9mm, 0.9mm)
+	rect . a 
+	line a . 
 }
 
 frame patProhib {

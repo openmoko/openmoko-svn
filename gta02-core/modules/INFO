@@ -115,6 +115,10 @@ S: adg3304
 F: k4m51323pe
 S: k4m51323pe
 
+# PMU
+F: pcf50633-04-n3
+S: pcf50633-04-n3  
+
 # Rohm 1SS400 diode, SOD-523 (JEDEC) aka EMD2 (Rohm) aka SC-79 (JEITA)
 F: sod-523
 S: 1ss400
