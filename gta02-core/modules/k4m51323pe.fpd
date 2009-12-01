@@ -46,7 +46,7 @@ frame Pads {
 	frame col_l .
 }
 
-package "k2m51323pe"
+package "k4m51323pe"
 unit mm
 set E = 11mm
 
