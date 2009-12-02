@@ -39,7 +39,7 @@ Compile:
 
 Run an example:
 
-  ./fped qfp.fpd
+  ./fped examples/qfn.fpd
 
 
 Motivation
