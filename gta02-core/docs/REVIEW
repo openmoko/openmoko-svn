@@ -1,0 +1,152 @@
+What to look for in a review
+============================
+
+The overall purpose of reviews is to identify problems in the design and
+its documentation. Once an item has been reviewed, the name of the
+reviewer and the SVN revision of the file(s) that has/have been reviewed
+should be recorded.
+
+We don't have formal requirements on who can make a review and how
+thorough a review should be, but as a rule of thumb, a reviewer should
+a) at least feel to have understood the reviewed item by the end of the
+review, and b) all the parts of the reviewed item should be examined.
+
+The commands to visualize items and the location of files that record
+the review status are described in GETTING-STARTED. The following sections
+list things to check in a review.
+
+
+Components (schematics symbols)
+-------------------------------
+
+Schematics symbols should be accurate renderings of the drawings in the
+respective data sheets. In some cases, we depart from the reference for
+consistency within the project or to avoid flaws in the data sheet.
+
+- presence of an entry in the file components/INFO with a pointer to
+  a data sheet. If no data sheet is available, we use Openmoko's GTA02
+  schematics as a reference.
+
+- the pin names (GPIOx, nRESET, etc.) match with the data sheet (as an
+  exception, we correct inconsistencies and make sure inverted pins
+  have a sensible name - usually nSOMETHING)
+
+- pin/pad numbers match those in the data sheet
+
+- the drawing is correctly done and conveys the purpose of the component
+
+- pin types match what the data sheet says
+
+- permanently inverted signals have a circle either inside the symbol
+  or at its edge (examples: X74X1G00_5 and XRT9711_BD_5 in
+  expanded/usb.sch)
+
+
+Schematics and ECNs (Engineering Change Notices)
+------------------------------------------------
+
+The schematics are based on the Openmoko GTA02 design but numerous
+changes have been made. The changes are documented in ECNs in docs/ecn/
+ECNs have their own life cycle, described in docs/ecn/README
+
+- equivalence to the respective circuit in GTA02, except if a change
+  has been made through an ECN
+
+- changes are marked with a comment briefly stating what happened and
+  which ECN describes the change
+
+- use of the same component references (R1014, etc.)
+
+- use of the same component values and their correct presentation.
+  The following conventions apply:
+
+  - there be no spaces between numbers and units
+
+    Note that this only applies to the schematics. In all other cases,
+    we should follow SI rules and put a space between numbers and units,
+    e.g., 33 Ohm and not 33Ohm.
+
+  - SI prefixes ("k" for kilo, "M" for mega, "m" to milli, etc.) are
+    written in their normal case. E.g., 100k is correct, 100K would be
+    incorrect.
+
+  - we use the ASCII alphabet. The Omega of "Ohm" becomes R.
+
+  - "obvious" units are omitted, e.g., resistors, capacitors, and
+    inductors don't have the R, F, or H. There is one exception: if no
+    SI prefix is needed, we put the letter representing the unit.
+
+    Example: 100n instead of 100nF, 10k instead of 10kOhm, but 33R (and
+    not just 33) instead of 33 Ohm.
+
+  - decimal points are replaced by the SI prefix, e.g.,
+    1.2 V become 1V2
+
+  - units of additional parameters and all units of components that are
+    not R, C, or L, are written in regular SI or SI-like notation, e.g.,
+    17.6pF, 5.6Vac
+
+- wherever signals connect to each other, the intersection is T-shaped
+  and is marked with a large dot. Connecting signals never intersect
+  in a cross-shape.
+
+- the drawing is clean, with adequate separation between elements, no
+  overlaps, etc.
+
+- signals routing is kept straight and simple. Labels are used where
+  drawing the signals would result in visual confusion.
+
+
+Footprints (modules)
+--------------------
+
+Footprints should be accurate renderings of the land patterns shown in
+the respective data sheet or other document defining the footprint.
+
+- presence of an entry in the file modules/INFO with either the name of
+  the data sheet entry in components/INFO (if the data sheet contains
+  the footprint), or a pointer to a document describing the footprint.
+
+  Note that, with the exception of some BGAs, a footprint is not
+  identical with the pads shown on case drawings.
+
+  If no other source is available, the footprints Openmoko used in GTA02
+  can serve as a reference:
+
+  http://downloads.openmoko.org/developer/schematics/GTA02/gta02_outline_footprints_netlist.tar.bz2
+
+  The Gerber files are best viewed with the "gerbv" program.
+  
+- presence and correct location of all pins/pads
+
+- presence of the package outline and/or "keep out area" markings
+
+- there are measurements for all the parameters shown in the reference
+  material. The location of measurements may differ, e.g., the reference
+  may measure a pin pitch at the upper left corner of the drawing while
+  our footprint measures the same pitch at the lower side.
+
+
+Layout
+------
+
+To do.
+
+
+Reporting review results
+------------------------
+
+If a review was successful without further comments and you have commit
+access, you can just add your name to the file recording reviews of the
+respective item. It can't hurt to send a quick note to the gta02-core
+list to let everyone know of the review.
+
+In all other cases, please post the results to the list and appropriate
+action will be taken.
+
+Partially successful reviews can be recorded with a remark describing
+the remaining flaw(s). If major changes are needed or if an item is
+changed after review, a new review should be conducted.
+
+Any questions that pop during a review should either be posted to the
+list or asked on the #gta02-core IRC channel.
