@@ -891,16 +891,22 @@ fprintf(file,
 
 	/*
 	 * Stack: font string width height factor -> factor
+	 *
+	 * Hack: sometimes, scalefont can't produce a suitable font and just
+	 * gives us something zero-sized, which trips the division. We just
+	 * ignore this case for now. Since maxfont is used in pairs, the
+	 * second one may still succeed.
 	 */
 
 	fprintf(file,
+"/sdiv { dup 0 eq { pop 1 } if div } def\n"
 "/maxfont {\n"
 "    gsave 0 0 moveto\n"
 "    /f exch def /h exch def /w exch def\n"
 "    exch f scalefont setfont\n"
 "    false charpath flattenpath pathbbox\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
-"    w urx llx sub div h ury lly sub div 2 copy gt { exch } if pop\n"
+"    w urx llx sub sdiv h ury lly sub sdiv 2 copy gt { exch } if pop\n"
 "    f mul grestore } def\n");
 
 	/*
