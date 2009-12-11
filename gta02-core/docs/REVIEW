@@ -23,6 +23,8 @@ Schematics symbols should be accurate renderings of the drawings in the
 respective data sheets. In some cases, we depart from the reference for
 consistency within the project or to avoid flaws in the data sheet.
 
+Things to check:
+
 - presence of an entry in the file components/INFO with a pointer to
   a data sheet. If no data sheet is available, we use Openmoko's GTA02
   schematics as a reference.
@@ -49,13 +51,26 @@ The schematics are based on the Openmoko GTA02 design but numerous
 changes have been made. The changes are documented in ECNs in docs/ecn/
 ECNs have their own life cycle, described in docs/ecn/README
 
+Things to check:
+
 - equivalence to the respective circuit in GTA02, except if a change
-  has been made through an ECN
+  has been made through an ECN. The GTA02 schematics can be found here:
+  http://downloads.openmoko.org/developer/schematics/GTA02/Schematics_Freerunner-GTA02_A5-A7cumulative_public_RC0.pdf
 
 - changes are marked with a comment briefly stating what happened and
   which ECN describes the change
 
 - use of the same component references (R1014, etc.)
+
+- if a new component has been added, its component reference must be
+  unique within the gta02-core schematics. Furthermore, it must not
+  coincide with any component reference in Openmoko's GTA02 schematics.
+
+  New component references follow the numbering scheme for the respective
+  sheet (adapted from Openmoko's GTA02), e.g., everything on the PMU sheet
+  is in the range from 1700 to 1799. (Components that existed already in
+  GTA02 but have moved to a different sheet in gta02-core retain their
+  original reference.)
 
 - use of the same component values and their correct presentation.
   The following conventions apply:
@@ -83,8 +98,9 @@ ECNs have their own life cycle, described in docs/ecn/README
     1.2 V become 1V2
 
   - units of additional parameters and all units of components that are
-    not R, C, or L, are written in regular SI or SI-like notation, e.g.,
-    17.6pF, 5.6Vac
+    not R, C, or L, are written in regular SI or SI-like notation. e.g.,
+    Example 1: a varistor could be characterized with 5.8pF, 5.6Vdc.
+    Example 2: a capacitor could be characterized with 100u, 6.3V.
 
 - wherever signals connect to each other, the intersection is T-shaped
   and is marked with a large dot. Connecting signals never intersect
@@ -102,6 +118,8 @@ Footprints (modules)
 
 Footprints should be accurate renderings of the land patterns shown in
 the respective data sheet or other document defining the footprint.
+
+Things to check:
 
 - presence of an entry in the file modules/INFO with either the name of
   the data sheet entry in components/INFO (if the data sheet contains
