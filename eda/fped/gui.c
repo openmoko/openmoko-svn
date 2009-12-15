@@ -252,12 +252,20 @@ static void make_center_area(GtkWidget *vbox)
 
 void change_world(void)
 {
+	struct bbox before, after;
+
 	inst_deselect();
 	status_begin_reporting();
+	before = inst_get_bbox();
 	instantiate();
+	after = inst_get_bbox();
 	label_in_box_bg(active_frame->label, COLOR_FRAME_SELECTED);
 	build_frames(frames_box);
-	redraw();
+	if (after.min.x < before.min.x || after.min.y < before.min.y || 
+	    after.max.x > before.max.x || after.max.y > before.max.y)
+		zoom_to_extents();
+	else
+		redraw();
 }
 
 
