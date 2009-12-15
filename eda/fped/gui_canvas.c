@@ -36,7 +36,7 @@
 
 void (*highlight)(void) = NULL;
 
-static struct coord curr_pos;
+static struct coord curr_pos; /* canvas coordinates ! */
 static struct coord user_origin = { 0, 0 };
 
 static int dragging = 0;
@@ -55,16 +55,28 @@ static void update_zoom(void)
 
 static void update_pos(struct coord pos)
 {
+	struct coord user;
+	unit_type diag;
+
 	set_with_units(status_set_sys_x, "X ", pos.x);
 	set_with_units(status_set_sys_y, "Y ", pos.y);
-	set_with_units(status_set_user_x, "x ", pos.x-user_origin.x);
-	set_with_units(status_set_user_y, "y ", pos.y-user_origin.y);
+
+	user.x = pos.x-user_origin.x;
+	user.y = pos.y-user_origin.y;
+	set_with_units(status_set_user_x, "x ", user.x);
+	set_with_units(status_set_user_y, "y ", user.y);
+
+	if (!selected_inst) {
+		diag = hypot(user.x, user.y);
+		set_with_units(status_set_r, "r = ", diag);
+		status_set_angle_xy(user);
+	}
 }
 
 
 void refresh_pos(void)
 {
-	update_pos(curr_pos);
+	update_pos(canvas_to_coord(curr_pos.x, curr_pos.y));
 }
 
 

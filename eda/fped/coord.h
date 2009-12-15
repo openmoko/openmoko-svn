@@ -84,6 +84,7 @@ struct coord sub_vec(struct coord a, struct coord b);
 struct coord neg_vec(struct coord v);
 
 struct coord rotate_r(struct coord c, unit_type r, double angle);
+double theta_vec(struct coord v);
 double theta(struct coord c, struct coord p);
 
 void swap_coord(unit_type *a, unit_type *b);

@@ -131,14 +131,22 @@ struct coord rotate_r(struct coord c, unit_type r, double angle)
 }
 
 
-double theta(struct coord c, struct coord p)
+double theta_vec(struct coord v)
 {
 	double a;
 
-	a = atan2(p.y-c.y, p.x-c.x)/M_PI*180.0;
+	a = atan2(v.y, v.x)/M_PI*180.0;
 	if (a < 0)
 		a += 360.0;
 	return a;
+}
+
+
+double theta(struct coord c, struct coord p)
+{
+	p.x -= c.x;
+	p.y -= c.y;
+	return theta_vec(p);
 }
 
 

@@ -23,6 +23,7 @@
 #include "delete.h"
 #include "gui_util.h"
 #include "gui_status.h"
+#include "gui_canvas.h"
 #include "gui_tool.h"
 #include "gui_meas.h"
 #include "gui_inst.h"
@@ -394,6 +395,7 @@ void inst_deselect(void)
 	status_set_angle("");
 	selected_inst = NULL;
 	edit_nothing();
+	refresh_pos();
 }
 
 
@@ -449,15 +451,14 @@ static void rect_status(struct coord a, struct coord b, unit_type width,
     int rounded)
 {
 	struct coord d = sub_vec(b, a);
-	double angle, r;
+	double r;
 	unit_type diag;
 	
 	status_set_xy(d);
 	if (!d.x && !d.y)
 		status_set_angle("a = 0 deg");
 	else {
-		angle = theta(a, b);
-		status_set_angle("a = %3.1f deg", angle);
+		status_set_angle("a = %3.1f deg", theta(a, b));
 	}
 	if (d.x < 0)
 		d.x = -d.x;

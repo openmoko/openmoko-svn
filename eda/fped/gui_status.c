@@ -155,6 +155,16 @@ void status_set_xy(struct coord coord)
 }
 
 
+void status_set_angle_xy(struct coord v)
+{
+	if (!v.x && !v.y)
+		status_set_angle("a = 0 deg");
+	else
+		status_set_angle("a = %3.1f deg", theta_vec(v));
+
+}
+
+
 static void entry_color(GtkWidget *widget, const char *color)
 {
 	GdkColor col;
