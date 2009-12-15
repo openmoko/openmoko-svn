@@ -84,6 +84,7 @@ void status_set_grid(const char *fmt, ...)
 void status_set_unit(const char *fmt, ...)
     __attribute__((format(printf, 1, 2)));
 
+void status_set_icon(GtkWidget *image);
 void status_set_xy(struct coord coord);
 void status_set_angle_xy(struct coord v);
 

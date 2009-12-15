@@ -158,6 +158,7 @@ static void inst_select_inst(struct inst *inst)
 	gui_frame_select_inst(inst);
 	if (inst->ops->select)
 		selected_inst->ops->select(inst);
+	status_set_icon(get_icon_by_inst(inst));
 }
 
 
@@ -396,6 +397,7 @@ void inst_deselect(void)
 	selected_inst = NULL;
 	edit_nothing();
 	refresh_pos();
+	status_set_icon(NULL);
 }
 
 
@@ -536,6 +538,7 @@ static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
 
 	inst = alloc_type(struct inst);
 	inst->ops = ops;
+	inst->prio = prio;
 	inst->vec = NULL;
 	inst->obj = NULL;
 	inst->base = inst->bbox.min = inst->bbox.max = base;

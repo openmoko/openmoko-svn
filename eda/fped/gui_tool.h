@@ -74,6 +74,8 @@ void tool_frame_deleted(const struct frame *frame);
 
 void tool_selected_inst(struct inst *inst);
 
+GtkWidget *get_icon_by_inst(const struct inst *inst);
+
 void tool_reset(void);
 
 GtkWidget *gui_setup_tools(GdkDrawable *drawable);

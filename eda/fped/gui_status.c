@@ -55,6 +55,7 @@ static GtkWidget *last_edit = NULL;
 /* ----- setter functions -------------------------------------------------- */
 
 
+static GtkWidget *status_icon;
 static GtkWidget *status_name, *status_entry;
 static GtkWidget *status_type_x, *status_type_y, *status_type_entry;
 static GtkWidget *status_box_x, *status_entry_y;
@@ -142,6 +143,15 @@ void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
 
 
 /* ----- complex status updates -------------------------------------------- */
+
+
+void status_set_icon(GtkWidget *image)
+{
+	vacate_widget(status_icon);
+	if (image)
+		gtk_container_add(GTK_CONTAINER(status_icon), image);
+	gtk_widget_show_all(status_icon);
+}
 
 
 void status_set_xy(struct coord coord)
@@ -920,9 +930,19 @@ static GtkWidget *add_entry(GtkWidget *tab, int col, int row)
 void make_status_area(GtkWidget *vbox)
 {
 	GtkWidget *tab, *sep;
+	GtkWidget *hbox, *vbox2;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+
+	vbox2 = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 1);
+
+	status_icon = gtk_event_box_new();
+	gtk_box_pack_start(GTK_BOX(vbox2), status_icon, FALSE, FALSE, 0);
 
 	tab = gtk_table_new(7, 3, FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox), tab, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), tab, TRUE, TRUE, 0);
 
 	/* types */
 

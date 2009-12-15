@@ -73,6 +73,7 @@ struct inst_ops {
 
 struct inst {
 	const struct inst_ops *ops;
+	enum inst_prio prio; /* currently only used for icon selection */
 	struct coord base;
 	struct bbox bbox;
 	struct vec *vec; /* NULL if not vector */

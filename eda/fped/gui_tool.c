@@ -18,6 +18,7 @@
 
 #include "util.h"
 #include "inst.h"
+#include "meas.h"
 #include "obj.h"
 #include "gui_util.h"
 #include "gui_style.h"
@@ -30,6 +31,7 @@
 #include "gui_tool.h"
 
 
+#include "icons/arc.xpm"
 #include "icons/circ.xpm"
 #include "icons/frame.xpm"
 #include "icons/frame_locked.xpm"
@@ -974,6 +976,61 @@ void tool_redraw(void)
 	pos = canvas_to_coord(last_canvas_pos.x, last_canvas_pos.y);
 	tool_hover(pos);
 	over_begin(drag_save_and_draw, NULL, pos);
+}
+
+
+/* ----- Retrieve icons by instance characteristics ------------------------ */
+
+
+GtkWidget *get_icon_by_inst(const struct inst *inst)
+{
+	char **image;
+
+	switch (inst->prio) {
+	case ip_frame:
+		image = xpm_frame;
+		break;
+	case ip_pad_copper:
+	case ip_pad_special:
+		image = inst->obj->u.pad.rounded ? xpm_rpad : xpm_pad;
+		break;
+	case ip_circ:
+		image = xpm_circ;
+		break;
+	case ip_arc:
+		image = xpm_arc;
+		break;
+	case ip_rect:
+		image = xpm_rect;
+		break;
+	case ip_meas:
+		switch (inst->obj->u.meas.type) {
+		case mt_xy_next:
+		case mt_xy_max:
+			image = xpm_meas;
+			break;
+		case mt_x_next:
+		case mt_x_max:
+			image = xpm_meas_x;
+			break;
+		case mt_y_next:
+		case mt_y_max:
+			image = xpm_meas_y;
+			break;
+		default:
+			abort();
+		}
+		break;
+	case ip_line:
+		image = xpm_line;
+		break;
+	case ip_vec:
+		image = xpm_vec;
+		break;
+	default:
+		abort();
+	}
+	return make_image(DA, image);
 }
 
 

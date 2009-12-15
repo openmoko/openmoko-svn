@@ -23,7 +23,7 @@ OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
 
 XPMS = point.xpm delete.xpm delete_off.xpm \
        vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \
-       line.xpm rect.xpm pad.xpm rpad.xpm circ.xpm \
+       line.xpm rect.xpm pad.xpm rpad.xpm arc.xpm circ.xpm \
        meas.xpm meas_x.xpm meas_y.xpm \
        stuff.xpm stuff_off.xpm meas_off.xpm \
        bright.xpm bright_off.xpm all.xpm all_off.xpm
