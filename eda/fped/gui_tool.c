@@ -1030,7 +1030,7 @@ GtkWidget *get_icon_by_inst(const struct inst *inst)
 	default:
 		abort();
 	}
-	return make_image(DA, image);
+	return make_transparent_image(DA, image);
 }
 
 

@@ -80,15 +80,22 @@ endif
 .PHONY:		all dep depend clean install uninstall manual upload-manual
 .PHONY:		update
 
-.SUFFIXES:	.fig .xpm
+.SUFFIXES:	.fig .xpm .ppm
 
 # generate 26x26 pixels icons, then drop the 1-pixel frame
 
-.fig.xpm:
-		$(GEN) fig2dev -L xpm -Z 0.32 -S 4 $< | \
-		  convert -crop 24x24+1+1 - - | \
-		  sed "s/*.*\[]/*xpm_`basename $@ .xpm`[]/" >$@; \
-		  [ "$${PIPESTATUS[*]}" = "0 0 0" ] || { rm -f $@; exit 1; }
+.fig.ppm:
+		$(GEN) fig2dev -L ppm -Z 0.32 -S 4 $< | \
+		  convert -crop 24x24+1+1 - - >$@; \
+		  [ "$${PIPESTATUS[*]}" = "0 0" ] || { rm -f $@; exit 1; }
+
+# ppmtoxpm is very chatty, so we suppress its stderr
+
+.ppm.xpm:
+		$(GEN) ppmcolormask white $< >_tmp && \
+		  ppmtoxpm -name xpm_`basename $@ .xpm` -alphamask _tmp \
+		  $< >$@ 2>/dev/null && rm -f _tmp || \
+		  { rm -f $@ _tmp; exit 1; }
 
 all:		fped
 
@@ -134,7 +141,7 @@ endif
 # ----- Cleanup ---------------------------------------------------------------
 
 clean:
-		rm -f $(OBJS) $(XPMS:%=icons/%)
+		rm -f $(OBJS) $(XPMS:%=icons/%) $(XPMS:%.xpm=icons/%.ppm)
 		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend
 
 # ----- Install / uninstall ---------------------------------------------------

@@ -176,9 +176,23 @@ GtkWidget *make_image(GdkDrawable *drawable, char **xpm)
 {
 	GdkPixmap *pixmap;
 	GtkWidget *image;
+	GdkColor white = get_color("white");
 
-	pixmap = gdk_pixmap_create_from_xpm_d(drawable, NULL, NULL, xpm);
+	pixmap = gdk_pixmap_create_from_xpm_d(drawable, NULL, &white, xpm);
 	image = gtk_image_new_from_pixmap(pixmap, NULL);
+	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
+	return image;
+}
+
+
+GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm)
+{
+	GdkPixmap *pixmap;
+	GdkBitmap *mask;
+	GtkWidget *image;
+
+	pixmap = gdk_pixmap_create_from_xpm_d(drawable, &mask, NULL, xpm);
+	image = gtk_image_new_from_pixmap(pixmap, mask);
 	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
 	return image;
 }
