@@ -76,6 +76,7 @@ Setting things up
     - bison
     - fig2dev
     - ImageMagick
+    - Netpbm
     - Gtk+ 2.x development package (libgtk2.0-dev or similar)
     - Liberation Fonts (ttf-liberation or similar)
 
