@@ -9,6 +9,17 @@ The language is constrained such that anything that can be expressed in
 the textual definition also has a straightforward equivalent operation
 that can be performed through the GUI.
 
+This work is distributed under the terms of the GNU GENERAL PUBLIC
+LICENSE, Version 2:
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+For your convenience, a copy of the complete license has been included
+in the file COPYING.GPLv2.
+
 
 Building
 --------
