@@ -18,7 +18,7 @@ Prerequisites:
 - bash
 - flex
 - bison
-- fig2dev
+- fig2dev (transfig)
 - ImageMagick
 - Netpbm
 - Gtk+ 2.x development package (libgtk2.0-dev or similar)
