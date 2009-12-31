@@ -77,6 +77,7 @@ static void popup_del_frame(void)
 	struct frame *frame = popup_data;
 
 	assert(frame != root_frame);
+	tool_frame_deleted(frame);
 	delete_frame(frame);
 	if (active_frame == frame)
 		select_frame(root_frame);
