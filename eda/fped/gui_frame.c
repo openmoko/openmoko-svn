@@ -139,11 +139,52 @@ static GtkItemFactoryEntry popup_frame_entries[] = {
 };
 
 
+static gboolean can_add_frame(void)
+{
+	const struct frame *frame;
+
+	for (frame = frames; frame; frame = frame->next)
+		if (frame->name && !strcmp(frame->name, "_"))
+			return FALSE;
+	return TRUE;
+}
+
+
+static gboolean can_add_var(const struct frame *frame)
+{
+	const struct table *table;
+	const struct var *var;
+	const struct loop *loop;
+
+	for (table = frame->tables; table; table = table->next)
+		for (var = table->vars; var; var = var->next)
+			if (!strcmp(var->name, "_"))
+				return FALSE;
+	for (loop = frame->loops; loop; loop = loop->next)
+		if (!strcmp(loop->var.name, "_"))
+			return FALSE;
+	return TRUE;
+}
+
+
 static void pop_up_frame(struct frame *frame, GdkEventButton *event)
 {
+	gboolean add_var;
+
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_frame, "/Delete frame"),
 	    frame != root_frame);
+
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_frame, "/Add frame"),
+	    can_add_frame());
+
+	add_var = can_add_var(frame);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_frame, "/Add variable"), add_var);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_frame, "/Add loop"), add_var);
+	
 	pop_up(popup_frame_widget, event, frame);
 }
 
@@ -247,6 +288,9 @@ static GtkItemFactoryEntry popup_single_var_entries[] = {
 
 static void pop_up_single_var(struct var *var, GdkEventButton *event)
 {
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_single_var, "/Add column"),
+	    can_add_var(var->frame));
 	pop_up(popup_single_var_widget, event, var);
 }
 
@@ -288,6 +332,9 @@ static void pop_up_table_var(struct var *var, GdkEventButton *event)
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_table_var, "/Delete column"),
 	    var->table->vars->next != NULL);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory_table_var, "/Add column"),
+	    can_add_var(var->frame));
 	pop_up(popup_table_var_widget, event, var);
 }
 
@@ -388,7 +435,7 @@ static void popup_del_loop(void)
 
 
 static GtkItemFactoryEntry popup_loop_var_entries[] = {
-	{ "/Delete loop",	NULL,	popup_del_loop,		0, "<Item>" },
+	{ "/Delete loop",	NULL,	popup_del_loop,	0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
 	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
