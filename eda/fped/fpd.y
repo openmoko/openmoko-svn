@@ -68,6 +68,23 @@ static struct vec *find_vec(const struct frame *frame, const char *name)
 }
 
 
+static struct var *find_var(const struct frame *frame, const char *name)
+{
+	const struct table *table;
+	struct var *var;
+	struct loop *loop;
+
+	for (table = frame->tables; table; table = table->next)
+		for (var = table->vars; var; var = var->next)
+			if (var->name == name)
+				return var;
+	for (loop = frame->loops; loop; loop = loop->next)
+		if (loop->var.name == name)
+			return &loop->var;
+	return NULL;
+}
+
+
 static void set_frame(struct frame *frame)
 {
 	curr_frame = frame;
@@ -289,10 +306,18 @@ frame_item:
 	table
 	| TOK_SET ID '=' expr
 		{
+			if (find_var(curr_frame, $2)) {
+				yyerrorf("duplicate variable \"%s\"", $2);
+				YYABORT;
+			}
 			make_var($2, $4);
 		}
 	| TOK_LOOP ID '=' expr ',' expr
 		{
+			if (find_var(curr_frame, $2)) {
+				yyerrorf("duplicate variable \"%s\"", $2);
+				YYABORT;
+			}
 			make_loop($2, $4, $6);
 		}
 	| vec
@@ -347,6 +372,10 @@ vars:
 var:
 	ID
 		{
+			if (find_var(curr_frame, $1)) {
+				yyerrorf("duplicate variable \"%s\"", $1);
+				YYABORT;
+			}
 			$$ = zalloc_type(struct var);
 			$$->name = $1;
 			$$->frame = curr_frame;
