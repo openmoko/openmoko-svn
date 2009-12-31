@@ -42,7 +42,7 @@ struct value {
 	struct expr *expr;
 	struct value *next;
 
-	/* back reference */
+	/* back reference, NULL if loop */
 	struct row *row;
 
 	/* for the GUI */

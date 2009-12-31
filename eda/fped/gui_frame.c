@@ -508,8 +508,19 @@ static void unselect_value(void *data)
 {
 	struct value *value = data;
 
+	/*
+	 * This condition is a little cryptic. Here is what it does:
+	 *
+	 * IF table/assignment (not loop)
+	 * AND the current row is the active (selected) row
+	 * AND it's an assignment (not a table).
+	 *
+	 * We need the last condition because the expressions of assignments
+	 * are drawn with COLOR_VAR_PASSIVE. (See build_assignment.)
+	 */
 	label_in_box_bg(value->widget,
-	    value->row && value->row->table->active_row == value->row ?
+	    value->row && value->row->table->active_row == value->row &&
+	    value->row->table->rows->next ?
 	     COLOR_CHOICE_SELECTED : COLOR_EXPR_PASSIVE);
 }
 
@@ -619,6 +630,12 @@ static gboolean assignment_value_select_event(GtkWidget *widget,
 	return TRUE;
 }
 
+
+/*
+ * In tables, expressions in the active row have a COLOR_CHOICE_SELECTED
+ * background. While expressions in assignments are technically on the active
+ * (and only) row, we use COLOR_VAR_PASSIVE for better readability.
+ */
 
 static void build_assignment(GtkWidget *vbox, struct frame *frame,
     struct table *table)
