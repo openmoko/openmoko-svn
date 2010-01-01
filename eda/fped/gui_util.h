@@ -52,14 +52,14 @@ void draw_arc(GdkDrawable *da, GdkGC *gc, int fill,
 void draw_circle(GdkDrawable *da, GdkGC *gc, int fill,
     int x, int y, int r);
 
-GtkWidget *label_in_box_new(const char *s);
+/* tooltips are optional (use NULL for none) */
+
+GtkWidget *label_in_box_new(const char *s, const char *tooltip);
 GtkWidget *box_of_label(GtkWidget *label);
 void label_in_box_fg(GtkWidget *box, const char *color);
 void label_in_box_bg(GtkWidget *box, const char *color);
 
 void vacate_widget(GtkWidget *widget);
-
-/* tooltips are optional (use NULL for none) */
 
 GtkWidget *make_image(GdkDrawable *drawable, char **xpm, const char *tooltip);
 GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm,

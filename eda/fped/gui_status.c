@@ -1,8 +1,8 @@
 /*
  * gui_status.c - GUI, status area
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -238,7 +238,7 @@ void edit_pad_type(enum pad_type *type)
 {
 	vacate_widget(status_box_x);
 	curr_pad_type = type;
-	pad_type = label_in_box_new(NULL);
+	pad_type = label_in_box_new(NULL, "Pad type. Click to cycle.");
 	gtk_container_add(GTK_CONTAINER(status_box_x), box_of_label(pad_type));
 	label_in_box_bg(pad_type, COLOR_SELECTOR);
 	g_signal_connect(G_OBJECT(box_of_label(pad_type)),
@@ -880,7 +880,7 @@ static GtkWidget *add_label_basic(GtkWidget *tab, int col, int row)
 {
 	GtkWidget *label;
 
-	label = label_in_box_new(NULL);
+	label = label_in_box_new(NULL, NULL);
 	gtk_table_attach(GTK_TABLE(tab), box_of_label(label),
 	    col, col+1, row, row+1,
 	    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 1);

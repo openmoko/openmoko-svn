@@ -598,7 +598,7 @@ static void edit_value_list(struct value *value,
 
 static GtkWidget *add_activator(GtkWidget *hbox, int active,
     gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
-    gpointer user, const char *fmt, ...)
+    gpointer user, const char *tooltip, const char *fmt, ...)
 {
 	GtkWidget *label;
 	va_list ap;
@@ -607,7 +607,7 @@ static GtkWidget *add_activator(GtkWidget *hbox, int active,
 	va_start(ap, fmt);
 	vsprintf(buf, fmt, ap);
 	va_end(ap);
-	label = label_in_box_new(buf);
+	label = label_in_box_new(buf, tooltip);
 	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	label_in_box_bg(label,
@@ -699,7 +699,8 @@ static void build_assignment(GtkWidget *vbox, struct frame *frame,
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-	field = label_in_box_new(table->vars->name);
+	field = label_in_box_new(table->vars->name,
+	    "Variable name. Click to edit.");
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_VAR_PASSIVE);
 	table->vars->widget = field;
@@ -711,7 +712,7 @@ static void build_assignment(GtkWidget *vbox, struct frame *frame,
 	    FALSE, FALSE, 0);
 
 	expr = unparse(table->rows->values->expr);
-	field = label_in_box_new(expr);
+	field = label_in_box_new(expr, "Variable value. Click to edit.");
 	free(expr);
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_EXPR_PASSIVE);
@@ -872,7 +873,8 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 
 	n_vars = 0;
 	for (var = table->vars; var; var = var->next) {
-		field = label_in_box_new(var->name);
+		field = label_in_box_new(var->name,
+		    "Variable (column) name. Click to edit.");
 		gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(field),
 		    n_vars, n_vars+1, 0, 1);
 		label_in_box_bg(field, COLOR_VAR_PASSIVE);
@@ -890,7 +892,8 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		n_vars = 0;
 		for (value = row->values; value; value = value->next) {
 			expr = unparse(value->expr);
-			field = label_in_box_new(expr);
+			field = label_in_box_new(expr,
+			    "Variable value. Click to select row or to edit.");
 			free(expr);
 			gtk_table_attach_defaults(GTK_TABLE(tab),
 			    box_of_label(field),
@@ -1037,7 +1040,8 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-	field = label_in_box_new(loop->var.name);
+	field = label_in_box_new(loop->var.name,
+	    "Variable name. Click to edit.");
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_VAR_PASSIVE);
 	if (instantiation_error == loop)
@@ -1051,7 +1055,8 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 	    FALSE, FALSE, 0);
 
 	expr = unparse(loop->from.expr);
-	field = label_in_box_new(expr);
+	field = label_in_box_new(expr,
+	    "Start value of loop. Click to edit.");
 	free(expr);
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_EXPR_PASSIVE);
@@ -1064,7 +1069,7 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 	    FALSE, FALSE, 0);
 
 	expr = unparse(loop->to.expr);
-	field = label_in_box_new(expr);
+	field = label_in_box_new(expr, "End value of loop. Click to edit.");
 	free(expr);
 	gtk_box_pack_start(GTK_BOX(hbox), box_of_label(field), FALSE, FALSE, 0);
 	label_in_box_bg(field, COLOR_EXPR_PASSIVE);
@@ -1078,7 +1083,9 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 
 	for (i = 0; i != loop->iterations; i++) {
 		label = add_activator(hbox, loop->active == i,
-		    loop_select_event, loop, "%g", loop->n+i);
+		    loop_select_event, loop,
+		    "Loop value. Click to make active.",
+		    "%g", loop->n+i);
 		gtk_object_set_data(GTK_OBJECT(box_of_label(label)), "value",
 		    (gpointer) (long) i);
 
@@ -1179,7 +1186,7 @@ static GtkWidget *item_label(GtkWidget *tab, char *s, int col, int row,
 {
 	GtkWidget *label;
 
-	label = label_in_box_new(s);
+	label = label_in_box_new(s, "Click to select.");
 	gtk_misc_set_padding(GTK_MISC(label), 0, 0);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 	gtk_widget_modify_font(label, item_list_font);
@@ -1343,7 +1350,8 @@ static GtkWidget *build_pkg_name(void)
 {
 	GtkWidget *label;
 
-	label = label_in_box_new(pkg_name);
+	label = label_in_box_new(pkg_name,
+	    "Package name. (Template) Click to edit.");
 	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 
@@ -1414,6 +1422,7 @@ static GtkWidget *build_pkg_names(void)
 		if (pkg->name) {
 			field = add_activator(hbox, pkg == active_pkg,
 			    pkg_select_event, pkg,
+			    "Package name. Click to make active.",
 			    "%s", pkg->name);
 			g_signal_connect(G_OBJECT(box_of_label(field)),
 			    "scroll_event",
@@ -1503,7 +1512,9 @@ static GtkWidget *build_frame_label(struct frame *frame)
 {
 	GtkWidget *label;
 
-	label = label_in_box_new(frame->name ? frame->name : "(root)");
+	label = label_in_box_new(frame->name ? frame->name : "(root)",
+	    frame->name ? "Frame name. Click to select or edit." :
+	    "Root frame. Click to select.");
 	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
 
@@ -1540,14 +1551,22 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 {
 	GtkWidget *hbox;
 	struct obj *obj;
+	char *tooltip;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	for (obj = frame->objs; obj; obj = obj->next)
-		if (obj->type == ot_frame && obj->u.frame.ref == active_frame)
+		if (obj->type == ot_frame &&
+		    obj->u.frame.ref == active_frame) {
+			tooltip = stralloc_printf(
+			    "Frame <b>%s</b> is referenced here. "
+			    "Click to make active.", active_frame->name);
 			add_activator(hbox,
 			    obj == obj->u.frame.ref->active_ref,
 			    frame_ref_select_event, obj,
+			    tooltip,
 			    "%d", obj->u.frame.lineno);
+			free(tooltip);
+		}
 	return hbox;
 }
 
