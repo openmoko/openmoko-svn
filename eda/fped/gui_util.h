@@ -1,8 +1,8 @@
 /*
  * gui_util.h - GUI helper functions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,10 +59,14 @@ void label_in_box_bg(GtkWidget *box, const char *color);
 
 void vacate_widget(GtkWidget *widget);
 
-GtkWidget *make_image(GdkDrawable *drawable, char **xpm);
-GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm);
+/* tooltips are optional (use NULL for none) */
+
+GtkWidget *make_image(GdkDrawable *drawable, char **xpm, const char *tooltip);
+GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm,
+    const char *tooltip);
 void set_image(GtkWidget *widget, GtkWidget *image);
-GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,
+GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable,
+    char **xpm, const char *tooltip,
     gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
     gpointer data);
 

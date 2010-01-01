@@ -1,8 +1,8 @@
 /*
  * gui.c - Editor GUI core
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,19 +163,27 @@ static void make_tool_bar(GtkWidget *hbox, GdkDrawable *drawable)
 	//gtk_box_pack_end(GTK_BOX(hbox), bar, FALSE, FALSE, 0);
 	gtk_toolbar_set_style(GTK_TOOLBAR(bar), GTK_TOOLBAR_ICONS);
 
-	ev_all = tool_button(bar, drawable, NULL, toggle_all, NULL);
-	ev_stuff = tool_button(bar, drawable, NULL, toggle_stuff, NULL);
-	ev_meas = tool_button(bar, drawable, NULL, toggle_meas, NULL);
-	ev_bright = tool_button(bar, drawable, NULL, toggle_bright, NULL);
+	ev_all = tool_button(bar, drawable, NULL, NULL, toggle_all, NULL);
+	ev_stuff = tool_button(bar, drawable, NULL, NULL, toggle_stuff, NULL);
+	ev_meas = tool_button(bar, drawable, NULL, NULL, toggle_meas, NULL);
+	ev_bright = tool_button(bar, drawable, NULL, NULL, toggle_bright, NULL);
 
-	stuff_image[0] = gtk_widget_ref(make_image(drawable, xpm_stuff_off));
-	stuff_image[1] = gtk_widget_ref(make_image(drawable, xpm_stuff));
-	meas_image[0] = gtk_widget_ref(make_image(drawable, xpm_meas_off));
-	meas_image[1] = gtk_widget_ref(make_image(drawable, xpm_meas));
-	all_image[0] = gtk_widget_ref(make_image(drawable, xpm_all_off));
-	all_image[1] = gtk_widget_ref(make_image(drawable, xpm_all));
-	bright_image[0] = gtk_widget_ref(make_image(drawable, xpm_bright_off));
-	bright_image[1] = gtk_widget_ref(make_image(drawable, xpm_bright));
+	stuff_image[0] = gtk_widget_ref(make_image(drawable, xpm_stuff_off,
+	    "Show vectors and frame references (disabled)"));
+	stuff_image[1] = gtk_widget_ref(make_image(drawable, xpm_stuff,
+	    "Show vectors and frame references (enabled)"));
+	meas_image[0] = gtk_widget_ref(make_image(drawable, xpm_meas_off,
+	    "Show measurements (disabled)"));
+	meas_image[1] = gtk_widget_ref(make_image(drawable, xpm_meas,
+	    "Show measurements (enabled)"));
+	all_image[0] = gtk_widget_ref(make_image(drawable, xpm_all_off,
+	    "Show all frames (currently showing only the active frame)"));
+	all_image[1] = gtk_widget_ref(make_image(drawable, xpm_all,
+	    "Show all frames (enabled)"));
+	bright_image[0] = gtk_widget_ref(make_image(drawable, xpm_bright_off,
+	    "Highlight elements (disabled)"));
+	bright_image[1] = gtk_widget_ref(make_image(drawable, xpm_bright,
+	    "Highlight elements (enabled)"));
 
 	set_image(ev_stuff, stuff_image[show_stuff]);
 	set_image(ev_meas, meas_image[show_meas]);

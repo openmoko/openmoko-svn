@@ -1,8 +1,8 @@
 /*
  * gui_tool.c - GUI, tool bar
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1030,7 +1030,7 @@ GtkWidget *get_icon_by_inst(const struct inst *inst)
 	default:
 		abort();
 	}
-	return make_transparent_image(DA, image);
+	return make_transparent_image(DA, image, NULL);
 }
 
 
@@ -1097,41 +1097,57 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	    GTK_ORIENTATION_VERTICAL);
 
 	ev_point = tool_button(bar, drawable, xpm_point,
+	    "Select and move items",
 	    tool_button_press_event, NULL);
-	ev_delete = tool_button(bar, drawable, NULL,
+	ev_delete = tool_button(bar, drawable, NULL, NULL,
 	     tool_button_press_event, &delete_ops);
 	tool_separator(bar);
 	tool_button(bar, drawable, xpm_vec,
+	    "Add a vector",
 	    tool_button_press_event, &vec_ops);
-	ev_frame = tool_button(bar, drawable, NULL,
+	ev_frame = tool_button(bar, drawable, NULL, NULL,
 	    tool_button_press_event, &frame_ops);
 	tool_button(bar, drawable, xpm_pad,
+	    "Add a rectangular pad",
 	    tool_button_press_event, &pad_ops);
 	tool_button(bar, drawable, xpm_rpad,
+	    "Add a rounded pad",
 	    tool_button_press_event, &rpad_ops);
 	tool_button(bar, drawable, xpm_line,
+	    "Add a silk screen line",
 	    tool_button_press_event, &line_ops);
 	tool_button(bar, drawable, xpm_rect,
+	    "Add a silk screen rectangle",
 	    tool_button_press_event, &rect_ops);
 	tool_button(bar, drawable, xpm_circ,
+	    "Add a silk screen circle or arc",
 	    tool_button_press_event, &circ_ops);
 	tool_separator(bar);
 	tool_button(bar, drawable, xpm_meas,
+	    "Add a measurement",
 	    tool_button_press_event, &tool_meas_ops);
 	tool_button(bar, drawable, xpm_meas_x,
+	    "Add a horizontal measurement",
 	    tool_button_press_event, &tool_meas_ops_x);
 	tool_button(bar, drawable, xpm_meas_y,
+	    "Add a vertical measurement",
 	    tool_button_press_event, &tool_meas_ops_y);
 
-	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame));
+	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame,
+	    "Step 1: select the current frame for insertion"));
 	frame_image_locked =
-	    gtk_widget_ref(make_image(drawable, xpm_frame_locked));
+	    gtk_widget_ref(make_image(drawable, xpm_frame_locked,
+	    "Step 2: select the frame into which to insert"));
 	frame_image_ready =
-	    gtk_widget_ref(make_image(drawable, xpm_frame_ready));
+	    gtk_widget_ref(make_image(drawable, xpm_frame_ready,
+	    "Final step: add the frame reference to an anchor point "
+	    "(vector or origin)"));
 	set_frame_image(frame_image);
 
-	delete_image[0] = gtk_widget_ref(make_image(drawable, xpm_delete_off));
-	delete_image[1] = gtk_widget_ref(make_image(drawable, xpm_delete));
+	delete_image[0] = gtk_widget_ref(make_image(drawable, xpm_delete_off,
+	    NULL));
+	delete_image[1] = gtk_widget_ref(make_image(drawable, xpm_delete,
+	    "Delete the selected item"));
 	set_image(ev_delete, delete_image[0]);
 
 	tool_reset();

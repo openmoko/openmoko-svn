@@ -1,8 +1,8 @@
 /*
  * gui_util.c - GUI helper functions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,7 +172,7 @@ void label_in_box_bg(GtkWidget *label, const char *color)
 /* ----- generate a tool button with an XPM image -------------------------- */
 
 
-GtkWidget *make_image(GdkDrawable *drawable, char **xpm)
+GtkWidget *make_image(GdkDrawable *drawable, char **xpm, const char *tooltip)
 {
 	GdkPixmap *pixmap;
 	GtkWidget *image;
@@ -181,11 +181,14 @@ GtkWidget *make_image(GdkDrawable *drawable, char **xpm)
 	pixmap = gdk_pixmap_create_from_xpm_d(drawable, NULL, &white, xpm);
 	image = gtk_image_new_from_pixmap(pixmap, NULL);
 	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
+	if (tooltip)
+		gtk_widget_set_tooltip_markup(image, tooltip);
 	return image;
 }
 
 
-GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm)
+GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm,
+    const char *tooltip)
 {
 	GdkPixmap *pixmap;
 	GdkBitmap *mask;
@@ -194,6 +197,8 @@ GtkWidget *make_transparent_image(GdkDrawable *drawable, char **xpm)
 	pixmap = gdk_pixmap_create_from_xpm_d(drawable, &mask, NULL, xpm);
 	image = gtk_image_new_from_pixmap(pixmap, mask);
 	gtk_misc_set_padding(GTK_MISC(image), 1, 1);
+	if (tooltip)
+		gtk_widget_set_tooltip_markup(image, tooltip);
 	return image;
 }
 
@@ -218,7 +223,8 @@ void set_image(GtkWidget *widget, GtkWidget *image)
 }
 
 
-GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,
+GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable,
+    char **xpm, const char *tooltip,
     gboolean (*cb)(GtkWidget *widget, GdkEventButton *event, gpointer data),
     gpointer data)
 {
@@ -233,7 +239,7 @@ GtkWidget *tool_button(GtkWidget *bar, GdkDrawable *drawable, char **xpm,
 
 	evbox = gtk_event_box_new();
 	if (xpm) {
-		image = make_image(drawable, xpm);
+		image = make_image(drawable, xpm, tooltip);
 		gtk_container_add(GTK_CONTAINER(evbox), image);
 	}
 	g_signal_connect(G_OBJECT(evbox), "button_press_event",
