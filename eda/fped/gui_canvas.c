@@ -214,6 +214,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			drag_start = pos;
 			break;
 		}
+		tool_reset();
 		prev = selected_inst;
 		inst_select(pos);
 		if (prev != selected_inst)
