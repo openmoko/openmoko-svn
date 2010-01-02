@@ -46,7 +46,6 @@ Get updates:
 
 Compile:
 
-  make dep
   make
 
 Run an example:

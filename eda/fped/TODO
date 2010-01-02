@@ -79,3 +79,8 @@ Future directions:
 - add a means to cut&paste and copy&paste objects, and perhaps also variables
   (to move objects, we need to make sure all references are included. besides
   that, copy&paste should be a slight variation of delete/undelete)
+- instead of blue screening, we could perhaps just skip the offending items and
+  replace them with a "here's a problem" marker that would still point to the
+  underlying object and allow repairs to be made
+- instead of the awkward lock-switch-anchor process for frame references, we
+  could just drag the frame name into the canvas

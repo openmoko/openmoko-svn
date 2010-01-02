@@ -136,12 +136,10 @@ montage:
 
 # ----- Dependencies ----------------------------------------------------------
 
-dep depend .depend: lex.yy.c y.tab.h y.tab.c
+dep depend .depend: lex.yy.c y.tab.h y.tab.c *.h *.c
 		$(DEPEND)
 
-ifeq (.depend,$(wildcard .depend))
-include .depend
-endif
+-include .depend
 
 # ----- Cleanup ---------------------------------------------------------------
 
