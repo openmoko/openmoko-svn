@@ -87,7 +87,7 @@ Setting things up
   - Build and install it:
 
     cd fped
-    make dep all install
+    make all install
 
   - we're done here, go back
 
