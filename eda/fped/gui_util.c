@@ -332,6 +332,48 @@ void render_text(GdkDrawable *da, GdkGC *gc, int x, int y, double angle,
 }
 
 
+/* ----- Debugging support ------------------------------------------------- */
+
+
+/*
+ * View with  make montage  or something like
+ *
+ * montage -label %f -frame 3 __dbg????.png png:- | display -
+ */
+
+void debug_save_pixbuf(GdkPixbuf *buf)
+{
+	static int buf_num = 0;
+	char name[20]; /* plenty */
+
+	sprintf(name, "__dbg%04d.png", buf_num++);
+	gdk_pixbuf_save(buf, name, "png", NULL, NULL);
+	fprintf(stderr, "saved to %s\n", name);
+}
+
+
+/*
+ * gtk_widget_get_snapshot seems to use an expose event to do the drawing. This
+ * means that we can't call debug_save_widget from the expose event handler of
+ * the widget being dumped.
+ */
+
+void debug_save_widget(GtkWidget *widget)
+{
+	GdkPixmap *pixmap;
+	GdkPixbuf *pixbuf;
+	gint w, h;
+
+	pixmap = gtk_widget_get_snapshot(widget, NULL);
+	gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
+	pixbuf = gdk_pixbuf_get_from_drawable(NULL, GDK_DRAWABLE(pixmap),
+	    NULL, 0, 0, 0, 0, w, h);
+	debug_save_pixbuf(pixbuf);
+	gdk_pixmap_unref(pixmap);
+	g_object_unref(pixbuf);
+}
+
+
 /* ----- kill the content of a container ----------------------------------- */
 
 

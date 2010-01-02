@@ -805,7 +805,7 @@ static struct inst *get_hover_inst(struct coord pos)
 
 void tool_hover(struct coord pos)
 {
-	struct inst *curr = NULL;
+	struct inst *curr;
 
 	curr = get_hover_inst(pos);
 #if 0
@@ -834,6 +834,39 @@ got:
 		return;
 	hover_inst = curr;
 	over_enter(hover_save_and_draw, NULL);
+}
+
+
+/* ----- tooltip ----------------------------------------------------------- */
+
+
+const char *tool_tip(struct coord pos)
+{
+	struct inst *inst;
+
+	inst = get_hover_inst(pos);
+	if (!inst)
+		return NULL;
+
+	/*
+	 * Tooltips don't work properly yet, so we return NULL here. The
+	 * tooltips themselves are fine, but the expose event generated when
+	 * removing the tooltip window upsets the overlay logic for some yet
+	 * unknown reason.
+	 */
+	return NULL;
+
+	/*
+	 * The logic below follows exactly what happens in get_hover_inst.
+	 */
+
+	if (drag.new)
+		return "End here";
+	if (drag.anchors_n)
+		return "Move here";
+	if (selected_inst)
+		return "Move this point";
+	return "Start here";
 }
 
 

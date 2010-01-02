@@ -1,8 +1,8 @@
 /*
  * gui_tool.h - GUI, tool bar
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ void do_move_to_arc(struct inst *inst, struct inst *to, int i);
 
 void tool_dehover(void);
 void tool_hover(struct coord pos);
+const char *tool_tip(struct coord pos);
 int tool_consider_drag(struct coord pos);
 void tool_drag(struct coord to);
 void tool_cancel_drag(void);

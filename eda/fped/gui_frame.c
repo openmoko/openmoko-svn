@@ -1,8 +1,8 @@
 /*
  * gui_frame.c - GUI, frame window
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,8 +1,8 @@
 #
 # Makefile - Makefile of fped, the footprint editor
 #
-# Written 2009 by Werner Almesberger
-# Copyright 2009 by Werner Almesberger
+# Written 2009, 2010 by Werner Almesberger
+# Copyright 2009, 2010 by Werner Almesberger
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ endif
 # ----- Rules -----------------------------------------------------------------
 
 .PHONY:		all dep depend clean install uninstall manual upload-manual
-.PHONY:		update
+.PHONY:		update montage
 
 .SUFFIXES:	.fig .xpm .ppm
 
@@ -92,10 +92,10 @@ endif
 # ppmtoxpm is very chatty, so we suppress its stderr
 
 .ppm.xpm:
-		$(GEN) ppmcolormask white $< >_tmp && \
-		  ppmtoxpm -name xpm_`basename $@ .xpm` -alphamask _tmp \
-		  $< >$@ 2>/dev/null && rm -f _tmp || \
-		  { rm -f $@ _tmp; exit 1; }
+		$(GEN) export TMP=_tmp$$$$; ppmcolormask white $< >$$TMP && \
+		  ppmtoxpm -name xpm_`basename $@ .xpm` -alphamask $$TMP \
+		  $< >$@ 2>/dev/null && rm -f $$TMP || \
+		  { rm -f $@ $$TMP; exit 1; }
 
 all:		fped
 
@@ -129,6 +129,11 @@ upload-manual:	manual
 		scp $(XPMS:%.xpm=manual/%.png) $(PNGS:%=manual/%) \
 		  $(UPLOAD)/manual/
 
+# ----- Debugging help --------------------------------------------------------
+
+montage:
+		montage -label %f -frame 3 __dbg????.png png:- | display -
+
 # ----- Dependencies ----------------------------------------------------------
 
 dep depend .depend: lex.yy.c y.tab.h y.tab.c
@@ -143,6 +148,7 @@ endif
 clean:
 		rm -f $(OBJS) $(XPMS:%=icons/%) $(XPMS:%.xpm=icons/%.ppm)
 		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend
+		rm -f __dbg????.png _tmp*
 
 # ----- Install / uninstall ---------------------------------------------------
 

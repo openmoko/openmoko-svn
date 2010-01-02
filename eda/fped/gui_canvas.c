@@ -1,8 +1,8 @@
 /*
  * gui_canvas.c - GUI, canvas
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,10 +131,13 @@ void redraw(void)
 	gdk_draw_rectangle(draw_ctx.widget->window,
 	    instantiation_error ? gc_bg_error : gc_bg, TRUE, 0, 0, aw, ah);
 
+	DPRINTF("--- redraw: inst_draw ---");
 	inst_draw();
 	if (highlight)
 		highlight();
+	DPRINTF("--- redraw: tool_redraw ---");
 	tool_redraw();
+	DPRINTF("--- redraw: done ---");
 }
 
 
@@ -444,6 +447,23 @@ static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
 }
 
 
+/* ----- tooltip ----------------------------------------------------------- */
+
+
+static gboolean canvas_tooltip(GtkWidget *widget, gint x, gint y,
+    gboolean keyboard_mode, GtkTooltip *tooltip, gpointer user_data)
+{
+	struct coord pos = canvas_to_coord(x, y);
+	const char *res;
+
+	res = tool_tip(pos);
+	if (!res)
+		return FALSE;
+	gtk_tooltip_set_markup(tooltip, res);
+	return TRUE;
+}
+
+
 /* ----- canvas setup ------------------------------------------------------ */
 
 
@@ -490,6 +510,10 @@ GtkWidget *make_canvas(void)
 	    G_CALLBACK(enter_notify_event), NULL);
 	g_signal_connect(G_OBJECT(canvas), "leave_notify_event",
 	    G_CALLBACK(leave_notify_event), NULL);
+
+	gtk_widget_set(canvas, "has-tooltip", TRUE, NULL);
+	g_signal_connect(G_OBJECT(canvas), "query_tooltip",
+	    G_CALLBACK(canvas_tooltip), NULL);
 
 	gtk_widget_set_events(canvas,
 	    GDK_EXPOSE | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |

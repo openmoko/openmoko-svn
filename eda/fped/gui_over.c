@@ -1,8 +1,8 @@
 /*
  * gui_over.c - GUI, canvas overlays
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,10 @@
 
 #if 0
 #define DPRINTF(fmt, ...)	fprintf(stderr, fmt "\n", ##__VA_ARGS__)
+#define DSAVE(pix_buf)		debug_save_pixbuf(pix_buf->buf)
 #else
 #define	DPRINTF(fmt, ...)
+#define	DSAVE(buf)
 #endif
 
 
@@ -59,12 +61,14 @@ static struct coord over_pos;
 static void draw_D(void)
 {
 	buf_D = over_D_save_and_draw(over_D_user, over_pos);
+	DSAVE(buf_D);
 }
 
 
 static void draw_H(void)
 {
 	buf_H = over_H_save_and_draw(over_H_user);
+	DSAVE(buf_H);
 }
 
 

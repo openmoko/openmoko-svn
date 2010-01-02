@@ -74,6 +74,9 @@ void render_text(GdkDrawable *da, GdkGC *gc, int x, int y, double angle,
     const char *s, const char *font, double xalign, double yalign,
     int xmax, int ymax);
 
+void debug_save_pixbuf(GdkPixbuf *buf);
+void debug_save_widget(GtkWidget *widget);
+
 void destroy_all_children(GtkContainer *container);
 
 #endif /* !GUI_UTIL_H */
