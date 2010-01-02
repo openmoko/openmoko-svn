@@ -849,14 +849,6 @@ const char *tool_tip(struct coord pos)
 		return NULL;
 
 	/*
-	 * Tooltips don't work properly yet, so we return NULL here. The
-	 * tooltips themselves are fine, but the expose event generated when
-	 * removing the tooltip window upsets the overlay logic for some yet
-	 * unknown reason.
-	 */
-	return NULL;
-
-	/*
 	 * The logic below follows exactly what happens in get_hover_inst.
 	 */
 

@@ -522,6 +522,8 @@ GtkWidget *make_canvas(void)
 	    GDK_SCROLL |
 	    GDK_POINTER_MOTION_MASK);
 
+	gtk_widget_set_double_buffered(canvas, FALSE);
+
 	draw_ctx.widget = canvas;
 
 	return canvas;
