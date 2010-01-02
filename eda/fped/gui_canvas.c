@@ -40,8 +40,11 @@ static struct coord curr_pos; /* canvas coordinates ! */
 static struct coord user_origin = { 0, 0 };
 
 static int dragging = 0;
-static int drag_escaped = 0; /* 1 once we've made is out of the drag radius */
+static int drag_escaped = 0; /* 1 once we've made it out of the drag radius */
 static struct coord drag_start;
+static struct inst *selected_before_drag;
+    /* instance selected before dragging. we use it to do the click-to-select
+       routine in case we later find out the drag was really just a click. */
 
 
 /* ----- status display ---------------------------------------------------- */
@@ -183,11 +186,22 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 /* ----- button press and release ------------------------------------------ */
 
 
+static void click_to_select(struct coord pos)
+{
+	const struct inst *prev;
+
+	tool_reset();
+	prev = selected_inst;
+	inst_select(pos);
+	if (prev != selected_inst)
+		redraw();
+}
+
+
 static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
 	struct coord pos = canvas_to_coord(event->x, event->y);
-	const struct inst *prev;
 	int res;
 
 	DPRINTF("--- button press ---");
@@ -207,6 +221,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			break;
 		}
 		if (res) {
+			selected_before_drag = selected_inst;
 			inst_deselect();
 			redraw();
 			dragging = 1;
@@ -214,11 +229,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEventButton *event,
 			drag_start = pos;
 			break;
 		}
-		tool_reset();
-		prev = selected_inst;
-		inst_select(pos);
-		if (prev != selected_inst)
-			redraw();
+		click_to_select(pos);
 		break;
 	case 2:
 		tool_dehover();
@@ -241,14 +252,16 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		if (!dragging)
 			break;
+		drag_left(pos);
 		dragging = 0;
-		if (hypot(pos.x-drag_start.x,
-		    pos.y-drag_start.y)/draw_ctx.scale < DRAG_MIN_R)
+		if (!drag_escaped) {
 			tool_cancel_drag();
-		else {
-			if (tool_end_drag(pos))
-				change_world();
+			selected_inst = selected_before_drag;
+			click_to_select(pos);
+			break;
 		}
+		if (tool_end_drag(pos))
+			change_world();
 		break;
 	}
 	return TRUE;
