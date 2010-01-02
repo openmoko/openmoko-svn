@@ -1,8 +1,8 @@
 /*
  * gui_status.h - GUI, status area
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,43 +50,34 @@ void edit_x(struct expr **expr);
 void edit_y(struct expr **expr);
 void edit_nothing(void);
 
-void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
-    unit_type u);
+void set_with_units(void (*set)(const char *tooltip, const char *fmt, ...),
+    const char *prefix, unit_type u, const char *tooltip);
 
-void status_set_type_x(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_type_y(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_type_entry(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_name(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_x(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_y(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_r(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_angle(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_sys_x(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_sys_y(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_user_x(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_user_y(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_zoom(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_grid(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
-void status_set_unit(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
+#define SETTER(name)							\
+	void status_set_##name(const char *tooltip, const char *fmt, ...) \
+	   __attribute__((format(printf, 2, 3)))			\
+
+SETTER(type_x);
+SETTER(type_y);
+SETTER(type_entry);
+SETTER(name);
+SETTER(x);
+SETTER(y);
+SETTER(r);
+SETTER(angle);
+SETTER(sys_x);
+SETTER(sys_y);
+SETTER(user_x);
+SETTER(user_y);
+SETTER(zoom);
+SETTER(grid);
+SETTER(unit);
+
+#undef SETTER
 
 void status_set_icon(GtkWidget *image);
 void status_set_xy(struct coord coord);
-void status_set_angle_xy(struct coord v);
+void status_set_angle_xy(const char *tooltip, struct coord v);
 
 void status_begin_reporting(void);
 

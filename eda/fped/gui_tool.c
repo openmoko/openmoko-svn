@@ -249,18 +249,18 @@ static struct pix_buf *drag_new_vec(struct inst *from, struct coord to)
 
 	pos = inst_get_point(from);
 	to = gridify(pos, to);
-	status_set_type_x("dX =");
-	status_set_type_y("dX =");
+	status_set_type_x(NULL, "dX =");
+	status_set_type_y(NULL, "dX =");
 	/* @@@ use status_set_xy */
 	switch (curr_unit) {
 	case curr_unit_mm:
 	case curr_unit_auto:
-		status_set_x("%lg mm", units_to_mm(to.x-pos.x));
-		status_set_y("%lg mm", units_to_mm(to.y-pos.y));
+		status_set_x(NULL, "%lg mm", units_to_mm(to.x-pos.x));
+		status_set_y(NULL, "%lg mm", units_to_mm(to.y-pos.y));
 		break;
 	case curr_unit_mil:
-		status_set_x("%lg mil", units_to_mil(to.x-pos.x));
-		status_set_y("%lg mil", units_to_mil(to.y-pos.y));
+		status_set_x(NULL, "%lg mil", units_to_mil(to.x-pos.x));
+		status_set_y(NULL, "%lg mil", units_to_mil(to.y-pos.y));
 		break;
 	default:
 		abort();

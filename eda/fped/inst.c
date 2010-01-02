@@ -1,8 +1,8 @@
 /*
  * inst.c - Instance structures
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -386,14 +386,14 @@ void inst_deselect(void)
 		gui_frame_deselect_inst(selected_inst);
 	}
 	deselect_outside();
-	status_set_type_x("");
-	status_set_type_y("");
-	status_set_type_entry("");
-	status_set_name("");
-	status_set_x("");
-	status_set_y("");
-	status_set_r("");
-	status_set_angle("");
+	status_set_type_x(NULL, "");
+	status_set_type_y(NULL, "");
+	status_set_type_entry(NULL, "");
+	status_set_name(NULL, "");
+	status_set_x(NULL, "");
+	status_set_y(NULL, "");
+	status_set_r(NULL, "");
+	status_set_angle(NULL, "");
 	selected_inst = NULL;
 	edit_nothing();
 	refresh_pos();
@@ -452,15 +452,17 @@ found:
 static void rect_status(struct coord a, struct coord b, unit_type width,
     int rounded)
 {
+	const char *tip;
 	struct coord d = sub_vec(b, a);
 	double r;
 	unit_type diag;
-	
+
 	status_set_xy(d);
+	tip = "Angle of diagonal";
 	if (!d.x && !d.y)
-		status_set_angle("a = 0 deg");
+		status_set_angle(tip, "a = 0 deg");
 	else {
-		status_set_angle("a = %3.1f deg", theta(a, b));
+		status_set_angle(tip, "a = %3.1f deg", theta(a, b));
 	}
 	if (d.x < 0)
 		d.x = -d.x;
@@ -488,10 +490,11 @@ static void rect_status(struct coord a, struct coord b, unit_type width,
 		r = (d.x > d.y ? d.y : d.x)/2;
 		diag -= 2*r*(d.x+d.y-sqrt(2*d.x*d.y))/diag;
 	}
-	set_with_units(status_set_r, "d = ", diag);
+	set_with_units(status_set_r, "d = ", diag, "Length of diagonal");
 	if (width != -1) {
-		status_set_type_entry("width =");
-		set_with_units(status_set_name, "", width);
+		tip = "Line width";
+		status_set_type_entry(tip, "width =");
+		set_with_units(status_set_name, "", width, tip);
 	}
 }
 
@@ -578,8 +581,11 @@ static void vec_edit(struct vec *vec)
 
 static void vec_op_select(struct inst *self)
 {
-	status_set_type_entry("ref =");
-	status_set_name("%s", self->vec->name ? self->vec->name : "");
+	const char *tip;
+
+	tip = "Vector reference (name)";
+	status_set_type_entry(tip, "ref =");
+	status_set_name(tip, "%s", self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.vec.end, -1, 0);
 	vec_edit(self->vec);
 }
@@ -814,8 +820,8 @@ static void obj_pad_edit(struct obj *obj)
 
 static void pad_op_select(struct inst *self)
 {
-	status_set_type_entry("label =");
-	status_set_name("%s", self->u.pad.name);
+	status_set_type_entry("Pad name", "label =");
+	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1, 0);
 	obj_pad_edit(self->obj);
 }
@@ -842,8 +848,8 @@ static struct inst_ops pad_ops = {
 
 static void rpad_op_select(struct inst *self)
 {
-	status_set_type_entry("label =");
-	status_set_name("%s", self->u.pad.name);
+	status_set_type_entry("Pad name", "label =");
+	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1, 1);
 	obj_pad_edit(self->obj);
 }
@@ -886,13 +892,16 @@ static void obj_arc_edit(struct obj *obj)
 
 static void arc_op_select(struct inst *self)
 {
+	const char *tip;
+
 	status_set_xy(self->base);
-	status_set_angle("a = %3.1f deg",
+	status_set_angle("Angle", "a = %3.1f deg",
 	    self->u.arc.a1 == self->u.arc.a2 ? 360 :
 	    self->u.arc.a2-self->u.arc.a1);
-	set_with_units(status_set_r, "r = ", self->u.arc.r);
-	status_set_type_entry("width =");
-	set_with_units(status_set_name, "", self->u.arc.width);
+	set_with_units(status_set_r, "r = ", self->u.arc.r, "Radius");
+	tip = "Line width";
+	status_set_type_entry(tip, "width =");
+	set_with_units(status_set_name, "", self->u.arc.width, tip);
 	obj_arc_edit(self->obj);
 }
 
@@ -959,9 +968,12 @@ static void obj_meas_edit(struct obj *obj)
 
 static void meas_op_select(struct inst *self)
 {
+	const char *tip;
+
 	rect_status(self->bbox.min, self->bbox.max, -1, 0);
-	status_set_type_entry("offset =");
-	set_with_units(status_set_name, "", self->u.meas.offset);
+	tip = "Measurement line offset";
+	status_set_type_entry(tip, "offset =");
+	set_with_units(status_set_name, "", self->u.meas.offset, tip);
 	obj_meas_edit(self->obj);
 }
 
@@ -1084,9 +1096,12 @@ void inst_end_active(void)
 
 static void frame_op_select(struct inst *self)
 {
+	const char *tip;
+
+	tip = "Frame name";
 	rect_status(self->bbox.min, self->bbox.max, -1, 0);
-	status_set_type_entry("name =");
-	status_set_name("%s", self->u.frame.ref->name);
+	status_set_type_entry(tip, "name =");
+	status_set_name(tip, "%s", self->u.frame.ref->name);
 }
 
 

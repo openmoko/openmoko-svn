@@ -541,8 +541,8 @@ static void edit_var(struct var *var,
 {
 	inst_select_outside(var, unselect_var);
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
-	status_set_type_entry("name =");
-	status_set_name("%s", var->name);
+	status_set_type_entry("Variable name", "name =");
+	status_set_name("Variable name", "%s", var->name);
 	edit_nothing();
 	edit_unique_with_values(&var->name, validate_var_name, var,
 	    set_values, user, max_values);
@@ -1336,8 +1336,8 @@ static gboolean pkg_name_edit_event(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		inst_select_outside(widget, unselect_pkg_name);
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
-		status_set_type_entry("package =");
-		status_set_name("%s", pkg_name);
+		status_set_type_entry("Package name", "package =");
+		status_set_name("Package name (actual)", "%s", pkg_name);
 		edit_nothing();
 		edit_name(&pkg_name, validate_pkg_name, NULL);
 		break;
@@ -1465,10 +1465,13 @@ static void unselect_frame(void *data)
 
 static void edit_frame(struct frame *frame)
 {
+	const char *tip;
+
 	inst_select_outside(frame, unselect_frame);
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
-	status_set_type_entry("name =");
-	status_set_name("%s", frame->name);
+	tip = "Frame name";
+	status_set_type_entry(tip, "name =");
+	status_set_name(tip, "%s", frame->name);
 	edit_nothing();
 	edit_unique(&frame->name, validate_frame_name, frame);
 }

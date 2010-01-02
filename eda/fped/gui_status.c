@@ -71,24 +71,26 @@ static GtkWidget *status_msg;
 static GtkWidget *status_entry_x;
 
 
-static void set_label(GtkWidget *label, const char *fmt, va_list ap)
+static void set_label(GtkWidget *label, const char *tooltip,
+    const char *fmt, va_list ap)
 {
 	char *s;
 
 	s = stralloc_vprintf(fmt, ap);
 	gtk_label_set_text(GTK_LABEL(label), s);
+	gtk_widget_set_tooltip_markup(label, tooltip);
 	free(s);
 }
 
 
-#define	SETTER(name)					\
-	void status_set_##name(const char *fmt, ...)	\
-	{						\
-		va_list ap;				\
-							\
-		va_start(ap, fmt);			\
-		set_label(status_##name, fmt, ap);	\
-		va_end(ap);				\
+#define	SETTER(name)							\
+	void status_set_##name(const char *tooltip, const char *fmt, ...)\
+	{								\
+		va_list ap;						\
+									\
+		va_start(ap, fmt);					\
+		set_label(status_##name, tooltip, fmt, ap);		\
+		va_end(ap);						\
 	}
 
 SETTER(type_x)
@@ -111,8 +113,8 @@ SETTER(unit)
 /* ----- set things with units --------------------------------------------- */
 
 
-void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
-    unit_type u)
+void set_with_units(void (*set)(const char *tooltip, const char *fmt, ...),
+    const char *prefix, unit_type u, const char *tooltip)
 {
 	double n;
 	int mm;
@@ -134,10 +136,10 @@ void set_with_units(void (*set)(const char *fmt, ...), const char *prefix,
 	}
 	if (mm) {
 		/* -NNN.NNN mm */
-		set("%s" MM_FORMAT_FIXED " mm", prefix, n);
+		set(tooltip, "%s" MM_FORMAT_FIXED " mm", prefix, n);
 	} else {
 		/* -NNNN.N mil */
-		set("%s" MIL_FORMAT_FIXED " mil", prefix, n);
+		set(tooltip, "%s" MIL_FORMAT_FIXED " mil", prefix, n);
 	}
 }
 
@@ -157,20 +159,20 @@ void status_set_icon(GtkWidget *image)
 void status_set_xy(struct coord coord)
 {
 	/* do dX/dY etc. stuff later */
-	status_set_type_x("X =");
-	status_set_type_y("Y =");
+	status_set_type_x("Width", "X =");
+	status_set_type_y("Height", "Y =");
 
-	set_with_units(status_set_x, "", coord.x);
-	set_with_units(status_set_y, "", coord.y);
+	set_with_units(status_set_x, "", coord.x, "Width");
+	set_with_units(status_set_y, "", coord.y, "Height");
 }
 
 
-void status_set_angle_xy(struct coord v)
+void status_set_angle_xy(const char *tooltip, struct coord v)
 {
 	if (!v.x && !v.y)
-		status_set_angle("a = 0 deg");
+		status_set_angle(tooltip, "a = 0 deg");
 	else
-		status_set_angle("a = %3.1f deg", theta_vec(v));
+		status_set_angle(tooltip, "a = %3.1f deg", theta_vec(v));
 
 }
 
@@ -831,15 +833,17 @@ void status_begin_reporting(void)
 
 static void show_curr_unit(void)
 {
+	static const char *tip = "Display unit. Click to cycle.";
+
 	switch (curr_unit) {
 	case curr_unit_mm:
-		status_set_unit("mm");
+		status_set_unit(tip, "mm");
 		break;
 	case curr_unit_mil:
-		status_set_unit("mil");
+		status_set_unit(tip, "mil");
 		break;
 	case curr_unit_auto:
-		status_set_unit("auto");
+		status_set_unit(tip, "auto");
 		break;
 	default:
 		abort();
