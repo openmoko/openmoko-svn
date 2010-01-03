@@ -27,7 +27,6 @@ Style and usability:
 - when changing the part, we should automatically switch to a configuration
   that generates any of its (non-global) elements
 - add zoom controls to top toolbar
-- add tooltips (in progress)
 
 Bugs:
 - default silk width has no business being hard-coded in obj.c

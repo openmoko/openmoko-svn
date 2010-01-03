@@ -34,20 +34,21 @@ extern enum curr_unit curr_unit;
 void edit_pad_type(enum pad_type *type);
 
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx),
-    void *ctx);
+    void *ctx, const char *tooltip);
 void edit_unique_null(const char **s, int (*validate)(const char *s, void *ctx),
-    void *ctx);
+    void *ctx, const char *tooltip);
 void edit_unique_with_values(const char **s,
     int (*validate)(const char *s, void *ctx), void *ctx,
     void (*set_values)(void *user, const struct value *values, int n_values),
-    void *user, int max_values);
-void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx);
-void edit_expr(struct expr **expr);
+    void *user, int max_values, const char *tooltip);
+void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx,
+    const char *tooltip);
+void edit_expr(struct expr **expr, const char *tooltip);
 void edit_expr_list(struct expr *expr,
     void (*set_values)(void *user, const struct value *values, int n_values),
-    void *user);
-void edit_x(struct expr **expr);
-void edit_y(struct expr **expr);
+    void *user, const char *tooltip);
+void edit_x(struct expr **expr, const char *tooltip);
+void edit_y(struct expr **expr, const char *tooltip);
 void edit_nothing(void);
 
 void set_with_units(void (*set)(const char *tooltip, const char *fmt, ...),

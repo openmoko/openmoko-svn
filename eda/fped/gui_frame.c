@@ -541,11 +541,13 @@ static void edit_var(struct var *var,
 {
 	inst_select_outside(var, unselect_var);
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
-	status_set_type_entry("Variable name", "name =");
+	status_set_type_entry(NULL, "name =");
 	status_set_name("Variable name", "%s", var->name);
 	edit_nothing();
 	edit_unique_with_values(&var->name, validate_var_name, var,
-	    set_values, user, max_values);
+	    set_values, user, max_values,
+	    "Variable name. "
+	    "Shortcut:<b><i>name</i>=<i>value</i>,<i>...</i> </b>");
 }
 
 
@@ -578,7 +580,7 @@ static void edit_value(struct value *value)
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
 	edit_nothing();
-	edit_expr(&value->expr);
+	edit_expr(&value->expr, "Value");
 }
 
 
@@ -589,7 +591,7 @@ static void edit_value_list(struct value *value,
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_VAR_EDITING);
 	edit_nothing();
-	edit_expr_list(value->expr, set_values, user);
+	edit_expr_list(value->expr, set_values, user, "Value(s)");
 }
 
 
@@ -1336,10 +1338,11 @@ static gboolean pkg_name_edit_event(GtkWidget *widget, GdkEventButton *event,
 	case 1:
 		inst_select_outside(widget, unselect_pkg_name);
 		label_in_box_bg(widget, COLOR_PART_NAME_EDITING);
-		status_set_type_entry("Package name", "package =");
+		status_set_type_entry(NULL, "package =");
 		status_set_name("Package name (actual)", "%s", pkg_name);
 		edit_nothing();
-		edit_name(&pkg_name, validate_pkg_name, NULL);
+		edit_name(&pkg_name, validate_pkg_name, NULL,
+		    "Package name (template)");
 		break;
 	}
 	return TRUE;
@@ -1470,10 +1473,10 @@ static void edit_frame(struct frame *frame)
 	inst_select_outside(frame, unselect_frame);
 	label_in_box_bg(frame->label, COLOR_FRAME_EDITING);
 	tip = "Frame name";
-	status_set_type_entry(tip, "name =");
+	status_set_type_entry(NULL, "name =");
 	status_set_name(tip, "%s", frame->name);
 	edit_nothing();
-	edit_unique(&frame->name, validate_frame_name, frame);
+	edit_unique(&frame->name, validate_frame_name, frame, tip);
 }
 
 

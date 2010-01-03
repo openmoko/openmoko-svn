@@ -492,9 +492,8 @@ static void rect_status(struct coord a, struct coord b, unit_type width,
 	}
 	set_with_units(status_set_r, "d = ", diag, "Length of diagonal");
 	if (width != -1) {
-		tip = "Line width";
-		status_set_type_entry(tip, "width =");
-		set_with_units(status_set_name, "", width, tip);
+		status_set_type_entry(NULL, "width =");
+		set_with_units(status_set_name, "", width, "Line width");
 	}
 }
 
@@ -573,19 +572,17 @@ static int validate_vec_name(const char *s, void *ctx)
 
 static void vec_edit(struct vec *vec)
 {
-	edit_x(&vec->x);
-	edit_y(&vec->y);
-	edit_unique_null(&vec->name, validate_vec_name, vec);
+	edit_x(&vec->x, "X distance");
+	edit_y(&vec->y, "Y distance");
+	edit_unique_null(&vec->name, validate_vec_name, vec, "Vector name");
 }
 
 
 static void vec_op_select(struct inst *self)
 {
-	const char *tip;
-
-	tip = "Vector reference (name)";
-	status_set_type_entry(tip, "ref =");
-	status_set_name(tip, "%s", self->vec->name ? self->vec->name : "");
+	status_set_type_entry(NULL, "ref =");
+	status_set_name("Vector reference (name)",
+	    "%s", self->vec->name ? self->vec->name : "");
 	rect_status(self->base, self->u.vec.end, -1, 0);
 	vec_edit(self->vec);
 }
@@ -710,7 +707,7 @@ int inst_vec(struct vec *vec, struct coord base)
 
 static void obj_line_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.line.width);
+	edit_expr(&obj->u.line.width, "Line width");
 }
 
 
@@ -760,7 +757,7 @@ int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width)
 
 static void obj_rect_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.rect.width);
+	edit_expr(&obj->u.rect.width, "Line width");
 }
 
 
@@ -814,13 +811,14 @@ static int validate_pad_name(const char *s, void *ctx)
 static void obj_pad_edit(struct obj *obj)
 {
 	edit_pad_type(&obj->u.pad.type);
-	edit_name(&obj->u.pad.name, validate_pad_name, NULL);
+	edit_name(&obj->u.pad.name, validate_pad_name, NULL,
+	    "Pad name (template)");
 }
 
 
 static void pad_op_select(struct inst *self)
 {
-	status_set_type_entry("Pad name", "label =");
+	status_set_type_entry(NULL, "label =");
 	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1, 0);
 	obj_pad_edit(self->obj);
@@ -848,7 +846,7 @@ static struct inst_ops pad_ops = {
 
 static void rpad_op_select(struct inst *self)
 {
-	status_set_type_entry("Pad name", "label =");
+	status_set_type_entry(NULL, "label =");
 	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
 	rect_status(self->base, self->u.pad.other, -1, 1);
 	obj_pad_edit(self->obj);
@@ -886,22 +884,19 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 
 static void obj_arc_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.arc.width);
+	edit_expr(&obj->u.arc.width, "Line width");
 }
 
 
 static void arc_op_select(struct inst *self)
 {
-	const char *tip;
-
 	status_set_xy(self->base);
 	status_set_angle("Angle", "a = %3.1f deg",
 	    self->u.arc.a1 == self->u.arc.a2 ? 360 :
 	    self->u.arc.a2-self->u.arc.a1);
 	set_with_units(status_set_r, "r = ", self->u.arc.r, "Radius");
-	tip = "Line width";
-	status_set_type_entry(tip, "width =");
-	set_with_units(status_set_name, "", self->u.arc.width, tip);
+	status_set_type_entry(NULL, "width =");
+	set_with_units(status_set_name, "", self->u.arc.width, "Line width");
 	obj_arc_edit(self->obj);
 }
 
@@ -962,18 +957,16 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 
 static void obj_meas_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.meas.offset);
+	edit_expr(&obj->u.meas.offset, "Measurement line offset");
 }
 
 
 static void meas_op_select(struct inst *self)
 {
-	const char *tip;
-
 	rect_status(self->bbox.min, self->bbox.max, -1, 0);
-	tip = "Measurement line offset";
-	status_set_type_entry(tip, "offset =");
-	set_with_units(status_set_name, "", self->u.meas.offset, tip);
+	status_set_type_entry(NULL, "offset =");
+	set_with_units(status_set_name, "", self->u.meas.offset,
+	    "Measurement line offset");
 	obj_meas_edit(self->obj);
 }
 
@@ -1096,12 +1089,9 @@ void inst_end_active(void)
 
 static void frame_op_select(struct inst *self)
 {
-	const char *tip;
-
-	tip = "Frame name";
 	rect_status(self->bbox.min, self->bbox.max, -1, 0);
-	status_set_type_entry(tip, "name =");
-	status_set_name(tip, "%s", self->u.frame.ref->name);
+	status_set_type_entry(NULL, "name =");
+	status_set_name("Frame name", "%s", self->u.frame.ref->name);
 }
 
 

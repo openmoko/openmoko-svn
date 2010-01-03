@@ -159,8 +159,8 @@ void status_set_icon(GtkWidget *image)
 void status_set_xy(struct coord coord)
 {
 	/* do dX/dY etc. stuff later */
-	status_set_type_x("Width", "X =");
-	status_set_type_y("Height", "Y =");
+	status_set_type_x(NULL, "X =");
+	status_set_type_y(NULL, "Y =");
 
 	set_with_units(status_set_x, "", coord.x, "Width");
 	set_with_units(status_set_y, "", coord.y, "Height");
@@ -301,7 +301,8 @@ static gboolean edit_key_press_event(GtkWidget *widget, GdkEventKey *event,
 }
 
 
-static void setup_edit(GtkWidget *widget, struct edit_ops *ops, void *ctx)
+static void setup_edit(GtkWidget *widget, struct edit_ops *ops, void *ctx,
+    const char *tooltip)
 {
 	gtk_object_set_data(GTK_OBJECT(widget), "edit-ops", ops);
 	gtk_object_set_data(GTK_OBJECT(widget), "edit-ctx", ctx);
@@ -321,6 +322,7 @@ static void setup_edit(GtkWidget *widget, struct edit_ops *ops, void *ctx)
 	else
 		open_edits = widget;
 	last_edit = widget;
+	gtk_widget_set_tooltip_markup(widget, tooltip);
 }
 
 
@@ -373,14 +375,14 @@ static struct edit_ops edit_ops_unique = {
 
 
 void edit_unique(const char **s, int (*validate)(const char *s, void *ctx), 
-    void *ctx)
+    void *ctx, const char *tooltip)
 {
 	static struct edit_unique_ctx unique_ctx;
 
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	setup_edit(status_entry, &edit_ops_unique, &unique_ctx);
+	setup_edit(status_entry, &edit_ops_unique, &unique_ctx, tooltip);
 }
 
 
@@ -419,14 +421,14 @@ static struct edit_ops edit_ops_null_unique = {
 
 
 void edit_unique_null(const char **s,
-    int (*validate)(const char *s, void *ctx), void *ctx)
+    int (*validate)(const char *s, void *ctx), void *ctx, const char *tooltip)
 {
 	static struct edit_unique_ctx unique_ctx;
 
 	unique_ctx.s = s;
 	unique_ctx.validate = validate;
 	unique_ctx.ctx = ctx;
-	setup_edit(status_entry, &edit_ops_null_unique, &unique_ctx);
+	setup_edit(status_entry, &edit_ops_null_unique, &unique_ctx, tooltip);
 }
 
 
@@ -490,7 +492,8 @@ static struct edit_ops edit_ops_unique_with_values = {
 void edit_unique_with_values(const char **s,
     int (*validate)(const char *s, void *ctx), void *ctx,
     void (*set_values)(void *user, const struct value *values, int n_values),
-    void *user, int max_values)
+    void *user, int max_values,
+    const char *tooltip)
 {
 	static struct edit_unique_with_values_ctx unique_ctx;
 
@@ -500,7 +503,8 @@ void edit_unique_with_values(const char **s,
 	unique_ctx.set_values = set_values;
 	unique_ctx.user = user;
 	unique_ctx.max_values = max_values;
-	setup_edit(status_entry, &edit_ops_unique_with_values, &unique_ctx);
+	setup_edit(status_entry, &edit_ops_unique_with_values, &unique_ctx,
+	    tooltip);
 }
 
 
@@ -549,14 +553,15 @@ static struct edit_ops edit_ops_name = {
 };
 
 
-void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx)
+void edit_name(char **s, int (*validate)(const char *s, void *ctx), void *ctx,
+    const char *tooltip)
 {
 	static struct edit_name_ctx name_ctx;
 
 	name_ctx.s = s;
 	name_ctx.validate = validate;
 	name_ctx.ctx = ctx;
-	setup_edit(status_entry, &edit_ops_name, &name_ctx);
+	setup_edit(status_entry, &edit_ops_name, &name_ctx, tooltip);
 }
 
 
@@ -610,30 +615,31 @@ static struct edit_ops edit_ops_expr = {
 };
 
 
-static void edit_any_expr(GtkWidget *widget, struct expr **expr)
+static void edit_any_expr(GtkWidget *widget, struct expr **expr,
+    const char *tooltip)
 {
-	setup_edit(widget, &edit_ops_expr, expr);
+	setup_edit(widget, &edit_ops_expr, expr, tooltip);
 }
 
 
-void edit_expr(struct expr **expr)
+void edit_expr(struct expr **expr, const char *tooltip)
 {
-	edit_any_expr(status_entry, expr);
+	edit_any_expr(status_entry, expr, tooltip);
 }
 
 
-void edit_x(struct expr **expr)
+void edit_x(struct expr **expr, const char *tooltip)
 {
 	vacate_widget(status_box_x);
 	gtk_container_add(GTK_CONTAINER(status_box_x), status_entry_x);
 	gtk_widget_show(status_box_x);
-	edit_any_expr(status_entry_x, expr);
+	edit_any_expr(status_entry_x, expr, tooltip);
 }
 
 
-void edit_y(struct expr **expr)
+void edit_y(struct expr **expr, const char *tooltip)
 {
-	edit_any_expr(status_entry_y, expr);
+	edit_any_expr(status_entry_y, expr, tooltip);
 }
 
 
@@ -693,14 +699,14 @@ static struct edit_ops edit_ops_expr_list = {
 
 void edit_expr_list(struct expr *expr,
     void (*set_values)(void *user, const struct value *values, int n_values),
-    void *user)
+    void *user, const char *tooltip)
 {
 	static struct edit_expr_list_ctx expr_list_ctx;
 
 	expr_list_ctx.expr = expr;
 	expr_list_ctx.set_values = set_values;
 	expr_list_ctx.user = user;
-	setup_edit(status_entry, &edit_ops_expr_list, &expr_list_ctx);
+	setup_edit(status_entry, &edit_ops_expr_list, &expr_list_ctx, tooltip);
 }
 
 
