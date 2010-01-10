@@ -26,13 +26,13 @@ frame col {
 }
 
 frame col_l {
-	set cname = 9-col
+	set cname = col+1
 
 	frame col @
 }
 
 frame col_r {
-	set cname = col+1
+	set cname = 9-col
 
 	frame col @
 }
@@ -59,7 +59,7 @@ set b = 0.5mm
 __0: vec @(-E/2, -D/2)
 __1: vec .(E, D)
 rect __0 . 0.1mm
-__2: vec @(4mm, 5.6mm)
+__2: vec @(-4mm, 5.6mm)
 __3: vec .(0.2mm, 0mm)
 circ __2 . 0.05mm
 frame Pads @

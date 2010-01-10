@@ -35,7 +35,7 @@ frame pad_horiz {
 frame pads_t {
 	set pos = x*P
 
-	set name = nPin/4+1+x
+	set name = nPin-x
 
 	loop x = 0, nPin/4-1
 
@@ -46,7 +46,7 @@ frame pads_t {
 frame pads_b {
 	set pos = x*P
 
-	set name = nPin-x
+	set name = nPin/4+1+x
 
 	loop x = 0, nPin/4-1
 
@@ -57,7 +57,7 @@ frame pads_b {
 frame pads_l {
 	set pos = y*P
 
-	set name = y+1
+	set name = nPin/4-y
 
 	loop y = 0, nPin/4-1
 
@@ -72,7 +72,7 @@ frame pads_r {
 
 	loop y = 0, nPin/4-1
 
-	__0: vec @(0mm, nPin*P/8-P/2-pos)
+	__0: vec @(0mm, pos-nPin*P/8+P/2)
 	frame pad_horiz .
 }
 
@@ -128,8 +128,8 @@ set pad_area_perc = 100*SPxTot*SPyTot/(SLx*SLy)
 __0: vec @(pin_extend-Ax/2, Ay/2-pin_extend)
 __1: vec @(Ax/2-pin_extend, pin_extend-Ay/2)
 rect __0 . silk
-__2: vec @(-3.4mm, -3.2mm)
-__3: vec .(0.1mm, -0.1mm)
+__2: vec @(-3.4mm, 3.2mm)
+__3: vec .(0.1mm, 0mm)
 circ __2 . silk
 frame solder_paste @
 frame pads @
