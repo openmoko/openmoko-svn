@@ -1,0 +1,22 @@
+/* MACHINE-GENERATED ! */
+
+package "BF2520-B2R4CAB"
+unit mm
+__0: vec @(-1.9mm/2, 0.6mm/2)
+__1: vec __0(-1mm, -0.6mm)
+pad "4" . __0
+__2: vec @(1.9mm/2, -0.6mm/2)
+__3: vec __2(1mm, 0.6mm)
+pad "2" __2 .
+__4: vec @(-2.5mm/2, 1.4mm/2)
+__5: vec .(2.5mm, 1.05mm)
+pad "1" __4 .
+__6: vec @(2.5mm/2, -1.4mm/2)
+__7: vec .(-2.5mm, -1.05mm)
+pad "3" __6 .
+measy __3 >> __2 0.3mm
+measy __5 >> __4 1.2mm
+measy __4 >> __6 3.7mm
+measx __0 >> __2 -0.3mm
+measx __1 >> __0 0.8mm
+measx __7 >> __6 -0.5mm
