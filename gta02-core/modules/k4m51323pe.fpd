@@ -59,6 +59,9 @@ set b = 0.5mm
 __0: vec @(-E/2, -D/2)
 __1: vec .(E, D)
 rect __0 . 0.1mm
+__2: vec @(4mm, 5.6mm)
+__3: vec .(0.2mm, 0mm)
+circ __2 . 0.05mm
 frame Pads @
 measy col.y -> col.y 0.5mm
 measx Pads.__0 -> Pads.__0 1.5mm
@@ -67,3 +70,4 @@ measy col.y -> Pads.__1 1mm
 measx Pads.__0 << Pads.__1 1.5mm
 measx __0 >> __1 -0.5mm
 measy __0 >> __1 0.5mm
+measy col.br -> col.tl -2mm
