@@ -1,8 +1,8 @@
 /*
  * obj.c - Object definition model
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -239,6 +239,7 @@ static int run_loops(struct frame *frame, struct loop *loop,
 		n++;
 	}
 	loop->initialized = 0;
+	loop->curr_value = UNDEF;
 	if (active) {
 		loop->n = from.n;
 		loop->iterations = n;
@@ -279,6 +280,7 @@ static int generate_frame(struct frame *frame, struct coord base,
 	frame->curr_parent = parent;
 	ok = iterate_tables(frame, frame->tables, base, active);
 	inst_end_frame(frame);
+	frame->curr_parent = NULL;
 	return ok;
 }
 

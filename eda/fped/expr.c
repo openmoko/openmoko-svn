@@ -1,8 +1,8 @@
 /*
  * expr.c - Expressions and values
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,39 +41,35 @@ void fail_expr(const struct expr *expr)
 /* ----- unit conversion --------------------------------------------------- */
 
 
+/*
+ * If an expression contains a typo, we may get large exponents. Thus, we just
+ * "sprintf" in order to be able to handle any integer. Since the number of
+ * different exponents in a session will still be small, we use "unique" to
+ * give us a constant string, so that we don't have to worry about memory
+ * allocation.
+ */
+
 const char *str_unit(struct num n)
 {
+	const char *unit;
+	char buf[20]; /* @@@ plenty */
+
 	if (n.exponent == 0)
-		return "";
-	if (n.type == nt_mm) {
-		switch (n.exponent) {
-		case -2:
-			return "mm^-2";
-		case -1:
-			return "mm^-1";
-		case 1:
-			return "mm";
-		case 2:
-			return "mm^2";
-		default:
-			abort();
-		}
+		return stralloc("");
+	switch (n.type) {
+	case nt_mm:
+		unit = "mm";
+		break;
+	case nt_mil:
+		unit = "mil";
+		break;
+	default:
+		abort();
 	}
-	if (n.type == nt_mil) {
-		switch (n.exponent) {
-		case -2:
-			return "mil^(-2)";
-		case -1:
-			return "mil^(-1)";
-		case 1:
-			return "mil";
-		case 2:
-			return "mil^2";
-		default:
-			abort();
-		}
-	}
-	abort();
+	if (n.exponent == 1)
+		return unit;
+	sprintf(buf, "%s^%d", unit, n.exponent);
+	return unique(buf);
 }
 
 
@@ -115,6 +111,14 @@ struct num op_num(const struct expr *self, const struct frame *frame)
 }
 
 
+/*
+ * We have two modes of operation: during instantiation and editing, after
+ * instantiation. During instantiation, we follow curr_row and curr_parent.
+ * These pointers are NULL when instantiation finishes, and we use this as a
+ * signal that we're now in editing mode. In editing mode, the "active" values
+ * are used instead of the "current" ones.
+ */
+
 struct num eval_var(const struct frame *frame, const char *name)
 {
 	const struct table *table;
@@ -124,7 +128,8 @@ struct num eval_var(const struct frame *frame, const char *name)
 	struct num res;
 
 	for (table = frame->tables; table; table = table->next) {
-		value = table->curr_row->values;
+		value = table->curr_row ? table->curr_row->values :
+		    table->active_row->values;
 		for (var = table->vars; var; var = var->next) {
 			if (var->name == name) {
 				if (var->visited) {
@@ -143,6 +148,8 @@ struct num eval_var(const struct frame *frame, const char *name)
 	}
 	for (loop = frame->loops; loop; loop = loop->next)
 		if (loop->var.name == name) {
+			if (loop->curr_value == UNDEF)
+				return make_num(loop->n+loop->active);
 			if (!loop->initialized) {
 				fail("uninitialized loop \"%s\"", name);
 				return undef;
@@ -151,6 +158,8 @@ struct num eval_var(const struct frame *frame, const char *name)
 		}
 	if (frame->curr_parent)
 		return eval_var(frame->curr_parent, name);
+	if (frame->active_ref)
+		return eval_var(frame->active_ref->frame, name);
 	return undef;
 }
 
@@ -164,7 +173,8 @@ static const char *eval_string_var(const struct frame *frame, const char *name)
 	const char *res;
 
 	for (table = frame->tables; table; table = table->next) {
-		value = table->curr_row->values;
+		value = table->curr_row ? table->curr_row->values :
+		    table->active_row->values;
 		for (var = table->vars; var; var = var->next) {
 			if (var->name == name) {
 				if (var->visited)
@@ -183,6 +193,8 @@ static const char *eval_string_var(const struct frame *frame, const char *name)
 			return NULL;
 	if (frame->curr_parent)
 		return eval_string_var(frame->curr_parent, name);
+	if (frame->active_ref)
+		return eval_string_var(frame->active_ref->frame, name);
 	return NULL;
 }
 

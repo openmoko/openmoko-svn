@@ -535,6 +535,39 @@ static void unselect_var(void *data)
 }
 
 
+static void show_value(const struct expr *expr, const struct frame *frame)
+{
+	const char *value_string;
+	struct num value;
+
+	status_set_type_x(NULL, "value =");
+	value_string = eval_str(expr, frame);
+	if (value_string)
+		status_set_x(NULL, "\"%s\"", value_string);
+	else {
+		value = eval_num(expr, frame);
+		if (is_undef(value))
+			status_set_x(NULL, "undefined");
+		else
+			status_set_x(NULL, "%lg%s", value.n, str_unit(value));
+	}
+}
+
+
+static void show_var_value(const struct var *var, const struct frame *frame)
+{
+	const struct var *walk;
+	const struct value *value;
+
+	if (!var->table)
+		return;
+	value = var->table->active_row->values;
+	for (walk = var->table->vars; walk != var; walk = walk->next)
+		value = value->next;
+	show_value(value->expr, frame);
+}
+
+
 static void edit_var(struct var *var,
     void (*set_values)(void *user, const struct value *values, int n_values),
     void *user, int max_values)
@@ -543,6 +576,7 @@ static void edit_var(struct var *var,
 	label_in_box_bg(var->widget, COLOR_VAR_EDITING);
 	status_set_type_entry(NULL, "name =");
 	status_set_name("Variable name", "%s", var->name);
+	show_var_value(var, var->frame);
 	edit_nothing();
 	edit_unique_with_values(&var->name, validate_var_name, var,
 	    set_values, user, max_values,
@@ -575,21 +609,23 @@ static void unselect_value(void *data)
 }
 
 
-static void edit_value(struct value *value)
+static void edit_value(struct value *value, const struct frame *frame)
 {
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
+	show_value(value->expr, frame);
 	edit_nothing();
 	edit_expr(&value->expr, "Value");
 }
 
 
-static void edit_value_list(struct value *value,
+static void edit_value_list(struct value *value, const struct frame *frame,
     void (*set_values)(void *user, const struct value *values, int n_values),
     void *user)
 {
 	inst_select_outside(value, unselect_value);
 	label_in_box_bg(value->widget, COLOR_VAR_EDITING);
+	show_value(value->expr, frame);
 	edit_nothing();
 	edit_expr_list(value->expr, set_values, user, "Value(s)");
 }
@@ -674,7 +710,7 @@ static gboolean assignment_value_select_event(GtkWidget *widget,
 	switch (event->button) {
 	case 1:
 		edit_nothing();
-		edit_value(value);
+		edit_value(value, value->row->table->vars->frame);
 		break;
 	}
 	return TRUE;
@@ -797,7 +833,8 @@ static gboolean table_value_select_event(GtkWidget *widget,
 		if (!value->row ||
 		    value->row->table->active_row == value->row) {
 			edit_nothing();
-			edit_value_list(value, set_row_values, value);
+			edit_value_list(value, value->row->table->vars->frame,
+			    set_row_values, value);
 		} else {
 			select_row(value->row);
 			change_world();
@@ -969,7 +1006,7 @@ static gboolean loop_from_select_event(GtkWidget *widget,
 	switch (event->button) {
 	case 1:
 		edit_nothing();
-		edit_value(&loop->from);
+		edit_value(&loop->from, loop->var.frame);
 		break;
 	}
 	return TRUE;
@@ -984,7 +1021,7 @@ static gboolean loop_to_select_event(GtkWidget *widget,
 	switch (event->button) {
 	case 1:
 		edit_nothing();
-		edit_value(&loop->to);
+		edit_value(&loop->to, loop->var.frame);
 		break;
 	}
 	return TRUE;
