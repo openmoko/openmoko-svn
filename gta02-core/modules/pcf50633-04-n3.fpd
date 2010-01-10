@@ -1,126 +1,110 @@
-/* MACHINE-GENERATED ! */
+/* PCF50633 - HVQFN68 */
 
-frame left_l_pad {
-	a: vec @(0mm, -b1/2)
-	b: vec .(L3-L, b1)
-	pad "." a .
+frame solder_paste {
+	set gap_x = (SPxTot-SPx)/(nSPx-1)-SPx
+	set gap_y = (SPyTot-SPy)/(nSPy-1)-SPy
+
+	loop x = 1, nSPx
+	loop y = 1, nSPy
+	ll: vec @(-SPxTot/2+(x-1)*(SPx+gap_x), -SPyTot/2+(y-1)*(SPy+gap_y))
+	__0: vec .(SPx, SPy)
+	pad "" . ll paste
 }
 
-frame left_l {
-	loop n = 0, 10
-	__0: vec @(-D/2+(L+0.01mm), (n-5)*e)
-	frame left_l_pad .
+frame gnd {
+	__0: vec @(-SLx/2, SLy/2)
+	__1: vec .(SLx, -SLy)
+	pad "GND" __1 __0
 }
 
-frame top_l_pad {
-	a: vec @(-b1/2, 0mm)
-	b: vec .(b1, -L2+L)
-	pad "." a .
+frame pad_vert {
+	tl: vec @(-D/2, C/2)
+	lr: vec .(D, -C)
+	pad "$name" tl .
 }
 
-frame top_l {
-	loop n = 0, 10
-	__0: vec @((n-5)*e, E/2-(L+0.01mm))
-	frame top_l_pad .
+frame pad_horiz {
+	tl: vec @(-C/2, D/2)
+	lr: vec .(C, -D)
+	pad "$name" tl .
 }
 
-frame right_l_pad {
-	a: vec @(0mm, b1/2)
-	b: vec .(-L3+L, -b1)
-	pad "." a .
+frame pads_t {
+	loop x = 0, nPin/4-1
+	set pos = x*P
+	set name = nPin/4+1+x
+	__0: vec @(pos-nPin*P/8+P/2, 0mm)
+	frame pad_vert .
 }
 
-frame right_l {
-	loop n = 0, 10
-	__0: vec @(D/2-(L+0.01mm), (5-n)*e)
-	frame right_l_pad .
+frame pads_b {
+	loop x = 0, nPin/4-1
+	set pos = x*P
+	set name = nPin-x
+	__0: vec @(pos-nPin*P/8+P/2, 0mm)
+	frame pad_vert .
 }
 
-frame bottom_l_pad {
-	a: vec @(b1/2, 0mm)
-	b: vec .(-b1, L2-L)
-	pad "." a .
+frame pads_l {
+	loop y = 0, nPin/4-1
+	set pos = y*P
+	set name = y+1
+	__0: vec @(0mm, pos-nPin*P/8+P/2)
+	frame pad_horiz .
 }
 
-frame bottom_l {
-	loop n = 0, 10
-	__0: vec @((5-n)*e, -E/2+(L+0.01mm))
-	frame bottom_l_pad .
-}
-frame left_s_pad {
-	a: vec @(0mm, -b/2)
-	b: vec .(L, b)
-	pad "$name" a .
+frame pads_r {
+	loop y = 0, nPin/4-1
+	set pos = y*P
+	set name = nPin/2+1+y
+	__0: vec @(0mm, nPin*P/8-P/2-pos)
+	frame pad_horiz .
 }
 
-frame left {
-	loop n = 0, 16
-	__0: vec @(-D/2, (n-8)*e)
-	set name = n + 1
-	frame left_s_pad .
+frame pads {
+	__0: vec @(C/2-Ax/2, 0mm)
+	frame pads_l .
+	__1: vec @(0mm, Ay/2-C/2)
+	frame pads_t .
+	__2: vec @(Ax/2-C/2, 0mm)
+	frame pads_r .
+	__3: vec @(0mm, C/2-Ay/2)
+	frame pads_b .
 }
 
-frame top_s_pad {
-	a: vec @(-b/2, 0mm)
-	b: vec .(b, -L)
-	pad "$name" a .
-}
-
-frame top {
-	loop n = 0, 16
-	__0: vec @((n-8)*e, E/2)
-	set name = n + 18
-	frame top_s_pad .
-}
-
-frame right_s_pad {
-	a: vec @(0mm, b/2)
-	b: vec .(-L, -b)
-	pad "$name" a .
-}
-
-frame right {
-	loop n = 0, 16
-	__0: vec @(D/2, (8-n)*e)
-	set name = n + 35
-	frame right_s_pad .
-}
-
-frame bottom_s_pad {
-	a: vec @(b/2, 0mm)
-	b: vec .(-b, L)
-	pad "$name" a .
-}
-
-frame bottom {
-	loop n = 0, 16
-	__0: vec @((8-n)*e, -E/2)
-	set name = n + 52
-	frame bottom_s_pad .
-}
-
-package "pcf50633-04-n3"
+package "PCF50633"
 unit mm
-set b = 0.2mm
-set b1 = 0.18mm
-set D = 8mm
-set E = 8mm
-set e = 0.4mm
-set L = 0.4mm
-set L2 = 1.55mm
-set L3 = 1.3mm
-set v = 0.1mm
-set w = 0.05mm
 
-__0: vec @(-D/2, -E/2)
-__1: vec .(D, E)
-rect __0 . 0.01mm
+set pin_extend = 0.3mm
+set silk = 0.05mm
+set nPin = 68
 
-frame left @
-frame left_l @
-frame top @
-frame top_l @
-frame right @
-frame right_l @
-frame bottom @
-frame bottom_l @
+set Ax = 8mm+2*pin_extend
+set Ay = 8mm+2*pin_extend
+set C = 0.5mm+pin_extend
+set D = 0.25mm
+set P = 0.4mm
+
+set SLx = 4.95mm
+set SLy = 4.45mm
+set nSPx = 4
+set nSPy = 4
+set SPx = 0.5mm
+set SPy = 0.5mm
+set SPxTot = 3mm
+set SPyTot = 3mm
+
+__0: vec @(pin_extend-Ax/2, Ay/2-pin_extend)
+__1: vec @(Ax/2-pin_extend, pin_extend-Ay/2)
+rect __0 __1 silk
+
+frame solder_paste @
+frame pads @
+frame gnd @
+
+measx __0 >> __1 1mm
+measy __0 >> __1 -0.8mm
+measx pad_horiz.tl >> pad_horiz.lr 8.35mm
+measy pad_vert.lr >> pad_vert.tl 2mm
+measx gnd.__1 >> gnd.__0 2.5mm
+measy gnd.__1 >> gnd.__0 -2.5mm
