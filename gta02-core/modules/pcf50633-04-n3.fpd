@@ -127,8 +127,8 @@ rect __0 . silk
 frame solder_paste @
 frame pads @
 frame gnd @
-measx __0 >> __1 0.7mm
-measx pad_horiz.tl >> pad_horiz.lr 8.35mm
+measx __0 >> __1 1.1mm
+measx pad_horiz.tl >> pad_horiz.lr 8.7mm
 measy pad_vert.lr >> pad_vert.tl -8.7mm
 measy gnd.__1 >> gnd.__0 -0.5mm
 measx pad_horiz.lr -> pad_horiz.tl 0.1mm
@@ -141,6 +141,7 @@ measy solder_paste.ll -> solder_paste.__0 0.2mm
 measx solder_paste.ll -> solder_paste.__0 -0.2mm
 measx solder_paste.ll >> solder_paste.__0 -0.6mm
 measy __1 >> __0 -0.9mm
-measx pads_b.__0 -> pads_b.__0 -0.7mm
-measy pads_r.__0 -> pads_r.__0 -0.6mm
+measy pads_r.__0 -> pads_r.__0 -0.65mm
 measy pad_horiz.lr -> pad_horiz.tl 1mm
+measx pads_t.__0 -> pads_t.__0 0.7mm
+measx pad_vert.tl -> pad_vert.lr -1mm
