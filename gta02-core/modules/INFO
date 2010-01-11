@@ -122,3 +122,9 @@ S: pcf50633-04-n3
 # Rohm 1SS400 diode, SOD-523 (JEDEC) aka EMD2 (Rohm) aka SC-79 (JEITA)
 F: sod-523
 S: 1ss400
+
+#dtc123je
+F: dtc123je
+D: http://www.digikey.com/Web%20Export/Supplier%20Content/ROHM_511/PDF/Rohm_TransistorSoldering.pdf
+
+

@@ -4,6 +4,7 @@ Footprint (file name)		Author	Review	2nd rv.	3rd rv.	Remarks
 bf2520				Dave
 bga96-8x12-0mm8			Werner
 dfbm-cs320			Rene
+dtc123je			Dave
 exc24c				Rene
 fa2012				Rene
 fh23-39s-0.3shw			Rene	pin numbering needs to be verified
@@ -12,14 +13,16 @@ ht210				Dave
 k4m51323pe			Dave
 lis302dl			Rene	DRAFT
 mini-usb			Rene	drill holes still missing!
+ms2v-t1s.fpd			Dave
 pcf50633-04-n3			Dave	 
-smsn16				Dave	DRAFT
+smsn16				Dave	DRAFT (missing drill holes)
 sc70-5				Rene
 sc89-6				Rene
 sod-523				Werner	DRAFT
 son1408-3			Rene
 sot23-5				Rene
 stdpass				Werner	EXPERIMENTAL - DO NOT USE YET
+tas4025a			Dave
 tdfn34-16			Rene
 tsop-6				Rene
 tst				Werner

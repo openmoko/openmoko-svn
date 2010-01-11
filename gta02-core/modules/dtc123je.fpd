@@ -1,0 +1,22 @@
+/* MACHINE-GENERATED ! */
+
+package "dtc123je"
+unit mm
+__0: vec @(0mm, 1.3mm)
+__1: vec __0(-0.7mm/2, 0.7mm/2)
+__2: vec .(0.7mm, -0.7mm)
+pad "3" __1 .
+__3: vec @(0.5mm, 0mm)
+__4: vec __3(-0.6mm/2, 0.7mm/2)
+__5: vec .(0.6mm, -0.7mm)
+pad "1" __4 .
+__6: vec @(-0.5mm, 0mm)
+__7: vec __6(-0.6mm/2, 0.7mm/2)
+__8: vec .(0.6mm, -0.7mm)
+pad "2" __7 .
+measx __6 >> __3 -0.5mm
+measy __3 >> __0 -0.5mm
+measy __8 >> __7 0.8mm
+measx __7 >> __8 0.2mm
+measx __1 >> __2 0.2mm
+measy __2 >> __1 0.9mm

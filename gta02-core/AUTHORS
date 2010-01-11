@@ -13,10 +13,13 @@ Dave Ball <openmoko@daveball.org.uk>
   components/sc32442.lib
   components/wm8753lgefl.lib
   modules/bf2520.fpd
+  modules/dtc123je.fpd
   modules/ht210.fpd
   modules/k4m51323pe.fpd
+  modules/ms2v-t1s.fpd
   modules/pcf50633-04-n3.fpd
   modules/smsn16.fpd
+  modules/tas4025a.fpd
   modules/u.fl-r-smt-1.fpd
 
   Compilations:

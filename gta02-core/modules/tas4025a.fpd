@@ -1,0 +1,24 @@
+/* MACHINE-GENERATED ! */
+
+package "tas4025a"
+unit mm
+__0: vec @(-3mm/2, 1.6mm/2)
+__1: vec __0(-1.4mm/2, 1.15mm/2)
+__2: vec .(1.4mm, -1.15mm)
+pad "4" __1 .
+__3: vec @(3mm/2, -1.6mm/2)
+__8: vec __3(-1.4mm/2, 1.15mm/2)
+__11: vec __8(1.4mm, -1.15mm)
+pad "2" __8 .
+__4: vec @(3mm/2, 1.6mm/2)
+__9: vec __4(-1.4mm/2, 1.15mm/2)
+__10: vec .(1.4mm, -1.15mm)
+pad "3" __9 .
+__5: vec @(-3mm/2, -1.6mm/2)
+__6: vec __5(-1.4mm/2, 1.15mm/2)
+__7: vec .(1.4mm, -1.15mm)
+pad "1" __6 .
+measx __5 >> __3 -1mm
+measy __3 >> __4 -1.2mm
+measx __1 >> __2 0.5mm
+measy __2 >> __1 1.9mm

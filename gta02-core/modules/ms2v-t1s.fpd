@@ -1,0 +1,20 @@
+/* MACHINE-GENERATED ! */
+
+package "MS2V-T1S"
+unit mm
+__0: vec @(-2mm, 2mm/2)
+__1: vec __0(2mm, -2mm)
+pad "3" __0 .
+__2: vec @(3.8mm, 0.6mm/2)
+__3: vec __2(1.6mm, 0.7mm)
+pad "1" __2 .
+__4: vec @(3.8mm, -0.6mm/2)
+__5: vec __4(1.6mm, -0.7mm)
+pad "2" __4 .
+measx __1 >> __4 -0.5mm
+measx __4 >> __5 -1.2mm
+measy __5 >> __4 -0.5mm
+measy __4 >> __2 -2.1mm
+measx __0 >> __1 -2.5mm
+measy __1 >> __0 2.5mm
+measy __2 >> __3 -2.1mm
