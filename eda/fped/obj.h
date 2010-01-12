@@ -1,8 +1,8 @@
 /*
  * obj.h - Object definition model
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,34 @@
 #include "coord.h"
 #include "meas.h"
 #include "layer.h"
+
+
+/*
+ * Objects contain various fields that help to select instances under various
+ * conditions. They are "current", "active", and "found":
+ *
+ * - current: the path taken while instantiating. E.g., we may make one frame
+ *   reference the "current" reference of this frame and then recurse into it.
+ *   "Current" is reset to a null value after instantiation is complete, to
+ *   allow other functions (such as expression evaluation) to distinguish
+ *   between instantiation and editing.
+ *
+ * - active: the path selected by the user, through the GUI. This allows the
+ *   user to reach any instance, similar to how instantiation visits all
+ *   instances. The difference to "current" is that "active" is persistent
+ *   across instantiation while "current" iterates through all possible values
+ *   during instantiation.
+ *
+ * - found: then clicking on an unselected instance, fped will try to activate
+ *   this instance. In order to do so, it needs to determine which choices need
+ *   to be activated to reach the instance. "Found" records this information.
+ *   At the end of the search, all "found" choices become "active".
+ *
+ *   If, during the search, an instance can be reached with the "found" choice
+ *   being equal to the choice active at that time, "found" will not be set to
+ *   any other value. This prevents searches from affecting choices that play
+ *   no role in the selection of the instance.
+ */
 
 
 struct var {
@@ -67,6 +95,9 @@ struct table {
 
 	/* GUI use */
 	struct row *active_row;
+
+	/* For searching */
+	struct row *found_row;	/* NULL if not found yet */
 };
 
 struct loop {
@@ -82,6 +113,9 @@ struct loop {
 	int active;	/* n-th iteration is active, 0 based */
 	double n;	/* start value when it was active */
 	int iterations;	/* iterations when it was active */
+
+	/* For searching */
+	int found;	/* -1 if not found yet */
 
 	/* for evaluation */
 	int initialized;
@@ -126,6 +160,9 @@ struct frame {
 
 	/* generating and editing */
 	struct obj *active_ref;
+
+	/* For searching */
+	struct obj *found_ref;	/* NULL if not found yet */
 
 	/* for dumping */
 	int dumped;
@@ -195,6 +232,24 @@ extern struct frame *root_frame;
 extern struct frame *active_frame;
 extern void *instantiation_error;
 
+
+struct inst;
+
+/*
+ * Search callback from inst, invoked after the instance has been populated.
+ */
+
+void find_inst(const struct inst *inst);
+
+/*
+ * If invoking search_inst before calling "instantiate", loop and tables are
+ * adjusted such that an instance matching the one passed to search_inst will
+ * become active. Note that this doesn't necessarily succeed, in which case no
+ * change is made. Also, if multiple matches are encountered, the result is
+ * arbitrary.
+ */
+
+void search_inst(const struct inst *inst);
 
 int instantiate(void);
 void obj_cleanup(void);

@@ -38,6 +38,67 @@ struct frame *active_frame = NULL;
 void *instantiation_error = NULL;
 
 
+/* ----- Searching --------------------------------------------------------- */
+
+
+/*
+ * @@@ Known bug: we should compare all parameters of an instance, not just the
+ * object's base or the vectors end.
+ */
+
+static int found = 0;
+static int search_suspended = 0;
+static const struct vec *find_vec = NULL;
+static const struct obj *find_obj = NULL;
+static struct coord find_pos;
+
+
+static void suspend_search(void)
+{
+	search_suspended++;
+}
+
+static void resume_search(void)
+{
+	assert(search_suspended > 0);
+	search_suspended--;
+}
+
+
+static struct coord get_pos(const struct inst *inst)
+{
+	return inst->obj ? inst->base : inst->u.vec.end;
+}
+
+
+void find_inst(const struct inst *inst)
+{
+	struct coord pos;
+
+	if (search_suspended)
+		return;
+	if (find_vec != inst->vec)
+		return;
+	if (find_obj != inst->obj)
+		return;
+	pos = get_pos(inst);
+	if (pos.x != find_pos.x || pos.y != find_pos.y)
+		return;
+	found++;
+}
+
+
+void search_inst(const struct inst *inst)
+{
+	find_vec = inst->vec;
+	find_obj = inst->obj;
+	find_pos = get_pos(inst);
+}
+
+
+/* ----- Instantiation ----------------------------------------------------- */
+
+
 static int generate_frame(struct frame *frame, struct coord base,
     const struct frame *parent, struct obj *frame_ref, int active);
 
@@ -192,6 +253,7 @@ static int run_loops(struct frame *frame, struct loop *loop,
 {
 	struct num from, to;
 	int n;
+	int found_before, ok;
 
 	if (!loop)
 		return generate_items(frame, base, active);
@@ -233,9 +295,17 @@ static int run_loops(struct frame *frame, struct loop *loop,
 			instantiation_error = loop;
 			goto fail;
 		}
-		if (!run_loops(frame, loop->next, base,
-		    active && loop->active == n))
+		found_before = found;
+		if (loop->found == loop->active)
+			suspend_search();
+		ok = run_loops(frame, loop->next, base,
+		    active && loop->active == n);
+		if (loop->found == loop->active)
+			resume_search();
+		if (!ok)
 			goto fail;
+		if (found_before != found)
+			loop->found = n;
 		n++;
 	}
 	loop->initialized = 0;
@@ -255,13 +325,24 @@ fail:
 static int iterate_tables(struct frame *frame, struct table *table,
     struct coord base, int active)
 {
+	int found_before, ok;
+
 	if (!table)
 		return run_loops(frame, frame->loops, base, active);
 	for (table->curr_row = table->rows; table->curr_row;
-	    table->curr_row = table->curr_row->next)
-		if (!iterate_tables(frame, table->next, base,
-		    active && table->active_row == table->curr_row))
+	    table->curr_row = table->curr_row->next) {
+		found_before = found;
+		if (table->found_row == table->active_row)
+			suspend_search();
+		ok = iterate_tables(frame, table->next, base,
+		    active && table->active_row == table->curr_row);
+		if (table->found_row == table->active_row)
+			resume_search();
+		if (!ok)
 			return 0;
+		if (found_before != found)
+			table->found_row = table->curr_row;
+	}
 	return 1;
 }
 
@@ -296,6 +377,46 @@ static void reset_all_loops(void)
 }
 
 
+static void reset_found(void)
+{
+	struct frame *frame;
+	struct table *table;
+	struct loop *loop;
+
+	for (frame = frames; frame; frame = frame->next) {
+		for (table = frame->tables; table; table = table->next)
+			table->found_row = NULL;
+		for (loop = frame->loops; loop; loop = loop->next)
+			loop->found = -1;
+		frame->found_ref = NULL;
+	}
+}
+
+
+/*
+ * Note: we don't use frame->found_ref yet. Instead, we adjust the frame
+ * references with activate_item in inst.c
+ */
+
+static void activate_found(void)
+{
+	struct frame *frame;
+	struct table *table;
+	struct loop *loop;
+
+	for (frame = frames; frame; frame = frame->next) {
+		for (table = frame->tables; table; table = table->next)
+			if (table->found_row)
+				table->active_row = table->found_row;
+		for (loop = frame->loops; loop; loop = loop->next)
+			if (loop->found != -1)
+				loop->active = loop->found;
+		if (frame->found_ref)
+			frame->active_ref = frame->found_ref;
+	}
+}
+
+
 int instantiate(void)
 {
 	struct coord zero = { 0, 0 };
@@ -305,7 +426,14 @@ int instantiate(void)
 	inst_start();
 	instantiation_error = NULL;
 	reset_all_loops();
+	reset_found();
+	found = 0;
+	search_suspended = 0;
 	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
+	if (ok && (find_vec || find_obj) && found)
+		activate_found();
+	find_vec = NULL;
+	find_obj = NULL;
 	if (ok)
 		ok = refine_layers();
 	if (ok)

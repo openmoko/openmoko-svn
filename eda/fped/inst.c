@@ -162,6 +162,34 @@ static void inst_select_inst(struct inst *inst)
 }
 
 
+/*
+ * @@@ This logic is overly complicated and should be simplified. The general
+ * idea was to avoid making unnecessary changes to the user's selections, but
+ * that risk doesn't exist. Furthermore, the way activate_item is used, its
+ * preconditions aren't met. It works anyway but it could be simpler as a
+ * consequence.
+ *
+ * activate_item tries to activate the path through the frame references,
+ * leading to a specific instance. It returns whether this is failed or whether
+ * it may have been successful.
+ *
+ * The initial condition is that we want to activate an item on a frame
+ * instance that's not active. Since the frame has been instantiated, there
+ * must be a way to activate it. We just have to find out how.
+ *
+ * The first test eliminates the root frame. If we're at the root frame and
+ * still haven't figured out what to do, something is wrong and we give up.
+ *
+ * The next test skips references that are already right. Since we know that
+ * there must be at least one reference that leads elsewhere, and we haven't
+ * found it yet, the recursion will tell us whether it can find it at all.
+ *
+ * Finally, if we've found a mismatch, we correct it. We then try to fix any
+ * further mismatches. Since we've made progress, we return 1, even if the
+ * other fixes should fail (or reach the root frame).
+ *
+ */
+
 static int activate_item(struct inst *inst)
 {
 	if (!inst->outer)
@@ -174,7 +202,7 @@ static int activate_item(struct inst *inst)
 }
 
 
-int inst_select(struct coord pos)
+static int __inst_select(struct coord pos, int tries)
 {
 	enum inst_prio prio;
 	const struct inst *prev;
@@ -188,6 +216,10 @@ int inst_select(struct coord pos)
 	int select_next;
 	int dist, i;
 
+	if (!tries) {
+		fprintf(stderr, "__inst_select: tries exhausted\n");
+		return 0;
+	}
 	prev = selected_inst;
 	deselect_outside();
 	edit_nothing();
@@ -259,14 +291,17 @@ int inst_select(struct coord pos)
 		return 0;
 
 	if (any_same_frame) {
-		if (activate_item(any_same_frame))
-			return inst_select(pos);
+		activate_item(any_same_frame);
+		search_inst(any_same_frame);
+		instantiate();
+		change_world();
+		return __inst_select(pos, tries-1);
 	}
 	if (any_first) {
 		frame = any_first->outer ? any_first->outer->u.frame.ref : NULL;
 		if (frame != active_frame) {
 			select_frame(frame);
-			return inst_select(pos);
+			return __inst_select(pos, tries-1);
 		}
 	}
 
@@ -275,6 +310,17 @@ int inst_select(struct coord pos)
 selected:
 	inst_select_inst(selected_inst);
 	return 1;
+}
+
+
+int inst_select(struct coord pos)
+{
+	/*
+	 * We shouldn't need more than 2 tries to select any item, so 5 is more
+	 * than enough. This can still fail, but then it would for any number
+	 * of tries.
+	 */
+	return __inst_select(pos, 5);
 }
 
 
@@ -696,6 +742,7 @@ int inst_vec(struct vec *vec, struct coord base)
 	inst = add_inst(&vec_ops, ip_vec, base);
 	inst->vec = vec;
 	inst->u.vec.end = vec->pos;
+	find_inst(inst);
 	update_bbox(&inst->bbox, vec->pos);
 	propagate_bbox(inst);
 	return 1;
@@ -745,6 +792,7 @@ int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width)
 	inst->obj = obj;
 	inst->u.rect.end = b;
 	inst->u.rect.width = width;
+	find_inst(inst);
 	update_bbox(&inst->bbox, b);
 	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
@@ -785,6 +833,7 @@ int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width)
 	inst->obj = obj;
 	inst->u.rect.end = b;
 	inst->u.rect.width = width;
+	find_inst(inst);
 	update_bbox(&inst->bbox, b);
 	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
@@ -873,6 +922,7 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 	inst->u.pad.name = stralloc(name);
 	inst->u.pad.other = b;
 	inst->u.pad.layers = pad_type_to_layers(obj->u.pad.type);
+	find_inst(inst);
 	update_bbox(&inst->bbox, b);
 	propagate_bbox(inst);
 	return 1;
@@ -946,6 +996,7 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 	inst->bbox.max.x = center.x+r;
 	inst->bbox.min.y = center.y-r;
 	inst->bbox.max.y = center.y+r;
+	find_inst(inst);
 	grow_bbox_by_width(&inst->bbox, width);
 	propagate_bbox(inst);
 	return 1;
@@ -1122,6 +1173,7 @@ void inst_begin_frame(struct obj *obj, struct frame *frame,
 	inst->u.frame.ref = frame;
 	inst->u.frame.active = is_active_frame;
 	inst->active = active;
+	find_inst(inst);
 	curr_frame = inst;
 }
 
