@@ -11,6 +11,7 @@
  */
 
 
+#include <locale.h>
 #include <gtk/gtk.h>
 
 #include "inst.h"
@@ -303,6 +304,7 @@ static void make_screen(GtkWidget *window)
 int gui_init(int *argc, char ***argv)
 {
 	gtk_init(argc, argv);
+	setlocale(LC_ALL, "C"); /* damage control */
 	return 0;
 }
 
