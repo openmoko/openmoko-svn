@@ -22,10 +22,15 @@ Setting things up
 - You will need a recent version of KiCad. Many distributions come
   with truly ancient versions. To build KiCad,
 
-  - download KiCad:
+  - download KiCad, revision 1923:
 
-    svn checkout https://kicad.svn.sourceforge.net/svnroot/kicad/trunk/kicad
+    svn checkout -r 1923 \
+      https://kicad.svn.sourceforge.net/svnroot/kicad/trunk/kicad
     cd kicad
+
+    The KiCad revision we currently use is recorded in the first line
+    of kicad-patches/series. Our patches and build process may or may
+    not work with more recent revisions.
 
   - you need a recent development version of libboost (1.36 or higher)
 
