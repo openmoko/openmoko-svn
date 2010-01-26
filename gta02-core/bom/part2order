@@ -2,6 +2,7 @@
 
 require "parser.pl";
 
+$mult = shift(@ARGV);
 &parse;
 
 
@@ -9,8 +10,9 @@ sub number
 {
     local ($id) = @_;
 
-    my $n = $inv{$id}[0];
-    return $want{$id} < $n ? $want{$id} : $n;
+    my $s = $inv{$id}[0];
+    my $n = $want{$id}*$mult;
+    return $n < $s ? $n : $s;
 
 }
 
@@ -21,6 +23,48 @@ for (keys %parts) {
 
 for (sort { &number($b) <=> &number($a) } keys %want) {
     my $n = &number($_);
+    $n -= $n % $mult;
     next unless $n;
-    print "$_ $n\n";
+    my @f = @{ $inv{$_} };
+    my $max = shift @f;
+    my $currency = shift @f;
+    my @qty;
+    my @price;
+    my %index;
+    my $best_qty;
+    my $best_price = undef;
+    while (@f) {
+	my $q = shift @f;
+	my $p = shift @f;
+	if (defined $index{$q}) {
+	    $price[$index{$q}] = $p;
+	} else {
+	    push(@qty, $q);
+	    push(@price, $p);
+	    $index{$q} = $#qty;
+	    # @@@ this fails if smaller quantities following a large quantity
+	    # differ from the quantities preceding them. E.g., 1 10 100 25
+	    # wouldn't yield correct results.
+	}
+	for (my $i = $#qty; $i >= 0; $i--) {
+	    my $order = 0;
+	    my $price = 0;
+	    my $left = $n;
+	    for (my $j = $#qty; $j >= $i; $j--) {
+		while ($left >= ($j == $i ? 1 : $qty[$j])) {
+		    $left -= $qty[$j];
+		    $order += $qty[$j];
+		    $price += $price[$j]*$qty[$j];
+		}
+	    }
+	    next if $order > $max;
+	    if (!defined $best_price || $price < $best_price) {
+		$best_price = $price;
+		$best_qty = $order;
+	    }
+	}
+    }
+    next if !defined $best_price;
+    print "$_ $best_qty $currency $best_price\n";
+# tested until price composition. todo: demand adjustment
 }
