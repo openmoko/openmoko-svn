@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+
+require "parser.pl";
+
+
+sub issue
+{
+    my %seen;
+    my @p = ( $_[1] );
+
+    # we determine all equivalent parts
+
+    print $_[0];
+    while (@p) {
+	my $p = shift @p;
+	next if $seen{$p};
+	$seen{$p} = 1;
+	print " $p";
+	push(@p, @{ $eq{$p} });
+    }
+    print "\n";
+}
+
+
+&parse;
+
+$total = 0;
+$bad = 0;
+
+print "#PAR\n";
+for (keys %cmp) {
+    @f = @{ $cmp{$_} };
+    $total++;
+
+    # if we're lucky, we get a direct ID match
+
+    if (defined $id{$f[0]}) {
+	&issue($_, $id{$f[0]});
+	next;
+    }
+
+    print STDERR "unmatched: $_\n";
+    $bad++;
+#    print join("#", ($ref, @f)), " -> $id{$f[0]}\n";
+}
+print STDERR "$bad/$total unmatched" if $bad;

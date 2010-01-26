@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+require "parser.pl";
+
+&parse;
+
+
+sub number
+{
+    local ($id) = @_;
+
+    my $n = $inv{$id}[0];
+    return $want{$id} < $n ? $want{$id} : $n;
+
+}
+
+
+for (keys %parts) {
+    $parts++;
+}
+
+for (sort { &number($b) <=> &number($a) } keys %want) {
+    my $n = &number($_);
+    next unless $n;
+    print "$_ $n\n";
+}

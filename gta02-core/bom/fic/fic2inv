@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+print "#INV\n";
+while (<>) {
+    chop;
+    next unless /^\d*,"(\S+)\s*",.*,"(\d+)\s*"(,-?\d+)?$/;
+    print "FIC $1 $2 USD 1 0\n";
+}

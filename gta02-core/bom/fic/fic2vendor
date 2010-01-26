@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+
+sub p
+{
+    print "FIC $pn $_[0] $_[1]\n" if $e;
+    next LOOP;
+    # kewl, this longjmp-cum-continue works. Perl never disappoints, no matter
+    # how ambitious your perversion :)
+}
+
+
+sub s
+{
+    print "# " if $e;
+    &p(@_);
+}
+
+
+# Shortcut for the very common number-vendor pattern
+
+sub nv
+{
+    $d =~ /(\S+) $_[0]\b/ && &p($_[0], $1);
+}
+
+
+# Shortcut for the prefix-number-stuff-vendor pattern
+
+sub pnv
+{
+    $d =~ /\b($_[0]\S+) .*\b$_[1]\b/ && &p($_[1], $1);
+}
+
+
+# A variation of "pnv": fix the vendor name
+
+sub pnv3
+{
+    $d =~ /\b($_[0]\S+) .*\b$_[1]\b/ && &p($_[2], $1);
+}
+
+
+$total = 0;
+$bad = 0;
+
+print "#EQU\n";
+
+# Main loop
+
+LOOP: while (<>) {
+    next unless /^\d*,"([^" ]+)\s*","([^"]+?)\s*"/;
+    $total++;
+    ($pn, $d) = ($1, $2);
+
+    # set to 0 to show only latest entries
+    $e = 1;
+
+    $d =~ /OldPn (\S+)/ && &p("FIC", $1);
+
+    &nv("DARFON");
+    &nv("AVX");
+    &nv("RALEC");
+    &nv("ACX");
+    &nv("SUBARU");
+
+    $d =~ /CON MURATA (\S+)\b/ && &p("MURATA", $1);
+    &nv("MURATA");
+    &nv("WALSIN");
+    &nv("KYOCERA");
+    &nv("PANASONIC");
+    &nv("KARMAX");
+    &nv("EPCOS");
+    &nv("RAKON");
+    &nv("TOPPOLY");
+    &nv("IMPERIAL");
+    &nv("UNIFIRST");
+
+    # These need a bit of fishing
+
+    &pnv("RT", "RICHTEK");
+    &pnv("SN", "TI");
+    &pnv("SC3", "SAMSUNG");
+    &pnv3("K4", "Samsu", "SAMSUNG");
+    &pnv("PCF", "NXP");
+    &pnv("PDT", "PHILIPS");
+    &pnv("DFBM", "DELTA");
+    &pnv("MCB", "ETRONIC");
+    &pnv("GSM", "GLOBALTECH");
+    &pnv("SI", "VISHAY");
+    &pnv("HT", "HARVATEK");
+    &pnv3("HT", "HAR", "HARVATEK");
+    &pnv("R3", "RICOH");
+    &pnv("HVC", "RENESAS");
+    &pnv("W", "NDK");
+    &pnv3("CL", "Samsung", "SAMSUNG");
+    &pnv("WTE", "WAVEFAR");
+    &pnv("HB", "SEIKO");
+    &pnv("ATR", "ATMEL");
+    &pnv("WM", "WOLFSON");
+    &pnv("AAT", "AATI");
+    &pnv("ZX", "ZETEX");
+    &nv("TAI-TECH");
+    &pnv3("MS", "Micro Crystal", "MICRO-CRYSTAL");
+    &pnv("AD", "ADI");
+    &pnv("RF", "RFMD");
+    &pnv("UPG", "NEC");
+    &nv("KAMAYA");
+    &pnv("ISC", "ISAHAYA");
+
+    $d =~ /^\S+ \S+ (\S+) .*\bROHM\b/ && &p("ROHM", $1);
+
+    $d =~ /CON HRS (\S+) / && &p("HIROSE", $1);
+    $d =~ /CON NUCONN (\S+) / && &p("NUCONN", $1);
+    $d =~ /CON OCTEK (\S+) / && &p("OCTEK", $1);
+    $d =~ /CON CMK (\S+) / && &p("CMK", $1);
+
+    $d =~ /\b(WM[^(]+).*\bACC\b/ && &p("ACCTON", $1);
+
+    # Truncated entries
+
+    &pnv3("RT", "", "IDN");
+    &pnv3("SMS", "", "PROCONN");
+    &pnv3("PPR", "", "A-WHAT");	 # cryptic
+    &pnv3("CC7", "", "MICRO-CRYSTAL");
+    $d =~ /ASM4532T0P06/ && &p("DARFON", "ASM4532T0P06-1");
+
+    # Garbled entries we don't actually need
+
+    $d =~ /BOARD TO BOARD.*20-/ && &s("JUNK", $d);
+
+    # These are more like ME parts
+
+    $d =~ /^CASE/ && &s("OM", $d);
+    $d =~ /^TAPE/ && &s("OM", $d);
+    $d =~ /^SPONGE/ && &s("OM", $d);
+    $d =~ /^LABEL/ && &s("OM", $d);
+    $d =~ /^FABRIC/ && &s("OM", $d);
+    $d =~ /^MYLAR/ && &s("OM", $d);
+    $d =~ /^\*?BARE/ && &s("OM", $d);
+
+    $e = 1;
+    # put entries for testing here
+
+    print STDERR "NO MATCH: $d\n";
+    $bad++;
+}
+print STDERR "$bad/$total missed\n" if $bad;

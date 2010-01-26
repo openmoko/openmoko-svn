@@ -1,0 +1,81 @@
+...
+
+
+Parts list (.par)
+------------------
+
+A parts file lists the parts that are suitable for a given BOM item.
+The file begins with a line containing only
+#PAR
+
+After this, each line contains the component reference, a space, and
+then one or more namespace part-number groups, separated by spaces as
+well.
+
+Blank lines and comments (#) are ignored.
+
+
+Order list (.ord)
+-----------------
+
+An order file lists the quantities to order from inventories, along
+with the cost and the component references the item is used for. The
+file begins with a line containing only
+#ORD
+
+After this, each line contains the supplier (namespace), the reference
+number, the number of items to order, the currency code, the cost,
+and one or more component references.
+
+Blank lines and comments (#) are ignored.
+
+
+Equivalence (.equ)
+------------------
+
+Equivalence files establish equivalences between parts numbers in the
+same or in different name spaces. An equivalence file begins with a
+line containing only
+#EQU
+
+After this, each line consists of the following four space-separated
+fields:
+
+namespace-1 part-number-1 namespace-2 part-number-2
+
+Blank lines and comments (#) are ignored.
+
+
+Inventory (.inv)
+----------------
+
+Inventory files list inventory and component cost. An inventory file
+begins with a line containing only
+#INV
+
+After this, each line contains the namespace and the part number,
+followed by the number of items in stock, the currency code, and one
+or more pricing entries.
+
+Each pricing entry consists of two fields: the number of items in an
+order, and the per item price at that quantity. A sequence of
+increasing order sizes indicates that they are quanta. A sequence of
+decreasing order sizes indicates that smaller quanta are possible
+after a previous larger threshold has been met.
+
+Example:
+
+... USD 1 0.5 10 0.4 100 0.2
+
+Means that an order of at least 170 units would be made either as
+2 * 100 units, costing USD 40, or as 1 * 100 + 7 * 10 units, costing
+USD 20 + USD 28 = USD 48.
+
+If the entry is
+
+... USD 1 0.5 10 0.4 100 0.2 1 0.2
+
+Then the USD 0.2 per unit cost would apply to any any quantity of at
+least 100 units. So a 170 units order would cost USD 34.
+
+Blank lines and comments (#) are ignored.
