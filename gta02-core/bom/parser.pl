@@ -6,6 +6,15 @@ sub skip
 }
 
 
+#
+# "bom" populates the following global variable:
+#
+# $cmp{component-reference}[0] = value
+# $cmp{component-reference}[1] = footprint
+# $cmp{component-reference}[2] = field1
+# ...
+#
+
 sub bom
 {
     if (/^#End Cmp/) {
@@ -20,6 +29,17 @@ sub bom
 }
 
 
+#
+# "equ" populates the following global variables:
+#
+# $id{item-number} = "namespace item-number"
+#   This is used for heuristics that look up parts commonly referred to by
+#   their part number.
+#
+# $eq{"namespace0 item-number0"}[] = ("namespace1 item-number1", ...)
+#   List of all parts a given part is equivalent to.
+#
+
 sub equ
 {
     my @f = split(/\s+/);
@@ -31,6 +51,20 @@ sub equ
     push @{ $eq{$b} }, $a;
 }
 
+
+#
+# "inv" populates the following global variables:
+#
+# $id{item-number} = "namespace item-number"
+#   This is used for heuristics that look up parts commonly referred to by
+#   their part number.
+#
+# $inv{"namespace item-number"}[0] = items-in-stock
+# $inv{"namespace item-number"}[1] = currency
+# $inv{"namespace item-number"}[2] = order-quantity
+# $inv{"namespace item-number"}[3] = unit-price
+#   [2] and [3] may repeat.
+#
 
 sub inv
 {
@@ -44,6 +78,21 @@ sub inv
 }
 
 
+#
+# "par" populates the following global variables:
+#
+# $parts{component-ref}[0] = namespace
+# $parts{component-ref}[1] = item-number
+# [0] and [1] may repeat
+#
+# $want{"namespace item"} = number of times we may use the part. If multiple
+#   parts are eligible for a component, each of them is counted as desirable
+#   for each component.
+#
+# $comps{"namespace item"}{component-ref} = 1
+#   Set of components a part may be used for.
+#
+
 sub par
 {
     my @f = split(/\s+/);
@@ -53,7 +102,7 @@ sub par
 	my @id = splice(@f, 0, 2);
 	my $id = "$id[0] $id[1]";
 	$want{$id}++;
-	push @{ $comps{$id} }, $ref;
+	$comps{$id}{$ref} = 1;
     }
 }
 

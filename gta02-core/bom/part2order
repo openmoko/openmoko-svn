@@ -17,11 +17,43 @@ sub number
 }
 
 
+#
+# The heuristics here aren't very nice. We give zero-cost stock priority over
+# any other stock, when we go by stock size up to the quantity we need. The
+# idea is to exhause local stock (zero-cost) first, then try to obtain the
+# parts with as few orders as possible.
+#
+# It would be better to have some sort of priority, so that we can express a
+# preference among stock we already own. Also, if non-zero-cost stock has widly
+# different prices, the smallest order cost may not be a good indicator of
+# which source we prefer.
+#
+# Furthermore, the algorithm doesn't consider the number of sources we use in
+# total or things like lead time, shipping cost, customs, etc.
+#
+
+sub rank
+{
+    local ($a, $b) = @_;
+
+    my $na = &number($a);
+    my $nb = &number($b);
+    my $pa = $inv{$a}[3];
+    my $pb = $inv{$b}[3];
+
+#print STDERR "a=$a b=$b na=$na nb=$nb pa=$pa pb=$pb\n";
+    return 1 if !$pa && $pb;
+    return -1 if $pa && !$pb;
+    return $na <=> $nb if $na != $nb;
+    return $pb <=> $pa;
+}
+
+
 for (keys %parts) {
     $parts++;
 }
 
-for (sort { &number($b) <=> &number($a) } keys %want) {
+for (sort { &rank($b, $a) } keys %want) {
     my $n = &number($_);
     $n -= $n % $mult;
     next unless $n;
@@ -65,6 +97,21 @@ for (sort { &number($b) <=> &number($a) } keys %want) {
 	}
     }
     next if !defined $best_price;
-    print "$_ $best_qty $currency $best_price\n";
-# tested until price composition. todo: demand adjustment
+    print "$_ $best_qty $currency $best_price";
+    my $id = $_;
+    while (keys %{ $comps{$id} }) {
+	last if $best_qty < $mult;
+	$best_qty -= $mult;
+	my $ref = (sort keys %{ $comps{$id} })[0];
+#print STDERR "$id: $ref + ", join("|", keys %{ $comps{$id} }), "\n";
+	my @f = @{ $parts{$ref} };
+	while (@f) {
+	    my @id2 = splice(@f, 0, 2);
+	    my $id2 = "$id2[0] $id2[1]";
+	    $want{$id2}--;
+	    delete $comps{$id2}{$ref};
+	}
+	print " $ref";
+    }
+    print "\n";
 }
