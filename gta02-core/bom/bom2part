@@ -43,4 +43,4 @@ for (keys %cmp) {
     $bad++;
 #    print join("#", ($ref, @f)), " -> $id{$f[0]}\n";
 }
-print STDERR "$bad/$total unmatched" if $bad;
+print STDERR "$bad/$total unmatched\n" if $bad;
