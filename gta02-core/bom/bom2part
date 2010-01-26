@@ -39,7 +39,7 @@ for (keys %cmp) {
 	next;
     }
 
-    print STDERR "unmatched: $_\n";
+    print STDERR "unmatched: $_ (", join(", ", @f), ")\n";
     $bad++;
 #    print join("#", ($ref, @f)), " -> $id{$f[0]}\n";
 }
