@@ -117,17 +117,18 @@ sub par
 
 sub chr
 {
+    my @f;
     if (/^\s+/) {
-	my @f = split(/\s+/, $');
+	@f = split(/\s+/, $');
     } else {
-	my @f = split(/\s+/);
+	@f = split(/\s+/);
 	my $ref = shift @f;
 	my $num = shift @f;
 	$last = "$ref $num";
     }
     for (@f) {
 	die unless /=/;
-	$chr{$last}{uc($1)} = $2;
+	$chr{$last}{uc($`)} = $';
     }
 }
 
@@ -143,9 +144,9 @@ sub chr
 # $action_stack[depth]{field} = value
 # $may_cont = 0 / 1
 # $last
+# $last_action
 #
 # to do:
-# - test this
 # - unit canonicalization
 # - glob to RE rewriting for pattern
 # - $n expansion for value
@@ -153,14 +154,16 @@ sub chr
 
 sub sub
 {
-    /^\s*/;
-    my $indent = $&;
+    /^(\s*)/;
+    my $indent = $1;
     my @f = split(/\s+/, $');
+    my $f;
     my $in = 0;		# indentation level
-    while (/^./ =~ $indent) {
-	if ($& eq " ") {
+    while (length $indent) {
+	my $c = substr($indent, 0, 1, "");
+	if ($c eq " ") {
 	    $in++;
-	} elsif ($& eq "\t") {
+	} elsif ($c eq "\t") {
 	    $in = ($in+8) & ~7;
 	} else {
 	    die;
@@ -169,47 +172,57 @@ sub sub
     if ($may_cont && $in > $last) {
 	pop(@match);
 	pop(@action);
+	pop(@end);
     } else {
 	$match_stack[0] = undef;
 	$action_stack[0] = undef;
+	$last_action = 0;
+	$last = $in;
     }
-    $last = $in;
-    while (@f) {
-	my $f = shift @f;
-	last if $f eq "->" || $f eq "{" || $f eq "}" || $f eq "!";
-	if ($f =~ /=/) {
-	    $match_stack[0]{"REF"} = $f;
-	} else {
-	    $match_stack[0]{uc($`)} = $';
-	}
-    }
-    if ($f eq "->") {
+    if (!$last_action) {
 	while (@f) {
-	    my $f = shift @f;
-	    last if $f eq "{" || $f eq "!";
+	    $f = shift @f;
+	    last if $f eq "->" || $f eq "{" || $f eq "}" || $f eq "!";
+	    if ($f =~ /=/) {
+		$match_stack[0]{uc($`)} = $';
+	    } else {
+		$match_stack[0]{"REF"} = $f;
+	    }
 	}
-	die unless /=/;
-	$action_stack[0]{uc($`)} = $';
+	$last_action = 1 if $f eq "->";
+    }
+    if ($last_action) {
+	while (@f) {
+	    $f = shift @f;
+	    last if $f eq "{" || $f eq "!";
+	    die unless $f =~ /=/;
+	    $action_stack[0]{uc($`)} = $';
+	}
     }
     $may_cont = 0;
     if ($f eq "{") {
 	unshift(@match_stack, undef);
 	unshift(@action_stack, undef);
+	die "items following {" if @f;
     } elsif ($f eq "}") {
 	shift @match_stack;
 	shift @action_stack;
+	die "items following }" if @f;
     } else {
+	die "items following !" if @f && $f eq "!";
 	push(@end, $f eq "!");
 	$may_cont = $f ne "!";
 	my $n = $#end;
-	for $m (@match_stack) {
-	    for (keys %{ $_ }) {
-		$match[$n]{$_} = $m{$_};
+	push(@match, undef);
+	push(@action, undef);
+	for my $m (@match_stack) {
+	    for (keys %{ $m }) {
+		$match[$n]{$_} = $m->{$_};
 	    }
 	}
-	for $a (@action_stack) {
-	    for (keys %{ $_ }) {
-		$action[$n]{$_} = $m{$_};
+	for my $a (@action_stack) {
+	    for (keys %{ $a }) {
+		$action[$n]{$_} = $a->{$_};
 	    }
 	}
     }
@@ -245,6 +258,7 @@ sub parse
 	if (/^#SUB\b/) {
 	    $mode = *sub;
 	    undef $last;
+	    undef $last_action;
 	    undef $may_cont;
 	    next;
 	}

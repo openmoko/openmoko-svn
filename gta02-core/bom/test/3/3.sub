@@ -1,0 +1,17 @@
+#SUB
+# note: these rules don't make sense. they just serve to test the parser.
+C* {
+    foo=bar -> a=b
+    foo=bar
+	x=y -> a=c
+    foo=bar
+	x=y ->
+	a=b
+    foo=bar x=y ->
+	a=b !
+    foo=bar x=z -> z=zulu
+      { # indentation required !
+	y=0 -> t=a
+	y=1 -> t=b
+    }
+}
