@@ -107,6 +107,115 @@ sub par
 }
 
 
+#
+# "chr" populates the following global variable:
+#
+# $chr{"namespace item-number"}{parameter} = value
+#
+# $last is used internally for continuation lines.
+#
+
+sub chr
+{
+    if (/^\s+/) {
+	my @f = split(/\s+/, $');
+    } else {
+	my @f = split(/\s+/);
+	my $ref = shift @f;
+	my $num = shift @f;
+	$last = "$ref $num";
+    }
+    for (@f) {
+	die unless /=/;
+	$chr{$last}{uc($1)} = $2;
+    }
+}
+
+
+#
+# "sub" populates the following global variables:
+#
+# $end[rule-number] = 0 / 1
+# $match[rule-number]{field} = pattern
+# $action[rule-number]{field} = value
+#
+# $match_stack[depth]{field} = pattern
+# $action_stack[depth]{field} = value
+# $may_cont = 0 / 1
+# $last
+#
+# to do:
+# - test this
+# - unit canonicalization
+# - glob to RE rewriting for pattern
+# - $n expansion for value
+#
+
+sub sub
+{
+    /^\s*/;
+    my $indent = $&;
+    my @f = split(/\s+/, $');
+    my $in = 0;		# indentation level
+    while (/^./ =~ $indent) {
+	if ($& eq " ") {
+	    $in++;
+	} elsif ($& eq "\t") {
+	    $in = ($in+8) & ~7;
+	} else {
+	    die;
+	}
+    }
+    if ($may_cont && $in > $last) {
+	pop(@match);
+	pop(@action);
+    } else {
+	$match_stack[0] = undef;
+	$action_stack[0] = undef;
+    }
+    $last = $in;
+    while (@f) {
+	my $f = shift @f;
+	last if $f eq "->" || $f eq "{" || $f eq "}" || $f eq "!";
+	if ($f =~ /=/) {
+	    $match_stack[0]{"REF"} = $f;
+	} else {
+	    $match_stack[0]{uc($`)} = $';
+	}
+    }
+    if ($f eq "->") {
+	while (@f) {
+	    my $f = shift @f;
+	    last if $f eq "{" || $f eq "!";
+	}
+	die unless /=/;
+	$action_stack[0]{uc($`)} = $';
+    }
+    $may_cont = 0;
+    if ($f eq "{") {
+	unshift(@match_stack, undef);
+	unshift(@action_stack, undef);
+    } elsif ($f eq "}") {
+	shift @match_stack;
+	shift @action_stack;
+    } else {
+	push(@end, $f eq "!");
+	$may_cont = $f ne "!";
+	my $n = $#end;
+	for $m (@match_stack) {
+	    for (keys %{ $_ }) {
+		$match[$n]{$_} = $m{$_};
+	    }
+	}
+	for $a (@action_stack) {
+	    for (keys %{ $_ }) {
+		$action[$n]{$_} = $m{$_};
+	    }
+	}
+    }
+}
+
+
 sub parse
 {
     $mode = *skip;
@@ -126,6 +235,17 @@ sub parse
 	}
 	if (/^#PAR\b/) {
 	    $mode = *par;
+	    next;
+	}
+	if (/^#CHR\b/) {
+	    $mode = *chr;
+	    undef $last;
+	    next;
+	}
+	if (/^#SUB\b/) {
+	    $mode = *sub;
+	    undef $last;
+	    undef $may_cont;
 	    next;
 	}
 	s/#.*//;

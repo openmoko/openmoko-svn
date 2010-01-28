@@ -1,4 +1,48 @@
 ...
+- namespace
+- equivalences
+- ID matching
+- characteristics matching
+- inventory
+
+
+Part characteristics (.chr)
+---------------------------
+
+A part characteristics file lists the parameters of components.
+This information is then matched with the parameters specified in
+the schematics.
+
+The part characteristics file begins with a line containing only
+#CHR
+
+After this, each line contains the manufacturer (namespace), the
+part number, and a list of parameter=value entries. Fields are
+separated by spaces.
+
+Long lines can be wrapped by indenting the continuation lines.
+
+Blank lines and comments (#) are ignored.
+
+
+Substitutions (.sub)
+--------------------
+
+A substitutions file specifies rules for translating component
+parameters in schematics to part characteristics.
+
+matches -> actions !
+
+matches -> actions {
+    ...
+}
+
+(...) -> $n or ${n}
+$u -> canonicalize unit
+REF
+FP
+F1
+...
 
 
 Parts list (.par)
