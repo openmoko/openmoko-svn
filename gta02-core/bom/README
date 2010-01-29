@@ -31,18 +31,89 @@ Substitutions (.sub)
 A substitutions file specifies rules for translating component
 parameters in schematics to part characteristics.
 
-matches -> actions !
+A substitution rule consists of one or more conditions and zero or
+more assignments. The conditions are of the form field=pattern. The
+field can be a per-component fields KiCad provides or any parameter
+set by substitutions.
 
-matches -> actions {
+KiCad fields are named as follows:
+
+KiCad field  Field name
+-----------  ----------
+Reference    REF (*)
+Value        VAL
+FP           Footprint
+Field1       F1
+...          ...
+
+(*) As a shortcut, REF= can be omitted.
+
+Note that fields with a user-defined name currently still only appear
+as F1, F2, etc.
+
+Field names are case-insensitive.
+
+The pattern is uses a notation similar to filename globbing. There
+are the following special constructs:
+
+- * matches a string of any length
+- ? matches a single character
+- (...) matches the pattern between the parentheses and records the
+  string matched
+- $X marks a value in nXn notation, e.g., 4u7 or 100R. Such values
+  are converted to SI-like notation.
+
+A rule is applied when all conditions are fulfilled. In this case,
+assignments of the form field=value are executed. Strings obtained
+in the match can be included in a value as follows:
+
+- $field and ${field} are replaced by the respective field
+- $field:n and ${field:n} are replaced by the n-th (...) pattern in
+  the match of the respective field
+
+If a rule ends with an exclamation mark, the substitution process stops
+after the rule is applied. Otherwise, further rules are processed.
+
+Examples:
+
+R* val=$R -> R=$val
+
+This rule translates the values of all resistors to SI notation.
+
+D* F1=(*)Vdc -> T=TSV Vdc=F1:1
+
+This rule sets the parameters T and Vdc for Zeners acting as TSVs.
+
+If a set of rules has a common set of conditions or assignments, the
+more compact block notation can be used instead of repeating them for
+each rule:
+
+common-conditions -> common-assignments {
+    rule-specific-conditions -> rule-specific-assignments
     ...
 }
 
-(...) -> $n or ${n}
-$u -> canonicalize unit
-REF
-FP
-F1
-...
+Rules in a block only match if both the common and the rule-specific
+conditions are met. Then the common and the rule-specific assignments
+are performed. If a condition or an assignment appears both in the
+common and the rule-specific part, only the latter is used.
+
+Long lines can be wrapped by indenting the continuation lines. Note
+that { and ! are also considered to be part of the same line as the
+rest of the rule. In particular, the following construct wouldn't
+work:
+
+X=Y
+{
+    ...
+}
+
+However, this would:
+
+X=Y
+  {
+    ...
+}
 
 
 Parts list (.par)
