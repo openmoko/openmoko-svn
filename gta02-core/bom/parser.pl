@@ -166,7 +166,7 @@ sub sub_pattern
 {
     local ($field, $p) = @_;
     my $n = 0;
-    $p =~ s/\./\./g;
+    $p =~ s/\./\\./g;
     $p =~ s/\+/\\+/g;
     $p =~ s/\?/./g;
     $p =~ s/\*/.*/g;

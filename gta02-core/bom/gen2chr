@@ -8,6 +8,10 @@ if ($ARGV[0] eq "-d") {
     $debug = 1;
     shift @ARGV;
 }
+if ($ARGV[0] eq "-n") {
+    $negate = 1;
+    shift @ARGV;
+}
 $key = shift @ARGV;
 &parse;
 
@@ -16,7 +20,11 @@ for (keys %id) {
     next unless $id{$_} eq "$key $_";
     undef %field;
     $field{"REF"} = $_;
-    next unless &apply_rules();
+    if (!&apply_rules()) {
+	print "$id{$_}\n" if $negate;
+	next;
+    }
+    next if $negate;
     print $id{$_};
     for (sort keys %field) {
 	next if $_ =~ /^_/;

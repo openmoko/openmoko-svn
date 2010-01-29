@@ -91,6 +91,11 @@ sub sub_match
 	my $exp = $4 eq "" ? " " : $4;
 
 	#
+	# Remove leading zeroes.
+	#
+	$v =~ s/^0*(\d+)/\1/;
+
+	#
 	# Mantissa must be < 1000.
 	# Do the math as string operation to avoid rounding errors.
 	#
@@ -110,6 +115,12 @@ sub sub_match
 	    }
 	    $exp =~ tr/GMk munpf/Mk munpa/;
 	}
+
+	#
+	# Remove trailing zeroes
+	#
+	$v =~ s/(\.[1-9]*)0*/\1/;
+
 	$exp =~ s/ //;
 	$v =~ s/\.$//;
 	$v = $v.$exp.$unit;

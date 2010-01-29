@@ -3,7 +3,7 @@
 # http://www.darfon.com/English/MLCC_OrderingInfo.asp
 
 C* -> T=C {
-    C(????)(???)([0-9][0-9][0-9])(?)(?)* ->
+    C(????)(???)([0-9][0-9R][0-9])(?)(?)* ->
         _FP=$REF:1 M=$REF:2 _E12_P=$REF:3 _TOL=$REF:4 _V=$REF:5
 
     _FP=1005 -> FP=0402
@@ -12,6 +12,12 @@ C* -> T=C {
     _FP=3216 -> FP=1206
     _FP=3225 -> FP=1210
 
+    M=NPO -> M=NP0	# very common typo
+
+    _TOL=A -> TOL=0.05pF
+    _TOL=B -> TOL=0.1pF
+    _TOL=C -> TOL=0.25pF
+    _TOL=D -> TOL=0.5pF
     _TOL=F -> TOL=1%
     _TOL=G -> TOL=2%
     _TOL=H -> TOL=5%
@@ -41,5 +47,11 @@ _E12_P=(??)4	-> _E12=${_E12_P:1}0n
 _E12_P=(?)(?)5	-> _E12=$_E12_P:1.${_E12_P:2}u
 _E12_P=(??)6	-> _E12=${_E12_P:1}u
 _E12_P=(??)7	-> _E12=${_E12_P:1}0u
+_E12_P=(?)R(?)	-> _E12=$_E12_P:1.${_E12_P:2}p	# strange
+
+# remove trailing zeroes
+
+_E12=(*).0([fpnu]) -> _E12=$_E12:1$_E12:2
+_E12=(*).0	   -> _E12=$_E12:1
 
 T=C -> C=${_E12}F !

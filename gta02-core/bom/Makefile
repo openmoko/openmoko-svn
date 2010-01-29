@@ -8,19 +8,25 @@ KITS=20
 
 all:		gta02-core.ord
 
-gta02-core.ord:	part2order gta02-core.par fic/fic.inv gta02-core.inv
+gta02-core.ord:	part2order parser.pl \
+		  gta02-core.par fic/fic.inv gta02-core.inv
 		perl part2order $(KITS) \
 		  fic/fic.inv gta02-core.inv gta02-core.par >$@ || \
 		  { rm -rf $@; exit 1; }
 	
-gta02-core.par:	bom2part fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub darfon.chr
+gta02-core.par:	bom2part parser.pl match.pl \
+		  fic/fic.equ ../gta02-core.lst gta02-core.inv \
+		  gta02-core.sub darfon.chr ralec.chr
 		perl bom2part fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub darfon.chr \
+		  gta02-core.sub darfon.chr ralec.chr \
 		    >$@ || { rm -rf $@; exit 1; }
 
-darfon.chr:	gen2chr fic/fic.equ darfon.gen
+darfon.chr:	gen2chr parser.pl match.pl fic/fic.equ darfon.gen
 		perl gen2chr DARFON fic/fic.equ darfon.gen >$@ || \
+		  { rm -f $@; exit 1; }
+
+ralec.chr:	gen2chr parser.pl match.pl fic/fic.equ ralec.gen
+		perl gen2chr RALEC fic/fic.equ ralec.gen >$@ || \
 		  { rm -f $@; exit 1; }
 
 fic/fic.equ:
@@ -37,4 +43,4 @@ upload:		workflow.pdf
 
 spotless:
 		$(MAKE) -C fic spotless
-		rm -f gta02-core.par gta02-core.ord
+		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
