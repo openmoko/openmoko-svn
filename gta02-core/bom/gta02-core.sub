@@ -1,0 +1,17 @@
+#SUB
+
+-> T=unknown
+
+R* {
+    -> T=R
+    VAL=$R -> R=$VAL
+    F1=$% -> TOL=$F1
+}
+
+C* {
+    -> T=C
+    VAL=$F -> C=$VAL
+}
+
+VAL=SC32442 -> VAL=SC32442B54
+VAL=PCF50633/04/N3 -> VAL=PCF50633HN/04/N3,5

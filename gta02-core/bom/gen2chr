@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+
+require "parser.pl";
+require "match.pl";
+
+
+if ($ARGV[0] eq "-d") {
+    $debug = 1;
+    shift @ARGV;
+}
+$key = shift @ARGV;
+&parse;
+
+print "#CHR\n";
+for (keys %id) {
+    next unless $id{$_} eq "$key $_";
+    undef %field;
+    $field{"REF"} = $_;
+    next unless &apply_rules();
+    print $id{$_};
+    for (sort keys %field) {
+	next if $_ =~ /^_/;
+	next if $_ eq "REF";
+	print " $_=$field{$_}";
+    }
+    print "\n";
+}

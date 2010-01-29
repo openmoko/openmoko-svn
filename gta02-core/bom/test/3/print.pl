@@ -10,7 +10,7 @@ for $k (sort keys %chr) {
 for ($i = 0; $i != @end; $i++) {
     for (sort keys %{ $match[$i] }) {
 	@m = @{ $match[$i]{$_} };
-	print "$_=$m[0]/$m[1] ";
+	print "$_=$m[0]/$m[1]/$m[2] ";
     }
     print "->";
     for (sort keys %{ $action[$i] }) {

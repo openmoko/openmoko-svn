@@ -1,16 +1,17 @@
 #!/usr/bin/perl
 
 require "parser.pl";
+require "match.pl";
 
 
 sub issue
 {
     my %seen;
-    my @p = ( $_[1] );
+    print shift(@_);
+    my @p = @_;
 
     # we determine all equivalent parts
 
-    print $_[0];
     while (@p) {
 	my $p = shift @p;
 	next if $seen{$p};
@@ -22,24 +23,77 @@ sub issue
 }
 
 
+if ($ARGV[0] eq "-d") {
+    $debug = 1;
+    shift @ARGV;
+}
 &parse;
 
 $total = 0;
 $bad = 0;
 
 print "#PAR\n";
-for (keys %cmp) {
-    @f = @{ $cmp{$_} };
+for $ref (keys %cmp) {
+    @f = @{ $cmp{$ref} };
     $total++;
+
+    print STDERR "REF $ref\n" if $debug;
 
     # if we're lucky, we get a direct ID match
 
     if (defined $id{$f[0]}) {
-	&issue($_, $id{$f[0]});
+	print STDERR "FIRST ID\n" if $debug;
+	&issue($ref, $id{$f[0]});
 	next;
     }
 
-    print STDERR "unmatched: $_ (", join(", ", @f), ")\n";
+    # no such luck. Let's roll up our sleeves and to the substitutions.
+
+    undef %field;
+    $field{"REF"} = $ref;
+    $field{"VAL"} = $f[0];
+    $field{"FP"} = $f[1];
+    for (my $i = 1; $i != 10; $i++) {
+	$field{"F$i"} = $f[$i+1];
+    }
+    &apply_rules();
+
+    # try our luck again
+
+    if (defined $id{$field{"VAL"}}) {
+	print STDERR "SECOND ID\n" if $debug;
+	&issue($ref, $id{$field{"VAL"}});
+	next;
+    }
+
+    # still nothing. Let's match characteristics then.
+
+    my @p = ();
+    COMP: for my $c (keys %chr) {
+	print STDERR "PART $c\n" if $debug;
+	for (keys %field) {
+	    next if $_ eq "REF" || $_ eq "VAL" || $_ =~ /^F\d$/;
+	    print STDERR "  $_=",$field{$_}," " if $debug;
+	    if (!defined $chr{$c}{$_}) {
+		print STDERR "NO FIELD\n" if $debug;
+		next COMP;
+		next;
+	    }
+	    if ($chr{$c}{$_} eq $field{$_}) {
+		print STDERR "== $chr{$c}{$_}\n" if $debug;
+	    } else {
+		print STDERR "!= $chr{$c}{$_}\n" if $debug;
+		next COMP;
+	    }
+	}
+	push(@p, $c);
+    }
+    if (@p) {
+	&issue($ref, @p);
+	next;
+    }
+
+    print STDERR "unmatched: $ref (", join(", ", @f), ")\n";
     $bad++;
 #    print join("#", ($ref, @f)), " -> $id{$f[0]}\n";
 }

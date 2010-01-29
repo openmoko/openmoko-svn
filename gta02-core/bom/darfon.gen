@@ -1,0 +1,45 @@
+#GEN
+
+# http://www.darfon.com/English/MLCC_OrderingInfo.asp
+
+C* -> T=C {
+    C(????)(???)([0-9][0-9][0-9])(?)(?)* ->
+        _FP=$REF:1 M=$REF:2 _E12_P=$REF:3 _TOL=$REF:4 _V=$REF:5
+
+    _FP=1005 -> FP=0402
+    _FP=1608 -> FP=0603
+    _FP=2012 -> FP=0805
+    _FP=3216 -> FP=1206
+    _FP=3225 -> FP=1210
+
+    _TOL=F -> TOL=1%
+    _TOL=G -> TOL=2%
+    _TOL=H -> TOL=5%
+    _TOL=J -> TOL=5%
+    _TOL=K -> TOL=10%
+    _TOL=M -> TOL=20%
+    _TOL=Z -> TOL=80/20%
+
+    _V=B -> V=4V
+    _V=C -> V=6.3V
+    _V=D -> V=10V
+    _V=E -> V=16V
+    _V=F -> V=25V
+    _V=N -> V=35V
+    _V=G -> V=50V
+}
+
+# E12 scale, base multiplier is 10^-12 (pico)
+
+_E12_P=(??)8	-> _E12=${_E12_P:1}0f
+_E12_P=(?)(?)9	-> _E12=$_E12_P:1.${_E12_P:2}p
+_E12_P=(??)0	-> _E12=${_E12_P:1}p
+_E12_P=(??)1	-> _E12=${_E12_P:1}0p
+_E12_P=(?)(?)2	-> _E12=$_E12_P:1.${_E12_P:2}n
+_E12_P=(??)3	-> _E12=${_E12_P:1}n
+_E12_P=(??)4	-> _E12=${_E12_P:1}0n
+_E12_P=(?)(?)5	-> _E12=$_E12_P:1.${_E12_P:2}u
+_E12_P=(??)6	-> _E12=${_E12_P:1}u
+_E12_P=(??)7	-> _E12=${_E12_P:1}0u
+
+T=C -> C=${_E12}F !

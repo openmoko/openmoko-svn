@@ -31,7 +31,7 @@ Substitutions (.sub)
 A substitutions file specifies rules for translating component
 parameters in schematics to part characteristics.
 
-A substitution rule consists of one or more conditions and zero or
+A substitution rule consists of zero or more conditions and zero or
 more assignments. The conditions are of the form field=pattern. The
 field can be a per-component fields KiCad provides or any parameter
 set by substitutions.
@@ -108,12 +108,28 @@ X=Y
     ...
 }
 
-However, this would:
+With proper indentation, this would:
 
 X=Y
   {
     ...
 }
+
+
+Characteristics generation (.gen)
+---------------------------------
+
+The substitution mechanism can also be used to automatically generate
+characteristics from part numbers, e.g., for resistors or capacitors.
+
+.gen files are exactly .sub files, with the exception that the only
+field used is the REF field and that it contains the part number.
+
+Once the rule set has been processed, all fields (except REF) whose
+name doesn't begin with an underscore are placed in the characteristics
+entry as parameters.
+
+An entry is only produced if the rule set is explicitly terminated.
 
 
 Parts list (.par)
