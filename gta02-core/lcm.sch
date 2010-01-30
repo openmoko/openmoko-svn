@@ -1,5 +1,5 @@
-EESchema Schematic File Version 2  date Sat 03 Oct 2009 01:35:05 PM CDT
-LIBS:power,device,conn,gta02-core
+EESchema Schematic File Version 2  date Sat Jan 30 17:39:49 2010
+LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
 $Descr A3 16535 11700
@@ -1074,8 +1074,9 @@ L TD028TTEC1 CON6001
 U 1 1 4A4024AF
 P 10650 3800
 F 0 "CON6001" H 10650 5200 60  0000 C CNN
-F 1 "TD028TTEC1" H 10650 2400 60  0000 C CNN
+F 1 "FH23-39S-0.3SHW" H 10650 2400 60  0000 C CNN
 F 2 "FH23-39S-0.3SHW" H 10590 5260 60  0001 C CNN
+F 4 "TD028TTEC1" H 10650 2250 60  0000 C CNN "Field1"
 	1    10650 3800
 	1    0    0    -1  
 $EndComp
