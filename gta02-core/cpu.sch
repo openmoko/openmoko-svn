@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat 07 Nov 2009 17:28:15 GMT
+EESchema Schematic File Version 2  date Sat Jan 30 15:19:34 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -626,7 +626,7 @@ L SW_PUSH_4 SW1501
 U 1 1 4A4B880C
 P 9550 5550
 F 0 "SW1501" H 9550 5750 60  0000 C CNN
-F 1 "SW_PUSH_4" H 9100 5450 60  0000 C CNN
+F 1 "EVQPUD02K" H 9100 5450 60  0000 C CNN
 	1    9550 5550
 	-1   0    0    -1  
 $EndComp
