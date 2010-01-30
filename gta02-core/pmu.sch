@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sat Jan 30 15:19:06 2010
+EESchema Schematic File Version 2  date Sat Jan 30 19:05:11 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -2065,6 +2065,7 @@ P 11150 6950
 F 0 "R1763" H 11000 6850 50  0000 C CNN
 F 1 "42R2" H 11250 6850 50  0000 C CNN
 F 2 "0402" H 11150 6950 60  0001 C CNN
+F 4 "1%" H 11450 6850 60  0000 C CNN "Field1"
 	1    11150 6950
 	1    0    0    -1  
 $EndComp
