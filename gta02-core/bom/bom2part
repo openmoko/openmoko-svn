@@ -52,7 +52,11 @@ for $ref (keys %cmp) {
     undef %field;
     $field{"REF"} = $ref;
     $field{"VAL"} = $f[0];
-    $field{"FP"} = $f[1];
+    if ($f[1] eq "") {
+	print STDERR "warning: $ref ($f[0]) has no footprint\n";
+    } else {
+	$field{"FP"} = $f[1];
+    }
     for (my $i = 1; $i != 10; $i++) {
 	$field{"F$i"} = $f[$i+1];
     }

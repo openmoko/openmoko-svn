@@ -1,0 +1,29 @@
+#CHR
+
+# http://www.acxc.com.tw/product/bf2520/bf2520.htm
+
+# unlisted. Openmoko's BOM says:
+# FILTER DBF 2.4GHz IL=2.5dB VSWR=2.0 SMT1008 4PIN BF2520-B2R4CAB/LF ACX FOR GSM L
+# parameters tentative
+ACX BF2520-B2R4CAB/LF	T=FILTER M=BAND	FP=2520-4	F=2.4GHz	IL=2.5dB
+
+# http://www.acxc.com.tw/product/fa2012/fa2012.htm
+# http://www.acxc.com.tw/product/fa2012/FA2012-KR40PAA_070827.pdf
+
+ACX FA2012-KR40PAA	T=FILTER M=LOW	ARRAY=4	FP=2012-9 F=400MHz C=18pF I=50mA V=25V
+
+# http://www.acxc.com.tw/product/hi1005/hi1005.htm
+
+ACX HI1005-1C10NJMT	T=L	FP=0402	L=10nH	TOL=5%	R=450mR	I=250mA	SRF=3.7GHz
+ACX HI1005-1C15NJMT	T=L	FP=0402	L=15nH	TOL=5%	R=600mR	I=250mA	SRF=3.1GHz
+ACX HI1005-1C39NJMT	T=L	FP=0402	L=39nH	TOL=5%	R=1.2R	I=150mA	SRF=1.4GHz
+ACX HI1005-1C3N9SMT	T=L	FP=0402	L=3.9nH	TOL=0.3nH R=450mR I=250mA SRF=3.7GHz
+ACX HI1005-1C4N7SMT	T=L	FP=0402	L=4.7nH	TOL=0.3nH R=240mR I=300mA SRF=6GHz
+
+# unlisted
+ACX HI1005-1C7N5JMT	T=L	FP=0402	L=7.5nH	TOL=5%	I=250mA
+
+# http://www.acxc.com.tw/product/hi1608/hi1608.htm
+# http://www.acxc.com.tw/product/hi1608/HI1608-1B_C_%20series_070827.pdf
+
+ACX HI1608-1C3N9SNT	T=L	FP=0603	L=3.9nH	TOL=0.3nH R=250mR I=600mA SRF=6.3GHz

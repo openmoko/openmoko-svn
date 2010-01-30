@@ -2,16 +2,30 @@
 
 -> T=unknown
 
-R* {
+R[0-9P]* {	# also handle RP...
     -> T=R
     VAL=$R -> R=$VAL
     F1=$% -> TOL=$F1
 }
 
-C* {
+RP[0-9]* {
+    -> T=RA
+    RP220[123] -> ARRAY=4
+    # the other parameters have already been taken care of by R*
+}
+
+C[0-9]* {
     -> T=C
     VAL=$F -> C=$VAL
 }
 
+L[0-9]* {
+    -> T=L
+    VAL=$H -> L=$VAL
+}
+
+FP=TST -> VAL=TST
+
 VAL=SC32442 -> VAL=SC32442B54
 VAL=PCF50633/04/N3 -> VAL=PCF50633HN/04/N3,5
+VAL=BF2520-B2R4CAB -> VAL=BF2520-B2R4CAB/LF

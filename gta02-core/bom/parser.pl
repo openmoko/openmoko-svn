@@ -277,8 +277,12 @@ sub parse
     $mode = *skip;
     while (<>) {
 	chop;
-	if (/^#Cmp/) {
+	if (/^#Cmp.*order = Reference/) {
 	    $mode = *bom;
+	    next;
+	}
+	if (/^#Cmp.*order = Value/) {
+	    $mode = *skip;
 	    next;
 	}
 	if (/^#EQU\b/) {

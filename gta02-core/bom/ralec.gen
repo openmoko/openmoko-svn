@@ -1,24 +1,39 @@
 #GEN
 
 # http://www.ralec.com/EN/products/1.html
+# http://www.ralec.com/download/products/2_Low-Ohmic.pdf
 
 RTT* -> T=R {
     RTT(??)(???)([BDFGJ])* -> _FP=$REF:1 _E12_1=$REF:2 _TOL=$REF:3
     RTT(??)(????)([BDFGJ])* -> _FP=$REF:1 _E12_1=$REF:2 _TOL=$REF:3
 
-    _FP=01 -> FP=0201
-    _FP=02 -> FP=0402
-    _FP=03 -> FP=0603
-    _FP=05 -> FP=0805
-    _FP=06 -> FP=1206
-    _FP=12 -> FP=1210
-
-    _TOL=B -> TOL=0.1%
-    _TOL=D -> TOL=0.5%
-    _TOL=F -> TOL=1%
-    _TOL=G -> TOL=2%
-    _TOL=J -> TOL=5%
+    _FP=01 -> FP=0201 P=1/20W V=25V
+    _FP=02 -> FP=0402 P=1/16W V=50V
+    _FP=03 -> FP=0603 P=1/10W V=100V
+    _FP=05 -> FP=0805 P=1/8W V=150V
+    _FP=06 -> FP=1206 P=1/4W V=200V
+    _FP=12 -> FP=1210 P=1/2W V=200V
 }
+
+# http://www.ralec.com/EN/products/4.html
+# http://www.ralec.com/download/products/4_Array-concave.pdf
+
+RTA* -> T=RA {
+    RTA(??)-(?)(?)(???)([DFGJ])* ->
+        _FP=$REF:1 ARRAY=$REF:2 _E12_1=$REF:4 _TOL=$REF:5
+
+    _FP=01 -> FP=0201 P=1/32W V=12.5V
+    _FP=02 -> FP=0402 P=1/16W V=50V
+    _FP=03 -> FP=0603 P=1/16W V=100V
+}
+
+# tolerances
+
+_TOL=B -> TOL=0.1%
+_TOL=D -> TOL=0.5%
+_TOL=F -> TOL=1%
+_TOL=G -> TOL=2%
+_TOL=J -> TOL=5%
 
 # E12 scale
 
@@ -52,3 +67,4 @@ _E12=(*.[0-9]*)0	-> _E12=$_E12:1
 _E12=(*).0		-> _E12=$_E12:1
 
 T=R -> R=${_E12}R !
+T=RA -> R=${_E12}R !

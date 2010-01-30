@@ -14,7 +14,7 @@ C* -> T=C {
 
     M=NPO -> M=NP0	# very common typo
 
-    _TOL=A -> TOL=0.05pF
+    _TOL=A -> TOL=0.05pF	# should we normalize this and use fF ?
     _TOL=B -> TOL=0.1pF
     _TOL=C -> TOL=0.25pF
     _TOL=D -> TOL=0.5pF

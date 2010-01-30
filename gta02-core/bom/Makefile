@@ -2,6 +2,7 @@ UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
 COPY=rsync -e ssh --progress
 
 KITS=20
+CHR=darfon.chr ralec.chr avx.chr acx.chr
 
 .PHONY:		all spotless upload
 
@@ -16,9 +17,9 @@ gta02-core.ord:	part2order parser.pl \
 	
 gta02-core.par:	bom2part parser.pl match.pl \
 		  fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub darfon.chr ralec.chr
+		  gta02-core.sub $(CHR)
 		perl bom2part fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub darfon.chr ralec.chr \
+		  gta02-core.sub $(CHR) \
 		    >$@ || { rm -rf $@; exit 1; }
 
 darfon.chr:	gen2chr parser.pl match.pl fic/fic.equ darfon.gen
