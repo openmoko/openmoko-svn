@@ -1,0 +1,8 @@
+#INV
+
+# dummy inventory, to suppress complains about components we haven't sourced
+# yet
+
+DUMMY	NTGD1100L	0 USD 1 0
+DUMMY	GE865		0 USD 1 0
+DUMMY	LIS302DL	0 USD 1 0

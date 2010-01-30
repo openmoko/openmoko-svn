@@ -2,7 +2,9 @@ UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
 COPY=rsync -e ssh --progress
 
 KITS=20
-CHR=darfon.chr ralec.chr avx.chr acx.chr
+EQU=fic/fic.equ
+INV=fic/fic.inv gta02-core.inv dummy.inv
+CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 
 .PHONY:		all spotless upload
 
@@ -10,16 +12,15 @@ CHR=darfon.chr ralec.chr avx.chr acx.chr
 all:		gta02-core.ord
 
 gta02-core.ord:	part2order parser.pl \
-		  gta02-core.par fic/fic.inv gta02-core.inv
+		  gta02-core.par $(INV)
 		perl part2order $(KITS) \
-		  fic/fic.inv gta02-core.inv gta02-core.par >$@ || \
+		  $(INV) gta02-core.par >$@ || \
 		  { rm -rf $@; exit 1; }
 	
 gta02-core.par:	bom2part parser.pl match.pl \
-		  fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub $(CHR)
-		perl bom2part fic/fic.equ ../gta02-core.lst gta02-core.inv \
-		  gta02-core.sub $(CHR) \
+		  $(EQU) $(INV) $(CHR) ../gta02-core.lst gta02-core.sub
+		perl bom2part $(EQU) $(INV) $(CHR) \
+		  ../gta02-core.lst gta02-core.sub \
 		    >$@ || { rm -rf $@; exit 1; }
 
 darfon.chr:	gen2chr parser.pl match.pl fic/fic.equ darfon.gen

@@ -130,7 +130,7 @@ sub chr
 	$last = "$ref $num";
     }
     for (@f) {
-	die unless /=/;
+	die "\"=\" missing in $_" unless /=/;
 	$chr{$last}{uc($`)} = $';
     }
 }
@@ -282,6 +282,10 @@ sub parse
 	    next;
 	}
 	if (/^#Cmp.*order = Value/) {
+	    $mode = *skip;
+	    next;
+	}
+	if (/^eeschema \(/) {	# hack to allow loading in any order
 	    $mode = *skip;
 	    next;
 	}
