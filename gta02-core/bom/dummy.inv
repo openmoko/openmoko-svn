@@ -10,3 +10,8 @@ DUMMY	R1562		0 USD 1 0
 # not listed in FIC's inventory
 
 DUMMY	LIS302DL	0 USD 1 0
+
+# not really part of the PCB - check ME inventory
+
+DUMMY	SPEAKER		0 USD 1 0	# speaker, needs land pattern
+DUMMY	P0408B-13-P2H	0 USD 1 0	# vibrator, land pattern
