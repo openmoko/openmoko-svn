@@ -282,3 +282,10 @@ D: http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0110S0101BLM15H.pdf
 S: DIODE
 A: 1ss400
 D: http://www.rohm.com/products/databook/di/pdf/1ss400.pdf
+
+# Seiko HB414 IV01E battery (BAT1701)
+S: BATTERY
+A: bubat
+A: backup-battery
+# not the real data sheet, but useful anyway
+D: http://datasheet.octopart.com/HB414-IV01E-Seiko-datasheet-5393907.pdf
