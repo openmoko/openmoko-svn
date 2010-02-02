@@ -272,6 +272,38 @@ sub sub
 }
 
 
+#
+# "ord" populates the following global variables:
+#
+# $order{"namespace item-number"}[0] = quantity to order
+# $order{"namespace item-number"}[1] = currency
+# $order{"namespace item-number"}[2] = total cost in above currency
+# $order{"namespace item-number"}[3] = component reference
+# ...
+#
+
+sub ord
+{
+    my @f = split(/\s+/);
+    my @id = splice(@f, 0, 2);
+    @{ $order{"$id[0] $id[1]"} } = @f;
+}
+
+
+#
+# "dsc" populates the following global variable:
+#
+# $dsc{"namespace item-number"} = description
+#
+
+sub dsc
+{
+    my @f = split(/ /);
+    my @id = splice(@f, 0, 2);
+    $dsc{"$id[0] $id[1]"} = join(" ", @f);
+}
+
+
 sub parse
 {
     $mode = *skip;
@@ -311,6 +343,14 @@ sub parse
 	    undef $last;
 	    undef $last_action;
 	    undef $may_cont;
+	    next;
+	}
+	if (/^#ORD\b/) {
+	    $mode = *ord;
+	    next;
+	}
+	if (/^#DSC\b/) {
+	    $mode = *dsc;
 	    next;
 	}
 	s/#.*//;

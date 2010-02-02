@@ -5,6 +5,7 @@
 R[0-9P]* {	# also handle RP...
     -> T=R
     VAL=$R -> R=$VAL
+    -> TOL=5%
     F1=$% -> TOL=$F1
 }
 

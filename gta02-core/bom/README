@@ -210,3 +210,17 @@ Then the USD 0.2 per unit cost would apply to any any quantity of at
 least 100 units. So a 170 units order would cost USD 34.
 
 Blank lines and comments (#) are ignored.
+
+
+Description (.dsc)
+------------------
+
+A description file contains plain text descriptions of parts. The file
+begins with a like containing only
+#DSC
+
+Each line contains the name space, a space, the part number, another
+space, and the description. The description can contain any printable
+character and ends with a newline.
+
+Blank lines and comments (#) are ignored.
