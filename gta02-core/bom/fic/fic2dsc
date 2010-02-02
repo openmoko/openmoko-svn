@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+print "#DSC\n";
+while (<>) {
+    chop;
+    next unless /^\d*,"(\S+)\s*","([^"]*?)\s*"/;
+    print "FIC $1 $2\n";
+}
