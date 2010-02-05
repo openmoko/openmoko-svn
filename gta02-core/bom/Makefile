@@ -2,11 +2,11 @@ UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
 COPY=rsync -e ssh --progress
 
 KITS=20
-EQU=fic/fic.equ
-INV=fic/fic.inv gta02-core.inv dummy.inv
+EQU=fic/fic.equ fic/missing.equ digi-key.equ
+INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 
-.PHONY:		all spotless upload
+.PHONY:		all spotless upload show-missing
 
 
 all:		gta02-core.ord
@@ -46,3 +46,6 @@ upload:		workflow.pdf
 spotless:
 		$(MAKE) -C fic spotless
 		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
+
+show-missing:
+		(echo '#ORD'; grep MISSING gta02-core.ord ; ) | ./prettyord -

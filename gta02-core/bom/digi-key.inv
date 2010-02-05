@@ -1,0 +1,15 @@
+#INV
+# 
+# Note: many parts at cut-tape and thus need re-reeling. 
+#
+DIGI-KEY ADG3304BCBZ-REEL7CT-ND		6726	USD 1 2.43 25 1.94
+DIGI-KEY P10850SCT-ND			31180	USD 1 0.76 10 0.569
+DIGI-KEY P11169CT-ND			7128	USD 1 0.68 10 0.509 100 0.3737
+DIGI-KEY HFQ439CT-ND			4738	USD 1 3.02 25 2.34  100 1.872
+DIGI-KEY 490-4980-1-ND			12423	USD 1 0.57 25 0.4388
+DIGI-KEY SI1040X-T1-E3TR-ND		0	USD 3000 0.294
+# the SI1040X is a family of similar switches. Shouldn't be hard to find
+# another one.
+DIGI-KEY 296-18200-1-ND			0	USD 1 0.61 25 0.3596
+# consider using a different package
+DIGI-KEY H9161CT-ND			39012	USD 1 1.46 10 1.19
