@@ -118,6 +118,6 @@ for (sort { &rank($b, $a) } keys %want) {
 }
 
 # experimental
-#for (sort { &rank($b, $a) } keys %want) {
-#    print STDERR "$_: $want{$_}\n" if $want{$_};
-#}
+for (sort { &rank($b, $a) } keys %want) {
+    print STDERR "$_: $want{$_}\n" if $want{$_};
+}

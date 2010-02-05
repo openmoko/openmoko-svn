@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+require '../parser.pl';
+
+&parse;
+
+print "#EQU\n";
+for my $id (keys %inv) {
+print STDERR "--> $id\n";
+    my @f = split(" ", $id);
+    die "can't find $f[1]" unless defined $id{$f[1]};
+    print "$id $id{$f[1]}\n";
+}

@@ -2,7 +2,7 @@ INV = inventory-fic-ee.csv
 
 .PHONY:		all spotless
 
-all:		fic.equ fic.inv
+all:		fic.equ fic.inv fic.dsc present.inv
 
 fic.equ:	fic2vendor $(INV)
 		perl fic2vendor $(INV) >$@ || { rm -f $@; exit 1; }
@@ -13,5 +13,11 @@ fic.inv:	fic2inv $(INV)
 fic.dsc:	fic2dsc $(INV)
 		perl fic2dsc $(INV) >$@ || { rm -f $@; exit 1; }
 
+present.inv:	fic.inv
+		grep -v ' 0 USD' fic.inv >present.inv || { rm -f $@; exit 1; }
+
+missing.equ:	equ2equ missing.inv fic.equ
+		perl equ2equ missing.inv fic.equ >$@ || { rm -f $@; exit 1; }
+
 spotless:
-		rm -f fic.equ fic.inv fic.dsc
+		rm -f fic.equ fic.inv fic.dsc present.inv missing.equ

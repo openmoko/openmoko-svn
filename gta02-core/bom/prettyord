@@ -16,7 +16,8 @@ for (sort keys %order) {
     push(@{ $out[1] }, $order{$_}[0]);
     @f = split(/\s+/, $_);
     push(@{ $out[2] }, $f[1]);
-    push(@{ $out[3] }, $dsc{$_});
+    print STDERR "$_: no description\n" unless defined $dsc{$_};
+    push(@{ $out[3] }, defined $dsc{$_} ? $dsc{$_} : "???");
     push(@{ $out[4] }, $order{$_}[1]);
     push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
 }
@@ -28,7 +29,7 @@ for (@out) {
     }
 }
 
-for ($i = 0; $i < $#{ $out[0] }; $i++) {
+for ($i = 0; $i <= $#{ $out[0] }; $i++) {
     for ($j = 0; $j != 6; $j++) {
 	my $s = $out[$j][$i];;
 	print $s if $j == 2 || $j == 3 || $j == 4;

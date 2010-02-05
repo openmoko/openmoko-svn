@@ -78,6 +78,10 @@ sub inv
     die "duplicate inventory entry for \"$id\"" if defined $inv{$id};
     $id{$ref} = $id;
     $inv{$id} = [ @f ];
+    $inv{$id}[0] = 999999 unless defined $inv{$id}[0];
+    $inv{$id}[1] = "N/A" unless defined $inv{$id}[1];
+    $inv{$id}[2] = 1 unless defined $inv{$id}[2];
+    $inv{$id}[3] = 999999 unless defined $inv{$id}[3];
 }
 
 
