@@ -302,7 +302,7 @@ sub ord
 
 sub dsc
 {
-    my @f = split(/ /);
+    my @f = split(/\s+/);
     my @id = splice(@f, 0, 2);
     $dsc{"$id[0] $id[1]"} = join(" ", @f);
 }
