@@ -17,15 +17,14 @@ for (sort keys %order) {
     push(@{ $out[1] }, $order{$_}[0]);
     @f = split(/\s+/, $_);
     push(@{ $out[2] }, $f[1]);
-    print STDERR "$_: no description\n" unless defined $dsc{$_};
     my $dsc = $dsc{$_};
     if (!defined $dsc) {
-print STDERR "$_ -> ", join(" ", &eq($_)), "\n";
 	for (&eq($_)) {
 	    $dsc = $dsc{$_};
 	    last if defined $dsc;
 	}
     }
+    print STDERR "$_: no description\n" unless defined $dsc;
     push(@{ $out[3] }, defined $dsc ? $dsc : "???");
     push(@{ $out[4] }, $order{$_}[1]);
     push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
