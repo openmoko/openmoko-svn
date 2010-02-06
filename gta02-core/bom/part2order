@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 require "parser.pl";
+require "misc.pl";
 
 $mult = shift(@ARGV);
 &parse;
@@ -36,14 +37,14 @@ sub rank
 {
     local ($a, $b) = @_;
 
-    my $na = &number($a);
+    my $na = &number($a);	# min(number wanted, available)
     my $nb = &number($b);
-    my $pa = $inv{$a}[3];
+    my $pa = $inv{$a}[3];	# per unit price for smallest quantum
     my $pb = $inv{$b}[3];
 
 #print STDERR "a=$a b=$b na=$na nb=$nb pa=$pa pb=$pb\n";
-    return 1 if !$pa && $pb;
-    return -1 if $pa && !$pb;
+    return 1 if $na && !$pa && $pb;
+    return -1 if $nb && $pa && !$pb;
     return $na <=> $nb if $na != $nb;
     return $pb <=> $pa;
 }
@@ -117,7 +118,16 @@ for (sort { &rank($b, $a) } keys %want) {
     print "\n";
 }
 
-# experimental
-for (sort { &rank($b, $a) } keys %want) {
-    print STDERR "$_: $want{$_}\n" if $want{$_};
+for my $id (sort { $want{$b} <=> $want{$a} } keys %want) {
+    next unless $want{$id};
+    print STDERR "$id";
+    for (&eq($id)) {
+#	next unless $want{$_};
+	die "\n$_ ($want{$_}) vs. $id want ($want{$id})"
+	  unless $want{$_} == $want{$id};
+	print STDERR " $_";
+	$want{$_} = 0;
+    }
+    print STDERR ": want $want{$id}\n";
+    $want{$id} = 0;
 }

@@ -211,6 +211,12 @@ least 100 units. So a 170 units order would cost USD 34.
 
 Blank lines and comments (#) are ignored.
 
+The number of items in stock and the pricing data can be omitted. We
+call this "virtual inventory". In this case, the numer of items in
+stock and the price default to large numbers (e.g., 999999). Virtual
+inventory is used to suppress warnings for parts that have not been
+sourced yet, but where sourcing is in progress.
+
 
 Description (.dsc)
 ------------------

@@ -2,24 +2,12 @@
 
 require "parser.pl";
 require "match.pl";
+require "misc.pl";
 
 
 sub issue
 {
-    my %seen;
-    print shift(@_);
-    my @p = @_;
-
-    # we determine all equivalent parts
-
-    while (@p) {
-	my $p = shift @p;
-	next if $seen{$p};
-	$seen{$p} = 1;
-	print " $p";
-	push(@p, @{ $eq{$p} });
-    }
-    print "\n";
+    print shift(@_), " ", join(" ", @_, &eq(@_)), "\n";
 }
 
 

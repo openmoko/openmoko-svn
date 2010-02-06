@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 require "parser.pl";
+require "misc.pl";
 
 &parse;
 
@@ -17,7 +18,15 @@ for (sort keys %order) {
     @f = split(/\s+/, $_);
     push(@{ $out[2] }, $f[1]);
     print STDERR "$_: no description\n" unless defined $dsc{$_};
-    push(@{ $out[3] }, defined $dsc{$_} ? $dsc{$_} : "???");
+    my $dsc = $dsc{$_};
+    if (!defined $dsc) {
+print STDERR "$_ -> ", join(" ", &eq($_)), "\n";
+	for (&eq($_)) {
+	    $dsc = $dsc{$_};
+	    last if defined $dsc;
+	}
+    }
+    push(@{ $out[3] }, defined $dsc ? $dsc : "???");
     push(@{ $out[4] }, $order{$_}[1]);
     push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
 }
