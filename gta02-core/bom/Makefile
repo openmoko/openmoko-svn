@@ -3,6 +3,8 @@ COPY=rsync -e ssh --progress
 
 BOOM=../../eda/boom/boom
 
+ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
+
 KITS=20
 EQU=fic/fic.equ fic/missing.equ digi-key.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
@@ -59,7 +61,7 @@ spotless:
 		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
 		rm -f gta02-core-bom.pro gta02-core-bom.sch
 		rm -f gta02-core-bom-all.ps.gz gta02-core-bom-all.pdf
-		rm -f $(SCH:%=%-bom.sch) $(SCH:%=%-bom.ps)
+		rm -f $(SCH:%=%-bom.sch) gta02-core-bom-*.ps
 
 show-dup:	gta02-core.par
 		$(BOOM) ./pardup.pl gta02-core.par
@@ -82,10 +84,11 @@ ann:		../$(ANN).sch fic/fic.dsc gta02-core.par $(EQU)
 		  $(EQU) >$(ANN)-bom.sch || { rm -f $(ANN)-bom.sch; exit 1; }
 
 $(SCH:%=%-bom.sch): \
-		$(SCH:%=../%.sch) fic/fic.dsc gta02-core.par $(EQU)
+		$(SCH:%=../%.sch) fic/fic.dsc gta02-core.$(ANNOTATE) $(EQU)
 		for n in $(SCH); do \
-		    $(BOOM) annotate ../$$n.sch fic/fic.dsc gta02-core.par \
-		      $(EQU) >$$n-bom.sch || { rm -f $$n-bom.sch; exit 1; }; \
+		    $(BOOM) annotate ../$$n.sch fic/fic.dsc \
+		      gta02-core.$(ANNOTATE) $(EQU) >$$n-bom.sch \
+		      || { rm -f $$n-bom.sch; exit 1; }; \
 		done
 
 gta02-core-bom.pro:	../gta02-core.pro

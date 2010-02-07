@@ -103,6 +103,45 @@ sub put
 }
 
 
+sub find_dsc
+{
+    local ($id) = @_;
+
+    for ($id, &eq($id)) {
+	return $dsc{$_} if defined $dsc{$_};
+    }
+    return ();
+}
+
+
+sub dsc_parts
+{
+    local ($ref) = @_;
+    my @p = @{ $parts{$ref} };
+    my @f = ();
+    while (@p) {
+	my @id = splice(@p, 0, 2);
+	my $id = "$id[0] $id[1]";
+	push(@f, &find_dsc($id));
+    }
+    return @f;
+}
+
+
+sub dsc_order
+{
+    local ($ref) = @_;
+    my @f = ();
+    for my $id (keys %order) {
+	my @p = @{ $order{$id} };
+	for (splice(@p, 3)) {
+	    push(@f, &find_dsc($id)) if $_ eq $ref;
+	}
+    }
+    return @f;
+}
+
+
 #
 # pass 1: find the orientation of all parts
 #
@@ -150,16 +189,8 @@ for (@eeschema) {
     undef @f if /^\$Comp/;
     if (/^L \S+ (\S+)/) {
 	$ref = $1;
-	my @p = @{ $parts{$ref} };
-	while (@p) {
-	    my @id = splice(@p, 0, 2);
-	    my $id = "$id[0] $id[1]";
-	    for ($id, &eq($id)) {
-		next unless defined $dsc{$_};
-		push(@f, $dsc{$_});
-		last;
-	    }
-	}
+	push(@f, &dsc_order($ref)) if %order;
+	push(@f, &dsc_parts($ref)) if %parts;
     }
     if (/^P (\d+) (\d+)/) {
 	$x = $1;
