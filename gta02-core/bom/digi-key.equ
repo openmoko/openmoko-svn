@@ -14,4 +14,6 @@ DIGI-KEY 296-18200-1-ND			TI SN74AUP1G00DCKR
 DIGI-KEY H9161CT-ND			HIROSE U.FL-R-SMT-1(10)
 # note: this digikey mic is similar to the IMP-413, but not equivalent.
 DIGI-KEY 668-1181-ND			IMPERIAL IMP-413TN
+# note: Sim/SD card holder has a _slightly_ different footprint
+DIGI-KEY 101-00492-20-1-ND		PROCONN SMSN16-J0-2214
 
