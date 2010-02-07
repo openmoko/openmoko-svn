@@ -150,6 +150,11 @@ Field1       F1
 Note that fields with a user-defined name currently still only appear
 as F1, F2, etc.
 
+The special field name FN can be used to look for a match in all of
+F1, F2, ... This way, it's sufficient to use a consistent syntax for
+additional parameters, without having to assign also a fixed location
+for them. If more than one field matches, the first match is taken.
+
 Field names are case-insensitive.
 
 The pattern is uses a notation similar to filename globbing. There
@@ -179,7 +184,7 @@ R* val=$R -> R=$val
 
 This rule translates the values of all resistors to SI notation.
 
-D* F1=(*)Vdc -> T=TSV Vdc=F1:1
+D* FN=(*)Vdc -> T=TSV Vdc=FN:1
 
 This rule sets the parameters T and Vdc for Zeners acting as TSVs.
 

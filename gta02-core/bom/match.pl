@@ -163,19 +163,25 @@ sub apply_rules
     RULE: for (my $i = 0; $i <= $#match; $i++) {
 	print STDERR "RULE #$i\n" if $debug;
 	%found = %field;
-	for (keys %{ $match[$i] }) {
-	    print STDERR "  MATCH $_=$match[$i]{$_}[0] " if $debug;
-	    if (!defined $found{$_}) {
-		print STDERR "NO FIELD\n" if $debug;
-		next RULE;
+	FIELD: for my $f (keys %{ $match[$i] }) {
+	    my @f = $f ne "FN" ? ($f) :
+	      ("F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9");
+	    for (@f) {
+		print STDERR "  MATCH $_=$match[$i]{$f}[0] " if $debug;
+		if (!defined $found{$_}) {
+		    print STDERR "NO FIELD\n" if $debug;
+		    next;
+		}
+		print STDERR "FIELD $found{$_} " if $debug;
+		if (!defined &sub_match($found{$_}, $f,
+		  $match[$i]{$f}[1], $match[$i]{$f}[2])) {
+		    print STDERR "MISS\n" if $debug;
+		    next;
+		}
+		print STDERR "MATCH\n" if $debug;
+		next FIELD;
 	    }
-	    print STDERR "FIELD $found{$_} " if $debug;
-	    if (!defined &sub_match($found{$_}, $_,
-	      $match[$i]{$_}[1], $match[$i]{$_}[2])) {
-		print STDERR "MISS\n" if $debug;
-		next RULE;
-	    }
-	    print STDERR "MATCH\n" if $debug;
+	    next RULE;
 	}
 	for (keys %{ $action[$i] }) {
 	    my $s = &sub_expand($action[$i]{$_});

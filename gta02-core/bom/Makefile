@@ -6,7 +6,7 @@ EQU=fic/fic.equ fic/missing.equ digi-key.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 
-.PHONY:		all spotless upload show-missing show-dk
+.PHONY:		all spotless upload show-dup show-missing show-dk
 # mark them as phony since we have incomplete dependencies in this Makefile
 .PHONY:		fic/fic.equ fic/fic.inv fic/missing.equ
 
@@ -56,6 +56,9 @@ upload:		workflow.pdf
 spotless:
 		$(MAKE) -C fic spotless
 		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
+
+show-dup:	pardup.pl gta02-core.par
+		perl ./pardup.pl gta02-core.par
 
 show-missing:	$(EQU) fic/fic.dsc
 		(echo '#ORD'; grep MISSING gta02-core.ord ; ) | \

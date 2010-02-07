@@ -5,8 +5,8 @@
 R[0-9P]* {	# also handle RP...
     -> T=R
     VAL=$R -> R=$VAL
-    -> TOL=5%
-    F1=$% -> TOL=$F1
+#    -> TOL=5%
+    FN=$% -> TOL=$FN
 }
 
 RP[0-9]* {
@@ -23,14 +23,15 @@ C[0-9]* {
 L[0-9]* {
     -> T=L
     VAL=$H -> L=$VAL
+    FN=*A -> I=$FN
 }
 
 B[0-9]* {
     -> T=FILTER M=BEAD
     VAL=$R -> R=$VAL
-    F2=*A -> I=$F2
-    F3=*R -> Rdc=$F3
-    F3=0.45R -> Rdc=450mR	# hack
+    FN=*A -> I=$FN
+    FN=*R -> Rdc=$FN
+    FN=0.45R -> Rdc=450mR	# hack
 }
 
 D[0-9]* {
@@ -38,8 +39,8 @@ D[0-9]* {
     VAL=*F {	# heuristic to detect TVS
 	-> M=TVS
 	VAL=*F -> C=$VAL
-	F1=(*V)ac -> Vac=$F1:1
-	F1=(*V)dc -> Vdc=$F1:1
+	FN=(*V)ac -> Vac=$FN:1
+	FN=(*V)dc -> Vdc=$FN:1
     }
 }
 
