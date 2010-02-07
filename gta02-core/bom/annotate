@@ -18,8 +18,8 @@ sub normalize
 
     # convert from (x0, y0, w, h) to (x0, y0, x1, y1)
     $t[2] += $t[0];
-    $t[3] += $t[1];
-    return @t;
+    $t[3] = $t[1]-$t[3];
+    return ($t[0], $t[3], $t[2], $t[1]);
 }
 
 
@@ -31,8 +31,8 @@ sub normalize
 sub invert
 {
     my @m = @_;
-    my $f = $_[0]*$_[3]-$_[1]*$_[2];
-    return ($f*$_[3], -$f*$_[1], -$f*$_[2], $f*$_[0]);
+    my $f = 1/($m[0]*$m[3]-$m[1]*$m[2]);
+    return ($f*$m[3], -$f*$m[1], -$f*$m[2], $f*$m[0]);
 }
 
 
@@ -40,8 +40,7 @@ sub block
 {
     my @t = &normalize(@_);
     push(@block, [ @t ]);
-#    push(@block, [ &normalize(@_) ]);
-$wnl .= "Wire Notes Line\n\t$t[0] $t[1] $t[2] $t[3]\n";
+    $wnl .= "Wire Notes Line\n\t$t[0] $t[1] $t[2] $t[3]\n";
 }
 
 
@@ -65,7 +64,7 @@ sub put
 {
     local ($x0, $y0, $ref, @s) = @_;
 
-    my $h = @s*$H;
+    my $h = @s*$L;
     my $w = 0;
     for (@s) {
 	my $t = $W*length $_;
@@ -74,10 +73,10 @@ sub put
     my $a = 270;
     my $r = 100;
     my $x, $y;
-    $y0 -= $h-$H/2;
+    my $ym = $y0-$h+$H/2;
     for ($i = 0; $i != 128; $i++) {
 	$x = int($x0+$r*cos($a/180*3.14159));
-	$y = int($y0+$r*sin($a/180*3.14159));
+	$y = int($ym+$r*sin($a/180*3.14159));
 	last if &pass($x, $y, $w, $h);
 	$a += 22.5;
 	$r += $L/8;
@@ -85,16 +84,20 @@ sub put
     warn "no place found for \"$s[0]\"" if $i == 128;
 
     my @m = &invert( @{ $m{$ref} });
-    my $dx = $x-$x0;
-    my $dy = $y-$y0;
-    my $sx = $x0+$dx*$m[0]+$dy*$m[1];
-    my $sy = $y0+$dx*$m[2]+$dy*$m[3]; #-$H/2;
-    &block($sx, $sy, $w, $h);
+    &block($x, $y+$H/2, $w, $h);
     my $n = 10;
-    for (reverse @s) {
-	my $hv = $rot{$ref} ? "V" : "H";
-	print "F $n \"$_\" $hv $x $y $H  0000 L CNN\n";
-	$y += $L;
+    for my $s (reverse @s) {
+	my $dx = $x-$x0;
+	my $dy = $y-$y0;
+	my $sx = $x0+$dx*$m[0]+$dy*$m[1];
+	my $sy = $y0+$dx*$m[2]+$dy*$m[3];
+	($hv, $hj, $vj) = ("H", "L", "C") if $m[0] == 1;
+	($hv, $hj, $vj) = ("H", "R", "C") if $m[0] == -1;
+	($hv, $hj, $vj) = ("V", "C", "B") if $m[1] == 1;
+	($hv, $hj, $vj) = ("V", "C", "T") if $m[1] == -1;
+	$s =~ s/~/-/g;
+	print "F $n \"$s\" $hv $sx $sy $H  0000 $hj ${vj}NN\n";
+	$y -= $L;
 	$n++;
     }
 }
@@ -111,7 +114,6 @@ for (@eeschema) {
     my @m = split(/\s+/);
     shift @m;
     $m{$ref} = [ @m ];
-    $rot{$ref} = 1 if !$m[0];
 }
 
 
@@ -137,7 +139,7 @@ for (@eeschema) {
     next if $flag != 0;
     $w = $size*0.8*length $s;
     # we don't need to consider H/V
-    &block($hj eq "L" ? $x : $x-$w/2, $y-$size/2, $w, $size);
+    &block($hj eq "L" ? $x : $x-$w/2, $y+$size/2, $w, $size);
 }
 
 #
@@ -172,10 +174,15 @@ for (@eeschema) {
 	    $seen{$_} = 1;
 	}
 	undef @f;
-	&put($x, $y, $ref, @u);
+	# $m{$ref}[0] == 1	OK
+	# $m{$ref}[0] == -1	OK
+	# $m{$ref}[1] == 1	OK
+	# $m{$ref}[1] == -1	OK (small deviations found)
+	&put($x, $y, $ref, @u) if 1 || $m{$ref}[1] == -1;
     }
     if (/\$EndSCHEMATC/) {
-	print $wnl;
+	# uncomment for debugging
+#	print $wnl;
     }
     print "$_\n";
 }

@@ -10,6 +10,7 @@ SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 .PHONY:		all spotless upload show-dup show-missing show-dk
 # mark them as phony since we have incomplete dependencies in this Makefile
 .PHONY:		fic/fic.equ fic/fic.inv fic/missing.equ
+.PHONY:		ann sch gen generate gv xpdf
 
 all:		gta02-core.ord
 
@@ -72,9 +73,11 @@ show-dk:
 		  ./prettyord - digi-key.dsc | \
 		  sed 's/^...  //'
 
-ann:		annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU)
-		perl ./annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU) \
-		  >pmu-bom.sch || { rm -f pmu-bom.sch; exit 1; }
+#ANN = pmu
+ANN = audio
+ann:		annotate ../$(ANN).sch fic/fic.dsc gta02-core.par $(EQU)
+		perl ./annotate ../$(ANN).sch fic/fic.dsc gta02-core.par \
+		  $(EQU) >$(ANN)-bom.sch || { rm -f $(ANN)-bom.sch; exit 1; }
 
 $(SCH:%=%-bom.sch): \
 		annotate $(SCH:%=../%.sch) fic/fic.dsc gta02-core.par $(EQU)
@@ -91,5 +94,17 @@ gta02-core-bom.sch:	../gta02-core.sch
 		sed 's/\.sch"/-bom.sch"/' <$< >$@ || \
 		  { rm -f $@; exit 1; }
 
-sch:		gta02-core-bom.pro gta02-core-bom.sch #$(SCH:%=%-bom.sch)
+sch:		gta02-core-bom.pro gta02-core-bom.sch
 		eeschema `pwd`/gta02-core-bom.sch
+
+gen generate:	gta02-core-bom.pro gta02-core-bom.sch $(SCH:%=%-bom.sch)
+		eeschema --plot `pwd`/gta02-core-bom.sch
+		../scripts/all-sheets gta02-core-bom
+		gzip -f -9 gta02-core-bom-all.ps
+		../scripts/all-sheets --pdf gta02-core-bom
+
+gv:		gta02-core-bom-all.ps.gz
+		gv gta02-core-bom-all.ps.gz
+
+xpdf:		gta02-core-bom-all.pdf
+		xpdf gta02-core-bom-all.pdf
