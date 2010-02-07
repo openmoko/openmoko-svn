@@ -35,10 +35,11 @@ B[0-9]* {
 
 D[0-9]* {
     -> T=D
-    VAL=$F {	# heuristic to detect TVS
+    VAL=*F {	# heuristic to detect TVS
 	-> M=TVS
-	VAL=$F -> C=$VAL
-	F1=$Vac -> Vac=$F1
+	VAL=*F -> C=$VAL
+	F1=(*V)ac -> Vac=$F1:1
+	F1=(*V)dc -> Vdc=$F1:1
     }
 }
 

@@ -10,7 +10,7 @@ headset jack.
 based on Joerg's proposal!
 
 ESD protection
-- add varistors (D4403/4404/4405) 5.6Vac to all headset jack signal pins
+- add varistors (D4403/4404/4405) 6.5Vac to all headset jack signal pins
   (same as D4402)
 
 EMI protection 
