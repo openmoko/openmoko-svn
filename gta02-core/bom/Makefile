@@ -62,8 +62,14 @@ show-dup:	pardup.pl gta02-core.par
 
 show-missing:	$(EQU) fic/fic.dsc
 		(echo '#ORD'; grep MISSING gta02-core.ord ; ) | \
-		  ./prettyord - $(EQU) fic/fic.dsc
+		  ./prettyord - $(EQU) fic/fic.dsc | \
+		  sed 's/^...  \(.\{,78\}\).*/\1/'
 
 show-dk:
 		(echo '#ORD'; grep DIGI-KEY gta02-core.ord ; ) | \
-		  ./prettyord - digi-key.dsc
+		  ./prettyord - digi-key.dsc | \
+		  sed 's/^...  //'
+
+ann:		annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU)
+		perl ./annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU) \
+		  >try.sch

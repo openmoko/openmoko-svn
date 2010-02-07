@@ -308,6 +308,23 @@ sub dsc
 }
 
 
+#
+# "eeschema" populates the following global variable:
+#
+# $eeschema[] = line
+#
+
+
+sub eeschema
+{
+    push(@eeschema, $_[0]);
+    if ($_[0] =~ /^\$EndSCHEMATIC/) {
+	$mode = *skip;
+	undef $raw;
+    }
+}
+
+
 sub parse
 {
     $mode = *skip;
@@ -323,6 +340,13 @@ sub parse
 	}
 	if (/^eeschema \(/) {	# hack to allow loading in any order
 	    $mode = *skip;
+	    next;
+	}
+	if (/^EESchema Schematic/) {
+	    $mode = *eeschema;
+	    $raw = 1;
+	    die "only one schematic allowed" if defined @eeschema;
+	    &eeschema($_);
 	    next;
 	}
 	if (/^#EQU\b/) {
@@ -357,8 +381,10 @@ sub parse
 	    $mode = *dsc;
 	    next;
 	}
-	s/#.*//;
-	next if /^\s*$/;
+	if (!$raw) {
+	    s/#.*//;
+	    next if /^\s*$/;
+	}
 	&$mode($_);
     }
 }

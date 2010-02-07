@@ -1,0 +1,148 @@
+#!/usr/bin/perl
+
+require "parser.pl";
+require "misc.pl";
+
+
+&parse;
+
+
+$H = 50;	# character height
+$W = $H*0.9;	# character width
+$L = $H+20;	# line skip
+
+
+sub normalize
+{
+    my @t = @_;
+
+    # convert from (x0, y0, w, h) to (x0, y0, x1, y1)
+    $t[2] += $t[0];
+    $t[3] += $t[1];
+    return @t;
+}
+
+
+sub block
+{
+    push(@block, [ &normalize(@_) ]);
+}
+
+
+sub pass
+{
+    my @t = &normalize(@_);
+
+    for (@block) {
+	my @b = @{ $_ };
+	next if $t[0] > $b[2];
+	next if $t[2] < $b[0];
+	next if $t[1] > $b[3];
+	next if $t[3] < $b[1];
+	return 0;
+    }
+    return 1;
+}
+
+
+sub put
+{
+    local ($x0, $y0, $rot, @s) = @_;
+
+    my $h = @s*$H;
+    my $w = 0;
+    for (@s) {
+	my $t = $W*length $_;
+	$w = $t if $t > $w;
+    }
+    my $a = 270;
+    my $r = 100;
+    my $x, $y;
+    $y0 -= $h-$H/2;
+    for ($i = 0; $i != 128; $i++) {
+	$x = int($x0+$r*cos($a/180*3.14159));
+	$y = int($y0+$r*sin($a/180*3.14159));
+	last if &pass($x, $y, $w, $h);
+	$a += 22.5;
+	$r += $L/8;
+    }
+    warn "no place found for \"$s[0]\"" if $i == 128;
+
+    &block($x, $y, $w, $h);
+    my $n = 10;
+    for (reverse @s) {
+	my $hv = $rot ? "V" : "H";
+	print "F $n \"$_\" $hv $x $y $H  0000 L CNN\n";
+	$y += $L;
+	$n++;
+    }
+}
+
+
+#
+# pass 1: find the orientation of all parts
+#
+
+for (@eeschema) {
+    $ref = $1 if /^L \S+ (\S+)/;
+    undef $ref if /^\$EndComp/;
+    $rot{$ref} = 1 if /^\s+0\s+1\s+1\s+0\s*$/ || /^\s+0\s+-1\s+-1\s+0\s*$/;
+}
+
+
+#
+# pass 2: block the spaces occupied by fields
+#
+
+for (@eeschema) {
+    my $ref = $1 if /^L \S+ (\S+)/;
+    next unless /^F /;
+    die "$_" unless
+      /^F \d+ "([^"]*)" ([HV]) (\d+) (\d+) (\d+) +(\d+) ([LC]) C/;
+    ($s, $hv, $x, $y, $size, $flag, $hj, $vj) =
+      ($1, $2, $3, $4, $5, $6, $7, $8);
+    next if $flag != 0;
+    $w = $size*0.8*length $s;
+    if ($hv eq "H") {
+	&block($hj eq "L" ? $x : $x-$w/2, $y-$size/2, $w, $size);
+    } else {
+	&block($x-$size/2, $hj eq "L" ? $y : $y-$w/2, $size, $w);
+    }
+}
+
+#
+# pass 3:
+#
+
+for (@eeschema) {
+    undef @f if /^\$Comp/;
+    if (/^L \S+ (\S+)/) {
+	$ref = $1;
+	my @p = @{ $parts{$ref} };
+	while (@p) {
+	    my @id = splice(@p, 0, 2);
+	    my $id = "$id[0] $id[1]";
+	    for ($id, &eq($id)) {
+		next unless defined $dsc{$_};
+		push(@f, $dsc{$_});
+		last;
+	    }
+	}
+    }
+    if (/^P (\d+) (\d+)/) {
+	$x = $1;
+	$y = $2;
+    }
+    if (/^\s+/) {
+	my %seen;
+	my @u = ();
+	for (@f) {
+	    next if $seen{$_};
+	    push(@u, $_);
+	    $seen{$_} = 1;
+	}
+	undef @f;
+	&put($x, $y, $rot{$ref}, @u) if !$rot{$ref};
+    }
+    print "$_\n";
+}
