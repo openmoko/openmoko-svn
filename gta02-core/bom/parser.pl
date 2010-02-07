@@ -318,7 +318,7 @@ sub dsc
 sub eeschema
 {
     push(@eeschema, $_[0]);
-    if ($_[0] =~ /^\$EndSCHEMATIC/) {
+    if ($_[0] =~ /^\$EndSCHEMATC/) {
 	$mode = *skip;
 	undef $raw;
     }

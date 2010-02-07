@@ -5,6 +5,7 @@ KITS=20
 EQU=fic/fic.equ fic/missing.equ digi-key.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
+SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
 .PHONY:		all spotless upload show-dup show-missing show-dk
 # mark them as phony since we have incomplete dependencies in this Makefile
@@ -56,6 +57,7 @@ upload:		workflow.pdf
 spotless:
 		$(MAKE) -C fic spotless
 		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
+		rm -f gta02-core-bom.pro gta02-core-bom.sch $(SCH:%=%-bom.sch)
 
 show-dup:	pardup.pl gta02-core.par
 		perl ./pardup.pl gta02-core.par
@@ -72,4 +74,22 @@ show-dk:
 
 ann:		annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU)
 		perl ./annotate ../pmu.sch fic/fic.dsc gta02-core.par $(EQU) \
-		  >try.sch
+		  >pmu-bom.sch || { rm -f pmu-bom.sch; exit 1; }
+
+$(SCH:%=%-bom.sch): \
+		annotate $(SCH:%=../%.sch) fic/fic.dsc gta02-core.par $(EQU)
+		for n in $(SCH); do \
+		    perl ./annotate ../$$n.sch fic/fic.dsc gta02-core.par \
+		      $(EQU) >$$n-bom.sch || { rm -f $$n-bom.sch; exit 1; }; \
+		done
+
+gta02-core-bom.pro:	../gta02-core.pro
+		sed 's|\./|../|' <../gta02-core.pro >$@ || \
+		  { rm -f $@; exit 1; }
+
+gta02-core-bom.sch:	../gta02-core.sch
+		sed 's/\.sch"/-bom.sch"/' <$< >$@ || \
+		  { rm -f $@; exit 1; }
+
+sch:		gta02-core-bom.pro gta02-core-bom.sch #$(SCH:%=%-bom.sch)
+		eeschema `pwd`/gta02-core-bom.sch

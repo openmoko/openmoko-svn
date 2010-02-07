@@ -23,9 +23,25 @@ sub normalize
 }
 
 
+#
+# 2x2 matrix inversion
+# http://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_2.C3.972_matrices
+#
+
+sub invert
+{
+    my @m = @_;
+    my $f = $_[0]*$_[3]-$_[1]*$_[2];
+    return ($f*$_[3], -$f*$_[1], -$f*$_[2], $f*$_[0]);
+}
+
+
 sub block
 {
-    push(@block, [ &normalize(@_) ]);
+    my @t = &normalize(@_);
+    push(@block, [ @t ]);
+#    push(@block, [ &normalize(@_) ]);
+$wnl .= "Wire Notes Line\n\t$t[0] $t[1] $t[2] $t[3]\n";
 }
 
 
@@ -47,7 +63,7 @@ sub pass
 
 sub put
 {
-    local ($x0, $y0, $rot, @s) = @_;
+    local ($x0, $y0, $ref, @s) = @_;
 
     my $h = @s*$H;
     my $w = 0;
@@ -68,10 +84,15 @@ sub put
     }
     warn "no place found for \"$s[0]\"" if $i == 128;
 
-    &block($x, $y, $w, $h);
+    my @m = &invert( @{ $m{$ref} });
+    my $dx = $x-$x0;
+    my $dy = $y-$y0;
+    my $sx = $x0+$dx*$m[0]+$dy*$m[1];
+    my $sy = $y0+$dx*$m[2]+$dy*$m[3]; #-$H/2;
+    &block($sx, $sy, $w, $h);
     my $n = 10;
     for (reverse @s) {
-	my $hv = $rot ? "V" : "H";
+	my $hv = $rot{$ref} ? "V" : "H";
 	print "F $n \"$_\" $hv $x $y $H  0000 L CNN\n";
 	$y += $L;
 	$n++;
@@ -86,7 +107,11 @@ sub put
 for (@eeschema) {
     $ref = $1 if /^L \S+ (\S+)/;
     undef $ref if /^\$EndComp/;
-    $rot{$ref} = 1 if /^\s+0\s+1\s+1\s+0\s*$/ || /^\s+0\s+-1\s+-1\s+0\s*$/;
+    next unless /^\s+(-?[01])\s+(-?[01])\s+(-?[01])\s+(-?[01])\s*$/;
+    my @m = split(/\s+/);
+    shift @m;
+    $m{$ref} = [ @m ];
+    $rot{$ref} = 1 if !$m[0];
 }
 
 
@@ -95,19 +120,24 @@ for (@eeschema) {
 #
 
 for (@eeschema) {
-    my $ref = $1 if /^L \S+ (\S+)/;
+    $ref = $1 if /^L \S+ (\S+)/;
+    if (/^P (\d+) (\d+)/) {
+	$x0 = $1;
+	$y0 = $2;
+    }
     next unless /^F /;
     die "$_" unless
-      /^F \d+ "([^"]*)" ([HV]) (\d+) (\d+) (\d+) +(\d+) ([LC]) C/;
+      /^F \d+ "([^"]*)" ([HV]) (\d+) (\d+) (\d+) +(\d+) ([LC]) (C)/;
     ($s, $hv, $x, $y, $size, $flag, $hj, $vj) =
       ($1, $2, $3, $4, $5, $6, $7, $8);
+    $dx = $x-$x0;
+    $dy = $y-$y0;
+    $x = $x0+$dx*$m{$ref}[0]+$dy*$m{$ref}[1];
+    $y = $y0+$dx*$m{$ref}[2]+$dy*$m{$ref}[3];
     next if $flag != 0;
     $w = $size*0.8*length $s;
-    if ($hv eq "H") {
-	&block($hj eq "L" ? $x : $x-$w/2, $y-$size/2, $w, $size);
-    } else {
-	&block($x-$size/2, $hj eq "L" ? $y : $y-$w/2, $size, $w);
-    }
+    # we don't need to consider H/V
+    &block($hj eq "L" ? $x : $x-$w/2, $y-$size/2, $w, $size);
 }
 
 #
@@ -142,7 +172,10 @@ for (@eeschema) {
 	    $seen{$_} = 1;
 	}
 	undef @f;
-	&put($x, $y, $rot{$ref}, @u) if !$rot{$ref};
+	&put($x, $y, $ref, @u);
+    }
+    if (/\$EndSCHEMATC/) {
+	print $wnl;
     }
     print "$_\n";
 }
