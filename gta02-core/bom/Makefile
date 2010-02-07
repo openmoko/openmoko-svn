@@ -9,10 +9,20 @@ INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
-.PHONY:		all spotless show-dup show-missing show-dk
+.PHONY:		all optimist pessimist spotless show-dup show-missing show-dk
 .PHONY:		ann sch gen generate gv xpdf upload
 
 all:		gta02-core.ord
+
+optimist:
+		$(MAKE) spotless
+		$(MAKE) -C fic INTERPRETATION=--optimistic
+		$(MAKE) all
+
+pessimist:
+		$(MAKE) spotless
+		$(MAKE) -C fic
+		$(MAKE) all
 
 gta02-core.ord:	gta02-core.par $(INV) $(EQU)
 		$(BOOM) part2order $(KITS) \
@@ -62,7 +72,8 @@ show-missing:	$(EQU) fic/fic.dsc
 show-dk:
 		(echo '#ORD'; grep DIGI-KEY gta02-core.ord ; ) | \
 		  $(BOOM) prettyord - digi-key.dsc | \
-		  sed 's/^...  //'
+		  sed 's/^...  //' | \
+		  awk '{ s += $$(NF); print; } END { print "USD", s }'
 
 #ANN = pmu
 ANN = audio

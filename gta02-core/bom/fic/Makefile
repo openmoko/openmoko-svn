@@ -10,7 +10,8 @@ fic.equ:	fic2vendor $(INV)
 		perl fic2vendor $(INV) >$@ || { rm -f $@; exit 1; }
 
 fic.inv:	fic2inv $(INV)
-		perl fic2inv $(INV) >$@ || { rm -f $@; exit 1; }
+		perl fic2inv $(INTERPRETATION) $(INV) >$@ || \
+		  { rm -f $@; exit 1; }
 
 fic.dsc:	fic2dsc $(INV)
 		perl fic2dsc $(INV) >$@ || { rm -f $@; exit 1; }

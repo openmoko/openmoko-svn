@@ -1,8 +1,37 @@
 #!/usr/bin/perl
 
+# pessimistic: assume the "Q'ty in stock" column is right
+# optimistic: assume the real stock is the sum of "Usable Q'ty" and "Demand
+#             Q'ty"
+
+sub usage
+{
+    print STDERR "$0 [--optimistic|--pessimistic]\n";
+    exit(1);
+}
+
+
+if ($ARGV[0] eq "--optimistic") {
+    $opt = 1;
+    shift @ARGV;
+}
+if ($ARGV[0] eq "--pessimistic") {
+    $opt = 0;
+    shift @ARGV;
+}
+&usage if $ARGV[0] =~ /^-/;
+
 print "#INV\n";
 while (<>) {
     chop;
-    next unless /^\d*,"(\S+)\s*",.*,"(\d+)\s*"(,-?\d+)?$/;
-    print "FIC $1 $2 USD 1 0\n";
+    if ($opt) {
+	next unless /^\d*,"(\S+)\s*",.*,"(\d+)\s*","(\d+)\s*",(-?\d+)?$/;
+	$q = $2+$4;
+	die "$1: $2+$4 < $3" if $q < $3;
+	die "$1: $2+$4 < 0" if $q < 0;
+	print "FIC $1 $q USD 1 0\n";
+    } else {
+	next unless /^\d*,"(\S+)\s*",.*,"(\d+)\s*",(-?\d+)?$/;
+	print "FIC $1 $2 USD 1 0\n";
+    }
 }
