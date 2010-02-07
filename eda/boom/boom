@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+
+sub usage
+{
+    print STDERR "usage: $0 command [arg ...]\n";
+    exit(1);
+}
+
+
+&usage unless @ARGV;
+
+($d = $0) =~ s|/[^/]*$||;
+if ($d eq "") {
+    $p = "/";
+} elsif ($d =~ /^\//) {
+    $p = "$d";
+} else {
+    chomp($cwd = `pwd`);
+    $p = "$cwd/$d";
+}
+
+$cmd = shift @ARGV;
+$cmd = "$p/$cmd" unless $cmd =~ m|/|;
+exec("perl", "-I", $p, $cmd, @ARGV);
+die "exec perl: $!";

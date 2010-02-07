@@ -1,3 +1,5 @@
+BOOM=../../../eda/boom/boom
+
 INV = inventory-fic-ee.csv
 
 .PHONY:		all spotless
@@ -17,7 +19,8 @@ present.inv:	fic.inv
 		grep -v ' 0 USD' fic.inv >present.inv || { rm -f $@; exit 1; }
 
 missing.equ:	equ2equ missing.inv fic.equ
-		perl equ2equ missing.inv fic.equ >$@ || { rm -f $@; exit 1; }
+		$(BOOM) ./equ2equ missing.inv fic.equ >$@ || \
+		  { rm -f $@; exit 1; }
 
 spotless:
 		rm -f fic.equ fic.inv fic.dsc present.inv missing.equ

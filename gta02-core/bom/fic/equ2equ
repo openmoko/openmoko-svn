@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-require '../parser.pl';
+require 'parser.pl';
 
 &parse;
 
