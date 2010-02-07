@@ -32,9 +32,20 @@ for (sort keys %order) {
 
 for (@out) {
     push(@max, 0);
-    for (@{ $_ }) {
-	$max[$#max] = length $_ if length $_ > $max[$#max];
+    if (length $_->[0]) {
+	$max[$last_pos] = $last_len if defined $last_pos;
+	$last_pos = $#max;
+	$last_len = length $_->[0];
     }
+}
+$i = 0;
+for (@out) {
+    $first = 1;
+    for (@{ $_ }) {
+	next if $first-- > 0;
+	$max[$i] = length $_ if length $_ > $max[$i];
+    }
+    $i++;
 }
 
 for ($i = 0; $i <= $#{ $out[0] }; $i++) {
