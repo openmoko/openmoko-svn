@@ -4,7 +4,7 @@ INV = inventory-fic-ee.csv
 
 .PHONY:		all spotless
 
-all:		fic.equ fic.inv fic.dsc present.inv
+all:		fic.equ fic.inv fic.dsc present.inv missing.equ
 
 fic.equ:	fic2vendor $(INV)
 		perl fic2vendor $(INV) >$@ || { rm -f $@; exit 1; }
