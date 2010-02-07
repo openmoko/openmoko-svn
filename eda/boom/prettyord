@@ -49,12 +49,14 @@ for (@out) {
 }
 
 for ($i = 0; $i <= $#{ $out[0] }; $i++) {
+    $l = "";
     for ($j = 0; $j != 6; $j++) {
 	my $s = $out[$j][$i];;
-	print $s if $j == 2 || $j == 3 || $j == 4;
-	print " " x ($max[$j]-length $s);
-	print $s if $j == 0 || $j == 1 || $j == 5;
-	print "  " unless $j == 5;
+	$l .= $s if $j == 2 || $j == 3 || $j == 4;
+	$l .= " " x ($max[$j]-length $s);
+	$l .= $s if $j == 0 || $j == 1 || $j == 5;
+	$l .= "  " unless $j == 5;
     }
-    print "\n";
+    $l =~ s/\s*$//;
+    print "$l\n";
 }
