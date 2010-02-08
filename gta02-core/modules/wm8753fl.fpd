@@ -11,7 +11,7 @@ frame pad_gnd {
 
 	ur: vec @(D2/2,E2/2)
 	ll: vec @(-D2/2,-E2/2)
-	pad "GND" ur ll bare
+	pad "" ur ll bare
 	frame solder_mask @
 
 }
