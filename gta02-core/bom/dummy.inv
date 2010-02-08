@@ -3,11 +3,7 @@
 # dummy inventory, to suppress complains about components we haven't sourced
 # yet
 
-DUMMY	NTGD1100L
 DUMMY	GE865
-DUMMY	R1562
-DUMMY	C4110
-DUMMY	C8103
 
 # not listed in FIC's inventory
 
