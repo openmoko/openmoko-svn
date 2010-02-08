@@ -18,6 +18,7 @@ gen generate:
 		scripts/all-sheets --shrink --pdf gta02-core
 		$(MAKE) -C expanded gen
 		$(MAKE) -C modules gen
+		$(MAKE) -C bom optimist gen
 
 update:
 		svn update
@@ -35,6 +36,7 @@ upload:		generate
 		$(COPY) gta02-core-all.ps.gz gta02-core-all.pdf $(UPLOAD)
 		$(MAKE) -C expanded upload
 		$(MAKE) -C modules upload
+		$(MAKE) -C bom upload
 
 sch:
 		eeschema `pwd`/gta02-core.sch

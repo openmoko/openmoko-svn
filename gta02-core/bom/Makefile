@@ -104,7 +104,9 @@ gta02-core-bom.pro:	../gta02-core.pro
 		  { rm -f $@; exit 1; }
 
 gta02-core-bom.sch:	../gta02-core.sch
-		sed 's/\.sch"/-bom.sch"/' <$< >$@ || \
+		sed 's/\.sch"/-bom.sch"/' <$< | \
+		  sed 's/"GTA02-CORE"/"GTA02-CORE (ANNOTATED)"/' | \
+		  sed 's/\$$EndDescr/&\nText Notes 2500 1300 0 300 ~ 60\nANNOTATED VIEW - FOR BOM REVIEW/' >$@ || \
 		  { rm -f $@; exit 1; }
 
 sch:		gta02-core-bom.pro gta02-core-bom.sch
