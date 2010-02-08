@@ -11,7 +11,8 @@ INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
-.PHONY:		all optimist pessimist spotless show-dup show-missing show-dk
+.PHONY:		all optimist pessimist spotless
+.PHONY:		show-dup show-missing show-dk show-fic
 .PHONY:		ann sch gen generate gv xpdf upload
 
 all:		gta02-core.ord
@@ -67,15 +68,21 @@ show-dup:	gta02-core.par
 		$(BOOM) ./pardup.pl gta02-core.par
 
 show-missing:	$(EQU) fic/fic.dsc
-		(echo '#ORD'; grep MISSING gta02-core.ord ; ) | \
+		(echo '#ORD'; grep '^MISSING ' gta02-core.ord ; ) | \
 		  $(BOOM) prettyord - $(EQU) fic/fic.dsc | \
 		  sed 's/^...  \(.\{,78\}\).*/\1/'
 
 show-dk:
-		(echo '#ORD'; grep DIGI-KEY gta02-core.ord ; ) | \
+		(echo '#ORD'; grep '^DIGI-KEY ' gta02-core.ord ; ) | \
 		  $(BOOM) prettyord - digi-key.dsc | \
 		  sed 's/^...  //' | \
 		  awk '{ s += $$(NF); print; } END { print "USD", s }'
+
+show-fic:	$(EQU) fic/fic.dsc
+		(echo '#ORD'; grep '^FIC ' gta02-core.ord ; ) | \
+		  $(BOOM) prettyord '-s/OldPn (\S+)/FIC/' \
+		  - $(EQU) fic/fic.dsc | \
+		  sed 's/^...  \(.\{,78\}\).*/\1/'
 
 #ANN = pmu
 ANN = audio
@@ -86,7 +93,8 @@ ann:		../$(ANN).sch fic/fic.dsc gta02-core.par $(EQU)
 $(SCH:%=%-bom.sch): \
 		$(SCH:%=../%.sch) fic/fic.dsc gta02-core.$(ANNOTATE) $(EQU)
 		for n in $(SCH); do \
-		    $(BOOM) annotate ../$$n.sch fic/fic.dsc \
+		    $(BOOM) annotate '-s/OldPn (\S+)/FIC/' \
+		      ../$$n.sch fic/fic.dsc \
 		      gta02-core.$(ANNOTATE) $(EQU) >$$n-bom.sch \
 		      || { rm -f $$n-bom.sch; exit 1; }; \
 		done

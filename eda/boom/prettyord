@@ -3,6 +3,20 @@
 require "parser.pl";
 require "misc.pl";
 
+
+sub usage
+{
+    print STDERR "usage: $0 [-s/from/to/ ...] ...\n";
+    exit(1);
+}
+
+
+while ($ARGV[0] =~ /^-s/) {
+    &usage unless &dsc_xlat_arg($');
+    shift @ARGV;
+}
+&usage if $ARGV[0] =~ /^-./;
+
 &parse;
 
 $out[0][0] = "Pos";
@@ -17,13 +31,7 @@ for (sort keys %order) {
     push(@{ $out[1] }, $order{$_}[0]);
     @f = split(/\s+/, $_);
     push(@{ $out[2] }, $f[1]);
-    my $dsc = $dsc{$_};
-    if (!defined $dsc) {
-	for (&eq($_)) {
-	    $dsc = $dsc{$_};
-	    last if defined $dsc;
-	}
-    }
+    my $dsc = &dsc_find($_);
     print STDERR "$_: no description\n" unless defined $dsc;
     push(@{ $out[3] }, defined $dsc ? $dsc : "???");
     push(@{ $out[4] }, $order{$_}[1]);
