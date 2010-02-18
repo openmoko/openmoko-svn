@@ -33,6 +33,58 @@
 int show_vars = 1;
 
 
+/* ----- add elements, shared ---------------------------------------------- */
+
+
+/* @@@ merge with fpd.y */
+
+static void add_table(struct frame *frame, struct table **anchor)
+{
+	struct table *table, **walk;
+
+	table = zalloc_type(struct table);
+	table->vars = zalloc_type(struct var);
+	table->vars->name = unique("_");
+	table->vars->frame = frame;
+	table->vars->table = table;
+	table->rows = zalloc_type(struct row);
+	table->rows->table = table;
+	table->rows->values = zalloc_type(struct value);
+	table->rows->values->expr = parse_expr("0");
+	table->rows->values->row = table->rows;
+	table->active_row = table->rows;
+	if (anchor) {
+		table->next = *anchor;
+		*anchor = table;
+	} else {
+		for (walk = &frame->tables; *walk; walk = &(*walk)->next);
+		*walk = table;
+	}
+	change_world();
+}
+
+
+static void add_loop(struct frame *frame, struct loop **anchor)
+{
+	struct loop *loop, **walk;
+
+	loop = zalloc_type(struct loop);
+	loop->var.name = unique("_");
+	loop->var.frame = frame;
+	loop->from.expr = parse_expr("0");
+	loop->to.expr = parse_expr("0");
+	if (anchor) {
+		loop->next = *anchor;
+		*anchor = loop;
+	} else {
+		loop->next = NULL;
+		for (walk = &frame->loops; *walk; walk = &(*walk)->next);
+		*walk = loop;
+	}
+	change_world();
+}
+
+
 /* ----- popup dispatcher -------------------------------------------------- */
 
 
@@ -85,54 +137,25 @@ static void popup_del_frame(void)
 }
 
 
-/* @@@ merge with fpd.y */
-
 static void popup_add_table(void)
 {
-	struct frame *frame = popup_data;
-	struct table *table, **walk;
-
-	table = zalloc_type(struct table);
-	table->vars = zalloc_type(struct var);
-	table->vars->name = unique("_");
-	table->vars->frame = frame;
-	table->vars->table = table;
-	table->rows = zalloc_type(struct row);
-	table->rows->table = table;
-	table->rows->values = zalloc_type(struct value);
-	table->rows->values->expr = parse_expr("0");
-	table->rows->values->row = table->rows;
-	table->active_row = table->rows;
-	for (walk = &frame->tables; *walk; walk = &(*walk)->next);
-	*walk = table;
-	change_world();
+	add_table(popup_data, NULL);
 }
 
 
 static void popup_add_loop(void)
 {
-	struct frame *frame = popup_data;
-	struct loop *loop, **walk;
-
-	loop = zalloc_type(struct loop);
-	loop->var.name = unique("_");
-	loop->var.frame = frame;
-	loop->from.expr = parse_expr("0");
-	loop->to.expr = parse_expr("0");
-	loop->next = NULL;
-	for (walk = &frame->loops; *walk; walk = &(*walk)->next);
-	*walk = loop;
-	change_world();
+	add_loop(popup_data, NULL);
 }
 
 
 static GtkItemFactoryEntry popup_frame_entries[] = {
-	{ "/Add frame",		NULL,	popup_add_frame,	0, "<Item>" },
+	{ "/Add frame",		NULL,	popup_add_frame,0, "<Item>" },
 	{ "/sep0",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Add variable",	NULL,	popup_add_table,	0, "<Item>" },
-	{ "/Add loop",		NULL,	popup_add_loop,		0, "<Item>" },
+	{ "/Add variable",	NULL,	popup_add_table,0, "<Item>" },
+	{ "/Add loop",		NULL,	popup_add_loop,	0, "<Item>" },
 	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Delete frame",	NULL,	popup_del_frame,	0, "<Item>" },
+	{ "/Delete frame",	NULL,	popup_del_frame,0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
 	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
@@ -167,10 +190,20 @@ static gboolean can_add_var(const struct frame *frame)
 }
 
 
-static void pop_up_frame(struct frame *frame, GdkEventButton *event)
+static void enable_add_var(struct frame *frame, GtkItemFactory *factory)
 {
 	gboolean add_var;
 
+	add_var = can_add_var(frame);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory, "/Add variable"), add_var);
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory, "/Add loop"), add_var);
+}
+
+
+static void pop_up_frame(struct frame *frame, GdkEventButton *event)
+{
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_frame, "/Delete frame"),
 	    frame != root_frame);
@@ -179,11 +212,7 @@ static void pop_up_frame(struct frame *frame, GdkEventButton *event)
 	    gtk_item_factory_get_item(factory_frame, "/Add frame"),
 	    can_add_frame());
 
-	add_var = can_add_var(frame);
-	gtk_widget_set_sensitive(
-	    gtk_item_factory_get_item(factory_frame, "/Add variable"), add_var);
-	gtk_widget_set_sensitive(
-	    gtk_item_factory_get_item(factory_frame, "/Add loop"), add_var);
+	enable_add_var(frame, factory_frame);
 	
 	pop_up(popup_frame_widget, event, frame);
 }
@@ -275,13 +304,34 @@ static void popup_del_table(void)
 }
 
 
+static void popup_add_table_from_var(void)
+{
+	struct var *var = popup_data;
+
+	add_table(var->frame, &var->table->next);
+}
+
+
+static void popup_add_loop_from_var(void)
+{
+	struct var *var = popup_data;
+
+	add_loop(var->frame, NULL);
+}
+
+
 static GtkItemFactoryEntry popup_single_var_entries[] = {
-	{ "/Add row",		NULL,	popup_add_row,		0, "<Item>" },
+	{ "/Add row",		NULL,	popup_add_row,	0, "<Item>" },
 	{ "/Add column",	NULL,	popup_add_column,	0, "<Item>" },
 	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Delete variable",	NULL,	popup_del_table,	0, "<Item>" },
+	{ "/Delete variable",	NULL,	popup_del_table,0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Close",		NULL,	NULL,			0, "<Item>" },
+	{ "/Add variable",	NULL,	popup_add_table_from_var,
+							0, "<Item>" },
+	{ "/Add loop",		NULL,	popup_add_loop_from_var,
+							0, "<Item>" },
+	{ "/sep3",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
 };
 
@@ -291,6 +341,7 @@ static void pop_up_single_var(struct var *var, GdkEventButton *event)
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_single_var, "/Add column"),
 	    can_add_var(var->frame));
+	enable_add_var(var->frame, factory_single_var);
 	pop_up(popup_single_var_widget, event, var);
 }
 
@@ -316,12 +367,17 @@ static void popup_del_column(void)
 
 
 static GtkItemFactoryEntry popup_table_var_entries[] = {
-	{ "/Add row",		NULL,	popup_add_row,		0, "<Item>" },
+	{ "/Add row",		NULL,	popup_add_row,	0, "<Item>" },
 	{ "/Add column",	NULL,	popup_add_column,	0, "<Item>" },
 	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Delete table",	NULL,	popup_del_table,	0, "<Item>" },
+	{ "/Delete table",	NULL,	popup_del_table,0, "<Item>" },
 	{ "/Delete column",	NULL,	popup_del_column,	0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Add variable",	NULL,	popup_add_table_from_var,
+							0, "<Item>" },
+	{ "/Add loop",		NULL,	popup_add_loop_from_var,
+							0, "<Item>" },
+	{ "/sep3",		NULL,	NULL,		0, "<Separator>" },
 	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
 };
@@ -335,6 +391,7 @@ static void pop_up_table_var(struct var *var, GdkEventButton *event)
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_table_var, "/Add column"),
 	    can_add_var(var->frame));
+	enable_add_var(var->frame, factory_table_var);
 	pop_up(popup_table_var_widget, event, var);
 }
 
@@ -397,9 +454,9 @@ static GtkItemFactoryEntry popup_table_value_entries[] = {
 	{ "/Add column",	NULL,	popup_add_column_by_value,
 							0, "<Item>" },
 	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
-	{ "/Delete row",	NULL,	popup_del_row,		0, "<Item>" },
+	{ "/Delete row",	NULL,	popup_del_row,	0, "<Item>" },
 	{ "/Delete column",	NULL,	popup_del_column_by_value,
-								0, "<Item>" },
+							0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
 	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
@@ -434,8 +491,29 @@ static void popup_del_loop(void)
 }
 
 
+static void popup_add_table_from_loop(void)
+{
+	struct loop *loop = popup_data;
+
+	add_table(loop->var.frame, NULL);
+}
+
+
+static void popup_add_loop_from_loop(void)
+{
+	struct loop *loop = popup_data;
+
+	add_loop(loop->var.frame, &loop->next);
+}
+
+
 static GtkItemFactoryEntry popup_loop_var_entries[] = {
 	{ "/Delete loop",	NULL,	popup_del_loop,	0, "<Item>" },
+	{ "/sep1",		NULL,	NULL,		0, "<Separator>" },
+	{ "/Add variable",	NULL,	popup_add_table_from_loop,
+							0, "<Item>" },
+	{ "/Add loop",		NULL,	popup_add_loop_from_loop,
+							0, "<Item>" },
 	{ "/sep2",		NULL,	NULL,		0, "<Separator>" },
 	{ "/Close",		NULL,	NULL,		0, "<Item>" },
 	{ NULL }
@@ -444,6 +522,7 @@ static GtkItemFactoryEntry popup_loop_var_entries[] = {
 
 static void pop_up_loop_var(struct loop *loop, GdkEventButton *event)
 {
+	enable_add_var(loop->var.frame, factory_loop_var);
 	pop_up(popup_loop_var_widget, event, loop);
 }
 
