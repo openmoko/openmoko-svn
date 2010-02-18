@@ -37,12 +37,17 @@ LIBS_GTK = `pkg-config --libs gtk+-2.0`
 
 CFLAGS_WARN = -Wall -Wshadow -Wmissing-prototypes \
 	      -Wmissing-declarations -Wno-format-zero-length
-CFLAGS = -g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' $(CFLAGS_WARN)
+CFLAGS = -g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' \
+         -DSVN_VERSION='"$(SVN_VERSION)$(SVN_STATUS)"' $(CFLAGS_WARN)
 SLOPPY = -Wno-unused -Wno-implicit-function-declaration \
 	 -Wno-missing-prototypes -Wno-missing-declarations
 LDLIBS = -lm -lfl $(LIBS_GTK)
 YACC = bison -y
 YYFLAGS = -v
+
+SVN_VERSION=$(shell svn info | sed '/Last Changed Rev: /s///p;d')
+SVN_STATUS=$(shell [ -z "`svn status -q`" ] || echo +)
+
 
 # ----- Verbosity control -----------------------------------------------------
 

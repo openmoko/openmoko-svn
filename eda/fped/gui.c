@@ -314,7 +314,11 @@ int gui_main(void)
 	root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(root), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size(GTK_WINDOW(root), 620, 460);
-	gtk_window_set_title(GTK_WINDOW(root), "fped");
+	if (*SVN_VERSION)
+		gtk_window_set_title(GTK_WINDOW(root),
+		    "fped (rev " SVN_VERSION ")");
+	else
+		gtk_window_set_title(GTK_WINDOW(root), "fped");
 
 	/* get root->window */
 	gtk_widget_show_all(root);
