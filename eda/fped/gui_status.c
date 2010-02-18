@@ -615,16 +615,44 @@ static struct edit_ops edit_ops_expr = {
 };
 
 
-static void edit_any_expr(GtkWidget *widget, struct expr **expr,
-    const char *tooltip)
+void edit_expr(struct expr **expr, const char *tooltip)
 {
-	setup_edit(widget, &edit_ops_expr, expr, tooltip);
+	setup_edit(status_entry, &edit_ops_expr, expr, tooltip);
 }
 
 
-void edit_expr(struct expr **expr, const char *tooltip)
+/* ----- distance expressions ---------------------------------------------- */
+
+
+static void dist_expr_store(const char *s, void *ctx)
 {
-	edit_any_expr(status_entry, expr, tooltip);
+	struct expr **anchor = ctx;
+	struct expr *expr;
+
+	expr_store(s, ctx);
+	expr = *anchor;
+	if (expr->op == op_num && !expr->u.num.exponent && !expr->u.num.n)
+		expr->u.num.exponent = 1;
+}
+
+
+static struct edit_ops edit_ops_dist_expr = {
+	.retrieve	= expr_retrieve,
+	.status		= expr_status,
+	.store		= dist_expr_store,
+};
+
+
+static void edit_any_dist_expr(GtkWidget *widget, struct expr **expr,
+    const char *tooltip)
+{
+	setup_edit(widget, &edit_ops_dist_expr, expr, tooltip);
+}
+
+
+void edit_dist_expr(struct expr **expr, const char *tooltip)
+{
+	edit_any_dist_expr(status_entry, expr, tooltip);
 }
 
 
@@ -633,13 +661,13 @@ void edit_x(struct expr **expr, const char *tooltip)
 	vacate_widget(status_box_x);
 	gtk_container_add(GTK_CONTAINER(status_box_x), status_entry_x);
 	gtk_widget_show(status_box_x);
-	edit_any_expr(status_entry_x, expr, tooltip);
+	edit_any_dist_expr(status_entry_x, expr, tooltip);
 }
 
 
 void edit_y(struct expr **expr, const char *tooltip)
 {
-	edit_any_expr(status_entry_y, expr, tooltip);
+	edit_any_dist_expr(status_entry_y, expr, tooltip);
 }
 
 

@@ -754,7 +754,7 @@ int inst_vec(struct vec *vec, struct coord base)
 
 static void obj_line_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.line.width, "Line width");
+	edit_dist_expr(&obj->u.line.width, "Line width");
 }
 
 
@@ -805,7 +805,7 @@ int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width)
 
 static void obj_rect_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.rect.width, "Line width");
+	edit_dist_expr(&obj->u.rect.width, "Line width");
 }
 
 
@@ -934,7 +934,7 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 
 static void obj_arc_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.arc.width, "Line width");
+	edit_dist_expr(&obj->u.arc.width, "Line width");
 }
 
 
@@ -1008,7 +1008,7 @@ int inst_arc(struct obj *obj, struct coord center, struct coord start,
 
 static void obj_meas_edit(struct obj *obj)
 {
-	edit_expr(&obj->u.meas.offset, "Measurement line offset");
+	edit_dist_expr(&obj->u.meas.offset, "Measurement line offset");
 }
 
 

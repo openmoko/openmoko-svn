@@ -47,6 +47,7 @@ void edit_expr(struct expr **expr, const char *tooltip);
 void edit_expr_list(struct expr *expr,
     void (*set_values)(void *user, const struct value *values, int n_values),
     void *user, const char *tooltip);
+void edit_dist_expr(struct expr **expr, const char *tooltip);
 void edit_x(struct expr **expr, const char *tooltip);
 void edit_y(struct expr **expr, const char *tooltip);
 void edit_nothing(void);
