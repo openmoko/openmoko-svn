@@ -63,7 +63,7 @@
 
 #define	DEFAULT_FRAME_AREA_WIDTH 250
 #define	DEFAULT_FRAME_AREA_HEIGHT 100
-#define	FRAME_AREA_MISC_WIDTH	26	/* pane, scroll bar, slack */
+#define	FRAME_AREA_MISC_WIDTH	24	/* pane, scroll bar, slack */
 
 
 /* ----- assorted colors --------------------------------------------------- */

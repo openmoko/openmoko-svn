@@ -961,12 +961,12 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
     struct table *table, int wrap_width)
 {
 	GtkWidget *tab, *field;
-	GtkWidget *evbox, *align;
+	GtkWidget *evbox, *align, *sep;
 	struct var *var;
 	struct row *row;
 	struct value *value;
 	int n_vars = 0, n_rows = 0;
-	int n_var, n_row, pos, col;
+	int n_var, n_row, pos;
 	char *expr;
 	GdkColor color;
 
@@ -982,15 +982,16 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 	n_var = 0;
 	n_vars = 0;
 	while (var) {
-		col = n_vars+(n_var != n_vars);;
-		if (!n_vars) {
+		if (n_vars) {
+			gtk_table_resize(GTK_TABLE(tab), n_rows, n_vars+1);
+		} else {
 			evbox = gtk_event_box_new();
 			align = gtk_alignment_new(0, 0, 0, 0);
 			gtk_container_add(GTK_CONTAINER(align), evbox);
 			gtk_box_pack_start(GTK_BOX(vbox), align,
 			    FALSE, FALSE, 0);
 
-			tab = gtk_table_new(n_rows+1, col, FALSE);
+			tab = gtk_table_new(n_rows+1, n_vars, FALSE);
 			gtk_container_add(GTK_CONTAINER(evbox), tab);
 			color = get_color(COLOR_VAR_TABLE_SEP);
 			gtk_widget_modify_bg(GTK_WIDGET(evbox),
@@ -999,19 +1000,12 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 			gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
 
-			/* @@@
-			 * for now, we just add an empty first column to
-			 * wrapped tables, which yields a thin black line.
-			 * Might want to put something more visible later.
-			 */
-
 		}
-		gtk_table_resize(GTK_TABLE(tab), n_rows, col+1);
 	
 		field = label_in_box_new(var->name,
 		    "Variable (column) name. Click to edit.");
 		gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(field),
-		    col, col+1, 0, 1);
+		    n_vars, n_vars+1, 0, 1);
 		label_in_box_bg(field, COLOR_VAR_PASSIVE);
 		g_signal_connect(G_OBJECT(box_of_label(field)),
 		    "button_press_event",
@@ -1032,7 +1026,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			free(expr);
 			gtk_table_attach_defaults(GTK_TABLE(tab),
 			    box_of_label(field),
-			    col, col+1,
+			    n_vars, n_vars+1,
 			    n_row+1, n_row+2);
 			label_in_box_bg(field, table->active_row == row ?
 			    COLOR_ROW_SELECTED : COLOR_ROW_UNSELECTED);
@@ -1065,7 +1059,11 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 				gtk_container_remove(GTK_CONTAINER(tab),
 				    box_of_label(value->widget));
 			}
-			gtk_table_resize(GTK_TABLE(tab), n_rows, col);
+			gtk_table_resize(GTK_TABLE(tab), n_rows, n_vars);
+
+			sep = gtk_vbox_new(FALSE, 0);
+			gtk_box_pack_start(GTK_BOX(vbox), sep,
+			    FALSE, FALSE, 1);
 
 			n_vars = 0;
 			continue;
