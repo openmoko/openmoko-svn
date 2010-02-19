@@ -387,3 +387,16 @@ void destroy_all_children(GtkContainer *container)
 {
 	gtk_container_foreach(container, destroy_callback, NULL);
 }
+
+
+/* ----- get a widget's desired width -------------------------------------- */
+
+
+int get_widget_width(GtkWidget *widget)
+{
+	GtkRequisition req;
+
+	gtk_widget_show_all(widget);
+	gtk_widget_size_request(widget, &req);
+	return req.width;
+}

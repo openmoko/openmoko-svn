@@ -79,4 +79,6 @@ void debug_save_widget(GtkWidget *widget);
 
 void destroy_all_children(GtkContainer *container);
 
+int get_widget_width(GtkWidget *widget);
+
 #endif /* !GUI_UTIL_H */

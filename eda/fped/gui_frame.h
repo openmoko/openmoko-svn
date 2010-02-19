@@ -1,8 +1,8 @@
 /*
  * gui_frame.h - GUI, frame window
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,6 @@ void select_frame(struct frame *frame);
 void gui_frame_select_inst(struct inst *inst);
 void gui_frame_deselect_inst(struct inst *inst);
 
-void build_frames(GtkWidget *vbox);
+void build_frames(GtkWidget *vbox, int warp_width);
 
 #endif /* !GUI_FRAME_H */

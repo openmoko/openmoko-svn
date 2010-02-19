@@ -1,8 +1,8 @@
 /*
  * gui_style.h - GUI, style definitions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,10 @@
 #define	MIL_FORMAT_FIXED	"%7.1f"	/* -NNNN.N */
 #define	MM_FORMAT_SHORT		"%.4g"
 #define	MIL_FORMAT_SHORT	"%.4g"
+
+#define	DEFAULT_FRAME_AREA_WIDTH 250
+#define	DEFAULT_FRAME_AREA_HEIGHT 100
+#define	FRAME_AREA_MISC_WIDTH	26	/* pane, scroll bar, slack */
 
 
 /* ----- assorted colors --------------------------------------------------- */

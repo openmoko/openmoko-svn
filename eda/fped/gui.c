@@ -41,10 +41,13 @@ int show_meas = 1;
 int show_bright = 0;
 
 
+static GtkWidget *paned;
 static GtkWidget *frames_box;
 static GtkWidget *ev_stuff, *ev_meas, *ev_all, *ev_bright;
 static GtkWidget *stuff_image[2], *meas_image[2], *all_image[2];
 static GtkWidget *bright_image[2];
+
+static void do_build_frames(void);
 
 
 /* ----- view callbacks ---------------------------------------------------- */
@@ -220,9 +223,21 @@ static void make_top_bar(GtkWidget *vbox)
 /* ----- central screen area ----------------------------------------------- */
 
 
+static void resize_frames_area(GtkWidget *widget, GtkAllocation *allocation,
+    gpointer user_data)
+{
+	static int width = 0;
+
+	if (allocation->width == width)
+		return;
+	width = allocation->width;
+	do_build_frames();
+}
+
+
 static void make_center_area(GtkWidget *vbox)
 {
-	GtkWidget *hbox, *frames_area, *paned;
+	GtkWidget *hbox, *frames_area;//, *paned;
 	GtkWidget *tools;
 
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -237,13 +252,17 @@ static void make_center_area(GtkWidget *vbox)
 	gtk_paned_add1(GTK_PANED(paned), frames_area);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(frames_area),
 	    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_size_request(frames_area, 250, 100);
+	gtk_widget_set_size_request(frames_area,
+	    DEFAULT_FRAME_AREA_WIDTH, DEFAULT_FRAME_AREA_HEIGHT);
 
 	frames_box = gtk_vbox_new(FALSE, 0);
-	build_frames(frames_box);
+	build_frames(frames_box, DEFAULT_FRAME_AREA_WIDTH);
 
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(frames_area),
 	    frames_box);
+
+	g_signal_connect(G_OBJECT(frames_area), "size-allocate",
+	    G_CALLBACK(resize_frames_area), NULL);
 
 	/* Canvas */
 
@@ -259,6 +278,15 @@ static void make_center_area(GtkWidget *vbox)
 /* ----- GUI construction -------------------------------------------------- */
 
 
+static void do_build_frames(void)
+{
+	int width;
+
+	width = gtk_paned_get_position(GTK_PANED(paned));
+	build_frames(frames_box, width > 0 ? width : DEFAULT_FRAME_AREA_WIDTH);
+}
+
+
 void change_world(void)
 {
 	struct bbox before, after;
@@ -269,7 +297,7 @@ void change_world(void)
 	instantiate();
 	after = inst_get_bbox();
 	label_in_box_bg(active_frame->label, COLOR_FRAME_SELECTED);
-	build_frames(frames_box);
+	do_build_frames();
 	if (after.min.x < before.min.x || after.min.y < before.min.y || 
 	    after.max.x > before.max.x || after.max.y > before.max.y)
 		zoom_to_extents();
@@ -323,7 +351,7 @@ int gui_main(void)
 	/* get root->window */
 	gtk_widget_show_all(root);
 
-	g_signal_connect_swapped(G_OBJECT(root), "destroy",
+	g_signal_connect(G_OBJECT(root), "destroy",
 	    G_CALLBACK(gtk_main_quit), NULL);
 
 	make_screen(root);

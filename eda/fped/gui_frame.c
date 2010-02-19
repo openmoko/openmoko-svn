@@ -955,8 +955,10 @@ static gboolean table_scroll_event(GtkWidget *widget, GdkEventScroll *event,
 }
 
 
+/* @@@ this function is too long */
+
 static void build_table(GtkWidget *vbox, struct frame *frame,
-    struct table *table)
+    struct table *table, int wrap_width)
 {
 	GtkWidget *tab, *field;
 	GtkWidget *evbox, *align;
@@ -964,8 +966,9 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 	struct row *row;
 	struct value *value;
 	int n_vars = 0, n_rows = 0;
+	int n_var, n_row, pos, col;
 	char *expr;
-	GdkColor col;
+	GdkColor color;
 
 	for (var = table->vars; var; var = var->next)
 		n_vars++;
@@ -975,26 +978,40 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 	if (n_vars == 1 && n_rows == 1)
 		return;
 
-	evbox = gtk_event_box_new();
-	align = gtk_alignment_new(0, 0, 0, 0);
-	gtk_container_add(GTK_CONTAINER(align), evbox);
-	gtk_box_pack_start(GTK_BOX(vbox), align, FALSE, FALSE, 0);
-
-	tab = gtk_table_new(n_rows+1, n_vars, FALSE);
-	gtk_container_add(GTK_CONTAINER(evbox), tab);
-	col = get_color(COLOR_VAR_TABLE_SEP);
-	gtk_widget_modify_bg(GTK_WIDGET(evbox),
-	    GTK_STATE_NORMAL, &col);
-
-	gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
-	gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
-
+	var = table->vars;
+	n_var = 0;
 	n_vars = 0;
-	for (var = table->vars; var; var = var->next) {
+	while (var) {
+		col = n_vars+(n_var != n_vars);;
+		if (!n_vars) {
+			evbox = gtk_event_box_new();
+			align = gtk_alignment_new(0, 0, 0, 0);
+			gtk_container_add(GTK_CONTAINER(align), evbox);
+			gtk_box_pack_start(GTK_BOX(vbox), align,
+			    FALSE, FALSE, 0);
+
+			tab = gtk_table_new(n_rows+1, col, FALSE);
+			gtk_container_add(GTK_CONTAINER(evbox), tab);
+			color = get_color(COLOR_VAR_TABLE_SEP);
+			gtk_widget_modify_bg(GTK_WIDGET(evbox),
+			    GTK_STATE_NORMAL, &color);
+
+			gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
+			gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
+
+			/* @@@
+			 * for now, we just add an empty first column to
+			 * wrapped tables, which yields a thin black line.
+			 * Might want to put something more visible later.
+			 */
+
+		}
+		gtk_table_resize(GTK_TABLE(tab), n_rows, col+1);
+	
 		field = label_in_box_new(var->name,
 		    "Variable (column) name. Click to edit.");
 		gtk_table_attach_defaults(GTK_TABLE(tab), box_of_label(field),
-		    n_vars, n_vars+1, 0, 1);
+		    col, col+1, 0, 1);
 		label_in_box_bg(field, COLOR_VAR_PASSIVE);
 		g_signal_connect(G_OBJECT(box_of_label(field)),
 		    "button_press_event",
@@ -1003,20 +1020,20 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		    "scroll_event",
 		    G_CALLBACK(table_scroll_event), table);
 		var->widget = field;
-		n_vars++;
-	}
-	n_rows = 0;
-	for (row = table->rows; row; row = row->next) {
-		n_vars = 0;
-		for (value = row->values; value; value = value->next) {
+
+		n_row = 0;
+		for (row = table->rows; row; row = row->next) {
+			value = row->values;
+			for (pos = 0; pos != n_var; pos++)
+				value = value->next;
 			expr = unparse(value->expr);
 			field = label_in_box_new(expr,
 			    "Variable value. Click to select row or to edit.");
 			free(expr);
 			gtk_table_attach_defaults(GTK_TABLE(tab),
 			    box_of_label(field),
-			    n_vars, n_vars+1,
-			    n_rows+1, n_rows+2);
+			    col, col+1,
+			    n_row+1, n_row+2);
 			label_in_box_bg(field, table->active_row == row ?
 			    COLOR_ROW_SELECTED : COLOR_ROW_UNSELECTED);
 			g_signal_connect(G_OBJECT(box_of_label(field)),
@@ -1026,10 +1043,39 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			    "scroll_event",
 			    G_CALLBACK(table_scroll_event), table);
 			value->widget = field;
-			n_vars++;
+			n_row++;
 		}
-		n_rows++;
+
+		/*
+		 * Wrap tables wider than the screen area available for
+		 * variables and tables. Don't wrap before having output at
+		 * least one column.
+		 */
+		if (n_vars && get_widget_width(tab) > wrap_width) {
+			/*
+			 * Resizing alone doesn't hide extra columns. We have
+			 * to explicitly remove their content as well.
+			 */
+			gtk_container_remove(GTK_CONTAINER(tab),
+			    box_of_label(var->widget));
+			for (row = table->rows; row; row = row->next) {
+				value = row->values;
+				for (pos = 0; pos != n_var; pos++)
+					value = value->next;
+				gtk_container_remove(GTK_CONTAINER(tab),
+				    box_of_label(value->widget));
+			}
+			gtk_table_resize(GTK_TABLE(tab), n_rows, col);
+
+			n_vars = 0;
+			continue;
+		}
+
+		var = var->next;
+		n_var++;
+		n_vars++;
 	}
+	
 }
 
 
@@ -1220,7 +1266,7 @@ static void build_loop(GtkWidget *vbox, struct frame *frame,
 /* ----- the list of variables, tables, and loops -------------------------- */
 
 
-static GtkWidget *build_vars(struct frame *frame)
+static GtkWidget *build_vars(struct frame *frame, int wrap_width)
 {
 	GtkWidget *vbox;
 	struct table *table;
@@ -1230,7 +1276,7 @@ static GtkWidget *build_vars(struct frame *frame)
 	for (table = frame->tables; table; table = table->next) {
 		add_sep(vbox, 3);
 		build_assignment(vbox, frame, table);
-		build_table(vbox, frame, table);
+		build_table(vbox, frame, table, wrap_width);
 	}
 	for (loop = frame->loops; loop; loop = loop->next) {
 		add_sep(vbox, 3);
@@ -1696,11 +1742,12 @@ static GtkWidget *build_frame_refs(const struct frame *frame)
 /* ----- frames ------------------------------------------------------------ */
 
 
-void build_frames(GtkWidget *vbox)
+void build_frames(GtkWidget *vbox, int wrap_width)
 {
 	struct frame *frame;
 	GtkWidget *hbox, *tab, *label, *packages, *refs, *vars, *items, *meas;
 	int n = 0;
+	int max_name_width, name_width;
 
 	destroy_all_children(GTK_CONTAINER(vbox));
 	for (frame = frames; frame; frame = frame->next)
@@ -1717,6 +1764,7 @@ void build_frames(GtkWidget *vbox)
 
 	label = build_pkg_name();
 	gtk_table_attach_defaults(GTK_TABLE(tab), label, 0, 1, 0, 1);
+	max_name_width = get_widget_width(label);
 
 	packages = build_pkg_names();
 	gtk_table_attach_defaults(GTK_TABLE(tab), packages, 1, 2, 0, 1);
@@ -1726,13 +1774,21 @@ void build_frames(GtkWidget *vbox)
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
 		    0, 1, n*2+1, n*2+2);
+		n++;
+		name_width = get_widget_width(label);
+		if (name_width > max_name_width)
+			max_name_width = name_width;
+	}
 
+	wrap_width -= max_name_width+FRAME_AREA_MISC_WIDTH;
+	n = 0;
+	for (frame = root_frame; frame; frame = frame->prev) {
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
 		    1, 2, n*2+1, n*2+2);
 
 		if (show_vars) {
-			vars = build_vars(frame);
+			vars = build_vars(frame, wrap_width);
 			gtk_table_attach_defaults(GTK_TABLE(tab), vars,
 			    1, 2, n*2+2, n*2+3);
 			dont_build_items(frame);
