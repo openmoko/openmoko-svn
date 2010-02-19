@@ -1,8 +1,8 @@
 /*
  * file.h - File handling
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,5 +29,6 @@ void save_with_backup(const char *name, int (*fn)(FILE *file));
 void save_fpd(void);
 void write_kicad(void);
 void write_ps(void);
+void write_ps_fullpage(void);
 
 #endif /* !FILE_H */

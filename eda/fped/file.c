@@ -1,8 +1,8 @@
 /*
  * file.c - File handling
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,16 +172,28 @@ void write_kicad(void)
 }
 
 
-void write_ps(void)
+static void do_write_ps(int (*fn)(FILE *file))
 {
 	char *name;
 
 	if (save_file_name) {
 		name = set_extension(save_file_name, "ps");
-		save_to(name, postscript);
+		save_to(name, fn);
 		free(name);
 	} else {
-		if (!postscript(stdout))
+		if (!fn(stdout))
 			perror("stdout");
 	}
+}
+
+
+void write_ps(void)
+{
+	do_write_ps(postscript);
+}
+
+
+void write_ps_fullpage(void)
+{
+	do_write_ps(postscript_fullpage);
 }

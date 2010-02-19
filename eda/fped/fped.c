@@ -1,8 +1,8 @@
 /*
  * fped.c - Footprint editor, main function
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,9 +44,10 @@ static void load_file(const char *name)
 static void usage(const char *name)
 {
 	fprintf(stderr,
-"usage: %s [-k|-p] [cpp_option ...] [in_file [out_file]]\n\n"
+"usage: %s [-k] [-p|-P] [cpp_option ...] [in_file [out_file]]\n\n"
 "  -k          write KiCad output, then exit\n"
 "  -p          write Postscript output, then exit\n"
+"  -P          write Postscript output (full page), then exit\n"
 "  cpp_option  -Idir, -Dname[=value], or -Uname\n"
     , name);
 	exit(1);
@@ -61,16 +62,20 @@ int main(int argc, char **argv)
 	int fake_argc;
 	char opt[] = "-?";
 	int error, batch;
-	int batch_write_kicad = 0, batch_write_ps = 0;
+	int batch_write_kicad = 0;
+	int batch_write_ps = 0, batch_write_ps_fullpage = 0;
 	int c;
 
-	while ((c = getopt(argc, argv, "kpD:U:I:")) != EOF)
+	while ((c = getopt(argc, argv, "kpD:I:U:P")) != EOF)
 		switch (c) {
 		case 'k':
 			batch_write_kicad = 1;
 			break;
 		case 'p':
 			batch_write_ps = 1;
+			break;
+		case 'P':
+			batch_write_ps_fullpage = 1;
 			break;
 		case 'D':
 		case 'U':
@@ -83,7 +88,10 @@ int main(int argc, char **argv)
 			usage(name);
 		}
 
-	batch = batch_write_kicad || batch_write_ps;
+	if (batch_write_ps && batch_write_ps_fullpage)
+		usage(name);
+
+	batch = batch_write_kicad || batch_write_ps || batch_write_ps_fullpage;
 
 	if (!batch) {
 		args[0] = name;
@@ -125,6 +133,8 @@ int main(int argc, char **argv)
 		write_kicad();
 	if (batch_write_ps)
 		write_ps();
+	if (batch_write_ps_fullpage)
+		write_ps_fullpage();
 	if (!batch) {
 		error = gui_main();
 		if (error)
