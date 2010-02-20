@@ -57,15 +57,13 @@ CPP := $(CPP)   # make sure changing CC won't affect CPP
 CC_normal	:= $(CC)
 YACC_normal	:= $(YACC)
 LEX_normal	:= $(LEX)
-DEPEND_normal = \
-  $(CPP) $(CFLAGS) -MM -MG *.c >.depend || \
-  { rm -f .depend; exit 1; }
+DEPEND_normal	:= $(CPP) $(CFLAGS) -MM -MG
 
 CC_quiet	= @echo "  CC       " $@ && $(CC_normal)
 YACC_quiet	= @echo "  YACC     " $@ && $(YACC_normal)
 LEX_quiet	= @echo "  LEX      " $@ && $(LEX_normal)
 GEN_quiet	= @echo "  GENERATE " $@ &&
-DEPEND_quiet	= @echo "  DEPENDENCIES" && $(DEPEND_normal)
+DEPEND_quiet	= @$(DEPEND_normal)
 
 ifeq ($(V),1)
     CC		= $(CC_normal)
@@ -88,6 +86,17 @@ endif
 
 .SUFFIXES:	.fig .xpm .ppm
 
+# compile and generate dependencies, based on
+# http://scottmcpeak.com/autodepend/autodepend.html
+
+%.o:		%.c
+		$(CC) -c $(CFLAGS) $*.c -o $*.o
+		$(DEPEND) $(CFLAGS) $*.c | \
+		  sed -e \
+		    '/^\(.*:\)\? */{p;s///;s/ *\\\?$$/ /;s/  */:\n/g;H;}' \
+		    -e '$${g;p;}' -e d >$*.d; \
+		  [ "$${PIPESTATUS[*]}" = "0 0" ] || { rm -f $*.d; exit 1; }
+		
 # generate 26x26 pixels icons, then drop the 1-pixel frame
 
 .fig.ppm:
@@ -142,16 +151,16 @@ montage:
 
 # ----- Dependencies ----------------------------------------------------------
 
-dep depend .depend: lex.yy.c y.tab.h y.tab.c *.h *.c
-		$(DEPEND)
+dep depend .depend:
+		@echo 'no need to run "make depend" anymore' 1>&2
 
--include .depend
+-include $(OBJS:.o=.d)
 
 # ----- Cleanup ---------------------------------------------------------------
 
 clean:
 		rm -f $(OBJS) $(XPMS:%=icons/%) $(XPMS:%.xpm=icons/%.ppm)
-		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend
+		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend $(OBJS:.o=.d)
 		rm -f __dbg????.png _tmp*
 
 # ----- Install / uninstall ---------------------------------------------------
