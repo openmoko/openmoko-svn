@@ -72,7 +72,7 @@
 #define	PS_VEC_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
 #define	PS_VEC_BASE_OFFSET	mm_to_units(0.5)	/* real mm */
 
-#define	PS_MEAS_LINE		mm_to_units(0.015)
+#define	PS_MEAS_LINE		mm_to_units(0.1)	/* real mm */
 #define	PS_MEAS_ARROW_LEN	mm_to_units(0.15)
 #define	PS_MEAS_ARROW_ANGLE	30
 #define	PS_MEAS_TEXT_HEIGHT	mm_to_units(3)		/* ~8.5 pt, real mm */
@@ -386,7 +386,8 @@ static void ps_meas(FILE *file, const struct inst *inst,
 	a0 = inst->base;
 	b0 = inst->u.meas.end;
 	project_meas(inst, &a1, &b1);
-	fprintf(file, "1 setlinecap 0 setgray %d setlinewidth\n", PS_MEAS_LINE);
+	fprintf(file, "1 setlinecap 0 setgray %d realsize setlinewidth\n",
+	    PS_MEAS_LINE);
 	fprintf(file, "  %d %d moveto\n", a0.x, a0.y);
 	fprintf(file, "  %d %d lineto\n", a1.x, a1.y);
 	fprintf(file, "  %d %d lineto\n", b1.x, b1.y);
@@ -1004,7 +1005,8 @@ static void epilogue(FILE *file)
 }
 
 
-int postscript(FILE *file)
+static int ps_for_all_pkg(FILE *file,
+    void (*fn)(FILE *file, const struct pkg *pkg, int page))
 {
 	struct pkg *pkg;
 	int pages;
@@ -1016,7 +1018,7 @@ int postscript(FILE *file)
 	pages = 0;
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		if (pkg->name)
-			ps_package(file, pkg, ++pages);
+			fn(file, pkg, ++pages);
 	epilogue(file);
 
 	fflush(file);
@@ -1024,18 +1026,23 @@ int postscript(FILE *file)
 }
 
 
+int postscript(FILE *file)
+{
+	return ps_for_all_pkg(file, ps_package);
+}
+
+
 /*
  * Experimental. Doesn't work properly.
  */
 
-int postscript_fullpage(FILE *file)
+static void ps_package_fullpage(FILE *file, const struct pkg *pkg, int page)
 {
 	unit_type cx, cy;
 	struct bbox bbox;
 	double fx, fy, f;
 
-	prologue(file, 1);
-	ps_page(file, 1, pkgs);
+	ps_page(file, page, pkg);
 	active_params = postscript_params;
 	bbox = inst_get_bbox();
 	cx = (bbox.min.x+bbox.max.x)/2;
@@ -1044,9 +1051,12 @@ int postscript_fullpage(FILE *file)
 	fy = 2.0*PAGE_HALF_HEIGHT/(bbox.max.y-bbox.min.y);
 	f = fx < fy ? fx : fy;
 	fprintf(file, "%d %d translate\n", (int) (-cx*f), (int) (-cy*f));
-	ps_draw_package(file, pkgs->next, f);
+	ps_draw_package(file, pkg, f);
 	fprintf(file, "showpage\n");
-	epilogue(file);
-	fflush(file);
-	return !ferror(file);
+}
+
+
+int postscript_fullpage(FILE *file)
+{
+	return ps_for_all_pkg(file, ps_package_fullpage);
 }

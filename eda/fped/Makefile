@@ -91,7 +91,7 @@ endif
 
 %.o:		%.c
 		$(CC) -c $(CFLAGS) $*.c -o $*.o
-		$(DEPEND) $(CFLAGS) $*.c | \
+		$(DEPEND) $*.c | \
 		  sed -e \
 		    '/^\(.*:\)\? */{p;s///;s/ *\\\?$$/ /;s/  */:\n/g;H;}' \
 		    -e '$${g;p;}' -e d >$*.d; \
