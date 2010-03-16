@@ -358,6 +358,8 @@ void debug_save_pixbuf(GdkPixbuf *buf)
  * the widget being dumped.
  */
 
+#if GTK_CHECK_VERSION(2, 14, 0)
+
 void debug_save_widget(GtkWidget *widget)
 {
 	GdkPixmap *pixmap;
@@ -372,6 +374,8 @@ void debug_save_widget(GtkWidget *widget)
 	gdk_pixmap_unref(pixmap);
 	g_object_unref(pixbuf);
 }
+
+#endif /* GTK_CHECK_VERSION(2, 14, 0) */
 
 
 /* ----- kill the content of a container ----------------------------------- */
