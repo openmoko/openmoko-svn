@@ -2,7 +2,7 @@ BOOM=../../../eda/boom/boom
 
 INV = inventory-fic-ee.csv
 
-.PHONY:		all spotless
+.PHONY:		all spotless null
 
 all:		fic.equ fic.inv fic.dsc present.inv missing.equ
 
@@ -22,6 +22,9 @@ present.inv:	fic.inv
 missing.equ:	equ2equ missing.inv fic.equ
 		$(BOOM) ./equ2equ missing.inv fic.equ >$@ || \
 		  { rm -f $@; exit 1; }
+
+null:
+		>fic.inv
 
 spotless:
 		rm -f fic.equ fic.inv fic.dsc present.inv missing.equ

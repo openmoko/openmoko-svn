@@ -11,7 +11,7 @@ INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv digi-key.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
-.PHONY:		all optimist pessimist spotless
+.PHONY:		all optimist pessimist null spotless
 .PHONY:		show-dup show-missing show-dk show-fic
 .PHONY:		ann sch gen generate gv xpdf upload
 
@@ -25,6 +25,11 @@ optimist:
 pessimist:
 		$(MAKE) spotless
 		$(MAKE) -C fic
+		$(MAKE) all
+
+null:
+		$(MAKE) spotless
+		$(MAKE) -C fic null
 		$(MAKE) all
 
 gta02-core.ord:	gta02-core.par $(INV) $(EQU)
