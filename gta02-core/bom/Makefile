@@ -59,11 +59,18 @@ fic/fic.inv:
 fic/fic.dsc:
 		$(MAKE) -C fic fic.dsc
 
+dk/digi-key.inv:
+		$(MAKE) -C dk digi-key.inv
+
+dk/digi-key.dsc:
+		$(MAKE) -C dk digi-key.dsc
+
 fic/missing.equ:
 		$(MAKE) -C fic missing.equ
 
 spotless:
 		$(MAKE) -C fic spotless
+		$(MAKE) -C dk spotless
 		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
 		rm -f gta02-core-bom.pro gta02-core-bom.sch
 		rm -f gta02-core-bom-all.ps.gz gta02-core-bom-all.pdf
@@ -77,7 +84,7 @@ show-missing:	$(EQU) fic/fic.dsc
 		  $(BOOM) prettyord - $(EQU) fic/fic.dsc | \
 		  sed 's/^...  \(.\{,78\}\).*/\1/'
 
-show-dk:
+show-dk:	gta02-core.ord dk/digi-key.dsc
 		(echo '#ORD'; grep '^DIGI-KEY ' gta02-core.ord ; ) | \
 		  $(BOOM) prettyord - dk/digi-key.dsc | \
 		  sed 's/^...  //' | \
