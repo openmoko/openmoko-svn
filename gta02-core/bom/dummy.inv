@@ -5,10 +5,6 @@
 
 DUMMY	GE865
 
-# not listed in FIC's inventory
-
-DUMMY	LIS302DL
-
 # not really part of the PCB - check ME inventory
 
 DUMMY	SPEAKER		# speaker, needs land pattern
