@@ -6,13 +6,14 @@ BOOM=../../eda/boom/boom
 ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
 
 KITS=20
-EQU=fic/fic.equ fic/missing.equ dk/digi-key.equ
-INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv dk/digi-key.inv
+EQU=fic/fic.equ fic/missing.equ dk/digi-key.equ mouser/mouser.equ
+INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv dk/digi-key.inv \
+  mouser/mouser.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
 .PHONY:		all optimist pessimist null spotless
-.PHONY:		show-dup show-missing show-dk show-fic
+.PHONY:		show-dup show-missing show-dk show-fic show-mouser
 .PHONY:		ann sch gen generate gv xpdf upload
 
 all:		gta02-core.ord
@@ -87,6 +88,12 @@ show-missing:	$(EQU) fic/fic.dsc
 show-dk:	gta02-core.ord dk/digi-key.dsc
 		(echo '#ORD'; grep '^DIGI-KEY ' gta02-core.ord ; ) | \
 		  $(BOOM) prettyord - dk/digi-key.dsc | \
+		  sed 's/^...  //' | \
+		  awk '{ s += $$(NF); print; } END { print "USD", s }'
+
+show-mouser:	gta02-core.ord mouser/mouser.dsc
+		(echo '#ORD'; grep '^MOUSER ' gta02-core.ord ; ) | \
+		  $(BOOM) prettyord - mouser/mouser.dsc | \
 		  sed 's/^...  //' | \
 		  awk '{ s += $$(NF); print; } END { print "USD", s }'
 
