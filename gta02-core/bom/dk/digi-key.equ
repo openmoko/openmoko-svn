@@ -13,6 +13,11 @@ DIGI-KEY 490-4980-1-ND			MURATA MM8430-2610RB3
 
 DIGI-KEY SI1040X-T1-E3TR-ND		VISHAY SI1040X-T1-E3
 DIGI-KEY 296-18200-1-ND			TI SN74AUP1G00DCKR
+# note: the SN74AUP1G00DCKR is non-stock at Digi-Key. Alternatively, we could
+# use the YZP (BGA) package, which is very similar to NXP's 6-XSON for the same
+# chip.
+DIGI-KEY 296-8745-1-ND			TI SN74AHC1G125DCKR
+DIGI-KEY 296-12555-1-ND			TI SN74LVC2G126DCUR
 
 DIGI-KEY H9161CT-ND			HIROSE U.FL-R-SMT-1(10)
 # note: this digikey mic is similar to the IMP-413, but not equivalent.
