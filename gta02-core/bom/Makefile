@@ -7,14 +7,15 @@ ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
 
 KITS=20
 EQU=fic/fic.equ fic/missing.equ \
-    dk/digi-key.equ mouser/mouser.equ farnell/farnell.equ
+    dk/digi-key.equ mouser/mouser.equ farnell/farnell.equ arrow/arrow.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv \
-    dk/digi-key.inv mouser/mouser.inv farnell/farnell.inv
+    dk/digi-key.inv mouser/mouser.inv farnell/farnell.inv arrow/arrow.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr stackpole.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
 .PHONY:		all optimist pessimist null spotless
-.PHONY:		show-dup show-missing show-dk show-fic show-mouser show-farnell
+.PHONY:		show-dup show-missing
+.PHONY:		show-dk show-fic show-mouser show-farnell show-arrow
 .PHONY:		ann sch gen generate gv xpdf upload
 
 all:		gta02-core.ord
@@ -91,23 +92,26 @@ show-missing:	$(EQU) fic/fic.dsc
 		  $(BOOM) prettyord - $(EQU) fic/fic.dsc | \
 		  sed 's/^...  \(.\{,78\}\).*/\1/'
 
+
+# --- show priced orders by distributor ---------------------------------------
+
+
+SHOW_PRETTY = (echo '\#ORD'; grep '^$(1) ' gta02-core.ord ; ) | \
+                  $(BOOM) prettyord - $(2) | \
+                  sed 's/^...  //' | \
+                  awk '{ s += $$(NF); print; } END { print "$(3)", s }'
+
 show-dk:	gta02-core.ord dk/digi-key.dsc
-		(echo '#ORD'; grep '^DIGI-KEY ' gta02-core.ord ; ) | \
-		  $(BOOM) prettyord - dk/digi-key.dsc | \
-		  sed 's/^...  //' | \
-		  awk '{ s += $$(NF); print; } END { print "USD", s }'
+		$(call SHOW_PRETTY,DIGI-KEY,dk/digi-key.dsc,USD)
 
 show-mouser:	gta02-core.ord mouser/mouser.dsc
-		(echo '#ORD'; grep '^MOUSER ' gta02-core.ord ; ) | \
-		  $(BOOM) prettyord - mouser/mouser.dsc | \
-		  sed 's/^...  //' | \
-		  awk '{ s += $$(NF); print; } END { print "USD", s }'
+		$(call SHOW_PRETTY,MOUSER,mouser/mouser.dsc,USD)
 
 show-farnell:	gta02-core.ord farnell/farnell.dsc
-		(echo '#ORD'; grep '^FARNELL ' gta02-core.ord ; ) | \
-		  $(BOOM) prettyord - farnell/farnell.dsc | \
-		  sed 's/^...  //' | \
-		  awk '{ s += $$(NF); print; } END { print "UKP", s }'
+		$(call SHOW_PRETTY,FARNELL,farnell/farnell.dsc,UKP)
+
+show-arrow:	gta02-core.ord arrow/arrow.dsc
+		$(call SHOW_PRETTY,ARROW,arrow/arrow.dsc,USD)
 
 show-fic:	$(EQU) fic/fic.dsc
 		(echo '#ORD'; grep '^FIC ' gta02-core.ord ; ) | \
