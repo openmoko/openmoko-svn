@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Sun Feb  7 02:31:05 2010
+EESchema Schematic File Version 2  date Wed Mar 31 15:13:54 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -1084,7 +1084,7 @@ L BATTERY BAT1701
 U 1 1 4A3CEB03
 P 2500 7800
 F 0 "BAT1701" V 2300 8100 50  0000 C CNN
-F 1 "HB414 IVO1E" V 2700 8200 50  0000 C CNN
+F 1 "HB414 IV01E" V 2700 8200 50  0000 C CNN
 	1    2500 7800
 	0    1    1    0   
 $EndComp
