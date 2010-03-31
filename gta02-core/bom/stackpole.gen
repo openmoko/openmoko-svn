@@ -9,7 +9,8 @@
 #
 
 RMCF* -> T=R {
-    RMCF1/16S(*)([15]%)R -> FP=0402 P=1/16W V=50V R=$REF:1 TOL=$REF:2
+    RMCF1/16S(*)R -> FP=0402 P=1/16W V=50V R=$REF:1R
+    RMCF1/16S(*)([15]%)R -> FP=0402 P=1/16W V=50V R=$REF:1R TOL=$REF:2
 }
 
 
@@ -17,8 +18,7 @@ RMCF* -> T=R {
 # Normalize resistance
 #
 
-R=(*)K -> R=$R:1k		# 10K -> 10k
-R=*[0-9] -> R=${R}R		# 150 -> 150R
+R=(*)KR -> R=$R:1kR		# 10KR -> 10kR
 
 # Accept
 !
