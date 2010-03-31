@@ -6,14 +6,15 @@ BOOM=../../eda/boom/boom
 ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
 
 KITS=20
-EQU=fic/fic.equ fic/missing.equ dk/digi-key.equ mouser/mouser.equ
-INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv dk/digi-key.inv \
-  mouser/mouser.inv
+EQU=fic/fic.equ fic/missing.equ \
+    dk/digi-key.equ mouser/mouser.equ farnell/farnell.equ
+INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv \
+    dk/digi-key.inv mouser/mouser.inv farnell/farnell.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr stackpole.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
 .PHONY:		all optimist pessimist null spotless
-.PHONY:		show-dup show-missing show-dk show-fic show-mouser
+.PHONY:		show-dup show-missing show-dk show-fic show-mouser show-farnell
 .PHONY:		ann sch gen generate gv xpdf upload
 
 all:		gta02-core.ord
@@ -101,6 +102,12 @@ show-mouser:	gta02-core.ord mouser/mouser.dsc
 		  $(BOOM) prettyord - mouser/mouser.dsc | \
 		  sed 's/^...  //' | \
 		  awk '{ s += $$(NF); print; } END { print "USD", s }'
+
+show-farnell:	gta02-core.ord farnell/farnell.dsc
+		(echo '#ORD'; grep '^FARNELL ' gta02-core.ord ; ) | \
+		  $(BOOM) prettyord - farnell/farnell.dsc | \
+		  sed 's/^...  //' | \
+		  awk '{ s += $$(NF); print; } END { print "UKP", s }'
 
 show-fic:	$(EQU) fic/fic.dsc
 		(echo '#ORD'; grep '^FIC ' gta02-core.ord ; ) | \
