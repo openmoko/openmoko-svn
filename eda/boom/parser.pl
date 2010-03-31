@@ -3,6 +3,22 @@
 use re 'eval';
 
 
+#
+# "sanitize" converts all "special" characters to underscores. This is used to
+# avoid part names that could conflict with other uses of meta-characters, such
+# as spaces or hash signs.
+#
+
+sub sanitize
+{
+	local (*s) = @_;
+	my $ok = '[^-a-zA-Z0-9._%,:()=+\/]';
+
+	print STDERR "converting special character(s) in $s\n" if $s =~ /$ok/;
+	$s =~ s/$ok/_/g;
+}
+
+
 sub skip
 {
     # do nothing
@@ -28,6 +44,9 @@ sub bom
     my $ref = $1;
     my @f = split(/\s*;\s*/, $');
     next if $f[0] eq "NC";
+    for (@f) {
+	&sanitize(\$_);
+    }
     $cmp{$ref} = [ @f ];
 }
 
@@ -46,6 +65,8 @@ sub bom
 sub equ
 {
     my @f = split(/\s+/);
+    &sanitize(\$f[1]);
+    &sanitize(\$f[3]);
     my $a = "$f[0] $f[1]";
     my $b = "$f[2] $f[3]";
     $id{$f[1]} = $a;
@@ -72,6 +93,7 @@ sub equ
 sub inv
 {
     my @f = split(/\s+/);
+    &sanitize(\$f[1]);
     my $id = "$f[0] $f[1]";
     shift @f;
     my $ref = shift @f;
