@@ -6,7 +6,10 @@ all:		digi-key.dsc digi-key.inv
 
 $(CACHE):	digi-key.equ
 		awk '/^DIGI-KEY / { print $$2 }' digi-key.equ | \
-		  perl ./dk-db.pl query >$@ || { rm -f $@; exit 1; }
+		  perl ./dk-db.pl query \
+		  `[ -r $(CACHE) ] && echo '' -i $(CACHE)` >_$@ || \
+		  { rm -f $@ _$@; exit 1; }
+		mv _$@ $@
 
 digi-key.dsc:	$(CACHE)
 		perl ./dk-db.pl dsc $(CACHE) >$@ || { rm -f $@; exit 1; }
@@ -22,7 +25,7 @@ regen regenerate:
 		$(MAKE) all
 
 clean:
-		rm -f $(CACHE)
+		rm -f $(CACHE) _$(CACHE)
 
 #
 # we don't do a "make clean" on "make spotless", so that things like "make
@@ -30,4 +33,4 @@ clean:
 #
 
 spotless:
-		rm -f digi-key.dsc digi-key.inv
+		rm -f digi-key.dsc digi-key.inv _$(CACHE)

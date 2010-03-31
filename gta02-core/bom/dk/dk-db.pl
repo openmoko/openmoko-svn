@@ -28,7 +28,7 @@ sub cols
 
 sub usage
 {
-    print STDERR "usage: $0 (query|dsc|inv) [file ...]\n";
+    print STDERR "usage: $0 (query [-i cache_file] | dsc | inv) [file ...]\n";
     exit(1);
 }
 
@@ -37,22 +37,32 @@ $mode = shift @ARGV;
 &usage unless $mode eq "query" || $mode eq "dsc" || $mode eq "inv";
 
 if ($mode eq "query") {
+    if ($ARGV[0] eq "-i") {
+	shift @ARGV;
+	$name = shift @ARGV;
+	open(OLD, $name) || die "$name: $!";
+	$q = join("", <OLD>);
+	($old = $q) =~ tr/\r\n//d;
+	close OLD;
+    }
+
     while (<>) {
 	chop;
 	s/#.*//;
 	next if /^\s*$/;
 	next if /^\s/;
 	s/\s.*//;
+	next if $old =~ m#align=right>Digi-Key Part Number</th><td>$_</td#;
 	push(@pn, $_);
     }
 
-    exit unless 0+@pn;
-
-    $cmd = "wget -nv -O - ".join(" ",
-      map
-      "http://search.digikey.com/scripts/DkSearch/dksus.dll?Detail\\&name=$_",
-      @pn);
-    $q = `$cmd`;
+    if (0+@pn) {
+	$cmd = "wget -nv -O - ".join(" ",
+	  map
+	  "http://search.digikey.com/scripts/DkSearch/dksus.dll?Detail\\&name=$_",
+	  @pn);
+	$q .= `$cmd`;
+    }
 
     print $q;
     exit;
