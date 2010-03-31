@@ -9,7 +9,7 @@ KITS=20
 EQU=fic/fic.equ fic/missing.equ dk/digi-key.equ mouser/mouser.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv dk/digi-key.inv \
   mouser/mouser.inv
-CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr
+CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr stackpole.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
 
 .PHONY:		all optimist pessimist null spotless
@@ -51,6 +51,10 @@ ralec.chr:	fic/fic.equ ralec.gen
 		$(BOOM) gen2chr RALEC fic/fic.equ ralec.gen >$@ || \
 		  { rm -f $@; exit 1; }
 
+stackpole.chr:	dk/digi-key.equ stackpole.gen
+		$(BOOM) gen2chr STACKPOLE dk/digi-key.equ stackpole.gen >$@ || \
+		  { rm -f $@; exit 1; }
+
 fic/fic.equ:
 		$(MAKE) -C fic fic.equ
 
@@ -72,7 +76,8 @@ fic/missing.equ:
 spotless:
 		$(MAKE) -C fic spotless
 		$(MAKE) -C dk spotless
-		rm -f gta02-core.par gta02-core.ord darfon.chr ralec.chr
+		rm -f gta02-core.par gta02-core.ord
+		rm -f darfon.chr ralec.chr stackpole.chr
 		rm -f gta02-core-bom.pro gta02-core-bom.sch
 		rm -f gta02-core-bom-all.ps.gz gta02-core-bom-all.pdf
 		rm -f $(SCH:%=%-bom.sch) gta02-core-bom-*.ps
