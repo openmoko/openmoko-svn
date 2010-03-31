@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu Dec 10 21:43:33 2009
+EESchema Schematic File Version 2  date Wed Mar 31 18:51:06 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -843,6 +843,7 @@ U 1 1 4A3C15B4
 P 3700 9000
 F 0 "R4918" V 3600 8800 50  0000 C CNN
 F 1 "14k" V 3700 8850 50  0000 C CNN
+F 2 "0402" H 3700 9000 60  0001 C CNN
 F 4 "1%" V 3800 8850 50  0000 C CNN "Tolerance"
 	1    3700 9000
 	0    -1   1    0   
