@@ -34,3 +34,4 @@ Note that we already use the BRL3225T2R2M for L1701 and L4901, so option
 
 
 Author: Werner Almesberger <werner@openmoko.org>
+Commit: SVN 5879, tentatively lowered current rating to 600 mA
