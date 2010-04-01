@@ -11,6 +11,42 @@ sub issue
 }
 
 
+sub scale
+{
+    local ($v, $m) = @_;
+
+    return $v*1e-12 if $m eq "p";
+    return $v*1e-9 if $m eq "n";
+    return $v*1e-6 if $m eq "u";
+    return $v*1e-3 if $m eq "m";
+    return $v*1e3 if $m eq "k";
+    return $v*1e6 if $m eq "M";
+    return $v*1e9 if $m eq "G";
+    return $v if $m eq "";
+    die "unknown multiplier \"$m\"";
+}
+
+
+sub compat
+{
+    local ($a, $b) = @_;	# $a = part char., $b = component spec.
+
+    return 1 if $a eq $b;
+    return 0 unless $a =~ /^([0-9.]+)([GMkmunp]?)/;
+    my ($av, $am, $au) = ($1, $2, $');
+    return 0 unless $b =~ /^(>|>=|<|<=)([0-9.]+)([GMkmunp]?)/;
+    my ($rel, $bv, $bm, $bu) = ($1, $2, $3, $');
+    return 0 if $au ne $bu;
+    $av = &scale($av, $am);
+    $bv = &scale($bv, $bm);
+    return $av > $bv if $rel eq ">";
+    return $av >= $bv if $rel eq ">=";
+    return $av < $bv if $rel eq "<";
+    return $av <= $bv if $rel eq "<=";
+    die;
+}
+
+
 if ($ARGV[0] eq "-d") {
     $debug = 1;
     shift @ARGV;
@@ -71,7 +107,7 @@ for $ref (keys %cmp) {
 		next COMP;
 		next;
 	    }
-	    if ($chr{$c}{$_} eq $field{$_}) {
+	    if (&compat($chr{$c}{$_}, $field{$_})) {
 		print STDERR "== $chr{$c}{$_}\n" if $debug;
 	    } else {
 		print STDERR "!= $chr{$c}{$_}\n" if $debug;
