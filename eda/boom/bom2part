@@ -101,6 +101,7 @@ for $ref (keys %cmp) {
 	print STDERR "PART $c\n" if $debug;
 	for (keys %field) {
 	    next if $_ eq "REF" || $_ eq "VAL" || $_ =~ /^F\d$/;
+	    next if $field{$_} eq "";
 	    print STDERR "  $_=",$field{$_}," " if $debug;
 	    if (!defined $chr{$c}{$_}) {
 		print STDERR "NO FIELD\n" if $debug;

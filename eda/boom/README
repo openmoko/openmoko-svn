@@ -78,6 +78,7 @@ Selecting characteristics
 
 - .sub
 - .chr
+- <rel><number><multiplier><unit> syntax
 ...
 
 
