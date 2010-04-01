@@ -1,0 +1,36 @@
+Current rating of backlight LED inductor (L1704)
+
+
+The inductor of the boost converter for the backlight LED is currently
+rated at 800 mA. Such a part is hard to source in a 0805 package.
+
+The average current through the LED should only be 30 mA or less (LCM
+specification). Since this is a boost converter, the peak current
+through the inductor is considerably larger than the average output
+current. Unfortunately, the PMU manual does not indicate by which
+factor.
+
+The PMU had an over-current protection that can be configured to either
+500 mA or 1 A (default, resets in Standby). u-boot sets it to 500 mA
+while Qi and the kernel both seem to leave it unchanged.
+
+It thus seems that 500 mA are sufficient for normal operation.
+
+Another consideration is the power lost due to the inductor's resistance.
+Inductors with a high current rating also tend to have a low resistance.
+
+If a 800 mA and 0805 part is too difficult to source, we therefore have
+two choices:
+
+1) use a part with the same footprint but rated at a lower current, e.g.,
+   TAIYO-YUDEN LQM21PN2R2MC0D T=L  L=2.2uH TOL=20% R=340mR I=600mA FP=0805
+
+2) increase the footprint to allow for a part rated at a higher current,
+   e.g.,
+   TAIYO-YUDEN BRL3225T2R2M T=L    L=2.2uH TOL=20% R=78mR  I=1.85A FP=1210
+
+Note that we already use the BRL3225T2R2M for L1701 and L4901, so option
+2) would be cost-neutral.
+
+
+Author: Werner Almesberger <werner@openmoko.org>
