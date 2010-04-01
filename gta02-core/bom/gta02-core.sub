@@ -39,9 +39,23 @@ D[0-9]* {
     -> T=D
     VAL=*F {	# heuristic to detect TVS
 	-> M=TVS
-	VAL=*F -> C=$VAL
+	VAL=*F -> C=<=$VAL
 	FN=(*V)ac -> Vac=$FN:1
 	FN=(*V)dc -> Vdc=$FN:1
+
+	#
+	# Hack: some companies specify the class of varistors with Vdc = 9 V
+	# as Vac = 6.5 V while others use Vac = 7 V. Sometimes, Vac is even
+	# omitted entirely.
+	#
+	# Here, we work around the issue that Karmax use Vac = 6.5 V,
+	# Cooper/Bussmann use Vac = 7V if at all, and out schematics specify
+	# Vac = 6.5 V.
+	#
+	Vac=6.5V {
+	    -> Vac=
+	    -> Vdc=9V
+	}
     }
 }
 
