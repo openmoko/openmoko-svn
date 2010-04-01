@@ -99,7 +99,8 @@ show-missing:	$(EQU) fic/fic.dsc
 SHOW_PRETTY = (echo '\#ORD'; grep '^$(1) ' gta02-core.ord ; ) | \
                   $(BOOM) prettyord - $(2) | \
                   sed 's/^...  //' | \
-                  awk '{ s += $$(NF); print; } END { print "$(3)", s }'
+                  awk '{ s += $$(NF); if ($$(NF)+0) n++; print; } \
+		    END { print "$(3)", s, "items:", n }'
 
 show-dk:	gta02-core.ord dk/digi-key.dsc
 		$(call SHOW_PRETTY,DIGI-KEY,dk/digi-key.dsc,USD)
