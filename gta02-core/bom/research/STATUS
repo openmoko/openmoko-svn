@@ -6,23 +6,22 @@ A425-206162-001
 AAT1275IRN-5.0-T1	u4904		not researched yet
 ATR0610-PQQ		u7601		borderline availability
 ATR0635-7KQY		u7608		borderline av., expensive or long lead
-BF2520-B2R4CAB/LF
+BF2520-B2R4CAB/LF	u8002		not found yet, smaller substitute
 BTP-03JA4G		con1701		no distrib., incompatible subst.
 DFBM-CS320-FI1R
-FA2012-KR40PAA
+FA2012-KR40PAA		u6007		not found yet, larger substitute
 HT-110USD		led1502		large minimum order, subst. likely
 HT-210UD/NB		led1501		long lead time, incompatible subst.
-IT3205BE
+IT3205BE		x7601		not found, incompat. expensive subst.
 JAR02-062101		jk4401		manuf. may be dead, inc. subst. likely
-KLB0603K601SA
 PCF50633HN/04/N3,5	u1701		large minimum order
 PPR06-023104
 R3113D241A-TR-F		u7604		not researched yet
+RTA02-4D330JTP
 RT9013-12PB
 RT9711BPB		u4905		not researched yet
 SC32442B54		u1501		not found yet, brokers list it
 SN74AUP1G00DCKR		u4902		borderline availability, incomp. subst.
-TAS4025A-12MHz
 TD028TTEC1		lcm		not found yet, brokers list it
 WM3236AQ		u8001		not found yet
 
@@ -32,9 +31,12 @@ Part			File		Status
 ----------------------	--------------	---------------------------------------
 NTGD1100L		u1704		found, but may want more popular part
 SI1040X-T1-E3		u7609		found, but may want more popular part
+TAS4025A-12MHz		x1501		not found, close substitutes
 
 
 "borderline availability" = only sources with lead time, although short. May
     become harder to source.
 "incompatible substitute" = differs in footprint, pin numbering, or physical
     shape, but fulfills same function.
+
+Parts without a file have not been researched yet.

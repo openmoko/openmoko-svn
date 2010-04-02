@@ -1,0 +1,22 @@
+#EQU
+
+#
+# Project-specific equivalences.
+#
+
+#			Package	Current	DCR	Impedance
+# Karmax KLB0603K601SA	0603	800 mA	?	600 R @ 100 MHz
+# TDK MPZ1608S601A	0603	1 A	?	600 R @ 100 MHz
+#
+# http://www.tdk.co.jp/tefe02/e9413_mpz1608.pdf
+#
+KARMAX KLB0603K601SA		TDK MPZ1608S601A
+
+#
+#				Package		Freq.	Tol.	LoadCap	Drive
+# Unifirst TAS4025A-12MHz	4.0x2.5x0.7 mm	12 MHz	?	20 pF ?	 50 uW
+# Fox FX425B-12.000		4.0x2.5x0.65 mm	12 MHz	50 ppm	10 pF ?	100 uW
+# ECS ECS-120-9-42-CKM		4.0x2.5x0.8 mm	12 MHz	10 ppm	 9 pF	<300 uW
+#
+
+UNIFIRST TAS4025A-12MHz		ECS ECS-120-9-42-CKM

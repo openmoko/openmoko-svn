@@ -6,7 +6,7 @@ BOOM=../../eda/boom/boom
 ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
 
 KITS=20
-EQU=fic/fic.equ fic/missing.equ \
+EQU=gta02-core.equ fic/fic.equ fic/missing.equ \
     dk/digi-key.equ mouser/mouser.equ farnell/farnell.equ arrow/arrow.equ
 INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv \
     dk/digi-key.inv mouser/mouser.inv farnell/farnell.inv arrow/arrow.inv
