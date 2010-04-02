@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu Dec 10 21:44:50 2009
+EESchema Schematic File Version 2  date Fri Apr  2 03:47:05 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -867,6 +867,7 @@ U 1 1 4A4077FE
 P 12650 2100
 F 0 "D4603" V 12700 1900 40  0000 C CNN
 F 1 "1SS400" V 12600 1900 40  0000 C CNN
+F 2 "SOD-523" H 12650 2100 60  0001 C CNN
 	1    12650 2100
 	0    -1   -1   0   
 $EndComp
