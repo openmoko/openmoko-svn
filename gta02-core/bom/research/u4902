@@ -1,0 +1,14 @@
+U4902: TI SN74AUP1G00DCKR
+
+- part is listed at major distributors but generally not stocked:
+
+  - Digi-Key has part but with insufficient stock.
+    Part is Non-Stock, with 1 week lead time.
+
+  - Arrow lists part with 8 weeks lead time and minimum order 3000.
+
+  - Newark lists part with 90 days lead time and minimum order 6000.
+
+- alternatively, we could change to the YZP (BGA) package, which has
+  better availability and is very similar to NXP's 6-XSON for the same
+  chip.

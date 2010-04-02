@@ -1,0 +1,16 @@
+JK4401: Nuconn JAR02-062101
+
+- we have no data sheet of the original part
+- manufacturer is probably Nuconn Technology Corp.
+- no Web presence found. Found trace of company from 2005:
+  http://blog.xuite.net/vguan/blog/4666845
+
+- likely alternatives, with different footprint:
+
+  - CUI SJ1-42516-SMT
+    http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ1-42516-SMT
+    http://www.cui.com/getpdf.aspx?filename=SJ1-42516-SMT.pdf
+
+  - CUI SJ1-42536-SMT
+    http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ1-42516-SMT
+    http://www.cui.com/getpdf.aspx?filename=SJ1-42516-SMT.pdf
