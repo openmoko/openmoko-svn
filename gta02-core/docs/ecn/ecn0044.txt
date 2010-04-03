@@ -16,8 +16,9 @@ while Qi and the kernel both seem to leave it unchanged.
 
 It thus seems that 500 mA are sufficient for normal operation.
 
-Another consideration is the power lost due to the inductor's resistance.
-Inductors with a high current rating also tend to have a low resistance.
+Another (small) consideration is the power lost due to the inductor's
+resistance. Inductors with a high current rating also tend to have a low
+resistance.
 
 If a 800 mA and 0805 part is too difficult to source, we therefore have
 two choices:
@@ -35,3 +36,5 @@ Note that we already use the BRL3225T2R2M for L1701 and L4901, so option
 
 Author: Werner Almesberger <werner@openmoko.org>
 Commit: SVN 5879, tentatively lowered current rating to 600 mA
+Commit: SVN 5888, tentatively changed footprint to 1210, to allow for either
+  choice

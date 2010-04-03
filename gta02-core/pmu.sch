@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Thu Apr  1 18:26:00 2010
+EESchema Schematic File Version 2  date Sat Apr  3 08:34:40 2010
 LIBS:power,device,conn,gta02-core,gta02-core-cache
 EELAYER 24  0
 EELAYER END
@@ -2097,7 +2097,7 @@ U 1 1 4A39F6EA
 P 11200 6550
 F 0 "L1704" V 11150 6400 50  0000 C CNN
 F 1 "2u2" V 11150 6650 50  0000 C CNN
-F 2 "0805" H 11200 6550 60  0001 C CNN
+F 2 "1210" H 11200 6550 60  0001 C CNN
 F 4 "600mA" V 11150 6900 50  0000 C CNN "I"
 	1    11200 6550
 	0    1    1    0   
