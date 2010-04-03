@@ -36,6 +36,7 @@ table
     { "0603", 1.55mm, 0.85mm, 0.5mm, 0.9mm, 1mm }
     { "0805", 2mm, 1.25mm, 0.7mm, 1.3mm, 1.2mm }
     { "1206", 3.2mm, 1.6mm, 0.9mm, 1.7mm, 2mm }
+    { "1210", 3.2mm, 2.5mm, 0.9mm, 2.5mm, 2mm }
 
 set silk = 5mil
 
