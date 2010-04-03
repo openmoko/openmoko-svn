@@ -12,6 +12,8 @@ INV=fic/fic.inv gta02-core.inv dummy.inv fic/missing.inv \
     dk/digi-key.inv mouser/mouser.inv farnell/farnell.inv arrow/arrow.inv
 CHR=darfon.chr ralec.chr avx.chr acx.chr misc.chr stackpole.chr
 SCH=audio bt cpu-power cpu gps io lcm memory modem pmu sd-sim usb wlan
+DSC=fic/fic.dsc dk/digi-key.dsc mouser/mouser.dsc farnell/farnell.dsc \
+    arrow/arrow.dsc
 
 .PHONY:		all optimist pessimist null spotless
 .PHONY:		show-dup show-missing
@@ -122,15 +124,15 @@ show-fic:	$(EQU) fic/fic.dsc
 
 #ANN = pmu
 ANN = audio
-ann:		../$(ANN).sch fic/fic.dsc gta02-core.par $(EQU)
-		$(BOOM) annotate ../$(ANN).sch fic/fic.dsc gta02-core.par \
+ann:		../$(ANN).sch $(DSC) gta02-core.par $(EQU)
+		$(BOOM) annotate ../$(ANN).sch $(DSC) gta02-core.par \
 		  $(EQU) >$(ANN)-bom.sch || { rm -f $(ANN)-bom.sch; exit 1; }
 
 $(SCH:%=%-bom.sch): \
-		$(SCH:%=../%.sch) fic/fic.dsc gta02-core.$(ANNOTATE) $(EQU)
+		$(SCH:%=../%.sch) $(DSC) gta02-core.$(ANNOTATE) $(EQU)
 		for n in $(SCH); do \
 		    $(BOOM) annotate '-s/OldPn (\S+)/FIC/' \
-		      ../$$n.sch fic/fic.dsc \
+		      ../$$n.sch $(DSC) \
 		      gta02-core.$(ANNOTATE) $(EQU) >$$n-bom.sch \
 		      || { rm -f $$n-bom.sch; exit 1; }; \
 		done

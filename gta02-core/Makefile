@@ -18,7 +18,7 @@ gen generate:
 		scripts/all-sheets --shrink --pdf gta02-core
 		$(MAKE) -C expanded gen
 		$(MAKE) -C modules gen
-		$(MAKE) -C bom optimist gen
+		$(MAKE) -C bom null gen
 
 update:
 		svn update
