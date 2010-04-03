@@ -403,6 +403,10 @@ sub parse
 	    $mode = *dsc;
 	    next;
 	}
+	if (/^#END\b\(/) {	# for commenting things out
+	    $mode = *skip;
+	    next;
+	}
 	if (!$raw) {
 	    s/#.*//;
 	    next if /^\s*$/;
