@@ -1,0 +1,18 @@
+ANT8001, U1: Wavefar WTE06016
+
+We have no data sheet of this ISM band antenna. Its size is about
+6.0 x 8.4 x 3 mm.
+
+There are many chip antennas for the ISM (2.4-2.5 GHz) band, usually
+of smaller size. Impedance is generally 50 Ohm, but we don't know
+what gain to use.
+
+A smaller antenna may require more attention with regard to separation
+from the ground plane.
+
+In any case, it seems very unlikely that an exact replacement can be
+found.
+
+Comment from Joerg: this type of bulky antenna is uncommon today
+Comment from Joachim: he remembers the gain of a vaguely similar
+  antenna to be around 1.2 dB

@@ -2,7 +2,6 @@ CRITICAL:
 
 Part			File		Status
 ----------------------	--------------	---------------------------------------
-A425-206162-001
 AAT1275IRN-5.0-T1	u4904		not researched yet
 ATR0610-PQQ		u7601		borderline availability
 ATR0635-7KQY		u7608		borderline av., expensive or long lead
@@ -24,6 +23,7 @@ SC32442B54		u1501		not found yet, brokers list it
 SN74AUP1G00DCKR		u4902		borderline availability, incomp. subst.
 TD028TTEC1		lcm		not found yet, brokers list it
 WM3236AQ		u8001		not found yet
+WTE06016		ant8001		not found, many incompatible subst.
 
 OPTIMIZATION:
 
