@@ -184,7 +184,8 @@ D: http://www.richtek.com/download.jsp?t=UyUyRmFzc2V0cyUyRnByb2R1Y3RfZmlsZSUyRlJ
 # CPU (Samsung SC32442B54)
 S: sc32442
 A: cpu
-D: http://www.opatnet.cz/elektronika/datasheet/U/um_s3c2442b_rev12.pdf
+#D: http://www.opatnet.cz/elektronika/datasheet/U/um_s3c2442b_rev12.pdf
+D: http://www.amebasystems.com/downloads/hardware/datasheets/freerunner/SoC/um_s3c2442b_rev12.pdf
 
 # GPS Switch
 S: si1040x
