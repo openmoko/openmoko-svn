@@ -1,0 +1,17 @@
+U1702: Richtek RT9013-12PB
+
+The RT9013 is used to regulate IO_1V8 down to STBY_1V2. Interestingly,
+the chip is specified with a minimum input voltage of 2.2 V. However,
+this seems to contradict the Vdrop of 250 mV. The data sheet doesn't
+indicate how to resolve this conflict.
+
+Alternatives with the same package, similar pinout, but a lower minimum
+input voltage, and a lower maximum current:
+
+- ON Semiconductor NCP585DSN12T1G or NCP585HSN12T1G
+  http://www.onsemi.com/pub_link/Collateral/NCP585-D.PDF
+  (note: pin 4 is NC in the RT9013 but "ECO" in the NCP585)
+
+		Package		Vmin	Vdrop	Imax	Caps	Enable
+RT9013-12PB	SOT-23-5	2.2 V	250 mV	500 mA	2 x 1uF	H
+NCP585DSN12T1G	SOT-23-5	1.4 V	~400 mV	300 mA	2 x 1uF	H

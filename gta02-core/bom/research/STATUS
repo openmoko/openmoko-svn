@@ -9,7 +9,6 @@ HT-110USD		led1502		large minimum order, subst. likely
 JAR02-062101		jk4401		manuf. may be dead, inc. subst. likely
 PCF50633HN/04/N3,5	u1701		large minimum order
 PPR06-023104
-RT9013-12PB
 RT9711BPB		u4905		not researched yet
 SC32442B54		u1501		not found yet, brokers list it
 TD028TTEC1		lcm		not found yet, brokers list it
@@ -23,17 +22,19 @@ Part			File		Status			Incompatibility
 					 of substitute only	| Mech| Functn
 					 if indicated)		| | Pins|
 ----------------------	--------------	----------------------  +-+-+-+-+------
-AAT1275IRN-5.0-T1	u4904		not found yet		X - X X 1)
+AAT1275IRN-5.0-T1	u4904		not found yet		X - X X 1
 BF2520-B2R4CAB/LF	u8002		not found yet		X - - - -
 BTP-03JA4G		con1701		no distributor		X ? ? - -
 FA2012-KR40PAA		u6007		not found yet		X - - - -
 HT-210UD/NB		led1501		long lead time		X - X ? colors
 IT3205BE		x7601		not found, sub. expens	X - - - -
 R3113D241A-TR-F		u7604		not found yet		X - X - -
+RT9013-12PB		u1702		not found yet		- - 2 - -
 SN74AUP1G00DCKR		u4902		borderline availab.	X - - - -
 WTE06016		ant8001		not found		X X ? - -
 
 1) No fault indication
+2) Pin NC in original has function
 
 
 OPTIMIZATION:
