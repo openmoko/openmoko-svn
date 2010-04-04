@@ -5,25 +5,34 @@ Part			File		Status
 AAT1275IRN-5.0-T1	u4904		not researched yet
 ATR0610-PQQ		u7601		borderline availability
 ATR0635-7KQY		u7608		borderline av., expensive or long lead
-BF2520-B2R4CAB/LF	u8002		not found yet, smaller substitute
-BTP-03JA4G		con1701		no distrib., incompatible subst.
 DFBM-CS320-FI1R
-FA2012-KR40PAA		u6007		not found yet, larger substitute
 HT-110USD		led1502		large minimum order, subst. likely
-HT-210UD/NB		led1501		long lead time, incompatible subst.
-IT3205BE		x7601		not found, incompat. expensive subst.
 JAR02-062101		jk4401		manuf. may be dead, inc. subst. likely
 PCF50633HN/04/N3,5	u1701		large minimum order
 PPR06-023104
 R3113D241A-TR-F		u7604		not researched yet
-RTA02-4D330JTP
 RT9013-12PB
 RT9711BPB		u4905		not researched yet
 SC32442B54		u1501		not found yet, brokers list it
-SN74AUP1G00DCKR		u4902		borderline availability, incomp. subst.
 TD028TTEC1		lcm		not found yet, brokers list it
 WM3236AQ		u8001		not found yet
-WTE06016		ant8001		not found, many incompatible subst.
+
+
+WITH INCOMPATIBILE SUBSTITUTE:
+
+Part			File		Status			Incompatibility
+								Foot  Circuit
+								| Mech| Functn
+								| | Pins|
+----------------------	--------------	----------------------  +-+-+-+-+------
+BF2520-B2R4CAB/LF	u8002		not found yet		X - - - -
+BTP-03JA4G		con1701		no distributor		X ? ? - -
+FA2012-KR40PAA		u6007		not found yet		X - - - -
+HT-210UD/NB		led1501		long lead time		X - X ? colors
+IT3205BE		x7601		not found, sub. expens	X - - - -
+SN74AUP1G00DCKR		u4902		borderline availab.	X - - - -
+WTE06016		ant8001		not found		X X ? - -
+
 
 OPTIMIZATION:
 
@@ -36,7 +45,13 @@ TAS4025A-12MHz		x1501		not found, close substitutes
 
 "borderline availability" = only sources with lead time, although short. May
     become harder to source.
-"incompatible substitute" = differs in footprint, pin numbering, or physical
-    shape, but fulfills same function.
+
+Incompatibilities:
+- Footprint: Footprint changes
+- Mechanical: mechanical interfaces other than footprint and height change
+- Pins: pin assignment changes (but signals stay the same)
+- Circuit: surrounding circuit needs to change (except for traces)
+- Function: part performs only similar function, e.g., needs other connector,
+  software interface changes, etc.
 
 Parts without a file have not been researched yet.
