@@ -3,3 +3,19 @@ U7604: Ricoh R3113D241A-TR-F
 research needed.
 
 R3113D241A-TR-F     LNR-IC V-DETECTOR R3113D241A-TR-F 2.4V SON1408-3 3PIN
+
+Before starting the search for a replacement, why do we actually need a
+reset generator ?
+
+- the ATR635 data sheet shows in Figure 3-2 that the chip should work
+  even without connecting NRESET at all.
+
+- even if we need an external reset for some reason, couldn't we just
+  use a GPIO (from the 1.8 V domain, GPAx), perhaps with some EMI filter
+  to prevent inter-can pollution ?
+
+The Panasonic MN13821SGP might be a suitable replacement.
+
+		Package		Threshold	Min Vdd
+R3113D241A	SON-1408-3	2.4 V		0.45 V ?
+MN13821SGP	MINI-3DC, 3x3mm	2.4 V		1.5 V
