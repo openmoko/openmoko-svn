@@ -2,7 +2,6 @@ CRITICAL:
 
 Part			File		Status
 ----------------------	--------------	---------------------------------------
-AAT1275IRN-5.0-T1	u4904		not researched yet
 ATR0610-PQQ		u7601		borderline availability
 ATR0635-7KQY		u7608		borderline av., expensive or long lead
 DFBM-CS320-FI1R
@@ -25,6 +24,7 @@ Part			File		Status			Incompatibility
 								| Mech| Functn
 								| | Pins|
 ----------------------	--------------	----------------------  +-+-+-+-+------
+AAT1275IRN-5.0-T1	u4904		not found yet		X - X X 1
 BF2520-B2R4CAB/LF	u8002		not found yet		X - - - -
 BTP-03JA4G		con1701		no distributor		X ? ? - -
 FA2012-KR40PAA		u6007		not found yet		X - - - -
@@ -32,6 +32,8 @@ HT-210UD/NB		led1501		long lead time		X - X ? colors
 IT3205BE		x7601		not found, sub. expens	X - - - -
 SN74AUP1G00DCKR		u4902		borderline availab.	X - - - -
 WTE06016		ant8001		not found		X X ? - -
+
+1) No fault indication
 
 
 OPTIMIZATION:

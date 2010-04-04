@@ -3,3 +3,23 @@ U4904: Analogic Tech AAT1275IRN-5.0-T1
 Research needed. It's a US company yet the part is unknown in the west :-(
 
 AAT1275IRN-5.0-T1   LNR-IC USB POWER SWITCH AAT1275IRN-5.0-T1 2.7-5.0V 50
+
+
+Some similar chips (from a search for fixed 5V output. Note that, for
+some reason, the AAT1275IRN-5.0-T1 uses an output configuration typical
+for adjustable voltages):
+
+Analog Devices ADP2503ACPZ-5.0-R7 or ADP2504ACPZ-5.0-R7
+http://www.analog.com/static/imported-files/data_sheets/ADP2503_ADP2504.pdf
+
+TI TPS61092RSAR or TPS61032RSAR
+http://focus.ti.com/lit/ds/symlink/tps61090.pdf
+http://focus.ti.com/lit/ds/symlink/tps61030.pdf
+
+Device			Package		Current	Inductor Caps	Enable	Fault
+----------------------	---------------	-------	-------- ------	------	-----
+AAT1275IRN-5.0-T1	16-TDFN, 3x4mm 	500mA	2.2uH	 10.4uF	H	L
+ADP2503ACPZ-5.0-R7	10-LFCSP, 3x3mm	600mA	1.6uH	 32  uF	H	-
+ADP2504ACPZ-5.0-R7	10-LFCSP, 3x3mm	1A	1.6uH	 32  uF	H	-
+TPS61092RSAR		16-QFN, 4x4mm	500mA	6.8uH	112.2uF	H	-
+TPS61032RSAR		16-QFN, 4x4mm	1A	6.8uH	232.2uF	H	-
