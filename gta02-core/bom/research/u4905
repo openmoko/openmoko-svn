@@ -3,3 +3,25 @@ U4905: Richtek RT9711BPB
 research needed.
 
 RT9711BPB           LNR-IC POWER SWITCH RT9711BPB 1.5A SOT-23-5 5PIN RICH
+
+A close relative, with different pinout:
+
+- Micrel MIC2005-1.2LYM5
+  http://www.micrel.com/_PDF/mic20xx.pdf
+
+Different package:
+
+- Diodes Inc. AP2181
+  http://www.diodes.com/datasheets/AP2181_91.pdf
+
+- Diodes Inc. AP2101
+  http://www.diodes.com/datasheets/AP2101_2111.pdf
+
+		Package		Imax	Ron	Vmax	Enable
+RT9711BPB	SOT-23-5	1.5 A	 80 mR	5.5 V	L
+MIC2005-1.2LYM5	SOT-23-5	1.2 A	 70 mR	5.5 V	L
+AP2181		6-DFN, others	1.5 A	 95 mR	5.5 V	L
+AP2101		8-MSOP, others	2.0 A	 90 mR	5.5 V	L
+
+Imax is the recommended continuous current.
+Ron is the typical on resistance.
