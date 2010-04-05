@@ -5,3 +5,16 @@ units.
 
 The chip is now owned by ST Ericsson:
 http://www.stericsson.com/sales_marketing_resources/PCF50633FL_1.pdf
+
+(Note that there are some PMUs from the PCF family under
+http://www.stericsson.com/, Products, Platform Components,
+Cellular Systems Power Management, but not the PCF50633.)
+
+Company history:
+- originally, the chip was made by by NXP
+- then NXP merge their wireless operation with ST:
+  http://www.edn.com/article/CA6550321.html
+- ST takes over NXP's part of the join venture:
+  http://www.edn.com/article/CA6589109.html
+- finally, Ericsson come aboard and the things is renamed to ST-Ericsson:
+  http://www.edn.com/article/CA6636987.html
