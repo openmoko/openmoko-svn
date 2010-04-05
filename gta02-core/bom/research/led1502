@@ -8,3 +8,11 @@ LED1502: Harvatek HT-110USD
   Lead time: call, 18'000 stock
 
 - Probably similar alternative sources as HT-210 (file ./led1501)
+
+
+Near-perfect replacement: Dialight 598-8320-107F
+http://www.dialight.com/Assets/Brochures_And_Catalogs/Indication/MDEI5981208RT.pdf
+
+		Lamda(dom)	mcd@mA	Vf(typ)
+HT-110USD	622		120@20	1.9
+598-8320-107F	625		120@20	2.0
