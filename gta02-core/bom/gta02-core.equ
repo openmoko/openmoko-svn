@@ -32,3 +32,8 @@ CMK A425-206162-001		TYCO 1734035-2
 #
 
 HARVATEK HT-110USD		DIALIGHT 598-8320-107F
+
+#
+# Same general shape but different footprint and different pin assignment.
+#
+PROCONN SMSN16-J0-2214		AMPHENOL 101-00492-20
