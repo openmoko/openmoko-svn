@@ -5,12 +5,40 @@ JK4401: Nuconn JAR02-062101
 - no Web presence found. Found trace of company from 2005:
   http://blog.xuite.net/vguan/blog/4666845
 
-- likely alternatives, with different footprint:
+- alternatives with the same number of contacts and switches, but
+  they all are larger in size, particularly wider:
 
   - CUI SJ1-42516-SMT
     http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ1-42516-SMT
     http://www.cui.com/getpdf.aspx?filename=SJ1-42516-SMT.pdf
 
+  - CUI SJ-42526-SMT
+    http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ-42526-SMT
+    http://www.cui.com/getpdf.aspx?filename=SJ-42526-SMT.pdf
+
   - CUI SJ1-42536-SMT
-    http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ1-42516-SMT
-    http://www.cui.com/getpdf.aspx?filename=SJ1-42516-SMT.pdf
+    http://www.cui.com/GetSpecForDigiKey.aspx?MFGNum=SJ1-42536-SMT
+    http://www.cui.com/getpdf.aspx?filename=SJ1-42536-SMT.pdf
+
+  - Kobiconn 161-2828-E
+    http://www.mouser.com/catalog/specsheets/KC-300950.pdf
+
+
+		----- main body ------	--- barrel/sleeve ----	footprint
+		width	length	height	length	outer diameter	width
+JAR02-062101	 5.4	10.5	 3.3	 1.4	 4.0		 6.6
+SJ1-42516-SMT	 9.0	10.0	 4.0	 2.0	 4.0		13.5
+SJ1-42516	10.0	10.0	 4.0	 2.0	 4.0		 9.5
+SJ-42526-SMT	 6.8	10.0	 3.0	 3.0	 5.2		 8.6
+SJ1-42536-SMT	 8.0	 9.5	 4.5	 2.5	 5.0		12.4
+161-2828-E	 6.8	 9.5	 3.0	 3.0	 5.2		>8.0
+
+Critical dimensions:
+
+- footprint width: in the original GTA02 design, the space available
+  between the shields on both sides of JK4401 is only about 8.2 mm.
+
+- outer diameter of sleeve: the sleeve fits into a hole in the case
+  and it helps to keep the PCB in place (similar what USB connector
+  and external GPS antenna connector do on the opposite side of the
+  case)
