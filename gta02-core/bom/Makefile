@@ -1,7 +1,7 @@
 UPLOAD=werner@sita.openmoko.org:public_html/gta02-core/
 COPY=rsync -e ssh --progress
 
-BOOM=../../eda/boom/boom
+BOOM=PATH=../../eda/boom:../boom:$$PATH boom
 
 ANNOTATE=ord	# make ANNOTATE=par ... for the parts list
 

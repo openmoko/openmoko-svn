@@ -98,6 +98,16 @@ Setting things up
 
     cd ..
 
+- For BOM processing, you need the BOOM system
+
+  - Prerequisites
+
+    - Perl 5
+
+  - Download it:
+
+    svn checkout http://svn.openmoko.org/trunk/eda/boom
+
 - Build your local copy of the component (schematics symbol) library:
 
   make update
