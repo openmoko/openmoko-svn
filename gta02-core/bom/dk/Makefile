@@ -5,7 +5,8 @@ CACHE=query.data
 all:		digi-key.dsc digi-key.inv
 
 $(CACHE):	digi-key.equ
-		awk '/^DIGI-KEY / { print $$2 }' digi-key.equ | \
+		awk '/^#END/ { exit } /^DIGI-KEY / { print $$2 }' \
+		  digi-key.equ | \
 		  perl ./dk-db.pl query \
 		  `[ -r $(CACHE) ] && echo '' -i $(CACHE)` >_$@ || \
 		  { rm -f $@ _$@; exit 1; }

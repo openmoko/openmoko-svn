@@ -34,7 +34,8 @@ CMK A425-206162-001		TYCO 1734035-2
 HARVATEK HT-110USD		DIALIGHT 598-8320-107F
 
 #
-# Same general shape but different footprint and different pin assignment.
+# Same general shape but slightly different footprint and different pin
+# assignment.
 #
 PROCONN SMSN16-J0-2214		AMPHENOL 101-00492-20
 
@@ -46,3 +47,15 @@ PROCONN SMSN16-J0-2214		AMPHENOL 101-00492-20
 #
 
 RICHTEK RT9013-12PB		STM LD39015M12R
+
+#
+# Pin- and footprint compatible, but package outline is a bit different.
+#
+
+SAMSUNG K4M51323PC-DG75		MICRON MT48H16M32LFCM-75:B
+
+#
+# The IMP-413TN is similar to the IMP-413, but not equivalent.
+#
+
+IMPERIAL IMP-413TN		PUI TOM-1242L-NF-R
