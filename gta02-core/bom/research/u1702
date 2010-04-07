@@ -12,6 +12,17 @@ input voltage, and a lower maximum current:
   http://www.onsemi.com/pub_link/Collateral/NCP585-D.PDF
   (note: pin 4 is NC in the RT9013 but "ECO" in the NCP585)
 
-		Package		Vmin	Vdrop	Imax	Caps	Enable
-RT9013-12PB	SOT-23-5	2.2 V	250 mV	500 mA	2 x 1uF	H
-NCP585DSN12T1G	SOT-23-5	1.4 V	~400 mV	300 mA	2 x 1uF	H
+- ST Microelectronics LD39015M12R
+  http://www.st.com/stonline/books/pdf/docs/14003.pdf
+  (perfect replacement)
+
+		Package		Vmin	Vdrop	Imax	Iquiet	Caps	Enable
+RT9013-12PB	SOT-23-5	2.2 V	250 mV	500 mA	25 uA	2 x 1uF	H
+NCP585DSN12T1G	SOT-23-5	1.4 V	~400 mV	300 mA	80 uA	2 x 1uF	H
+LD39015M12R	SOT-23-5	1.5 V	 80 mV	150 mA	38 uA	2 x 1uF	H
+
+
+Samsung's Power Design Guide, Rev. 1.1, specifies Vdd(alive) to be
+1.5 mA in NORMAL or IDLE mode, without indicating whether this is a
+typical or maximum value. In any case, U1702 doesn't have to deliver
+more than a few mA.

@@ -37,3 +37,12 @@ HARVATEK HT-110USD		DIALIGHT 598-8320-107F
 # Same general shape but different footprint and different pin assignment.
 #
 PROCONN SMSN16-J0-2214		AMPHENOL 101-00492-20
+
+#
+#                Package         Vmin    Vdrop   Imax    Iquiet  Caps    Enable
+# RT9013-12PB     SOT-23-5        2.2 V   250 mV  500 mA  25 uA   2 x 1uF H
+# NCP585DSN12T1G  SOT-23-5        1.4 V   ~400 mV 300 mA  80 uA   2 x 1uF H
+# LD39015M12R     SOT-23-5        1.5 V    80 mV  150 mA  38 uA   2 x 1uF H
+#
+
+RICHTEK RT9013-12PB		STM LD39015M12R
