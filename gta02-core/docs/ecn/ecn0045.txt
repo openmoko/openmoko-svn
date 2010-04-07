@@ -1,0 +1,84 @@
+Zero stock component replacements
+
+
+The following components are no longer available in FIC's inventory
+and need to be sourced or replaced no matter how we proceed:
+
+- ANT8101, CON8001: Murata MM8430-2610RB3, antenna connector GSM, WLAN
+- CON1701: Octek BTP-03JA4G, battery connector
+- CON4702, CON6001: Hirose FH23-39S-0.3SHW(05), FPC connector for LCM and debug
+- CON7501: Proconn SMSN16-J0-2214, SIM/uSD combi holder
+- CON7601: Hirose U.FL-R-SMT-1(10), GPS antenna connector
+- JK4401: Nuconn JAR02-062101, 2.5 mm audio jack
+- SPK4102: PPR06-023104, dual pogo pin
+- U1701: NXP PCF50633HN/04/N3,5, PMU
+- U2201: Samsung K4M51323PC-DG75, mobile SDRAM
+- U3001: Wolfson WM8753LGEFL, audio codec
+- U4902: TI SN74AUP1G00DCKR, NAND gate
+- U4904: Analogic Tech AAT1275IRN-5.0-T1, boost converter for USB host
+- U7601: Atmel ATR0635-7KQY, GPS receiver
+- U7802: STM LIS302DL, acceleration sensor
+- resistors (all 0402):
+  - 1% 12.5 kOhm, 39 kOhm
+  - 5%: 220 Ohm
+- capacitors:
+  - 0402 NP0: 8.2 pF, 15 pF, 22 pF, 100 pF, 220 pF
+  - 0402 X5R/X7R: 820 pF, 1 uF 6.3 V
+  - 0603 X5R/X7R: 2.2 uF 10 V, 4.7 uF 6.3 V
+  - 0805 Y5V: 10 uF 0805
+
+For all the resistors and capacitors, suitable replacements have been
+found. The connectors by Murata and Hirose are available at Digi-Key,
+and so is the acceleration sensor.
+
+U3001, U4902, and U7802 can be purchased from major distributors as
+well.
+
+U2201 [1] (13.0 x 11.0 x 1.0 mm) can be replaced with the
+pin-compatible Micron MT48H16M32LFCM-75:B [2] (13.0 x 10.0 x 1.0 mm).
+
+The PMU (U1701) and the GPS receiver (U7601) have proven difficult to
+source so far. For details, see bom/research/u1701 and
+bom/research/u7601
+
+The remaining items are apparently not carried by any major
+distributors and need to be substituted with reasonably similar parts:
+
+- It may be possible to obtain samples for the boost converter U4904,
+  or to buy directly from the manufacturer. There are also several
+  similar parts, but all differ in the external circuit elements. See
+  bom/research/u4904 for details.
+
+- There is a battery connector similar to CON1701, although lower and
+  with shorter contacts. It may be possible to find a more similar part
+  by searching some more. See bom/research/con1701 for details.
+
+- We have an excellent replacement for the SIM/uSD card holder CON7501.
+  Its only drawbacks are a slightly different footprint and a different
+  pin assignment. See bom/research/con7501 for details.
+
+- The search for a replacement for audio jack JK4401 has been
+  remarkably unsuccessful so far. All functionally equivalent
+  replacements are considerably larger. Even if we'd consider going to
+  a 3.5 mm stereo jack, without microphone, there may be no part short
+  enough to not conflict with the battery connector. See
+  bom/research/jk4401 for details.
+
+- The dual pogo pin SPK4102 depends on the contacts of the speaker.
+  This still needs looking at.
+
+Recommended actions:
+
+- U3001, U4902, U7802, Murata, Hirose: use original parts
+- U2201, CON7501, resistors, capacitors: replace as indicated above
+- U1701, U7601: keep on searching
+- CON1701, JK4401: it would be great if someone could find parts more
+  similar to the respective original. If not, we'll have to see if we
+  can find a combination that works reasonably well.
+- SPK4102: to be defined
+
+[1] http://www.samsung.com/global/system/business/semiconductor/product/2007/6/11/MobileSDRAM/MobileSDRSDRAM/512Mbit/K4M51323PC/ds_k4m51323pc.pdf
+[2] http://download.micron.com/pdf/datasheets/dram/mobile/512mb_mobile_sdram_y47m.pdf
+
+
+Author: Werner Almesberger <werner@openmoko.org>

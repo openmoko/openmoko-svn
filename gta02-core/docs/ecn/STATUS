@@ -44,6 +44,8 @@ Number	Status	Description
 0042	Discuss	Changing internal microphone to symmetrical configuration
 0043	Discuss	Assorted audio cleanup
 0044	Discuss	Current rating of backlight LED inductor (L1704)
+0045	Edit	Zero stock component replacements
+0046	Edit	reserved for more component replacements
 
 
 Open ECNs
