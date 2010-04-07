@@ -14,6 +14,23 @@ Setting things up
 
 - Consider joining the #gta02-core channel on irc.freenode.net
 
+- We make extensive use of Makefiles and invoke various programs from
+  them. If any of the following are missing in your system, please
+  install them now:
+
+  - Prerequisites
+
+    - awk
+    - bash
+    - gv (derivative of Ghostview)
+    - grep
+    - gzip
+    - GNU make (package "make" or similar)
+    - Perl
+    - sed
+    - Subversion (svn)
+    - xpdf
+
 - Check out the project:
 
   svn co https://svn.openmoko.org/trunk/gta02-core/
