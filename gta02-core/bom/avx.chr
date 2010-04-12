@@ -3,7 +3,7 @@
 # AVX doesn't seem to document the product code of the capacitors used by 
 # Openmoko Inc. anymore, so we just list them, without trying to map
 
-AVX AVXCM21X5R475K10AT	T=C	C=4.7uF V=6.3V	TOL=10%	FP=0402	M=X5R
+AVX AVXCM21X5R475K10AT	T=C	C=4.7uF V=10V	TOL=10%	FP=0805	M=X5R
 AVX CM105X5R105M16AT	T=C	C=1uF	V=16V	TOL=20%	FP=0603	M=X5R
 AVX CM105X5R225K10AT	T=C	C=2.2uF	V=10V	TOL=10%	FP=0603	M=X5R
 AVX CM105X5R475K06AT	T=C	C=4.7uF	V=6.3V	TOL=10%	FP=0603	M=X5R

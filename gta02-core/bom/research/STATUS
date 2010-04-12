@@ -29,7 +29,6 @@ IT3205BE		x7601		not found, sub. expens	X - - - -
 R3113D241A-TR-F		u7604		not found yet		X - X - -
 RT9711BPB		u4905		not found yet		- - X - 3
 					(other replacement)	X - X 4 -
-SN74AUP1G00DCKR		u4902		borderline availabil.	X - - - -
 WTE06016		ant8001		not found		X X ? - -
 
 1) No fault indication
@@ -45,6 +44,7 @@ Part			File		Status
 NTGD1100L		u1704		found, but may want more popular part
 SI1040X-T1-E3		u7609		found, but may want more popular part
 TAS4025A-12MHz		x1501		not found, close substitutes
+SN74AUP1G00DCKR		u4902		borderline availability, close subst.
 
 
 "borderline availability" = only sources with lead time, although short. May
