@@ -119,7 +119,7 @@ Setting things up
 
   - Prerequisites
 
-    - Perl 5
+    - Perl 5.10.0 or newer
 
   - Download it:
 
