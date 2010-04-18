@@ -807,8 +807,10 @@ static gboolean activate(GtkWidget *widget, GdkEventMotion *event,
 		if (status == es_good)
 			unchanged = 0;
 	}
-	if (unchanged)
+	if (unchanged) {
+		inst_deselect();
 		return TRUE;
+	}
 	for (edit = open_edits; edit;
 	    edit = gtk_object_get_data(GTK_OBJECT(edit), "edit-next"))
 		if (get_status(edit) == es_good) {
