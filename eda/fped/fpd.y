@@ -249,6 +249,16 @@ static int dbg_print(const struct expr *expr)
 }
 
 
+static void append_root_frame(void)
+{
+	root_frame->prev = last_frame;
+	if (last_frame)
+		last_frame->next = root_frame;
+	else
+		frames = root_frame;
+}
+
+
 %}
 
 
@@ -311,11 +321,7 @@ all:
 		}
 	    fpd
 		{
-			root_frame->prev = last_frame;
-			if (last_frame)
-				last_frame->next = root_frame;
-			else
-				frames = root_frame;
+			append_root_frame();
 		}
 	| START_EXPR expr
 		{
@@ -455,6 +461,13 @@ frame_item:
 		}
 	| TOK_DBG_DUMP
 		{
+			/*
+			 * It's okay to do append the root frame multiple
+			 * times. If more frames are added afterwards, they
+			 * just replace the root frame until it gets appended a
+			 * final time when parsing ends.
+			 */
+			append_root_frame();
 			if (!dump(stdout)) {
 				perror("stdout");
 				exit(1);
