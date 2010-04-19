@@ -679,11 +679,11 @@ static void unselect_value(void *data)
 	 * AND it's an assignment (not a table).
 	 *
 	 * We need the last condition because the expressions of assignments
-	 * are drawn with COLOR_VAR_PASSIVE. (See build_assignment.)
+	 * are drawn with COLOR_EXPR_PASSIVE. (See build_assignment.)
 	 */
 	label_in_box_bg(value->widget,
 	    value->row && value->row->table->active_row == value->row &&
-	    value->row->table->rows->next ?
+	    (value->row->table->rows->next || value->row->table->vars->next) ?
 	     COLOR_CHOICE_SELECTED : COLOR_EXPR_PASSIVE);
 }
 
@@ -703,7 +703,7 @@ static void edit_value_list(struct value *value, const struct frame *frame,
     void *user)
 {
 	inst_select_outside(value, unselect_value);
-	label_in_box_bg(value->widget, COLOR_VAR_EDITING);
+	label_in_box_bg(value->widget, COLOR_EXPR_EDITING);
 	show_value(value->expr, frame);
 	edit_nothing();
 	edit_expr_list(value->expr, set_values, user, "Value(s)");
