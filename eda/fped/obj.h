@@ -205,6 +205,7 @@ struct arc {
 
 struct obj {
 	enum obj_type type;
+	const char *name; /* NULL if anonymous */
 	union {
 		struct frame_ref frame;
 		struct rect rect;
@@ -250,6 +251,8 @@ void find_inst(const struct inst *inst);
  */
 
 void search_inst(const struct inst *inst);
+
+int obj_anchors(struct obj *obj, struct vec ***anchors);
 
 int instantiate(void);
 void obj_cleanup(void);

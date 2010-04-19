@@ -555,3 +555,34 @@ b: vec @(1mm, 0mm)
 measx "width = " a >> b 0mm
 
 would print "width = 1mm"
+
+
+Experimental: debugging directives
+----------------------------------
+
+For debugging and regression tests, fped supports the following commands
+that mimick the effect of GUI operations:
+
+%del <identifier>
+%move <identifier> [<number>] <identifier>
+%print <expression>
+%dump
+%exit
+
+%del and %move take as their first argument the name of the vector or
+object to manipulate. For this purpose, also objects can be labeled.
+
+Object labels behave like vector labels and share the same name space.
+They are not shown anywhere in the GUI.
+
+%move sets an anchor point to the vector named as its last argument.
+The anchor point is identified by index as follows:
+
+anchor index	vec/frame	line/rect/pad	arc		measurement
+--------------	---------	-------------	------------	-----------
+0 (or omitted)	base		first point	center		low point
+1		-		second point	end of arc	high point
+2		-		-		start of arc	-
+
+%dump writes the footprint definition in the fped language to standard
+output. %exit immediately exits fped, without invoking the GUI.

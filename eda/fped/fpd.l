@@ -121,6 +121,17 @@ SP	[\t ]*
 <INITIAL>"unit"			{ BEGIN(NOKEYWORD);
 				  return TOK_UNIT; }
 
+<INITIAL>"%del"			{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_DEL; }
+<INITIAL>"%move"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_MOVE; }
+<INITIAL>"%print"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_PRINT; }
+<INITIAL>"%dump"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_DUMP; }
+<INITIAL>"%exit"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_EXIT; }
+
 <INITIAL>[a-zA-Z_][a-zA-Z_0-9]*: { *strchr(yytext, ':') = 0;
 				  yylval.id = unique(yytext);
 				  return LABEL; }

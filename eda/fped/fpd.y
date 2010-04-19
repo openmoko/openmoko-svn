@@ -21,6 +21,7 @@
 #include "obj.h"
 #include "meas.h"
 #include "gui_status.h"
+#include "dump.h"
 #include "fpd.h"
 
 
@@ -65,6 +66,27 @@ static struct vec *find_vec(const struct frame *frame, const char *name)
 		if (v->name == name)
 			return v;
 	return NULL;
+}
+
+
+static struct obj *find_obj(const struct frame *frame, const char *name)
+{
+	struct obj *obj;
+
+	for (obj = frame->objs; obj; obj = obj->next)
+		if (obj->name == name)
+			return obj;
+	return NULL;
+}
+
+
+static int find_label(const struct frame *frame, const char *name)
+{
+	if (find_vec(frame, name))
+		return 1;
+	if (find_obj(frame, name))
+		return 1;
+	return 0;
 }
 
 
@@ -145,10 +167,85 @@ static struct obj *new_obj(enum obj_type type)
 
 	obj = alloc_type(struct obj);
 	obj->type = type;
+	obj->name = NULL;
 	obj->frame = curr_frame;
 	obj->next = NULL;
 	obj->lineno = lineno;
 	return obj;
+}
+
+
+static int dbg_delete(const char *name)
+{
+	struct vec *vec;
+	struct obj *obj;
+
+	vec = find_vec(curr_frame, name);
+	if (vec) {
+		delete_vec(vec);
+		return 1;
+	}
+	obj = find_obj(curr_frame, name);
+	if (obj) {
+		delete_obj(obj);
+		return 1;
+	}
+	yyerrorf("unknown item \"%s\"", name);
+	return 0;
+}
+
+
+static int dbg_move(const char *name, int anchor, const char *dest)
+{
+	struct vec *to, *vec;
+	struct obj *obj;
+	struct vec **anchors[3];
+	int n_anchors;
+
+	to = find_vec(curr_frame, dest);
+	if (!to) {
+		yyerrorf("unknown vector \"%s\"", dest);
+		return 0;
+	}
+	vec = find_vec(curr_frame, name);
+	if (vec) {
+		if (anchor) {
+			yyerrorf("invalid anchor (%d > 0)", anchor);
+			return 0;
+		}
+		vec->base = to;
+		return 1;
+	}
+	obj = find_obj(curr_frame, name);
+	if (!obj) {
+		yyerrorf("unknown item \"%s\"", name);
+		return 0;
+	}
+	n_anchors = obj_anchors(obj, anchors);
+	if (anchor >= n_anchors) {
+		yyerrorf("invalid anchor (%d > %d)", anchor, n_anchors-1);
+		return 0;
+	}
+	*anchors[anchor] = to;
+	return 1;
+}
+
+
+static int dbg_print(const struct expr *expr)
+{
+	const char *s;
+	struct num num;
+
+	s = eval_str(expr, curr_frame);
+	if (s) {
+		printf("%s\n", s);
+		return 1;
+	}
+	num = eval_num(expr, curr_frame);
+	if (is_undef(num))
+		return 0;
+	printf("%lg%s\n", num.n, str_unit(num));
+	return 1;
 }
 
 
@@ -181,6 +278,8 @@ static struct obj *new_obj(enum obj_type type)
 %token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
+%token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_PRINT TOK_DBG_DUMP
+%token		TOK_DBG_EXIT
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -191,8 +290,9 @@ static struct obj *new_obj(enum obj_type type)
 %type	<row>	rows
 %type	<value>	row value opt_value_list
 %type	<vec>	vec base qbase
-%type	<obj>	obj meas
+%type	<obj>	object obj meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
+%type	<num>	opt_num
 %type	<str>	opt_string
 %type	<pt>	pad_type
 %type	<mt>	meas_type
@@ -323,16 +423,46 @@ frame_item:
 	| vec
 	| LABEL vec
 		{
-			if (find_vec(curr_frame, $1)) {
-				yyerrorf("duplicate vector \"%s\"", $1);
+			if (find_label(curr_frame, $1)) {
+				yyerrorf("duplicate label \"%s\"", $1);
 				YYABORT;
 			}
 			$2->name = $1;
 		}
-	| obj
+	| object
+	| LABEL object
 		{
-			*next_obj = $1;
-			next_obj = &$1->next;
+			if (find_label(curr_frame, $1)) {
+				yyerrorf("duplicate label \"%s\"", $1);
+				YYABORT;
+			}
+			$2->name = $1;
+		}
+	| TOK_DBG_DEL ID
+		{
+			if (!dbg_delete($2))
+				YYABORT;
+		}
+	| TOK_DBG_MOVE ID opt_num ID
+		{
+			if (!dbg_move($2, $3.n, $4))
+				YYABORT;
+		}
+	| TOK_DBG_PRINT expr
+		{
+			if (!dbg_print($2))
+				YYABORT;
+		}
+	| TOK_DBG_DUMP
+		{
+			if (!dump(stdout)) {
+				perror("stdout");
+				exit(1);
+			}
+		}
+	| TOK_DBG_EXIT
+		{
+			exit(0);
 		}
 	;
 
@@ -475,6 +605,15 @@ base:
 				yyerrorf("unknown vector \"%s\"", $1);
 				YYABORT;
 			}
+		}
+	;
+
+object:
+	obj
+		{
+			$$ = $1;
+			*next_obj = $1;
+			next_obj = &$1->next;
 		}
 	;
 
@@ -647,6 +786,16 @@ meas_op:
 		{
 			$$.max = 1;
 			$$.inverted = 1;
+		}
+	;
+
+opt_num:
+		{
+			$$.n = 0;
+		}
+	| NUMBER
+		{
+			$$ = $1;
 		}
 	;
 

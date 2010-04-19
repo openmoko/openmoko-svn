@@ -55,7 +55,7 @@ const char *str_unit(struct num n)
 	char buf[20]; /* @@@ plenty */
 
 	if (n.exponent == 0)
-		return stralloc("");
+		return "";
 	switch (n.type) {
 	case nt_mm:
 		unit = "mm";

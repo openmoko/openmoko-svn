@@ -96,6 +96,39 @@ void search_inst(const struct inst *inst)
 }
 
 
+/* ----- Get the list of anchors of an object ------------------------------ */
+
+
+int obj_anchors(struct obj *obj, struct vec ***anchors)
+{
+	anchors[0] = &obj->base;
+	switch (obj->type) {
+	case ot_frame:
+		return 1;
+	case ot_rect:
+	case ot_line:
+		anchors[1] = &obj->u.rect.other;
+		return 2;
+	case ot_pad:
+		anchors[1] = &obj->u.pad.other;
+		return 2;
+	case ot_meas:
+		anchors[1] = &obj->u.meas.high;
+		return 2;
+	case ot_arc:
+		/*
+		 * Put end point first so that this is what we grab if dragging
+		 * a circle (thereby turning it into an arc).
+		 */
+		anchors[1] = &obj->u.arc.end;
+		anchors[2] = &obj->u.arc.start;
+		return 3;
+	default:
+		abort();
+	}
+}
+
+
 /* ----- Instantiation ----------------------------------------------------- */
 
 

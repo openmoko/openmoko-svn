@@ -421,7 +421,11 @@ struct vec *inst_get_vec(const struct inst *inst)
 
 int inst_anchors(struct inst *inst, struct vec ***anchors)
 {
-	return inst->ops->anchors ? inst->ops->anchors(inst, anchors) : 0;
+	if (inst->vec) {
+		anchors[0] = &inst->vec->base;
+		return 1;
+	}
+	return obj_anchors(inst->obj, anchors);
 }
 
 
@@ -658,13 +662,6 @@ static struct inst *find_point_vec(struct inst *self, struct coord pos)
 }
 
 
-static int vec_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	anchors[0] = &inst->vec->base;
-	return 1;
-}
-
-
 /*
  * When instantiating and when dumping, we assume that bases appear in the
  * frame->vecs list before vectors using them. A move may change this order.
@@ -729,7 +726,6 @@ static struct inst_ops vec_ops = {
 	.distance	= gui_dist_vec,
 	.select		= vec_op_select,
 	.find_point	= find_point_vec,
-	.anchors	= vec_op_anchors,
 	.draw_move	= draw_move_vec,
 	.do_move_to	= do_move_to_vec,
 };
@@ -765,21 +761,10 @@ static void line_op_select(struct inst *self)
 }
 
 
-static int line_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	struct obj *obj = inst->obj;
-
-	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.rect.other;
-	return 2;
-}
-
-
 static struct inst_ops line_ops = {
 	.draw		= gui_draw_line,
 	.distance	= gui_dist_line,
 	.select		= line_op_select,
-	.anchors	= line_op_anchors,
 	.draw_move	= draw_move_line,
 };
 
@@ -820,7 +805,6 @@ static struct inst_ops rect_ops = {
 	.draw		= gui_draw_rect,
 	.distance	= gui_dist_rect,
 	.select		= rect_op_select,
-	.anchors	= line_op_anchors,
 	.draw_move	= draw_move_rect,
 };
 
@@ -874,21 +858,10 @@ static void pad_op_select(struct inst *self)
 }
 
 
-static int pad_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	struct obj *obj = inst->obj;
-
-	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.pad.other;
-	return 2;
-}
-
-
 static struct inst_ops pad_ops = {
 	.draw		= gui_draw_pad,
 	.distance	= gui_dist_pad,
 	.select		= pad_op_select,
-	.anchors	= pad_op_anchors,
 	.draw_move	= draw_move_pad,
 };
 
@@ -906,7 +879,6 @@ static struct inst_ops rpad_ops = {
 	.draw		= gui_draw_rpad,
 	.distance	= gui_dist_pad, /* @@@ */
 	.select		= rpad_op_select,
-	.anchors	= pad_op_anchors,
 	.draw_move	= draw_move_rpad,
 };
 
@@ -951,26 +923,10 @@ static void arc_op_select(struct inst *self)
 }
 
 
-static int arc_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	struct obj *obj = inst->obj;
-
-	/*
-	 * Put end point first so that this is what we grab if dragging a
-	 * circle (thereby turning it into an arc).
-	 */
-	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.arc.end;
-	anchors[2] = &obj->u.arc.start;
-	return 3;
-}
-
-
 static struct inst_ops arc_ops = {
 	.draw		= gui_draw_arc,
 	.distance	= gui_dist_arc,
 	.select		= arc_op_select,
-	.anchors	= arc_op_anchors,
 	.draw_move	= draw_move_arc,
 	.do_move_to	= do_move_to_arc,
 };
@@ -1022,21 +978,10 @@ static void meas_op_select(struct inst *self)
 }
 
 
-static int meas_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	struct obj *obj = inst->obj;
-
-	anchors[0] = &obj->base;
-	anchors[1] = &obj->u.meas.high;
-	return 2;
-}
-
-
 static struct inst_ops meas_ops = {
 	.draw		= gui_draw_meas,
 	.distance	= gui_dist_meas,
 	.select		= meas_op_select,
-	.anchors	= meas_op_anchors,
 	.begin_drag_move= begin_drag_move_meas,
 	.find_point	= find_point_meas_move,
 	.draw_move	= draw_move_meas,
@@ -1146,19 +1091,11 @@ static void frame_op_select(struct inst *self)
 }
 
 
-static int frame_op_anchors(struct inst *inst, struct vec ***anchors)
-{
-	anchors[0] = &inst->obj->base;
-	return 1;
-}
-
-
 static struct inst_ops frame_ops = {
 	.draw		= gui_draw_frame,
 	.hover		= gui_hover_frame,
 	.distance	= gui_dist_frame,
 	.select		= frame_op_select,
-	.anchors	= frame_op_anchors,
 	.draw_move	= draw_move_frame,
 };
 

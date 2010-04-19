@@ -61,7 +61,6 @@ struct inst_ops {
 	unit_type (*distance)(struct inst *self, struct coord pos, 
 	    unit_type scale);
 	void (*select)(struct inst *self);
-	int (*anchors)(struct inst *self, struct vec ***anchors);
 	void (*begin_drag_move)(struct inst *from, int i);
 	struct inst *(*find_point)(struct inst *self, struct coord pos);
 	struct pix_buf *(*draw_move)(struct inst *inst,

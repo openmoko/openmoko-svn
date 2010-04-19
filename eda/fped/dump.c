@@ -1,8 +1,8 @@
 /*
  * dump.c - Dump objects in the native FPD format
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -484,8 +484,11 @@ static void dump_frame(FILE *file, struct frame *frame, const char *indent)
 	order = order_frame(frame);
 	for (item = order; item->vec || item->obj; item++) {
 		if (item->obj) {
+			fprintf(file, "%s", indent);
+			if (item->obj->name)
+				fprintf(file, "%s: ", item->obj->name);
 			s = print_obj(item->obj, item->vec);
-			fprintf(file, "%s%s\n", indent, s);
+			fprintf(file, "%s\n", s);
 		} else {
 			s1 = print_label(item->vec);
 			s = print_vec(item->vec);
