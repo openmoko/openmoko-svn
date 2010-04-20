@@ -23,6 +23,7 @@
 #include "gui_tool.h"
 #include "gui_frame.h"
 #include "gui.h"
+#include "fped.h"
 
 #include "icons/stuff.xpm"
 #include "icons/stuff_off.xpm"
@@ -50,6 +51,33 @@ static GtkWidget *bright_image[2];
 static void do_build_frames(void);
 
 
+/* ----- save callbacks ---------------------------------------------------- */
+
+
+static void save_as_fpd(void)
+{
+	GtkWidget *dialog;
+
+	dialog = gtk_file_chooser_dialog_new("Save File",
+	    NULL, GTK_FILE_CHOOSER_ACTION_SAVE,
+	    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	gtk_file_chooser_set_do_overwrite_confirmation(
+	    GTK_FILE_CHOOSER(dialog), TRUE);
+	if (save_file_name)
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+		    save_file_name);
+	if (gtk_dialog_run(GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+		save_file_name =
+		    gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		save_fpd();
+		/* @@@ we may leak save_file_name */
+		no_save = 0;
+	}
+	gtk_widget_destroy(dialog);
+}
+
+
 /* ----- view callbacks ---------------------------------------------------- */
 
 
@@ -68,6 +96,7 @@ static void swap_var_code(void)
 static GtkItemFactoryEntry menu_entries[] = {
 	{ "/File",		NULL,	NULL,	 	0, "<Branch>" },
 	{ "/File/Save",		NULL,	save_fpd,	0, "<Item>" },
+	{ "/File/Save as",	NULL,	save_as_fpd,	0, "<Item>" },
         { "/File/sep1",		NULL,	NULL,		0, "<Separator>" },
         { "/File/Write KiCad",	NULL,	write_kicad,	0, "<Item>" },
         { "/File/Write Postscript",
@@ -95,6 +124,9 @@ static void make_menu_bar(GtkWidget *hbox)
 
 	bar = gtk_item_factory_get_widget(factory, "<FpedMenu>");
 	gtk_box_pack_start(GTK_BOX(hbox), bar, TRUE, TRUE, 0);
+
+	gtk_widget_set_sensitive(
+	    gtk_item_factory_get_item(factory, "/File/Save"), !no_save);
 }
 
 

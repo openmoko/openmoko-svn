@@ -1,8 +1,8 @@
 /*
  * gui.h - Editor GUI core
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ extern int show_all;
 extern int show_stuff;
 extern int show_meas;
 extern int show_bright;
+
+extern int no_save;
 
 
 /* update everything after a model change */

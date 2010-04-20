@@ -536,7 +536,7 @@ int dump(FILE *file)
 {
 	struct frame *frame;
 
-	fprintf(file, "/* MACHINE-GENERATED ! */\n\n");
+	fprintf(file, "%s\n", MACHINE_GENERATED);
 	for (frame = frames; frame; frame = frame->next)
 		frame->dumped = 0;
 	for (frame = frames; frame; frame = frame->next) {

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "cpp.h"
 #include "util.h"
@@ -21,20 +22,37 @@
 #include "obj.h"
 #include "inst.h"
 #include "file.h"
+#include "dump.h"
 #include "gui.h"
 #include "delete.h"
 #include "fpd.h"
+#include "fped.h"
 
 
 char *save_file_name = NULL;
+int no_save = 0;
 
 
 static void load_file(const char *name)
 {
-	if (file_exists(name) == 1) {
+	FILE *file;
+	char line[sizeof(MACHINE_GENERATED)];
+
+	file = fopen(name, "r");
+	if (file) {
+		if (!fgets(line, sizeof(line), file)) {
+			perror(name);
+			exit(1);
+		}
+		no_save = strcmp(line, MACHINE_GENERATED);
+		fclose(file);
 		reporter = report_parse_error;
 		run_cpp_on_file(name);
 	} else {
+		if (errno != ENOENT) {
+			perror(name);
+			exit(1);
+		}
 		scan_empty();
 	}
 	(void) yyparse();

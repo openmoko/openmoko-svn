@@ -20,12 +20,9 @@
 #include "dump.h"
 #include "kicad.h"
 #include "postscript.h"
-
 #include "util.h"
 #include "file.h"
-
-
-extern char *save_file_name;
+#include "fped.h"
 
 
 /* ----- general helper functions ------------------------------------------ */
