@@ -404,7 +404,7 @@ frame_def:
 	;
 
 frame_items:
-	measurements
+	| measurements
 	| frame_item frame_items
 	;
 
@@ -459,7 +459,11 @@ frame_item:
 			if (!dbg_print($2))
 				YYABORT;
 		}
-	| TOK_DBG_DUMP
+	| debug_item
+	;
+
+debug_item:
+	TOK_DBG_DUMP
 		{
 			/*
 			 * It's okay to do append the root frame multiple
@@ -718,11 +722,17 @@ pad_type:
 	;
 
 measurements:
+	meas
+		{
+			*next_obj = $1;
+			next_obj = &$1->next;
+		}
 	| measurements meas
 		{
 			*next_obj = $2;
 			next_obj = &$2->next;
 		}
+	| measurements debug_item
 	;
 
 meas:

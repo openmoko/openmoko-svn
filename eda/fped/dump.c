@@ -75,6 +75,8 @@ static int need(const struct vec *base, const struct vec *prev)
 
 static int later(const struct vec *base, const struct vec *prev)
 {
+	return base && !base->dumped;
+#if 0
 	while (1) {
 		prev = prev->next;
 		if (!prev)
@@ -83,6 +85,7 @@ static int later(const struct vec *base, const struct vec *prev)
 			return 1;
 	}
 	return 0;
+#endif
 }
 
 
@@ -134,7 +137,7 @@ static void put_obj(struct order **curr, struct obj *obj,
 }
 
 /*
- * Tricky logic ahead: when dumping a vector, we search for a vectors that
+ * Tricky logic ahead: when dumping a vector, we search for a vector that
  * depends on that vector for ".". If we find one, we dump it immediately after
  * this vector.
  */
@@ -144,6 +147,7 @@ static void recurse_vec(struct order **curr, struct vec *vec)
 	struct vec *next;
 	struct obj *obj;
 
+	vec->dumped = 1;
 	add_item(curr, vec, NULL);
 	for (obj = vec->frame->objs; obj; obj = obj->next)
 		if (may_put_obj_now(obj, vec))
@@ -178,6 +182,8 @@ struct order *order_frame(const struct frame *frame)
 		if (obj->type != ot_meas)
 			n++;
 
+	for (vec = frame->vecs; vec; vec = vec->next)
+		vec->dumped = 0;
 	for (obj = frame->objs; obj; obj = obj->next)
 		obj->dumped = 0;
 

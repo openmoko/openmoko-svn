@@ -142,6 +142,9 @@ struct vec {
 	/* for re-ordering after a move */
 	int mark;
 
+	/* for dumping */
+	int dumped;
+
 	/* for the GUI */
 	GtkWidget *list_widget; /* NULL if items aren't shown */
 };
