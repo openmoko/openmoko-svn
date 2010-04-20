@@ -548,6 +548,14 @@ static void rect_status(struct coord a, struct coord b, unit_type width,
 }
 
 
+static void rect_status_sort(struct coord a, struct coord b, unit_type width,
+    int rounded)
+{
+	sort_coord(&a, &b);
+	rect_status(a, b, width, rounded);
+}
+
+
 /* ----- helper functions for instance creation ---------------------------- */
 
 
@@ -756,7 +764,7 @@ static void obj_line_edit(struct obj *obj)
 
 static void line_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width, 0);
+	rect_status_sort(self->base, self->u.rect.end, self->u.rect.width, 0);
 	obj_line_edit(self->obj);
 }
 
@@ -796,7 +804,7 @@ static void obj_rect_edit(struct obj *obj)
 
 static void rect_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, self->u.rect.width, 0);
+	rect_status_sort(self->base, self->u.rect.end, self->u.rect.width, 0);
 	obj_rect_edit(self->obj);
 }
 
@@ -853,7 +861,7 @@ static void pad_op_select(struct inst *self)
 {
 	status_set_type_entry(NULL, "label =");
 	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
-	rect_status(self->base, self->u.pad.other, -1, 0);
+	rect_status_sort(self->base, self->u.pad.other, -1, 0);
 	obj_pad_edit(self->obj);
 }
 
@@ -870,7 +878,7 @@ static void rpad_op_select(struct inst *self)
 {
 	status_set_type_entry(NULL, "label =");
 	status_set_name("Pad name (actual)", "%s", self->u.pad.name);
-	rect_status(self->base, self->u.pad.other, -1, 1);
+	rect_status_sort(self->base, self->u.pad.other, -1, 1);
 	obj_pad_edit(self->obj);
 }
 
@@ -970,7 +978,7 @@ static void obj_meas_edit(struct obj *obj)
 
 static void meas_op_select(struct inst *self)
 {
-	rect_status(self->bbox.min, self->bbox.max, -1, 0);
+	rect_status_sort(self->base, self->u.meas.end, -1, 0);
 	status_set_type_entry(NULL, "offset =");
 	set_with_units(status_set_name, "", self->u.meas.offset,
 	    "Measurement line offset");
