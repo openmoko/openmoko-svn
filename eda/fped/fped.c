@@ -41,8 +41,11 @@ static void load_file(const char *name)
 	file = fopen(name, "r");
 	if (file) {
 		if (!fgets(line, sizeof(line), file)) {
-			perror(name);
-			exit(1);
+			if (ferror(file)) {
+				perror(name);
+				exit(1);
+			}
+			*line = 0;
 		}
 		no_save = strcmp(line, MACHINE_GENERATED);
 		fclose(file);
