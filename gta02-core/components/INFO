@@ -213,7 +213,7 @@ D: http://www.tew.co.jp/e/crystal/02/pdf/TAS-4025A_E.pdf
 # LCM and its connector
 S: td028ttec1
 A: lcm
-D: http://www.cip.physik.uni-muenchen.de/~Wolfgang.Draxinger/stuff/openmoko/TD028TTEC1.pdf
+#D: http://www.cip.physik.uni-muenchen.de/~Wolfgang.Draxinger/stuff/openmoko/TD028TTEC1.pdf
 A: lcm-conn
 D: http://www.hirose.co.jp/cataloge_hp/e58613007.pdf
 
