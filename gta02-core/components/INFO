@@ -253,7 +253,7 @@ D: http://www.kmax.com.tw/doc/02_KEV_Series.pdf
 # GPS 32.768KHz Crystal (CC7V-T1A)
 S: CRYSTAL
 A: gps-xtal
-D: http://www.microcrystal.com/CMSPages/GetFile.aspx?nodeguid=0e348300-766a-4c4d-a9fc-854939ece316
+D: http://www.microcrystal.com/CMSPages/GetFile.aspx?nodeguid=5d6b389c-55d8-4482-8c3e-7a4a1426911a
 
 # Logic Level translator
 S: adg3304
