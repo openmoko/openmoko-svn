@@ -24,6 +24,7 @@
 #include "gui_status.h"
 #include "gui_tool.h"
 #include "gui.h"
+#include "gui_frame_drag.h"
 #include "gui_canvas.h"
 
 
@@ -182,7 +183,7 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 	if (event->state & GDK_BUTTON2_MASK)
 		drag_middle(pos);
 	update_pos(pos);
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -540,6 +541,8 @@ GtkWidget *make_canvas(void)
 	    GDK_POINTER_MOTION_MASK);
 
 	gtk_widget_set_double_buffered(canvas, FALSE);
+
+	setup_canvas_drag(canvas);
 
 	draw_ctx.widget = canvas;
 

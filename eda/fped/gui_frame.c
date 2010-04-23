@@ -886,30 +886,59 @@ static void set_row_values(void *user, const struct value *values,
 }
 
 
-static gboolean table_var_select_event(GtkWidget *widget,
+static gboolean table_var_press_event(GtkWidget *widget,
+    GdkEventButton *event, gpointer data)
+{
+	struct var *var = data;
+
+	switch (event->button) {
+	case 3:
+		pop_up_table_var(var, event);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+static gboolean table_var_release_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
 	struct var *var = data;
 
 	switch (event->button) {
 	case 1:
+		if (is_dragging(var))
+			return FALSE;
 		edit_var(var, set_col_values, var, -1);
-		return FALSE;
-	case 3:
-		pop_up_table_var(var, event);
-		break;
+		return TRUE;
 	}
-	return TRUE;
+	return FALSE;
 }
 
 
-static gboolean table_value_select_event(GtkWidget *widget,
+static gboolean table_value_press_event(GtkWidget *widget,
+    GdkEventButton *event, gpointer data)
+{
+	struct value *value = data;
+
+	switch (event->button) {
+	case 3:
+		pop_up_table_value(value, event);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+static gboolean table_value_release_event(GtkWidget *widget,
     GdkEventButton *event, gpointer data)
 {
 	struct value *value = data;
 
 	switch (event->button) {
 	case 1:
+		if (is_dragging(value))
+			return FALSE;
 		if (!value->row ||
 		    value->row->table->active_row == value->row) {
 			edit_nothing();
@@ -919,12 +948,9 @@ static gboolean table_value_select_event(GtkWidget *widget,
 			select_row(value->row);
 			change_world();
 		}
-		return FALSE;
-	case 3:
-		pop_up_table_value(value, event);
-		break;
+		return TRUE;
 	}
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -1009,7 +1035,10 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		label_in_box_bg(field, COLOR_VAR_PASSIVE);
 		g_signal_connect(G_OBJECT(box_of_label(field)),
 		    "button_press_event",
-		    G_CALLBACK(table_var_select_event), var);
+		    G_CALLBACK(table_var_press_event), var);
+		g_signal_connect(G_OBJECT(box_of_label(field)),
+		    "button_release_event",
+		    G_CALLBACK(table_var_release_event), var);
 		g_signal_connect(G_OBJECT(box_of_label(field)),
 		    "scroll_event",
 		    G_CALLBACK(table_scroll_event), table);
@@ -1034,7 +1063,10 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			    COLOR_ROW_SELECTED : COLOR_ROW_UNSELECTED);
 			g_signal_connect(G_OBJECT(box_of_label(field)),
 			    "button_press_event",
-			    G_CALLBACK(table_value_select_event), value);
+			    G_CALLBACK(table_value_press_event), value);
+			g_signal_connect(G_OBJECT(box_of_label(field)),
+			    "button_release_event",
+			    G_CALLBACK(table_value_release_event), value);
 			g_signal_connect(G_OBJECT(box_of_label(field)),
 			    "scroll_event",
 			    G_CALLBACK(table_scroll_event), table);
@@ -1653,13 +1685,29 @@ void select_frame(struct frame *frame)
 }
 
 
-static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
+static gboolean frame_press_event(GtkWidget *widget, GdkEventButton *event,
+    gpointer data)
+{
+	struct frame *frame = data;
+
+	switch (event->button) {
+	case 3:
+		pop_up_frame(frame, event);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+static gboolean frame_release_event(GtkWidget *widget, GdkEventButton *event,
     gpointer data)
 {
 	struct frame *frame = data;
 
 	switch (event->button) {
 	case 1:
+		if (is_dragging(frame))
+			return FALSE;
 		if (active_frame != frame)
 			select_frame(frame);
 		else {
@@ -1668,12 +1716,9 @@ static gboolean frame_select_event(GtkWidget *widget, GdkEventButton *event,
 				edit_frame(frame);
 			}
 		}
-		break;
-	case 3:
-		pop_up_frame(frame, event);
-		break;
+		return TRUE;
 	}
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -1691,8 +1736,12 @@ static GtkWidget *build_frame_label(struct frame *frame)
 	    COLOR_FRAME_SELECTED : COLOR_FRAME_UNSELECTED);
 
 	g_signal_connect(G_OBJECT(box_of_label(label)),
-	    "button_press_event", G_CALLBACK(frame_select_event), frame);
+	    "button_press_event", G_CALLBACK(frame_press_event), frame);
+	g_signal_connect(G_OBJECT(box_of_label(label)),
+	    "button_release_event", G_CALLBACK(frame_release_event), frame);
 	frame->label = label;
+
+	setup_frame_drag(frame);
 
 	return box_of_label(label);
 }

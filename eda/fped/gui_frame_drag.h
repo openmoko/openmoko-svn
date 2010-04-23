@@ -19,7 +19,11 @@
 #include "obj.h"
 
 
+int is_dragging(void *this);
+
 void setup_var_drag(struct var *var);
 void setup_value_drag(struct value *value);
+void setup_frame_drag(struct frame *frame);
+void setup_canvas_drag(GtkWidget *canvas);
 
 #endif /* !GUI_FRAME_DRAG_H */

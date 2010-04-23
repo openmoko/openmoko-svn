@@ -18,10 +18,47 @@
 #include "gui_frame_drag.h"
 
 
+enum {
+	target_id_var,
+	target_id_value,
+	target_id_frame,
+	target_id_canvas,
+};
+
+
+static GtkTargetEntry target_var = {
+	.target = "var",
+	.flags  = GTK_TARGET_SAME_APP,
+	.info	= target_id_var,
+};
+
+static GtkTargetEntry target_value = {
+	.target = "value",
+	.flags  = GTK_TARGET_SAME_APP,
+	.info	= target_id_value,
+};
+
+static GtkTargetEntry target_frame = {
+	.target = "frame",
+	.flags  = GTK_TARGET_SAME_APP,
+	.info	= target_id_frame,
+};
+
+
+/* ----- dragging status --------------------------------------------------- */
+
+
 /*
- * Pointer to whatever it is we're dragging. Undefined if not dragging.
+ * Pointer to whatever it is we're dragging. NULL if not dragging.
  */
+
 static void *dragging;
+
+
+int is_dragging(void *this)
+{
+	return this == dragging;
+}
 
 
 /* ----- helper functions for indexed list and swapping -------------------- */
@@ -148,7 +185,27 @@ static void swap_rows(struct row **a, struct row **b)
 }
 
 
-/* ----- common callback --------------------------------------------------- */
+/* ----- common functions -------------------------------------------------- */
+
+
+/*
+ * according to
+ * http://www.pubbs.net/201004/gtk/22819-re-drag-and-drop-drag-motion-cursor-lockup-fixed-.html
+ * http://www.cryingwolf.org/articles/gtk-dnd.html
+ */
+
+static int has_target(GtkWidget *widget, GdkDragContext *drag_context,
+    const char *name)
+{
+	GdkAtom target;
+
+	target = gtk_drag_dest_find_target(widget, drag_context, NULL);
+
+	/*
+	 * Force allocation so that we don't have to check for GDK_NONE.
+	 */
+	return target == gdk_atom_intern(name, FALSE);
+}
 
 
 static void drag_begin(GtkWidget *widget,
@@ -163,8 +220,25 @@ static void drag_begin(GtkWidget *widget,
 	pixbuf =
 	    gdk_pixbuf_get_from_drawable(NULL, DA, NULL, 0, 0, 0, 0, 1, 1);
 	gtk_drag_source_set_icon_pixbuf(widget, pixbuf);
+	g_object_unref(pixbuf);
 
 	dragging = user_data;
+}
+
+
+static void drag_end(GtkWidget *widget, GdkDragContext *drag_context,
+    gpointer user_data)
+{
+	dragging = NULL;
+}
+
+
+static void setup_drag_common(GtkWidget *widget, void *user_arg)
+{
+	g_signal_connect(G_OBJECT(widget), "drag-begin",
+	    G_CALLBACK(drag_begin), user_arg);
+	g_signal_connect(G_OBJECT(widget), "drag-end",
+	    G_CALLBACK(drag_end), user_arg);
 }
 
 
@@ -179,6 +253,8 @@ static gboolean drag_var_motion(GtkWidget *widget,
 	struct var *to = user_data;
 	int from_n, to_n, i;
 
+	if (!has_target(widget, drag_context, "var"))
+		return FALSE;
 	if (from == to || from->table != to->table)
 		return FALSE;
 	from_n = NDX(from->table->vars, from);
@@ -192,19 +268,14 @@ static gboolean drag_var_motion(GtkWidget *widget,
 
 void setup_var_drag(struct var *var)
 {
-	static GtkTargetEntry target = {
-		.target = "var",
-		.flags  = GTK_TARGET_SAME_APP,
-	};
 	GtkWidget *box;
 
 	box = box_of_label(var->widget);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
-	    &target, 1, GDK_ACTION_PRIVATE);
+	    &target_var, 1, GDK_ACTION_PRIVATE);
 	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_HIGHLIGHT,
-	    &target, 1, GDK_ACTION_PRIVATE);
-	g_signal_connect(G_OBJECT(box), "drag-begin",
-	    G_CALLBACK(drag_begin), var);
+	    &target_var, 1, GDK_ACTION_PRIVATE);
+	setup_drag_common(box, var);
 	g_signal_connect(G_OBJECT(box), "drag-motion",
 	    G_CALLBACK(drag_var_motion), var);
 }
@@ -219,10 +290,13 @@ static gboolean drag_value_motion(GtkWidget *widget,
 {
 	struct value *from = dragging;
 	struct value *to = user_data;
-	struct table *table = from->row->table;
+	struct table *table;
 	struct row **row, *end;
 	int from_n, to_n, i;
 
+	if (!has_target(widget, drag_context, "value"))
+		return FALSE;
+	table = from->row->table;
 	if (table != to->row->table)
 		return FALSE;
 
@@ -263,19 +337,65 @@ static gboolean drag_value_motion(GtkWidget *widget,
 
 void setup_value_drag(struct value *value)
 {
-	static GtkTargetEntry target = {
-		.target = "value",
-		.flags  = GTK_TARGET_SAME_APP,
-	};
 	GtkWidget *box;
 
 	box = box_of_label(value->widget);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
-	    &target, 1, GDK_ACTION_PRIVATE);
+	    &target_value, 1, GDK_ACTION_PRIVATE);
 	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_HIGHLIGHT,
-	    &target, 1, GDK_ACTION_PRIVATE);
-	g_signal_connect(G_OBJECT(box), "drag-begin",
-	    G_CALLBACK(drag_begin), value);
+	    &target_value, 1, GDK_ACTION_PRIVATE);
+	setup_drag_common(box, value);
 	g_signal_connect(G_OBJECT(box), "drag-motion",
 	    G_CALLBACK(drag_value_motion), value);
+}
+
+
+/* ----- drag frame labels ------------------------------------------------- */
+
+
+static gboolean drag_frame_motion(GtkWidget *widget,
+    GdkDragContext *drag_context, gint x, gint y, guint time_,
+    gpointer user_data)
+{
+	if (!has_target(widget, drag_context, "frame"))
+		return FALSE;
+//fprintf(stderr, "frame\n");
+return FALSE;
+}
+
+
+void setup_frame_drag(struct frame *frame)
+{
+	GtkWidget *box;
+
+	box = box_of_label(frame->label);
+	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
+	    &target_frame, 1, GDK_ACTION_PRIVATE);
+	setup_drag_common(box, frame);
+	g_signal_connect(G_OBJECT(box), "drag-motion",
+	    G_CALLBACK(drag_frame_motion), frame);
+}
+
+
+/* ----- drag to the canvas ------------------------------------------------ */
+
+
+static gboolean drag_canvas_motion(GtkWidget *widget,
+    GdkDragContext *drag_context, gint x, gint y, guint time_,
+    gpointer user_data)
+{
+	if (!has_target(widget, drag_context, "frame"))
+		return FALSE;
+//fprintf(stderr, "canvas\n");
+return FALSE;
+}
+
+
+void setup_canvas_drag(GtkWidget *canvas)
+{
+	gtk_drag_dest_set(canvas, GTK_DEST_DEFAULT_HIGHLIGHT,
+	    &target_frame, 1, GDK_ACTION_PRIVATE);
+	setup_drag_common(canvas, NULL);
+	g_signal_connect(G_OBJECT(canvas), "drag-motion",
+	    G_CALLBACK(drag_canvas_motion), NULL);
 }
