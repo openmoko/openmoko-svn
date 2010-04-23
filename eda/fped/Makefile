@@ -19,7 +19,7 @@ OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        layer.o overlap.o \
        cpp.o lex.yy.o y.tab.o \
        gui.o gui_util.o gui_style.o gui_inst.o gui_status.o gui_canvas.o \
-       gui_tool.o gui_over.o gui_meas.o gui_frame.o
+       gui_tool.o gui_over.o gui_meas.o gui_frame.o gui_frame_drag.o
 
 XPMS = point.xpm delete.xpm delete_off.xpm \
        vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \

@@ -27,6 +27,7 @@
 #include "gui_tool.h"
 #include "gui_canvas.h"
 #include "gui.h"
+#include "gui_frame_drag.h"
 #include "gui_frame.h"
 
 
@@ -893,7 +894,7 @@ static gboolean table_var_select_event(GtkWidget *widget,
 	switch (event->button) {
 	case 1:
 		edit_var(var, set_col_values, var, -1);
-		break;
+		return FALSE;
 	case 3:
 		pop_up_table_var(var, event);
 		break;
@@ -918,7 +919,7 @@ static gboolean table_value_select_event(GtkWidget *widget,
 			select_row(value->row);
 			change_world();
 		}
-		break;
+		return FALSE;
 	case 3:
 		pop_up_table_value(value, event);
 		break;
@@ -999,7 +1000,6 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 
 			gtk_table_set_row_spacings(GTK_TABLE(tab), 1);
 			gtk_table_set_col_spacings(GTK_TABLE(tab), 1);
-
 		}
 	
 		field = label_in_box_new(var->name,
@@ -1014,6 +1014,8 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 		    "scroll_event",
 		    G_CALLBACK(table_scroll_event), table);
 		var->widget = field;
+
+		setup_var_drag(var);
 
 		n_row = 0;
 		for (row = table->rows; row; row = row->next) {
@@ -1037,6 +1039,7 @@ static void build_table(GtkWidget *vbox, struct frame *frame,
 			    "scroll_event",
 			    G_CALLBACK(table_scroll_event), table);
 			value->widget = field;
+			setup_value_drag(value);
 			n_row++;
 		}
 

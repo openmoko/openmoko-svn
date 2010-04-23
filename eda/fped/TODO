@@ -6,8 +6,6 @@ Major missing features:
 
 Minor missing features:
 - reorder frames (can use text editor)
-- reorder rows in a table (can use text editor)
-- reorder columns in a table
 - reorder variables in a frame (can use text editor)
 - move items/vectors up and down the hierarchy
 
