@@ -192,6 +192,8 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 
 void canvas_frame_begin(struct frame *frame)
 {
+	inst_deselect(); /* don't drag away bits of the selected object */
+	redraw();
 	tool_push_frame(frame);
 }
 
