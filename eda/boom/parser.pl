@@ -347,23 +347,49 @@ sub eeschema
 }
 
 
+sub babylonic
+{
+    if ($_[0] =~ /^#/) {
+	$hash++;
+	if ($hash == 2) {
+	    $mode = *skip;
+	    undef $raw;
+	}
+	return;
+    }
+    &bom($_[0]) if $hash == 1;
+}
+
+
 sub parse
 {
     $mode = *skip;
     while (<>) {
 	chop;
-	if (/^#Cmp.*order = Reference/) {
+
+# ----- KiCad BOM parsing. Alas, the BOM is localized, so there are almost no
+# reliable clues for the parser. Below would be good clues for the English
+# version:
+	if (0 && /^#Cmp.*order = Reference/) {
 	    $mode = *bom;
 	    next;
 	}
-	if (/^#Cmp.*order = Value/) {
+	if (0 && /^#Cmp.*order = Value/) {
 	    $mode = *skip;
 	    next;
 	}
-	if (/^eeschema \(/) {	# hack to allow loading in any order
+	if (0 && /^eeschema \(/) {	# hack to allow loading in any order
 	    $mode = *skip;
 	    next;
 	}
+# ----- now an attempt at a "generic" version:
+	if (/^eeschema \(/) {
+	    $mode = *babylonic;
+	    $hash = 0;
+	    $raw = 1;
+	    next;
+	}
+# -----
 	if (/^EESchema Schematic/) {
 	    $mode = *eeschema;
 	    $raw = 1;
