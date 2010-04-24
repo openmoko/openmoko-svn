@@ -456,8 +456,6 @@ static gboolean drag_canvas_motion(GtkWidget *widget,
 {
 	if (!has_target(widget, drag_context, "frame"))
 		return FALSE;
-gtk_drag_finish(drag_context, FALSE, FALSE, time_);
-return FALSE;
 	if (!frame_on_canvas) {
 		frame_on_canvas = 1;
 		canvas_frame_begin(dragging);
