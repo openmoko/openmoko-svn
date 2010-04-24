@@ -15,7 +15,13 @@
 
 #include "obj.h"
 #include "gui_util.h"
+#include "gui.h"
+#include "gui_canvas.h"
 #include "gui_frame_drag.h"
+
+#if 0
+#include "icons/frame.xpm"
+#endif
 
 
 enum {
@@ -58,6 +64,12 @@ static void *dragging;
 int is_dragging(void *this)
 {
 	return this == dragging;
+}
+
+
+int is_dragging_anything(void)
+{
+	return !!dragging;
 }
 
 
@@ -273,7 +285,7 @@ void setup_var_drag(struct var *var)
 	box = box_of_label(var->widget);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
 	    &target_var, 1, GDK_ACTION_PRIVATE);
-	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_HIGHLIGHT,
+	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_MOTION,
 	    &target_var, 1, GDK_ACTION_PRIVATE);
 	setup_drag_common(box, var);
 	g_signal_connect(G_OBJECT(box), "drag-motion",
@@ -342,7 +354,7 @@ void setup_value_drag(struct value *value)
 	box = box_of_label(value->widget);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
 	    &target_value, 1, GDK_ACTION_PRIVATE);
-	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_HIGHLIGHT,
+	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_MOTION,
 	    &target_value, 1, GDK_ACTION_PRIVATE);
 	setup_drag_common(box, value);
 	g_signal_connect(G_OBJECT(box), "drag-motion",
@@ -350,7 +362,48 @@ void setup_value_drag(struct value *value)
 }
 
 
+/* ----- frame to canvas helper functions ---------------------------------- */
+
+
+static int frame_on_canvas = 0;
+
+
+static void leave_canvas(void)
+{
+	if (frame_on_canvas)
+		canvas_frame_end();
+	frame_on_canvas = 0;
+}
+
+
 /* ----- drag frame labels ------------------------------------------------- */
+
+
+#if 0
+
+/*
+ * Setting our own icon looks nice but it slows things down to the point where
+ * cursor movements can lag noticeable and it adds yet another element to an
+ * already crowded cursor.
+ */
+
+static void drag_frame_begin(GtkWidget *widget,
+    GtkTextDirection previous_direction, gpointer user_data)
+{
+	GdkPixmap *pixmap;
+	GdkBitmap *mask;
+	GdkColormap *cmap;
+
+	pixmap = gdk_pixmap_create_from_xpm_d(DA, &mask, NULL, xpm_frame);
+	cmap = gdk_drawable_get_colormap(root->window);
+	gtk_drag_source_set_icon(widget, cmap, pixmap, mask);
+	g_object_unref(pixmap);
+	g_object_unref(mask);
+
+	dragging = user_data;
+}
+
+#endif
 
 
 static gboolean drag_frame_motion(GtkWidget *widget,
@@ -359,8 +412,16 @@ static gboolean drag_frame_motion(GtkWidget *widget,
 {
 	if (!has_target(widget, drag_context, "frame"))
 		return FALSE;
-//fprintf(stderr, "frame\n");
-return FALSE;
+	/* nothing else to do yet */
+	return FALSE;
+}
+
+
+static void drag_frame_end(GtkWidget *widget, GdkDragContext *drag_context,
+    gpointer user_data)
+{
+	leave_canvas();
+	drag_end(widget, drag_context, user_data);
 }
 
 
@@ -370,8 +431,17 @@ void setup_frame_drag(struct frame *frame)
 
 	box = box_of_label(frame->label);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
-	    &target_frame, 1, GDK_ACTION_PRIVATE);
+	    &target_frame, 1, GDK_ACTION_COPY);
 	setup_drag_common(box, frame);
+
+	/* override */
+#if 0
+	g_signal_connect(G_OBJECT(box), "drag-begin",
+	    G_CALLBACK(drag_frame_begin), frame);
+#endif
+	g_signal_connect(G_OBJECT(box), "drag-end",
+	    G_CALLBACK(drag_frame_end), frame);
+
 	g_signal_connect(G_OBJECT(box), "drag-motion",
 	    G_CALLBACK(drag_frame_motion), frame);
 }
@@ -386,16 +456,52 @@ static gboolean drag_canvas_motion(GtkWidget *widget,
 {
 	if (!has_target(widget, drag_context, "frame"))
 		return FALSE;
-//fprintf(stderr, "canvas\n");
+gtk_drag_finish(drag_context, FALSE, FALSE, time_);
 return FALSE;
+	if (!frame_on_canvas) {
+		frame_on_canvas = 1;
+		canvas_frame_begin(dragging);
+	}
+	if (canvas_frame_motion(dragging, x, y)) {
+		gdk_drag_status(drag_context, GDK_ACTION_COPY, time_);
+		return TRUE;
+	} else {
+		gdk_drag_status(drag_context, 0, time_);
+		return FALSE;
+	}
+}
+
+
+static void drag_canvas_leave(GtkWidget *widget, GdkDragContext *drag_context,
+    guint time_, gpointer user_data)
+{
+	leave_canvas();
+}
+
+
+static gboolean drag_canvas_drop(GtkWidget *widget,
+    GdkDragContext *drag_context, gint x, gint y, guint time_,
+    gpointer user_data)
+{
+	if (!has_target(widget, drag_context, "frame"))
+		return FALSE;
+	if (!canvas_frame_drop(dragging, x, y))
+		return FALSE;
+	gtk_drag_finish(drag_context, TRUE, FALSE, time_);
+	return TRUE;
 }
 
 
 void setup_canvas_drag(GtkWidget *canvas)
 {
-	gtk_drag_dest_set(canvas, GTK_DEST_DEFAULT_HIGHLIGHT,
-	    &target_frame, 1, GDK_ACTION_PRIVATE);
-	setup_drag_common(canvas, NULL);
+	gtk_drag_dest_set(canvas,
+	    GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
+	    &target_frame, 1, GDK_ACTION_COPY);
+
 	g_signal_connect(G_OBJECT(canvas), "drag-motion",
 	    G_CALLBACK(drag_canvas_motion), NULL);
+	g_signal_connect(G_OBJECT(canvas), "drag-leave",
+	    G_CALLBACK(drag_canvas_leave), NULL);
+	g_signal_connect(G_OBJECT(canvas), "drag-drop",
+	    G_CALLBACK(drag_canvas_drop), NULL);
 }

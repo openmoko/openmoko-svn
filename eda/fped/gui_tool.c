@@ -803,7 +803,7 @@ static struct inst *get_hover_inst(struct coord pos)
 }
 
 
-void tool_hover(struct coord pos)
+int tool_hover(struct coord pos)
 {
 	struct inst *curr;
 
@@ -825,15 +825,84 @@ got:
 #endif
 
 	if (curr == hover_inst)
-		return;
+		return !!curr;
 	if (hover_inst) {
 		over_leave();
 		hover_inst = NULL;
 	}
 	if (!curr)
-		return;
+		return 0;
 	hover_inst = curr;
 	over_enter(hover_save_and_draw, NULL);
+	return 1;
+}
+
+
+/* ----- frame drag and drop ----------------------------------------------- */
+
+
+/*
+ * When dragging a frame, we temporarily replace the selected tool (if any)
+ * with the frame tool.
+ */
+
+
+static struct tool_ops *pushed_ops;
+
+
+void tool_push_frame(struct frame *frame)
+{
+	pushed_ops = active_ops;
+	locked_frame = frame;
+	active_ops = &frame_ops;
+	/*
+	 * We don't need to call tool_selected since, with drag and drop, the
+	 * frame tools doesn't need activation anymore.
+	 */
+}
+
+
+static int do_place_frame(struct frame *frame, struct coord pos)
+{
+	if (!get_hover_inst(pos))
+		return 0;
+	tool_consider_drag(pos);
+	return 1;
+}
+
+
+/*
+ * Gtk calls drag-leave, drag-end, and only then drag-drop. So we'll already
+ * have cleaned up in tool_pop_frame before we get here. In order to place the
+ * frame, we need to activate the frame tool again.
+ *
+ * @@@ bug: there's a tool_reset in this path, so we'll lose the widget of the
+ * tool that's really active. This problem will vanish when scrapping the
+ * old-style frame referenes.
+ */
+
+int tool_place_frame(struct frame *frame, struct coord pos)
+{
+	int ok;
+
+	active_ops = &frame_ops;
+	ok = do_place_frame(frame, pos);
+	active_ops = pushed_ops;
+	return ok;
+}
+
+
+void tool_pop_frame(void)
+{
+	if (!active_tool)
+		return;
+	active_ops = pushed_ops;
+	/*
+	 * We don't need to call tool_selected since the only tool that could
+	 * use this would be the delete tool, and there the semantics would be
+	 * undesirable. Also, the delete tool never stays active, so it can't
+	 * appear together with drag and drop anyway.
+	 */
 }
 
 

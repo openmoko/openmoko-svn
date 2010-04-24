@@ -20,6 +20,7 @@
 
 
 int is_dragging(void *this);
+int is_dragging_anything(void);
 
 void setup_var_drag(struct var *var);
 void setup_value_drag(struct value *value);

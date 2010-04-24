@@ -187,6 +187,41 @@ static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event,
 }
 
 
+/* ----- drag and drop (frame to canvas) ----------------------------------- */
+
+
+void canvas_frame_begin(struct frame *frame)
+{
+	tool_push_frame(frame);
+}
+
+
+int canvas_frame_motion(struct frame *frame, int x, int y)
+{
+	struct coord pos = canvas_to_coord(x, y);
+
+	return tool_hover(pos);
+}
+
+
+void canvas_frame_end(void)
+{
+	tool_dehover();
+	tool_pop_frame();
+}
+
+
+int canvas_frame_drop(struct frame *frame, int x, int y)
+{
+	struct coord pos = canvas_to_coord(x, y);
+
+	if (!tool_place_frame(frame, pos))
+		return FALSE;
+	change_world();
+	return TRUE;
+}
+
+
 /* ----- button press and release ------------------------------------------ */
 
 
@@ -254,6 +289,8 @@ static gboolean button_release_event(GtkWidget *widget, GdkEventButton *event,
 	DPRINTF("--- button release ---");
 	switch (event->button) {
 	case 1:
+		if (is_dragging_anything())
+			return FALSE;
 		if (!dragging)
 			break;
 		drag_left(pos);
@@ -448,8 +485,9 @@ static gboolean expose_event(GtkWidget *widget, GdkEventExpose *event,
 static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event,
     gpointer data)
 {
+	DPRINTF("--- enter ---");
 	gtk_widget_grab_focus(widget);
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -461,7 +499,7 @@ static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event,
 		tool_cancel_drag();
 	tool_dehover();
 	dragging = 0;
-	return TRUE;
+	return FALSE;
 }
 
 

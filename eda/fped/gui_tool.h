@@ -46,7 +46,7 @@ struct pix_buf *gui_hover_frame(struct inst *self);
 void do_move_to_arc(struct inst *inst, struct inst *to, int i);
 
 void tool_dehover(void);
-void tool_hover(struct coord pos);
+int tool_hover(struct coord pos);
 const char *tool_tip(struct coord pos);
 int tool_consider_drag(struct coord pos);
 void tool_drag(struct coord to);
@@ -72,6 +72,10 @@ struct pix_buf *drag_new_line(struct inst *from, struct coord to);
 
 void tool_frame_update(void);
 void tool_frame_deleted(const struct frame *frame);
+
+void tool_push_frame(struct frame *frame);
+int tool_place_frame(struct frame *frame, struct coord pos);
+void tool_pop_frame(void);
 
 void tool_selected_inst(struct inst *inst);
 

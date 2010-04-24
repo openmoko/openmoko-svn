@@ -1,8 +1,8 @@
 /*
  * gui_canvas.h - GUI, canvas
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,11 @@ void zoom_in_center(void);
 void zoom_out_center(void);
 void zoom_to_frame(void);
 void zoom_to_extents(void);
+
+void canvas_frame_begin(struct frame *frame);
+int canvas_frame_motion(struct frame *frame, int x, int y);
+void canvas_frame_end(void);
+int canvas_frame_drop(struct frame *frame, int x, int y);
 
 GtkWidget *make_canvas(void);
 void init_canvas(void);
