@@ -9,6 +9,11 @@ The language is constrained such that anything that can be expressed in
 the textual definition also has a straightforward equivalent operation
 that can be performed through the GUI.
 
+This README describes only the footprint definition language. A
+description of the GUI can be found here:
+
+http://people.openmoko.org/werner/fped/gui.html
+
 This work is distributed under the terms of the GNU GENERAL PUBLIC
 LICENSE, Version 2:
 
@@ -249,6 +254,23 @@ semi-circle at each of the smaller sides of the enclosing rectangle.
 If enclosed in a square, rounded pads form a circle.
 
 rpad "<name>" <point-a> <point-b> [<type>]
+
+
+Holes
+- - -
+
+Holes can be used for through-hole pins or for mechanical support.
+In the former case, the hole must be placed inside a pad. Only one
+hole per pad is allowed. Mechanical holes must be outside any pads.
+
+Through-hole pads are always present on both sides of the board, i.e.,
+when fped generates a KiCad module, the surface layers of a pad
+containing a hole are propagated to the opposite side of the board.
+
+Holes have the same shape as a rounded pad and their geometry is
+defined in the same way:
+
+hole <point-a> <point-b>
 
 
 Measurements

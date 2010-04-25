@@ -64,6 +64,8 @@
 #define	PS_HATCH		mm_to_units(0.1)
 #define	PS_HATCH_LINE		mm_to_units(0.015)
 
+#define	PS_RIM_LINE		mm_to_units(0.02)
+
 #define	PS_FONT_OUTLINE		mm_to_units(0.025)
 
 #define	PS_VEC_LINE		mm_to_units(0.02)
@@ -220,21 +222,19 @@ static void ps_pad(FILE *file, const struct inst *inst, int show_name)
 	fprintf(file, "  closepath gsave %s grestore stroke\n",
 	    hatch(inst->u.pad.layers));
 
-	if (show_name)
+	if (show_name && !inst->u.pad.hole)
 		ps_pad_name(file, inst);
 }
 
 
-static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
+static void ps_rounded_rect(FILE *file, struct coord a, struct coord b)
 {
-	struct coord a = inst->base;
-	struct coord b = inst->u.pad.other;
 	unit_type h, w, r;
 
 	sort_coord(&a, &b);
 	h = b.y-a.y;
 	w = b.x-a.x;
-	fprintf(file, "0 setgray %d setlinewidth\n", PS_HATCH_LINE);
+
 	if (h > w) {
 		r = w/2;
 		fprintf(file, "  %d %d moveto\n", b.x, b.y-r);
@@ -248,11 +248,30 @@ static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
 		fprintf(file, "  %d %d lineto\n", a.x+r, b.y);
 		fprintf(file, "  %d %d %d 90 270 arc\n", a.x+r, a.y+r, r);
 	}
+}
+
+
+static void ps_rpad(FILE *file, const struct inst *inst, int show_name)
+{
+	fprintf(file, "0 setgray %d setlinewidth\n", PS_HATCH_LINE);
+	ps_rounded_rect(file, inst->base, inst->u.pad.other);
 	fprintf(file, "  closepath gsave %s grestore stroke\n",
 	    hatch(inst->u.pad.layers));
 
-	if (show_name)
+	if (show_name && !inst->u.pad.hole)
 		ps_pad_name(file, inst);
+}
+
+
+static void ps_hole(FILE *file, const struct inst *inst, int show_name)
+{
+	fprintf(file, "1 setgray %d setlinewidth\n", PS_RIM_LINE);
+	ps_rounded_rect(file, inst->base, inst->u.hole.other);
+	fprintf(file, "  closepath gsave fill grestore\n");
+	fprintf(file, "  0 setgray stroke\n");
+
+	if (show_name && inst->u.hole.pad)
+		ps_pad_name(file, inst->u.hole.pad);
 }
 
 
@@ -484,6 +503,9 @@ static void ps_foreground(FILE *file, enum inst_prio prio,
 			ps_rpad(file, inst, active_params.show_pad_names);
 		else
 			ps_pad(file, inst, active_params.show_pad_names);
+		break;
+	case ip_hole:
+		ps_hole(file, inst, active_params.show_pad_names);
 		break;
 	case ip_vec:
 		if (active_params.show_stuff)

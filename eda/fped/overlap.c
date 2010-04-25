@@ -1,8 +1,8 @@
 /*
  * overlap.c - Test for overlaps
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -11,6 +11,8 @@
  */
 
 
+#include <stdlib.h>
+
 #include "coord.h"
 #include "obj.h"
 #include "inst.h"
@@ -18,7 +20,7 @@
 
 
 /*
- * @@@ result may be too optimistic if "b" is arounded pad.
+ * @@@ result may be too optimistic if "b" is a rounded pad
  */
 
 int inside(const struct inst *a, const struct inst *b)
@@ -27,11 +29,29 @@ int inside(const struct inst *a, const struct inst *b)
 	struct coord min_b, max_b;
 
 	min_a = a->base;
-	max_a = a->u.pad.other;
+	switch (a->obj->type) {
+	case ot_pad:
+		max_a = a->u.pad.other;
+		break;
+	case ot_hole:
+		max_a = a->u.hole.other;
+		break;
+	default:
+		abort();
+	}
 	sort_coord(&min_a, &max_a);
 	
 	min_b = b->base;
-	max_b = b->u.pad.other;
+	switch (b->obj->type) {
+	case ot_pad:
+		max_b = b->u.pad.other;
+		break;
+	case ot_hole:
+		max_b = b->u.hole.other;
+		break;
+	default:
+		abort();
+	}
 	sort_coord(&min_b, &max_b);
 
 	return min_a.x >= min_b.x && max_a.x <= max_b.x &&
@@ -142,15 +162,27 @@ static int test_overlap(const struct inst *a, const struct inst *b,
 {
 	struct coord min, max;
 	unit_type h, w, r;
+	int rounded;
 
 	min = a->base;
-	max = a->u.pad.other;
+	switch (a->obj->type) {
+	case ot_pad:
+		max = a->u.pad.other;
+		rounded = a->obj->u.pad.rounded;
+		break;
+	case ot_hole:
+		max = a->u.hole.other;
+		rounded = 1;
+		break;
+	default:
+		abort();
+	}
 	sort_coord(&min, &max);
 
 	h = max.y-min.y;
 	w = max.x-min.x;
 
-	if (!a->obj->u.pad.rounded)
+	if (!rounded)
 		return do_rect(b, other, min.x, min.y, w, h);
 
 	if (h > w) {

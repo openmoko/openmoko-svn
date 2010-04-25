@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "meas.h"
 #include "inst.h"
+#include "hole.h"
 #include "layer.h"
 #include "delete.h"
 #include "obj.h"
@@ -475,6 +476,8 @@ int instantiate(void)
 		activate_found();
 	find_vec = NULL;
 	find_obj = NULL;
+	if (ok)
+		ok = link_holes();
 	if (ok)
 		ok = refine_layers();
 	if (ok)

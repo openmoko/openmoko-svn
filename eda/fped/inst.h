@@ -98,9 +98,11 @@ struct inst {
 			char *name;
 			struct coord other;
 			layer_type layers; /* bit-set of layers */
+			struct inst *hole; /* through-hole or NULL */
 		} pad;
 		struct {
 			struct coord other;
+			struct inst *pad; /* through-hole pad of NULL */
 		} hole;
 		struct {
 			unit_type r;
