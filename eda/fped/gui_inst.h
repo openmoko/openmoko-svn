@@ -1,8 +1,8 @@
 /*
  * gui_inst.h - GUI, instance functions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ unit_type gui_dist_vec_fallback(struct inst *self, struct coord pos,
 unit_type gui_dist_line(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_rect(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale);
+unit_type gui_dist_hole(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_arc(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_meas(struct inst *self, struct coord pos, unit_type scale);
 unit_type gui_dist_frame(struct inst *self, struct coord pos, unit_type scale);
@@ -44,6 +45,7 @@ void gui_draw_line(struct inst *self);
 void gui_draw_rect(struct inst *self);
 void gui_draw_pad(struct inst *self);
 void gui_draw_rpad(struct inst *self);
+void gui_draw_hole(struct inst *self);
 void gui_draw_arc(struct inst *self);
 void gui_draw_meas(struct inst *self);
 void gui_draw_frame(struct inst *self);

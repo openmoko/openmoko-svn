@@ -1,7 +1,7 @@
 /* * gui_style.c - GUI, style definitions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ GdkGC *gc_pad[mode_n];
 GdkGC *gc_pad_bare[mode_n];
 GdkGC *gc_pad_mask[mode_n];
 GdkGC *gc_ptext[mode_n];
+GdkGC *gc_rim[mode_n];
+GdkGC *gc_hole[mode_n];
 GdkGC *gc_meas[mode_n];
 GdkGC *gc_frame[mode_n];
 
@@ -61,13 +63,15 @@ void gui_setup_style(GdkDrawable *drawable)
 	gc_bg = gc("#000000", 0);
 	gc_bg_error = gc("#000040", 0);
 	gc_drag = gc("#ffffff", 2);
-	/*			inactive   active     selected */
+	/*			inactive   active     selected	width */
 	style(gc_vec,		"#202000", "#b0b050", "#ffff80", 1);
 	style(gc_obj,		"#006060", "#00ffff", "#ffff80", 1);
 	style(gc_pad,		"#400000", "#ff0000", "#ffff80", 1);
 	style(gc_pad_bare,	"#402000", "#ff6000", "#ffff80", 1);
 	style(gc_pad_mask,	"#000040", "#0000ff", "#ffff80", 2);
 	style(gc_ptext,		"#404040", "#ffffff", "#ffffff", 1);
+	style(gc_hole,		"#000000", "#000000", "#000000", 0);
+	style(gc_rim,		"#202020", "#606060", "#ffff80", 3);
 	style(gc_meas,		"#280040", "#ff00ff", "#ffff80", 1);
 	style(gc_frame,		"#005000", "#009000", "#ffff80", 1);
 

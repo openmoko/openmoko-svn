@@ -111,6 +111,10 @@ static int may_put_obj_now(const struct obj *obj, const struct vec *prev)
 		n |= need(obj->u.pad.other, prev);
 		l |= later(obj->u.pad.other, prev);
 		break;
+	case ot_hole:
+		n |= need(obj->u.hole.other, prev);
+		l |= later(obj->u.hole.other, prev);
+		break;
 	case ot_arc:
 		n |= need(obj->u.arc.start, prev);
 		n |= need(obj->u.arc.end, prev);
@@ -351,6 +355,10 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 		s = stralloc_printf("%spad \"%s\" %s %s%s",
 		    obj->u.pad.rounded ? "r" : "",
 		    obj->u.pad.name, base, s1, s2);
+		break;
+	case ot_hole:
+		s1 = obj_base_name(obj->u.hole.other, prev);
+		s = stralloc_printf("hole %s %s", base, s1);
 		break;
 	case ot_arc:
 		s1 = obj_base_name(obj->u.arc.start, prev);

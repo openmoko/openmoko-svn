@@ -104,6 +104,8 @@ SP	[\t ]*
 				  return TOK_PAD; }
 <INITIAL>"rpad"			{ BEGIN(NOKEYWORD);
 				  return TOK_RPAD; }
+<INITIAL>"hole"			{ BEGIN(NOKEYWORD);
+				  return TOK_HOLE; }
 <INITIAL>"rect"			{ BEGIN(NOKEYWORD);
 				  return TOK_RECT; }
 <INITIAL>"line"			{ BEGIN(NOKEYWORD);

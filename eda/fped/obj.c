@@ -112,6 +112,9 @@ int obj_anchors(struct obj *obj, struct vec ***anchors)
 	case ot_pad:
 		anchors[1] = &obj->u.pad.other;
 		return 2;
+	case ot_hole:
+		anchors[1] = &obj->u.hole.other;
+		return 2;
 	case ot_meas:
 		anchors[1] = &obj->u.meas.high;
 		return 2;
@@ -232,6 +235,11 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 			    obj->u.pad.other ? obj->u.pad.other->pos : base);
 			free(name);
 			if (!ok)
+				goto error;
+			break;
+		case ot_hole:
+			if (!inst_hole(obj, obj->base ? obj->base->pos : base,
+			    obj->u.hole.other ? obj->u.hole.other->pos : base))
 				goto error;
 			break;
 		case ot_arc:

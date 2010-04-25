@@ -178,6 +178,7 @@ enum obj_type {
 	ot_frame,
 	ot_rect,
 	ot_pad,
+	ot_hole,
 	ot_line,
 	ot_arc,
 	ot_meas,
@@ -200,6 +201,10 @@ struct pad {
 	enum pad_type type;
 };
 
+struct hole {
+	struct vec *other; /* NULL if frame origin */
+};
+
 struct arc {
 	struct vec *start; /* NULL if frame origin */
 	struct vec *end; /* NULL if this is a circle */
@@ -214,6 +219,7 @@ struct obj {
 		struct rect rect;
 		struct rect line;
 		struct pad pad;
+		struct hole hole;
 		struct arc arc;
 		struct meas meas;
 	} u;

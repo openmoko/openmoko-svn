@@ -116,6 +116,8 @@ extern GdkGC *gc_pad[mode_n];
 extern GdkGC *gc_pad_bare[mode_n];
 extern GdkGC *gc_pad_mask[mode_n];
 extern GdkGC *gc_ptext[mode_n];
+extern GdkGC *gc_rim[mode_n];
+extern GdkGC *gc_hole[mode_n];
 extern GdkGC *gc_meas[mode_n];
 extern GdkGC *gc_frame[mode_n];
 

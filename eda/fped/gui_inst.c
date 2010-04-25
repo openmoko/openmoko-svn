@@ -1,8 +1,8 @@
 /*
  * gui_inst.c - GUI, instance functions
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,15 +288,13 @@ void gui_draw_pad(struct inst *self)
 }
 
 
-void gui_draw_rpad(struct inst *self)
+static void draw_rounded_rect(GdkGC *gc, struct coord a, struct coord b,
+     int fill)
 {
-	struct coord min = translate(self->base);
-	struct coord max = translate(self->u.pad.other);
-	GdkGC *gc;
-	int fill;
+	struct coord min = translate(a);
+	struct coord max = translate(b);
 	unit_type h, w, r;
 
-	gc = pad_gc(self, &fill);
 	sort_coord(&min, &max);
 	h = max.y-min.y;
 	w = max.x-min.x;
@@ -323,8 +321,41 @@ void gui_draw_rpad(struct inst *self)
 		}
 		draw_arc(DA, gc, fill, max.x-r, min.y+r, r, 270, 90);
 	}
+}
 
+
+void gui_draw_rpad(struct inst *self)
+{
+	GdkGC *gc;
+	int fill;
+
+	gc = pad_gc(self, &fill);
+	draw_rounded_rect(gc, self->base, self->u.pad.other, fill);
 	gui_draw_pad_text(self);
+}
+
+
+/* ----- hole -------------------------------------------------------------- */
+
+
+unit_type gui_dist_hole(struct inst *self, struct coord pos, unit_type scale)
+{
+	unit_type d;
+
+	/* @@@ not quite right ... */
+	if (inside_rect(pos, self->base, self->u.hole.other))
+		return SELECT_R;
+	d = dist_rect(pos, self->base, self->u.hole.other)/scale;
+	return d > SELECT_R ? -1 : d;
+}
+
+
+void gui_draw_hole(struct inst *self)
+{
+	draw_rounded_rect(gc_hole[get_mode(self)],
+	    self->base, self->u.hole.other, 1);
+	draw_rounded_rect(gc_rim[get_mode(self)],
+	    self->base, self->u.hole.other, 0);
 }
 
 

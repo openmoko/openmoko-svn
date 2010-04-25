@@ -285,7 +285,7 @@ static void append_root_frame(void)
 
 %token		START_FPD START_EXPR START_VAR START_VALUES
 %token		TOK_SET TOK_LOOP TOK_PACKAGE TOK_FRAME TOK_TABLE TOK_VEC
-%token		TOK_PAD TOK_RPAD TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
+%token		TOK_PAD TOK_RPAD TOK_HOLE TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 %token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_PRINT TOK_DBG_DUMP
@@ -652,6 +652,12 @@ obj:
 			$$->u.pad.other = $4;
 			$$->u.pad.rounded = 1;
 			$$->u.pad.type = $5;
+		}
+	| TOK_HOLE base base
+		{
+			$$ = new_obj(ot_hole);
+			$$->base = $2;
+			$$->u.hole.other = $3;
 		}
 	| TOK_RECT base base opt_expr
 		{

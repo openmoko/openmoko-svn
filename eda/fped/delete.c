@@ -1,8 +1,8 @@
 /*
  * delete.c - Object deletion
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -137,6 +137,8 @@ static int obj_has_ref(const struct obj *obj, const struct vec *ref)
 		return obj->u.rect.other == ref;
 	case ot_pad:
 		return obj->u.pad.other == ref;
+	case ot_hole:
+		return obj->u.hole.other == ref;
 	case ot_arc:
 		return obj->u.arc.start == ref || obj->u.arc.end == ref;
 	case ot_meas:
@@ -209,6 +211,8 @@ static void destroy_obj(struct obj *obj)
 		break;
 	case ot_pad:
 		free(obj->u.pad.name);
+		break;
+	case ot_hole:
 		break;
 	case ot_line:
 		if (obj->u.line.width)

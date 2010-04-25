@@ -909,6 +909,37 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 }
 
 
+/* ----- hole -------------------------------------------------------------- */
+
+
+static void hole_op_select(struct inst *self)
+{
+	rect_status_sort(self->base, self->u.hole.other, -1, 1);
+}
+
+
+static struct inst_ops hole_ops = {
+	.draw		= gui_draw_hole,
+	.distance	= gui_dist_hole,
+	.select		= hole_op_select,
+	.draw_move	= draw_move_hole,
+};
+
+
+int inst_hole(struct obj *obj, struct coord a, struct coord b)
+{
+	struct inst *inst;
+
+	inst = add_inst(&hole_ops, ip_hole, a);
+	inst->obj = obj;
+	inst->u.hole.other = b;
+	find_inst(inst);
+	update_bbox(&inst->bbox, b);
+	propagate_bbox(inst);
+	return 1;
+}
+
+
 /* ----- arc --------------------------------------------------------------- */
 
 

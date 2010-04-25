@@ -40,6 +40,7 @@ enum inst_prio {
 	ip_frame,	/* frames have their own selection */
 	ip_pad_copper,	/* pads also accept clicks inside; pads with copper */
 	ip_pad_special,	/* pads with only solder paste or mask, on top */
+	ip_hole,	/* holes in pads must be on top to be seen */
 	ip_circ,	/* circles don't overlap easily */
 	ip_arc,		/* arcs are like circles, just shorter */
 	ip_rect,	/* rectangles have plenty of sides */
@@ -98,6 +99,9 @@ struct inst {
 			struct coord other;
 			layer_type layers; /* bit-set of layers */
 		} pad;
+		struct {
+			struct coord other;
+		} hole;
 		struct {
 			unit_type r;
 			double a1, a2;
@@ -173,6 +177,7 @@ int inst_vec(struct vec *vec, struct coord base);
 int inst_line(struct obj *obj, struct coord a, struct coord b, unit_type width);
 int inst_rect(struct obj *obj, struct coord a, struct coord b, unit_type width);
 int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b);
+int inst_hole(struct obj *obj, struct coord a, struct coord b);
 int inst_arc(struct obj *obj, struct coord center, struct coord start,
     struct coord stop, unit_type width);
 int inst_meas(struct obj *obj, struct coord from, struct coord to);

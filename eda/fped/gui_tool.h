@@ -36,6 +36,7 @@ struct pix_buf *draw_move_line(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_rect(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_pad(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_rpad(struct inst *inst, struct coord pos, int i);
+struct pix_buf *draw_move_hole(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_arc(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_meas(struct inst *inst, struct coord pos, int i);
 struct pix_buf *draw_move_frame(struct inst *inst, struct coord pos, int i);

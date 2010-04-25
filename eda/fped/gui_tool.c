@@ -40,6 +40,7 @@
 #include "icons/meas_y.xpm"
 #include "icons/pad.xpm"
 #include "icons/rpad.xpm"
+#include "icons/hole.xpm"
 #include "icons/point.xpm"
 #include "icons/delete.xpm"
 #include "icons/delete_off.xpm"
@@ -88,6 +89,7 @@ struct obj *new_obj_unconnected(enum obj_type type, struct inst *base)
 
 	obj = alloc_type(struct obj);
 	obj->type = type;
+	obj->name = NULL;
 	obj->frame = active_frame;
 	obj->base = inst_get_vec(base);
 	obj->next = NULL;
@@ -456,6 +458,33 @@ struct pix_buf *draw_move_rpad(struct inst *inst, struct coord pos, int i)
 static struct tool_ops rpad_ops = {
 	.drag_new	= drag_new_rect,
 	.end_new	= end_new_rpad,
+};
+
+
+/* ----- hole -------------------------------------------------------------- */
+
+
+static int end_new_hole(struct inst *from, struct inst *to)
+{
+	struct obj *obj;
+
+	if (from == to)
+		return 0;
+	obj = new_obj(ot_hole, from);
+	obj->u.hole.other = inst_get_vec(to);
+	return 1;
+}
+
+
+struct pix_buf *draw_move_hole(struct inst *inst, struct coord pos, int i)
+{
+	return draw_move_rect_common(inst, inst->u.hole.other, pos, i);
+}
+
+
+static struct tool_ops hole_ops = {
+	.drag_new	= drag_new_rect,
+	.end_new	= end_new_hole,
 };
 
 
@@ -1049,6 +1078,9 @@ GtkWidget *get_icon_by_inst(const struct inst *inst)
 	case ip_pad_special:
 		image = inst->obj->u.pad.rounded ? xpm_rpad : xpm_pad;
 		break;
+	case ip_hole:
+		image = xpm_hole;
+		break;
 	case ip_circ:
 		image = xpm_circ;
 		break;
@@ -1166,6 +1198,9 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	tool_button(bar, drawable, xpm_rpad,
 	    "Add a rounded pad",
 	    tool_button_press_event, &rpad_ops);
+	tool_button(bar, drawable, xpm_hole,
+	    "Add a hole",
+	    tool_button_press_event, &hole_ops);
 	tool_button(bar, drawable, xpm_line,
 	    "Add a silk screen line",
 	    tool_button_press_event, &line_ops);
