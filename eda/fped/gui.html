@@ -93,7 +93,32 @@ Frames serve various purposes:
     a pad.
   <LI> To define a repetition through a loop or a table.
   <LI> To set variables for child frames. 
-</UL
+</UL>
+
+At the bottom of the hierarchy, we have the root frame. To add another
+frame, right-click on the root frame's label "(root)" and select "Add
+frame".
+<P>
+To be able to put items into the new frame, it has to be attached to
+the root frame (or to any other frame that's attached). This is called a
+<I>frame reference</I>. First, we need a place to attach it to. This
+can be the origin of its parent frame or it can be the end of a vector
+in the parent frame. To create the frame reference, do this:
+<P>
+<UL>
+  <LI> Click on the parent frame to select it.
+  <LI> Press the left mouse button on the frame you wish to reference
+    and drag it (move the mouse pointer while keeping the left button
+    pressed) into the canvas. When dragging, the mouse cursor changes
+    to show a hand.
+  <LI> When the mouse pointer is above a suitable point of attachment,
+    the point of attachment is highlighted with a red circle and the
+    mouse cursor changes to show a hand with a plus sign.
+  <LI> At the desired location, release the mouse button.
+</UL>
+
+If you wish to cancel the operation, simply release the mouse button at
+any place that isn't a point of attachment.
 
 
 <H1>Variables</H1>
@@ -191,25 +216,6 @@ Tools are used to add new elements and to manipulate existing ones.
     Note that the starting point of the vector has to be in the same
     frame as the vector being drawn. This limitation also applies to
     points defining pads and silk-screen items.
-  <DT><IMG src="manual/frame.png">&nbsp;<IMG src="manual/frame_locked.png">
-    &nbsp;<IMG src="manual/frame_ready.png">
-  <DD> Add a frame reference. A frame reference inserts the content of a
-    frame into another frame. There are three steps in this process:
-    <UL>
-      <LI> Select the frame to be inserted and click on the frame icon.
-	A large black dot appears in the icon to indicate that a frame
-	reference has been chosen.
-      <LI> Select the frame into which to insert the reference. The dot
-	changes to green to indicate that the reference can now be placed.
-	If the dot stays black, then the selected frame is not a valid
-	destination, i.e., because the reference in turn references this
-	frame.
-      <LI> Click on the location at which to attach the reference. This
-	location can be either the end of a vector or the frame's origin.
-    </UL>
-    When finished, don't forget that the destination frame is still selected.
-    In order to add elements to the newly referenced frame, you have to
-    select it first.
   <DT><IMG src="manual/pad.png">&nbsp;<IMG src="manual/rpad.png">
   <DD> Add a pad. Pads are either rectangular or rounded. They are
     defined by two points which are opposite corners of the rectangle

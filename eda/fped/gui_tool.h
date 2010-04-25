@@ -65,14 +65,6 @@ struct pix_buf *draw_move_line_common(struct inst *inst,
     struct coord end, struct coord pos, int i);
 struct pix_buf *drag_new_line(struct inst *from, struct coord to);
 
-
-/*
- * Cache the frame and track it.
- */
-
-void tool_frame_update(void);
-void tool_frame_deleted(const struct frame *frame);
-
 void tool_push_frame(struct frame *frame);
 int tool_place_frame(struct frame *frame, struct coord pos);
 void tool_pop_frame(void);

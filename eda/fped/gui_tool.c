@@ -34,8 +34,6 @@
 #include "icons/arc.xpm"
 #include "icons/circ.xpm"
 #include "icons/frame.xpm"
-#include "icons/frame_locked.xpm"
-#include "icons/frame_ready.xpm"
 #include "icons/line.xpm"
 #include "icons/meas.xpm"
 #include "icons/meas_x.xpm"
@@ -49,11 +47,10 @@
 #include "icons/vec.xpm"
 
 
-static GtkWidget *ev_point, *ev_delete, *ev_frame;
+static GtkWidget *ev_point, *ev_delete;
 static GtkWidget *active_tool;
 static struct tool_ops *active_ops = NULL;
 static struct inst *hover_inst = NULL;
-static GtkWidget *frame_image, *frame_image_locked, *frame_image_ready;
 static GtkWidget *delete_image[2];
 
 static struct drag_state {
@@ -591,45 +588,10 @@ static int is_parent_of(const struct frame *p, const struct frame *c)
 }
 
 
-/* ----- frame cache ------------------------------------------------------- */
+/* ----- frame ------------------------------------------------------------- */
 
 
 static struct frame *locked_frame = NULL;
-
-
-static void set_frame_image(GtkWidget *image)
-{
-	set_image(ev_frame, image);
-}
-
-
-void tool_frame_update(void)
-{
-	set_frame_image(!locked_frame ? frame_image :
-	    is_parent_of(locked_frame, active_frame) ?
-	    frame_image_locked : frame_image_ready);
-}
-
-
-void tool_frame_deleted(const struct frame *frame)
-{
-	if (frame == locked_frame) {
-		locked_frame = NULL;
-		set_frame_image(frame_image);
-	}
-}
-
-
-static void tool_selected_frame(void)
-{
-	if (active_frame != root_frame) {
-		locked_frame = active_frame;
-		set_frame_image(frame_image_locked);
-	}
-}
-
-
-/* ----- frame ------------------------------------------------------------- */
 
 
 struct pix_buf *draw_move_frame(struct inst *inst, struct coord pos, int i)
@@ -663,14 +625,13 @@ static int end_new_frame(struct inst *from, struct inst *to)
 	if (!locked_frame->active_ref)
 		locked_frame->active_ref = obj;
 	locked_frame = NULL;
-	tool_frame_update();
 	tool_reset();
 	return 1;
 }
 
 
 static struct tool_ops frame_ops = {
-	.tool_selected	= tool_selected_frame,
+	.tool_selected	= NULL,
 	.drag_new	= NULL,
 	.end_new	= end_new_frame,
 };
@@ -1199,8 +1160,6 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	tool_button(bar, drawable, xpm_vec,
 	    "Add a vector",
 	    tool_button_press_event, &vec_ops);
-	ev_frame = tool_button(bar, drawable, NULL, NULL,
-	    tool_button_press_event, &frame_ops);
 	tool_button(bar, drawable, xpm_pad,
 	    "Add a rectangular pad",
 	    tool_button_press_event, &pad_ops);
@@ -1227,17 +1186,6 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 	    "Add a vertical measurement",
 	    tool_button_press_event, &tool_meas_ops_y);
 
-	frame_image = gtk_widget_ref(make_image(drawable, xpm_frame,
-	    "Step 1: select the current frame for insertion"));
-	frame_image_locked =
-	    gtk_widget_ref(make_image(drawable, xpm_frame_locked,
-	    "Step 2: select the frame into which to insert"));
-	frame_image_ready =
-	    gtk_widget_ref(make_image(drawable, xpm_frame_ready,
-	    "Final step: add the frame reference to an anchor point "
-	    "(vector or origin)"));
-	set_frame_image(frame_image);
-
 	delete_image[0] = gtk_widget_ref(make_image(drawable, xpm_delete_off,
 	    NULL));
 	delete_image[1] = gtk_widget_ref(make_image(drawable, xpm_delete,
@@ -1252,9 +1200,6 @@ GtkWidget *gui_setup_tools(GdkDrawable *drawable)
 
 void gui_cleanup_tools(void)
 {
-	g_object_unref(frame_image);
-	g_object_unref(frame_image_locked);
-	g_object_unref(frame_image_ready);
 	g_object_unref(delete_image[0]);
 	g_object_unref(delete_image[1]);
 }

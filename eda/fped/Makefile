@@ -22,7 +22,7 @@ OBJS = fped.o expr.o coord.o obj.o delete.o inst.o util.o error.o \
        gui_tool.o gui_over.o gui_meas.o gui_frame.o gui_frame_drag.o
 
 XPMS = point.xpm delete.xpm delete_off.xpm \
-       vec.xpm frame.xpm frame_locked.xpm frame_ready.xpm \
+       vec.xpm frame.xpm \
        line.xpm rect.xpm pad.xpm rpad.xpm arc.xpm circ.xpm \
        meas.xpm meas_x.xpm meas_y.xpm \
        stuff.xpm stuff_off.xpm meas_off.xpm \
