@@ -1,8 +1,8 @@
 /*
  * kicad.c - Dump objects in the KiCad board/module format
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,22 @@
 #include "kicad.h"
 
 
-static void kicad_pad(FILE *file, const struct inst *inst)
+static unit_type zeroize(unit_type n)
+{
+	return n == -1 || n == 1 ? 0 : n;
+}
+
+
+static void kicad_centric(struct coord a, struct coord b,
+    struct coord *center, struct coord *size)
 {
 	struct coord min, max;
 	unit_type tmp;
 
-	min.x = units_to_kicad(inst->base.x);
-	min.y = units_to_kicad(inst->base.y);
-	max.x = units_to_kicad(inst->u.pad.other.x);
-	max.y = units_to_kicad(inst->u.pad.other.y);
+	min.x = units_to_kicad(a.x);
+	min.y = units_to_kicad(a.y);
+	max.x = units_to_kicad(b.x);
+	max.y = units_to_kicad(b.y);
 
 	if (min.x > max.x) {
 		tmp = min.x;
@@ -41,6 +48,40 @@ static void kicad_pad(FILE *file, const struct inst *inst)
 		max.y = tmp;
 	}
 
+	size->x = max.x-min.x;
+	size->y = max.y-min.y;
+	center->x = (min.x+max.x)/2;
+	center->y = -(min.y+max.y)/2;
+}
+
+
+static void do_drill(FILE *file, const struct inst *pad, struct coord *ref)
+{
+	const struct inst *hole = pad->u.pad.hole;
+	struct coord center, size;
+
+	if (!hole)
+		return;
+
+	kicad_centric(hole->base, hole->u.hole.other, &center, &size);
+
+	/* Allow for rounding errors  */
+
+	fprintf(file, "Dr %d %d %d", size.x,
+	    -zeroize(center.x-ref->x), -zeroize(center.y-ref->y));
+	if (size.x < size.y-1 || size.x > size.y+1)
+		fprintf(file, " O %d %d", size.x, size.y);
+	fprintf(file, "\n");
+	*ref = center;
+}
+
+
+static void kicad_pad(FILE *file, const struct inst *inst)
+{
+	struct coord center, size;
+
+	kicad_centric(inst->base, inst->u.pad.other, &center, &size);
+
 	fprintf(file, "$PAD\n");
 
 	/*
@@ -48,18 +89,45 @@ static void kicad_pad(FILE *file, const struct inst *inst)
  	 */
 	fprintf(file, "Sh \"%s\" %c %d %d 0 0 0\n",
 	    inst->u.pad.name, inst->obj->u.pad.rounded ? 'O' : 'R',
-	    max.x-min.x, max.y-min.y);
+	    size.x, size.y);
+
+	/*
+	 * Drill hole
+	 */
+	do_drill(file, inst, &center);
 
 	/*
 	 * Attributes: pad type, N, layer mask
 	 */
-	fprintf(file, "At SMD N %8.8X\n", (unsigned) inst->u.pad.layers);
+	fprintf(file, "At %s N %8.8X\n",
+	    inst->u.pad.hole ? "STD" : "SMD", (unsigned) inst->u.pad.layers);
 
 	/*
 	 * Position: Xpos, Ypos
 	 */
-	fprintf(file, "Po %d %d\n", (min.x+max.x)/2, -(min.y+max.y)/2);
+	fprintf(file, "Po %d %d\n", center.x, center.y);
 
+	fprintf(file, "$EndPAD\n");
+}
+
+
+static void kicad_hole(FILE *file, const struct inst *inst)
+{
+	struct coord center, size;
+
+	if (inst->u.hole.pad)
+		return;
+	kicad_centric(inst->base, inst->u.hole.other, &center, &size);
+	fprintf(file, "$PAD\n");
+	if (size.x < size.y-1 || size.x > size.y+1) {
+		fprintf(file, "Sh \"HOLE\" O %d %d 0 0 0\n", size.x, size.y);
+		fprintf(file, "Dr %d 0 0 O %d %d\n", size.x, size.x, size.y);
+	} else {
+		fprintf(file, "Sh \"HOLE\" C %d %d 0 0 0\n", size.x, size.x);
+		fprintf(file, "Dr %d 0 0\n", size.x);
+	}
+	fprintf(file, "At HOLE N %8.8X\n", (unsigned) inst->u.hole.layers);
+	fprintf(file, "Po %d %d\n", center.x, center.y);
 	fprintf(file, "$EndPAD\n");
 }
 
@@ -151,6 +219,9 @@ static void kicad_inst(FILE *file, enum inst_prio prio, const struct inst *inst)
 	case ip_pad_copper:
 	case ip_pad_special:
 		kicad_pad(file, inst);
+		break;
+	case ip_hole:
+		kicad_hole(file, inst);
 		break;
 	case ip_line:
 		kicad_line(file, inst);

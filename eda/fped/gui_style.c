@@ -71,7 +71,7 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_pad_mask,	"#000040", "#0000ff", "#ffff80", 2);
 	style(gc_ptext,		"#404040", "#ffffff", "#ffffff", 1);
 	style(gc_hole,		"#000000", "#000000", "#000000", 0);
-	style(gc_rim,		"#202020", "#606060", "#ffff80", 3);
+	style(gc_rim,		"#303030", "#606060", "#ffff80", 3);
 	style(gc_meas,		"#280040", "#ff00ff", "#ffff80", 1);
 	style(gc_frame,		"#005000", "#009000", "#ffff80", 1);
 

@@ -933,6 +933,7 @@ int inst_hole(struct obj *obj, struct coord a, struct coord b)
 	inst = add_inst(&hole_ops, ip_hole, a);
 	inst->obj = obj;
 	inst->u.hole.other = b;
+	inst->u.pad.layers = mech_hole_layers();
 	find_inst(inst);
 	update_bbox(&inst->bbox, b);
 	propagate_bbox(inst);

@@ -102,6 +102,7 @@ struct inst {
 		} pad;
 		struct {
 			struct coord other;
+			layer_type layers; /* bit-set of layers (mech only) */
 			struct inst *pad; /* through-hole pad of NULL */
 		} hole;
 		struct {

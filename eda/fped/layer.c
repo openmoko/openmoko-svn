@@ -1,8 +1,8 @@
 /*
  * layer.c - PCB layers on a pad
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,12 @@
  * Shorthands for the layers we use in a general sense.
  */
 
-#define LAYER_COPPER	(1 << layer_top)
-#define LAYER_PASTE	(1 << layer_paste_top)
-#define LAYER_MASK	(1 << layer_mask_top)
+#define LAYER_COPPER_TOP	(1 << layer_top)
+#define LAYER_PASTE_TOP		(1 << layer_paste_top)
+#define LAYER_MASK_TOP		(1 << layer_mask_top)
+#define LAYER_COPPER_BOTTOM	(1 << layer_bottom)
+#define LAYER_PASTE_BOTTOM	(1 << layer_paste_bottom)
+#define LAYER_MASK_BOTTOM	(1 << layer_mask_bottom)
 
 
 /* ----- Conversion between pad types and layer sets ----------------------- */
@@ -44,16 +47,16 @@ layer_type pad_type_to_layers(enum pad_type type)
 
 	switch (type) {
 	case pt_normal:
-		layers = LAYER_PASTE;
+		layers = LAYER_PASTE_TOP;
 		/* fall through */
 	case pt_bare:
-		layers |= LAYER_COPPER | LAYER_MASK;
+		layers |= LAYER_COPPER_TOP | LAYER_MASK_TOP;
 		break;
 	case pt_paste:
-		layers = LAYER_PASTE;
+		layers = LAYER_PASTE_TOP;
 		break;
 	case pt_mask:
-		layers = LAYER_MASK;
+		layers = LAYER_MASK_TOP;
 		break;
 	default:
 		abort();
@@ -64,17 +67,27 @@ layer_type pad_type_to_layers(enum pad_type type)
 
 enum pad_type layers_to_pad_type(layer_type layers)
 {
-	if (layers & LAYER_COPPER) {
-		if (layers & LAYER_PASTE)
+	if (layers & LAYER_COPPER_TOP) {
+		if (layers & LAYER_PASTE_TOP)
 			return pt_normal;
 		return pt_bare;
 	} else {
-		if (layers & LAYER_PASTE)
+		if (layers & LAYER_PASTE_TOP)
 			return pt_paste;
-		if (layers & LAYER_MASK)
+		if (layers & LAYER_MASK_TOP)
 			return pt_mask;
 		abort();
 	}
+}
+
+
+/* ----- layers in mechanical holes ---------------------------------------- */
+
+
+layer_type mech_hole_layers(void)
+{
+	return LAYER_PASTE_TOP | LAYER_PASTE_BOTTOM |
+	    LAYER_MASK_TOP | LAYER_MASK_BOTTOM;
 }
 
 
@@ -83,8 +96,8 @@ enum pad_type layers_to_pad_type(layer_type layers)
 
 static int refine_overlapping(struct inst *copper, struct inst *other)
 {
-	if (other->u.pad.layers & LAYER_PASTE) {
-		copper->u.pad.layers &= ~LAYER_PASTE;
+	if (other->u.pad.layers & LAYER_PASTE_TOP) {
+		copper->u.pad.layers &= ~LAYER_PASTE_TOP;
 		if (!inside(other, copper)) {
 			fail("solder paste without copper underneath "
 			    "(\"%s\" line %d, \"%s\" line %d)",
@@ -94,8 +107,8 @@ static int refine_overlapping(struct inst *copper, struct inst *other)
 			return 0;
 		}
 	}
-	if (other->u.pad.layers & LAYER_MASK)
-		copper->u.pad.layers &= ~LAYER_MASK;
+	if (other->u.pad.layers & LAYER_MASK_TOP)
+		copper->u.pad.layers &= ~LAYER_MASK_TOP;
 	return 1;
 }
 
@@ -131,6 +144,17 @@ static int refine_copper(const struct pkg *pkg_copper, struct inst *copper)
 }
 
 
+static void mirror_layers(layer_type *layers)
+{
+	if (*layers & LAYER_COPPER_TOP)
+		*layers |= LAYER_COPPER_BOTTOM;
+	if (*layers & LAYER_PASTE_TOP)
+		*layers |= LAYER_PASTE_BOTTOM;
+	if (*layers & LAYER_MASK_TOP)
+		*layers |= LAYER_MASK_BOTTOM;
+}
+
+
 int refine_layers(void)
 {
 	const struct pkg *pkg;
@@ -138,8 +162,11 @@ int refine_layers(void)
 
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		for (copper = pkg->insts[ip_pad_copper]; copper;
-		    copper = copper->next)
+		    copper = copper->next) {
 			if (!refine_copper(pkg, copper))
 				return 0;
+			if (copper->u.pad.hole)
+				mirror_layers(&copper->u.pad.layers);
+		}
 	return 1;
 }
