@@ -79,5 +79,3 @@ Future directions:
 - instead of blue screening, we could perhaps just skip the offending items and
   replace them with a "here's a problem" marker that would still point to the
   underlying object and allow repairs to be made
-- instead of the awkward lock-switch-anchor process for frame references, we
-  could just drag the frame name into the canvas

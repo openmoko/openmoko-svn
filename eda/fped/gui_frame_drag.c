@@ -486,6 +486,7 @@ static gboolean drag_canvas_drop(GtkWidget *widget,
 	if (!canvas_frame_drop(dragging, x, y))
 		return FALSE;
 	gtk_drag_finish(drag_context, TRUE, FALSE, time_);
+	drag_end(widget, drag_context, user_data);
 	return TRUE;
 }
 
