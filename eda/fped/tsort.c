@@ -152,8 +152,10 @@ void **end_tsort(struct tsort *tsort)
 		}
 		free(node);
 	}
-	if (tsort->nodes) /* we have at least one cycle */
+	if (tsort->nodes) {
+		fprintf(stderr, "cycle detected in partial order\n");
 		abort();
+	}
 	free(tsort);
 	res[n] = NULL;
 	return res;

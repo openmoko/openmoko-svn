@@ -613,4 +613,4 @@ output. %exit immediately exits fped, without invoking the GUI.
 %tsort is used to test-drive the topological sort algorithm. The items
 in the curly braces are declarations of nodes with (-<id>) or without
 (+<id>) decay or edges in the partial order. The optional number is
-the edge's priority. See tsort.c for details.
+the edge's priority. See tsort.c for details, test/tsort for examples.

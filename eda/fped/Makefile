@@ -82,7 +82,7 @@ endif
 # ----- Rules -----------------------------------------------------------------
 
 .PHONY:		all dep depend clean install uninstall manual upload-manual
-.PHONY:		update montage
+.PHONY:		update montage test tests valgrind
 
 .SUFFIXES:	.fig .xpm .ppm
 
@@ -155,6 +155,18 @@ dep depend .depend:
 		@echo 'no need to run "make depend" anymore' 1>&2
 
 -include $(OBJS:.o=.d)
+
+# ----- Tests -----------------------------------------------------------------
+
+test tests:	all
+		LANG= sh -c \
+		  'passed=0 && cd test && \
+		  for n in [a-z]*; do \
+		  SCRIPT=$$n . ./$$n; done; \
+		  echo "Passed all $$passed tests"'
+
+valgrind:
+		VALGRIND="valgrind -q" $(MAKE) tests
 
 # ----- Cleanup ---------------------------------------------------------------
 

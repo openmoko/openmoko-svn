@@ -1,0 +1,155 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped "tsort: total order" <<EOF
+package "_"
+
+%tsort {
+	a b
+	a c
+	a d
+	b c
+	b d
+	c d
+}
+EOF
+expect <<EOF
+a
+b
+c
+d
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: partial order change (1)" <<EOF
+package "_"
+
+%tsort {
+	a b
+	a c
+	a d
+	d b
+}
+EOF
+expect <<EOF
+a
+c
+d
+b
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: partial order change (2)" <<EOF
+package "_"
+
+%tsort {
+	b c
+	c d
+	a b
+}
+EOF
+expect <<EOF
+a
+b
+c
+d
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: old order differs from resolution order" <<EOF
+package "_"
+
+%tsort {
+	+a +b +c +d
+	a c
+	a b
+	a d
+}
+EOF
+expect <<EOF
+a
+b
+c
+d
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: order change due to priority" <<EOF
+package "_"
+
+%tsort {
+	a b
+	a c 1
+	a d
+}
+EOF
+expect <<EOF
+a
+c
+b
+d
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: priority accumulation without decay" <<EOF
+package "_"
+
+%tsort {
+	+a +b +c +d
+	a b 1
+	a d 1
+}
+EOF
+expect <<EOF
+a
+b
+d
+c
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "tsort: priority accumulation with decay" <<EOF
+package "_"
+
+%tsort {
+	+a -b +c +d
+	a b 1
+	a d 1
+}
+EOF
+expect <<EOF
+a
+b
+c
+d
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "tsort: cycle" <<EOF
+package "_"
+
+%tsort {
+	a b
+	b a
+}
+EOF
+expect <<EOF
+cycle detected in partial order
+Aborted (core dumped)
+EOF
+
+# not entirely comfortable about the "Aborted (core dumped)". It's a system
+# message (from the shell) that may get mangled. Also, since few people keep
+# their cores these days, "(core dumped)" shouldn't really appear. Wonder why
+# it does. strace agrees that __WCOREFLAG is set ...
+
+###############################################################################
