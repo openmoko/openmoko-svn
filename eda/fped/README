@@ -582,14 +582,15 @@ would print "width = 1mm"
 Experimental: debugging directives
 ----------------------------------
 
-For debugging and regression tests, fped supports the following commands
-that mimick the effect of GUI operations:
+For debugging and regression tests, fped supports the following commands,
+most of which mimick the effect of GUI operations:
 
 %del <identifier>
 %move <identifier> [<number>] <identifier>
 %print <expression>
 %dump
 %exit
+%tsort { -<id> | +<id> | <id-before> <id-after> [<number>] ... }
 
 %del and %move take as their first argument the name of the vector or
 object to manipulate. For this purpose, also objects can be labeled.
@@ -608,3 +609,8 @@ anchor index	vec/frame	line/rect/pad	arc		measurement
 
 %dump writes the footprint definition in the fped language to standard
 output. %exit immediately exits fped, without invoking the GUI.
+
+%tsort is used to test-drive the topological sort algorithm. The items
+in the curly braces are declarations of nodes with (-<id>) or without
+(+<id>) decay or edges in the partial order. The optional number is
+the edge's priority. See tsort.c for details.

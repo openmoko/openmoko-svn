@@ -22,6 +22,7 @@
 #include "meas.h"
 #include "gui_status.h"
 #include "dump.h"
+#include "tsort.h"
 #include "fpd.h"
 
 
@@ -45,6 +46,8 @@ static struct obj **next_obj;
 static int n_vars, n_values;
 
 static const char *id_sin, *id_cos, *id_sqrt;
+
+static struct tsort *tsort;
 
 
 static struct frame *find_frame(const char *name)
@@ -289,7 +292,7 @@ static void append_root_frame(void)
 %token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 %token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_PRINT TOK_DBG_DUMP
-%token		TOK_DBG_EXIT
+%token		TOK_DBG_EXIT TOK_DBG_TSORT
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -480,6 +483,39 @@ debug_item:
 	| TOK_DBG_EXIT
 		{
 			exit(0);
+		}
+	| TOK_DBG_TSORT '{'
+		{
+			tsort = begin_tsort();
+		}
+	    sort_items '}'
+		{
+			void **sort, **walk;
+
+			sort = end_tsort(tsort);
+			for (walk = sort; *walk; walk++)
+				printf("%s\n", (char *) *walk);
+			free(sort);
+		}
+	;
+
+sort_items:
+	| sort_items '+' ID
+		{
+			add_node(tsort, (void *) $3, 0);
+		}
+	| sort_items '-' ID
+		{
+			add_node(tsort, (void *) $3, 1);
+		}
+	| sort_items ID ID opt_num
+		{
+			struct node *a, *b;
+
+			/* order is important here ! */
+			a = add_node(tsort, (void *) $2, 0);
+			b = add_node(tsort, (void *) $3, 0);
+			add_edge(a, b, $4.n);
 		}
 	;
 

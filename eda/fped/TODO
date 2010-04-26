@@ -69,7 +69,6 @@ Future directions:
 - live update of value when entering strings and expressions ?
 - advanced: non-standard solder mask
 - advanced: solder paste exceptions (subtractive, additive)
-- advanced: holes
 - advanced: silk line width
 - future: consider editing non-canvas items (e.g., variable names/values) in
   place

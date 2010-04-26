@@ -133,6 +133,8 @@ SP	[\t ]*
 				  return TOK_DBG_DUMP; }
 <INITIAL>"%exit"		{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_EXIT; }
+<INITIAL>"%tsort"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_TSORT; }
 
 <INITIAL>[a-zA-Z_][a-zA-Z_0-9]*: { *strchr(yytext, ':') = 0;
 				  yylval.id = unique(yytext);
