@@ -162,7 +162,7 @@ test tests:	all
 		LANG= sh -c \
 		  'passed=0 && cd test && \
 		  for n in [a-z]*; do \
-		  SCRIPT=$$n . ./$$n; done; \
+		  SCRIPT=$$n CWD_PREFIX=.. . ./$$n; done; \
 		  echo "Passed all $$passed tests"'
 
 valgrind:

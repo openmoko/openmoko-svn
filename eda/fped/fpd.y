@@ -342,7 +342,10 @@ all:
 	;
 
 fpd:
-	| frame_defs part_name opt_unit frame_items
+	frame_defs part_name opt_unit opt_frame_items opt_measurements
+	| frame_defs unit opt_frame_items opt_measurements
+	| frame_defs frame_items opt_measurements
+	| frame_defs opt_measurements
 	;
 
 part_name:
@@ -364,7 +367,11 @@ part_name:
 	;
 
 opt_unit:
-	| TOK_UNIT ID
+	| unit
+	;
+
+unit:
+	TOK_UNIT ID
 		{
 			if (!strcmp($2, "mm"))
 				curr_unit = curr_unit_mm;
@@ -400,14 +407,18 @@ frame_def:
 				frames = curr_frame;
 			last_frame = curr_frame;
 		}
-	    frame_items '}'
+	    opt_frame_items '}'
 		{
 			set_frame(root_frame);
 		}
 	;
 
+opt_frame_items:
+	| frame_items
+	;
+
 frame_items:
-	| measurements
+	frame_item
 	| frame_item frame_items
 	;
 
@@ -761,6 +772,10 @@ pad_type:
 				YYABORT;
 			}
 		}
+	;
+
+opt_measurements:
+	| measurements
 	;
 
 measurements:

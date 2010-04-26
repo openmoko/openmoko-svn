@@ -17,7 +17,7 @@ fped()
     echo -n "$1: " 1>&2
     shift
     cat >_in
-    $VALGRIND ../fped -T _in "$@" >_out 2>&1 || {
+    $VALGRIND ${FPED:-../fped} -T _in "$@" >_out 2>&1 || {
 	echo FAILED "($SCRIPT)" 1>&2
 	cat _out
 	rm -f _in _out
@@ -27,12 +27,18 @@ fped()
 }
 
 
+fped_dump()
+{
+	fped "$@" -T
+}
+
+
 fped_fail()
 {
     echo -n "$1: " 1>&2
     shift
     cat >_in
-    $VALGRIND ../fped -T _in "$@" >_out 2>&1 && {
+    $VALGRIND ${FPED:-../fped} -T _in "$@" >_out 2>&1 && {
 	echo FAILED "($SCRIPT)" 1>&2
 	cat _out
 	rm -f _in _out
@@ -54,3 +60,8 @@ expect()
     rm -f _out _diff
     passed=`expr ${passed:-0} + 1`
 }
+
+
+if [ ! -z "$CWD_PREFIX" -a ! -z "$FPED" -a "$FPED" = "${FPED#/}" ]; then
+    FPED="$CWD_PREFIX/$FPED"
+fi

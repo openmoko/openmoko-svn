@@ -1,0 +1,103 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped_dump "structure: empty file" <<EOF
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "structure: just an empty frame definition" <<EOF
+frame foo {
+}
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame foo {
+}
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "structure: just the package name" <<EOF
+package "hello"
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "hello"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "structure: just the unit" <<EOF
+unit mil
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mil
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "structure: just one root frame item" <<EOF
+vec @(1mm, 1mm)
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+__0: vec @(1mm, 1mm)
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "structure: frame plus measurement" <<EOF
+frame f {
+	a: vec @(0mm, 0mm)
+	b: vec @(1mm, 1mm)
+}
+meas f.a -> f.b
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+	a: vec @(0mm, 0mm)
+	b: vec @(1mm, 1mm)
+}
+
+package "_"
+unit mm
+meas f.a -> f.b
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "structure: measurement in frame" <<EOF
+frame f {
+	a: vec @(0mm, 0mm)
+	b: vec @(1mm, 1mm)
+	meas f.a -> f.b
+}
+EOF
+expect <<EOF
+4: syntax error near "meas"
+EOF
+
+###############################################################################

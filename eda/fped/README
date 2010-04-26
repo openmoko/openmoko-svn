@@ -148,6 +148,8 @@ unit mm
 unit mil
 unit auto
 
+If the "unit" directive is omitted, fped defaults to millimeters.
+
 When saving a footprint definition, the default unit is set to the
 unit set in the GUI.
 
@@ -301,8 +303,9 @@ meas a b 0.2 mm
 Package name
 - - - - - -
 
-The package name is a string of printable ASCII characters, including
-spaces.
+The package name is a non-empty string of printable ASCII characters,
+including spaces. If the "package" directive is omitted, fped defaults
+to using the name "_".
 
 package "<name>"
 

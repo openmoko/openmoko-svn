@@ -65,11 +65,12 @@ static void load_file(const char *name)
 static void usage(const char *name)
 {
 	fprintf(stderr,
-"usage: %s [-k] [-p|-P] [-T] [cpp_option ...] [in_file [out_file]]\n\n"
+"usage: %s [-k] [-p|-P] [-T [-T]] [cpp_option ...] [in_file [out_file]]\n\n"
 "  -k          write KiCad output, then exit\n"
 "  -p          write Postscript output, then exit\n"
 "  -P          write Postscript output (full page), then exit\n"
 "  -T          test mode. Load file, then exit\n"
+"  -T -T       test mode. Load file, dump to stdout, then exit\n"
 "  cpp_option  -Idir, -Dname[=value], or -Uname\n"
     , name);
 	exit(1);
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
 	char opt[] = "-?";
 	int error;
 	int batch = 0;
+	int test_mode = 0;
 	int batch_write_kicad = 0;
 	int batch_write_ps = 0, batch_write_ps_fullpage = 0;
 	int c;
@@ -102,6 +104,7 @@ int main(int argc, char **argv)
 			break;
 		case 'T':
 			batch = 1;
+			test_mode++;
 			break;
 		case 'D':
 		case 'U':
@@ -167,6 +170,8 @@ int main(int argc, char **argv)
 		if (error)
 			return error;
 	}
+	if (test_mode > 1)
+		dump(stdout);
 
 	purge();
 	inst_revert();

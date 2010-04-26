@@ -4,8 +4,6 @@
 ###############################################################################
 
 fped "tsort: total order" <<EOF
-package "_"
-
 %tsort {
 	a b
 	a c
@@ -25,8 +23,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: partial order change (1)" <<EOF
-package "_"
-
 %tsort {
 	a b
 	a c
@@ -44,8 +40,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: partial order change (2)" <<EOF
-package "_"
-
 %tsort {
 	b c
 	c d
@@ -62,8 +56,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: old order differs from resolution order" <<EOF
-package "_"
-
 %tsort {
 	+a +b +c +d
 	a c
@@ -81,8 +73,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: order change due to priority" <<EOF
-package "_"
-
 %tsort {
 	a b
 	a c 1
@@ -99,8 +89,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: priority accumulation without decay" <<EOF
-package "_"
-
 %tsort {
 	+a +b +c +d
 	a b 1
@@ -117,8 +105,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped "tsort: priority accumulation with decay" <<EOF
-package "_"
-
 %tsort {
 	+a -b +c +d
 	a b 1
@@ -135,8 +121,6 @@ EOF
 #------------------------------------------------------------------------------
 
 fped_fail "tsort: cycle" <<EOF
-package "_"
-
 %tsort {
 	a b
 	b a
