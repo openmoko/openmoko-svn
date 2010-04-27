@@ -603,7 +603,7 @@ static struct tool_ops circ_ops = {
 /* ----- frame helper ------------------------------------------------------ */
 
 
-static int is_parent_of(const struct frame *p, const struct frame *c)
+int is_parent_of(const struct frame *p, const struct frame *c)
 {
 	const struct obj *obj;
 

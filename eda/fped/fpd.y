@@ -234,6 +234,38 @@ static int dbg_move(const char *name, int anchor, const char *dest)
 }
 
 
+/*
+ * @@@ This is very similar to what we do in rule "obj". Consider merging.
+ */
+
+static int dbg_link_frame(const char *frame_name,
+    struct frame *base_frame, struct vec *base_vec)
+{
+	struct frame *frame;
+	struct obj *obj;
+
+	frame = find_frame(frame_name);
+	if (!frame) {
+		yyerrorf("unknown frame \"%s\"", frame_name);
+		return 0;
+	}
+	/* this can only fail in %frame */
+	if (is_parent_of(frame, base_frame)) {
+		yyerrorf("frame \"%s\" is a parent of \"%s\"",
+		    frame->name, base_frame->name);
+		return 0;
+	}
+	obj = new_obj(ot_frame);
+	obj->base = base_vec;
+	obj->frame = base_frame;
+	obj->u.frame.ref = frame;
+	connect_obj(base_frame, obj);
+	if (!frame->active_ref)
+		frame->active_ref = obj;
+	return 1;
+}
+
+
 static int dbg_print(const struct expr *expr)
 {
 	const char *s;
@@ -283,6 +315,10 @@ static void append_root_frame(void)
 		int inverted;
 		int max;
 	} mo;
+	struct {
+		struct frame *frame;
+		struct vec *vec;
+	} qvec;
 };
 
 
@@ -291,8 +327,8 @@ static void append_root_frame(void)
 %token		TOK_PAD TOK_RPAD TOK_HOLE TOK_RECT TOK_LINE TOK_CIRC TOK_ARC
 %token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
-%token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_PRINT TOK_DBG_DUMP
-%token		TOK_DBG_EXIT TOK_DBG_TSORT
+%token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_FRAME TOK_DBG_PRINT
+%token		TOK_DBG_DUMP TOK_DBG_EXIT TOK_DBG_TSORT
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -306,10 +342,12 @@ static void append_root_frame(void)
 %type	<obj>	object obj meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
 %type	<num>	opt_num
+%type	<frame>	frame_qualifier
 %type	<str>	opt_string
 %type	<pt>	pad_type
 %type	<mt>	meas_type
 %type	<mo>	meas_op
+%type	<qvec>	qualified_base
 
 %%
 
@@ -466,6 +504,11 @@ frame_item:
 	| TOK_DBG_MOVE ID opt_num ID
 		{
 			if (!dbg_move($2, $3.n, $4))
+				YYABORT;
+		}
+	| TOK_DBG_FRAME ID qualified_base
+		{
+			if (!dbg_link_frame($2, $3.frame, $3.vec))
 				YYABORT;
 		}
 	| TOK_DBG_PRINT expr
@@ -667,6 +710,40 @@ base:
 			$$ = find_vec(curr_frame, $1);
 			if (!$$) {
 				yyerrorf("unknown vector \"%s\"", $1);
+				YYABORT;
+			}
+		}
+	;
+
+qualified_base:
+	base
+		{
+			$$.frame = curr_frame;
+			$$.vec = $1;
+		}
+	| frame_qualifier '@'
+		{
+			$$.frame = $1;
+			$$.vec = NULL;
+		}
+	| frame_qualifier ID
+		{
+			$$.frame = $1;
+			$$.vec = find_vec($1, $2);
+			if (!$$.vec) {
+				yyerrorf("unknown vector \"%s.%s\"",
+				    $1->name, $2);
+				YYABORT;
+			}
+		}
+	;
+
+frame_qualifier:
+	ID '.'
+		{
+			$$ = find_frame($1);
+			if (!$$) {
+				yyerrorf("unknown frame \"%s\"", $1);
 				YYABORT;
 			}
 		}

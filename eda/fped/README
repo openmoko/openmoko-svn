@@ -590,6 +590,7 @@ most of which mimick the effect of GUI operations:
 
 %del <identifier>
 %move <identifier> [<number>] <identifier>
+%frame <identifier> <qualified-base>
 %print <expression>
 %dump
 %exit
@@ -609,6 +610,11 @@ anchor index	vec/frame	line/rect/pad	arc		measurement
 0 (or omitted)	base		first point	center		low point
 1		-		second point	end of arc	high point
 2		-		-		start of arc	-
+
+%frame creates a frame reference. Unlike "frame", the destination frame
+can be different from the current frame. E.g., "%frame foo bar.a" would
+add a reference to frame "foo" in frame "bar", rooted at vector "a". The
+parent frame's origin can be references as "@".
 
 %dump writes the footprint definition in the fped language to standard
 output. %exit immediately exits fped, without invoking the GUI.

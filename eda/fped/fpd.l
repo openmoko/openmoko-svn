@@ -127,6 +127,8 @@ SP	[\t ]*
 				  return TOK_DBG_DEL; }
 <INITIAL>"%move"		{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_MOVE; }
+<INITIAL>"%frame"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_FRAME; }
 <INITIAL>"%print"		{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_PRINT; }
 <INITIAL>"%dump"		{ BEGIN(NOKEYWORD);

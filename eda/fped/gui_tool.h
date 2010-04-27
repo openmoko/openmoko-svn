@@ -62,6 +62,8 @@ void tool_redraw(void);
 
 struct obj *new_obj_unconnected(enum obj_type type, struct inst *base);
 void connect_obj(struct frame *frame, struct obj *obj);
+int is_parent_of(const struct frame *p, const struct frame *c);
+
 struct pix_buf *draw_move_line_common(struct inst *inst,
     struct coord end, struct coord pos, int i);
 struct pix_buf *drag_new_line(struct inst *from, struct coord to);

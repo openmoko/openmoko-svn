@@ -1,0 +1,143 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped_dump "frame reference: with \"frame\" (origin)" <<EOF
+frame f {}
+frame f @
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+package "_"
+unit mm
+frame f @
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "frame reference: with \"%frame\" (current frame origin)" <<EOF
+frame f {}
+%frame f @
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+package "_"
+unit mm
+frame f @
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "frame reference: with \"%frame\" (current frame vector)" <<EOF
+frame f {}
+v: vec @(0mm, 0mm)
+%frame f v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+package "_"
+unit mm
+v: vec @(0mm, 0mm)
+frame f .
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "frame reference: with \"%frame\" (other frame origin)" <<EOF
+frame f {}
+frame g {}
+%frame f g.@
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+frame g {
+	frame f @
+}
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "frame reference: with \"%frame\" (other frame base)" <<EOF
+frame f {}
+frame g {
+    v: vec @(0mm, 0mm)
+}
+%frame f g.v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+frame g {
+	v: vec @(0mm, 0mm)
+	frame f .
+}
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "frame reference: with \"%frame\" (cycle)" <<EOF
+frame f {
+}
+
+frame g {
+    frame f @
+}
+
+%frame g f.@
+EOF
+expect <<EOF
+8: frame "g" is a parent of "f" near "@"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "frame reference: with \"%frame\" (out-of-order)" <<EOF
+frame f {
+}
+
+frame g {
+}
+
+%frame g f.@
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame g {
+}
+
+frame f {
+	frame g @
+}
+
+package "_"
+unit mm
+EOF
+
+###############################################################################
