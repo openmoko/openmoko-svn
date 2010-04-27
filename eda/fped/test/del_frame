@@ -1,0 +1,67 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped_fail "delete frame: can't self-destruct" <<EOF
+frame f {
+	%del f
+}
+EOF
+expect <<EOF
+3: a frame can't delete itself near "}"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete frame: content disappears" <<EOF
+frame f {
+	vec @(0mm, 0mm)
+}
+
+%del f
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete frame: references disappear" <<EOF
+frame f {
+	vec @(0mm, 0mm)
+}
+
+frame f @
+
+%del f
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete frame: measurements disappear" <<EOF
+frame f {
+	v: vec @(0mm, 0mm)
+}
+
+meas f.v -> f.v
+
+%del f
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+###############################################################################

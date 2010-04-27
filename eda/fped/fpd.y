@@ -178,22 +178,48 @@ static struct obj *new_obj(enum obj_type type)
 }
 
 
-static int dbg_delete(const char *name)
+static int dbg_delete(const char *frame_name, const char *name)
 {
 	struct vec *vec;
 	struct obj *obj;
+	struct frame *frame;
 
-	vec = find_vec(curr_frame, name);
+	if (!frame_name)
+		frame = curr_frame;
+	else {
+		frame = find_frame(frame_name);
+		if (!frame) {
+			yyerrorf("unknown frame \"%s\"", frame_name);
+			return 0;
+		}
+	}
+	vec = find_vec(frame, name);
 	if (vec) {
 		delete_vec(vec);
 		return 1;
 	}
-	obj = find_obj(curr_frame, name);
+	obj = find_obj(frame, name);
 	if (obj) {
 		delete_obj(obj);
 		return 1;
 	}
-	yyerrorf("unknown item \"%s\"", name);
+	if (!frame_name) {
+		frame = find_frame(name);
+		if (frame) {
+			if (curr_frame == frame) {
+				yyerrorf("a frame can't delete itself");
+				return 0;
+			}
+			if (last_frame == frame)
+				last_frame = frame->prev;
+			delete_frame(frame);
+			return 1;
+		}
+	}
+	if (frame_name)
+		yyerrorf("unknown item \"%s.%s\"", frame_name, name);
+	else
+		yyerrorf("unknown item \"%s\"", name);
 	return 0;
 }
 
@@ -238,12 +264,19 @@ static int dbg_move(const char *name, int anchor, const char *dest)
  * @@@ This is very similar to what we do in rule "obj". Consider merging.
  */
 
+/*
+ * We need to pass base_frame and base_vec, not just the vector (with the
+ * frame implied) since we can also reference the frame's origin, whose
+ * "vector" is NULL.
+ */
+
 static int dbg_link_frame(const char *frame_name,
     struct frame *base_frame, struct vec *base_vec)
 {
 	struct frame *frame;
 	struct obj *obj;
 
+	assert(!base_vec || base_vec->frame == base_frame);
 	frame = find_frame(frame_name);
 	if (!frame) {
 		yyerrorf("unknown frame \"%s\"", frame_name);
@@ -496,9 +529,20 @@ frame_item:
 			}
 			$2->name = $1;
 		}
-	| TOK_DBG_DEL ID
+	| debug_item
+	;
+
+debug_item:
+	TOK_DBG_DEL ID
 		{
-			if (!dbg_delete($2))
+			append_root_frame();
+			if (!dbg_delete(NULL, $2))
+				YYABORT;
+		}
+	| TOK_DBG_DEL ID '.' ID
+		{
+			append_root_frame();
+			if (!dbg_delete($2, $4))
 				YYABORT;
 		}
 	| TOK_DBG_MOVE ID opt_num ID
@@ -516,11 +560,7 @@ frame_item:
 			if (!dbg_print($2))
 				YYABORT;
 		}
-	| debug_item
-	;
-
-debug_item:
-	TOK_DBG_DUMP
+	| TOK_DBG_DUMP
 		{
 			/*
 			 * It's okay to do append the root frame multiple

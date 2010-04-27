@@ -1,0 +1,64 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped_dump "delete vector: it disappears" <<EOF
+v: vec @(0mm, 0mm)
+%del v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete vector: references disappear" <<EOF
+v: vec @(0mm, 0mm)
+line v v
+%del v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete vector: measurements disappear (same frame)" <<EOF
+v: vec @(0mm, 0mm)
+meas v -> v
+%del v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete vector: measurements disappear (other frame)" <<EOF
+frame f {
+	v: vec @(0mm, 0mm)
+}
+meas f.v -> f.v
+%del f.v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+}
+
+package "_"
+unit mm
+EOF
+
+###############################################################################

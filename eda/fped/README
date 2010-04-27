@@ -588,7 +588,7 @@ Experimental: debugging directives
 For debugging and regression tests, fped supports the following commands,
 most of which mimick the effect of GUI operations:
 
-%del <identifier>
+%del <qualified-identifier>
 %move <identifier> [<number>] <identifier>
 %frame <identifier> <qualified-base>
 %print <expression>
@@ -596,14 +596,17 @@ most of which mimick the effect of GUI operations:
 %exit
 %tsort { -<id> | +<id> | <id-before> <id-after> [<number>] ... }
 
-%del and %move take as their first argument the name of the vector or
-object to manipulate. For this purpose, also objects can be labeled.
+%del removes the specified item. This can be a vector, an object, or
+a frame. If the vector or object is in a different frame than the
+current, its name is qualified with the frame name, e.g., "foo.obj".
 
-Object labels behave like vector labels and share the same name space.
-They are not shown anywhere in the GUI.
+For this purpose, also objects can be labeled. Object labels behave like
+vector labels and share the same name space.  They are not normally
+accessible in the GUI. (You can see them in the code view.)
 
-%move sets an anchor point to the vector named as its last argument.
-The anchor point is identified by index as follows:
+%move take as its first argument the name of the vector or object to
+manipulate. %move sets an anchor point to the vector named as its last
+argument. The anchor point is identified by index as follows:
 
 anchor index	vec/frame	line/rect/pad	arc		measurement
 --------------	---------	-------------	------------	-----------

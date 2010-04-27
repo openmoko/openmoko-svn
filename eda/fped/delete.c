@@ -177,6 +177,7 @@ static void do_delete_vec(struct vec *vec)
 
 	delete_vecs_by_ref(vec->frame->vecs, vec);
 	delete_objs_by_ref(&vec->frame->objs, vec);
+	delete_objs_by_ref(&root_frame->objs, vec); /* catch measurements */
 }
 
 
@@ -522,9 +523,19 @@ static void delete_references(const struct frame *ref)
 
 	for (frame = frames; frame; frame = frame->next)
 		for (obj = frame->objs; obj; obj = obj->next)
-			if (obj->type == ot_frame)
+			switch (obj->type) {
+			case ot_frame:
 				if (obj->u.frame.ref == ref)
 					do_delete_obj(obj);
+				break;
+			case ot_meas:
+				if (obj->base->frame == ref ||
+				    obj->u.meas.high->frame == ref)
+					do_delete_obj(obj);
+				break;
+			default:
+				break;
+			}
 	for (obj = ref->objs; obj; obj = obj->next)
 		if (obj->type == ot_frame)
 			if (obj->u.frame.ref->active_ref == obj)
