@@ -234,26 +234,80 @@ unit_type gui_dist_pad(struct inst *self, struct coord pos, unit_type scale)
 }
 
 
-static void gui_draw_pad_text(struct inst *self)
+static void pad_text_in_rect(struct inst *self,
+    struct coord min, struct coord max)
 {
-	struct coord min = translate(self->base);
-	struct coord max = translate(self->u.pad.other);
 	GdkGC *gc;
 	struct coord c;
 	unit_type h, w;
 	int rot;
 
-	w = self->bbox.max.x-self->bbox.min.x;
-	h = self->bbox.max.y-self->bbox.min.y;
+	w = max.x-min.x;
+	h = max.y-min.y;
 	rot = w/1.1 < h;
 	gc = gc_ptext[get_mode(self)];
-	sort_coord(&min, &max);
 	c = add_vec(min, max);
 	h = max.y-min.y;
 	w = max.x-min.x;
 	render_text(DA, gc, c.x/2, c.y/2, rot ? 0 : 90,
 	    self->u.pad.name, PAD_FONT, 0.5, 0.5,
 	    w-2*PAD_BORDER, h-2*PAD_BORDER);
+}
+
+
+static void maximize_box(struct coord *min_box, struct coord *max_box,
+    unit_type x_min, unit_type y_min, unit_type x_max, unit_type y_max)
+{
+	unit_type d_box, d_new, d;
+
+	d_box = max_box->x-min_box->x;
+	d = max_box->y-min_box->y;
+	if (d < d_box)
+		d_box = d;
+
+	d_new = x_max-x_min;
+	d = y_max-y_min;
+	if (d < d_new)
+		d_new = d;
+
+	if (d_new < d_box)
+		return;
+
+	min_box->x = x_min;
+	min_box->y = y_min;
+	max_box->x = x_max;
+	max_box->y = y_max;
+}
+
+
+static void gui_draw_pad_text(struct inst *self)
+{
+	struct coord pad_min = translate(self->base);
+	struct coord pad_max = translate(self->u.pad.other);
+	struct coord hole_min, hole_max;
+	struct coord box_min, box_max;
+
+	sort_coord(&pad_min, &pad_max);
+	if (!self->u.pad.hole) {
+		pad_text_in_rect(self, pad_min, pad_max);
+		return;
+	}
+
+	hole_min = translate(self->u.pad.hole->base);
+	hole_max = translate(self->u.pad.hole->u.hole.other);
+	sort_coord(&hole_min, &hole_max);
+
+	box_min.x = box_min.y = box_max.x = box_max.y;
+	maximize_box(&box_min, &box_max,
+	    pad_min.x, pad_min.y, pad_max.x, hole_min.y);	/* top */
+	maximize_box(&box_min, &box_max,
+	    pad_min.x, hole_max.y, pad_max.x, pad_max.y);	/* bottom */
+	maximize_box(&box_min, &box_max,
+	    pad_min.x, pad_min.y, hole_min.x, pad_max.y);	/* left */
+	maximize_box(&box_min, &box_max,
+	    hole_max.x, pad_min.y, pad_max.x, pad_max.y);	/* right */
+
+	pad_text_in_rect(self, box_min, box_max);
 }
 
 
