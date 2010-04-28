@@ -94,8 +94,7 @@ Setting things up
 
   - download the library
 
-    svn checkout \
-      https://kicad.svn.sourceforge.net/svnroot/kicad/trunk/kicad-library
+    bzr branch -r 76 lp:~kicad-lib-committers/kicad/library kicad-library
     cd kicad-library
 
   - generate and install the library
