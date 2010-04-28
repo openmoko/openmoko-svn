@@ -156,7 +156,6 @@ struct frame {
 	struct vec *vecs;
 	struct obj *objs;
 	struct frame *next;
-	struct frame *prev; /* for the list of frames in the GUI */
 
 	/* used during generation */
 	const struct frame *curr_parent;
@@ -236,9 +235,8 @@ struct obj {
 };
 
 
-extern char *pkg_name;
-extern struct frame *frames;
-extern struct frame *root_frame;
+extern char *pkg_name; /* anonymous common package first */
+extern struct frame *frames; /* root frame first */
 extern struct frame *active_frame;
 extern void *instantiation_error;
 

@@ -232,7 +232,7 @@ static int instantiate_meas_pkg(void)
 	struct coord a0, b0;
 	lt_op_type lt;
 
-	for (obj = root_frame->objs; obj; obj = obj->next) {
+	for (obj = frames->objs; obj; obj = obj->next) {
 		if (obj->type != ot_meas)
 			continue;
 		meas = &obj->u.meas;

@@ -650,7 +650,7 @@ void gui_draw_frame(struct inst *self)
 
 	gc = self->u.frame.active ? gc_active_frame : gc_frame[get_mode(self)];
 	draw_eye(gc, center, FRAME_EYE_R1, FRAME_EYE_R2);
-	if (!self->u.frame.ref->name)
+	if (self->u.frame.ref == frames)
 		return;
 	corner = translate(corner);
 	corner.x -= FRAME_CLEARANCE;

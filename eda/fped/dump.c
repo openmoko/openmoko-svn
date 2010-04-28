@@ -394,7 +394,7 @@ static char *print_meas_base(struct vec *base)
 	const char *name;
 
 	name = base_name(base, NULL);
-	if (base->frame == root_frame)
+	if (base->frame == frames)
 		return stralloc(name);
 	return stralloc_printf("%s.%s", base->frame->name, name);
 }
@@ -546,6 +546,15 @@ static void dump_unit(FILE *file)
 }
 
 
+static void reverse_frames(FILE *file, struct frame *last)
+{
+	if (last) {
+		reverse_frames(file, last->next);
+		dump_frame(file, last, "\t");
+	}
+}
+
+
 int dump(FILE *file)
 {
 	struct frame *frame;
@@ -553,15 +562,12 @@ int dump(FILE *file)
 	fprintf(file, "%s\n", MACHINE_GENERATED);
 	for (frame = frames; frame; frame = frame->next)
 		frame->dumped = 0;
-	for (frame = frames; frame; frame = frame->next) {
-		if (!frame->name) {
-			fprintf(file, "package \"%s\"\n", pkg_name);
-			dump_unit(file);
-			dump_frame(file, frame, "");
-		} else {
-			dump_frame(file, frame, "\t");
-		}
-	}
+
+	reverse_frames(file, frames->next);
+	fprintf(file, "package \"%s\"\n", pkg_name);
+	dump_unit(file);
+	dump_frame(file, frames, "");
+
 	fflush(file);
 	return !ferror(file);
 }

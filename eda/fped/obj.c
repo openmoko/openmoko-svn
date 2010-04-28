@@ -34,7 +34,6 @@
 
 char *pkg_name = NULL;
 struct frame *frames = NULL;
-struct frame *root_frame = NULL;
 struct frame *active_frame = NULL;
 void *instantiation_error = NULL;
 
@@ -255,7 +254,7 @@ static int generate_objs(struct frame *frame, struct coord base, int active)
 				goto error;
 			break;
 		case ot_meas:
-			assert(frame == root_frame);
+			assert(frame == frames);
 			offset = eval_unit_default(obj->u.meas.offset, frame,
 			    DEFAULT_OFFSET);
 			if (is_undef(offset))
@@ -278,7 +277,7 @@ static int generate_items(struct frame *frame, struct coord base, int active)
 	char *s;
 	int ok;
 
-	if (!frame->name) {
+	if (frame == frames) {
 		s = expand(pkg_name, frame);
 		inst_select_pkg(s);
 		free(s);
@@ -471,7 +470,7 @@ int instantiate(void)
 	reset_found();
 	found = 0;
 	search_suspended = 0;
-	ok = generate_frame(root_frame, zero, NULL, NULL, 1);
+	ok = generate_frame(frames, zero, NULL, NULL, 1);
 	if (ok && (find_vec || find_obj) && found)
 		activate_found();
 	find_vec = NULL;

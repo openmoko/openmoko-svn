@@ -114,13 +114,8 @@ static void popup_add_frame(void)
 
 	new = zalloc_type(struct frame);
 	new->name = unique("_");
-	new->next = parent;
-	new->prev = parent->prev;
-	if (parent->prev)
-		parent->prev->next = new;
-	else
-		frames = new;
-	parent->prev = new;
+	new->next = parent->next;
+	parent->next = new;
 	change_world();
 }
 
@@ -129,10 +124,10 @@ static void popup_del_frame(void)
 {
 	struct frame *frame = popup_data;
 
-	assert(frame != root_frame);
+	assert(frame != frames);
 	delete_frame(frame);
 	if (active_frame == frame)
-		select_frame(root_frame);
+		select_frame(frames);
 	change_world();
 }
 
@@ -166,8 +161,8 @@ static gboolean can_add_frame(void)
 {
 	const struct frame *frame;
 
-	for (frame = frames; frame; frame = frame->next)
-		if (frame->name && !strcmp(frame->name, "_"))
+	for (frame = frames->next; frame; frame = frame->next)
+		if (!strcmp(frame->name, "_"))
 			return FALSE;
 	return TRUE;
 }
@@ -206,7 +201,7 @@ static void pop_up_frame(struct frame *frame, GdkEventButton *event)
 {
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_frame, "/Delete frame"),
-	    frame != root_frame);
+	    frame != frames);
 
 	gtk_widget_set_sensitive(
 	    gtk_item_factory_get_item(factory_frame, "/Add frame"),
@@ -1638,8 +1633,8 @@ static int validate_frame_name(const char *s, void *ctx)
 
 	if (!is_id(s))
 		return 0;
-	for (f = frames; f; f = f->next)
-		if (f->name && !strcmp(f->name, s))
+	for (f = frames->next; f; f = f->next)
+		if (!strcmp(f->name, s))
 			return 0;
 	return 1;
 }
@@ -1818,7 +1813,7 @@ void build_frames(GtkWidget *vbox, int wrap_width)
 	gtk_table_attach_defaults(GTK_TABLE(tab), packages, 1, 2, 0, 1);
 
 	n = 0;
-	for (frame = root_frame; frame; frame = frame->prev) {
+	for (frame = frames; frame; frame = frame->next) {
 		label = build_frame_label(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), label,
 		    0, 1, n*2+1, n*2+2);
@@ -1830,7 +1825,7 @@ void build_frames(GtkWidget *vbox, int wrap_width)
 
 	wrap_width -= max_name_width+FRAME_AREA_MISC_WIDTH;
 	n = 0;
-	for (frame = root_frame; frame; frame = frame->prev) {
+	for (frame = frames; frame; frame = frame->next) {
 		refs = build_frame_refs(frame);
 		gtk_table_attach_defaults(GTK_TABLE(tab), refs,
 		    1, 2, n*2+1, n*2+2);
@@ -1850,7 +1845,7 @@ void build_frames(GtkWidget *vbox, int wrap_width)
 	}
 
 	if (!show_vars) {
-		meas = build_meas(root_frame);
+		meas = build_meas(frames);
 		gtk_table_attach_defaults(GTK_TABLE(tab), meas,
 		    1, 2, n*2+2, n*2+3);
 	}

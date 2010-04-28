@@ -35,7 +35,6 @@ static struct frame *curr_frame;
 static struct table *curr_table;
 static struct row *curr_row;
 
-static struct frame *last_frame = NULL;
 static struct vec *last_vec = NULL;
 
 static struct table **next_table;
@@ -54,7 +53,7 @@ static struct frame *find_frame(const char *name)
 {
 	struct frame *f;
 
-	for (f = frames; f; f = f->next)
+	for (f = frames->next; f; f = f->next)
 		if (f->name == name)
 			return f;
 	return NULL;
@@ -210,8 +209,6 @@ static int dbg_delete(const char *frame_name, const char *name)
 				yyerrorf("a frame can't delete itself");
 				return 0;
 			}
-			if (last_frame == frame)
-				last_frame = frame->prev;
 			delete_frame(frame);
 			return 1;
 		}
@@ -317,16 +314,6 @@ static int dbg_print(const struct expr *expr)
 }
 
 
-static void append_root_frame(void)
-{
-	root_frame->prev = last_frame;
-	if (last_frame)
-		last_frame->next = root_frame;
-	else
-		frames = root_frame;
-}
-
-
 %}
 
 
@@ -387,16 +374,13 @@ static void append_root_frame(void)
 all:
 	START_FPD
 		{
-			root_frame = zalloc_type(struct frame);
-			set_frame(root_frame);
+			frames = zalloc_type(struct frame);
+			set_frame(frames);
 			id_sin = unique("sin");
 			id_cos = unique("cos");
 			id_sqrt = unique("sqrt");
 		}
 	    fpd
-		{
-			append_root_frame();
-		}
 	| START_EXPR expr
 		{
 			expr_result = $2;
@@ -471,16 +455,12 @@ frame_def:
 			curr_frame = zalloc_type(struct frame);
 			curr_frame->name = $2;
 			set_frame(curr_frame);
-			curr_frame->prev = last_frame;
-			if (last_frame)
-				last_frame->next = curr_frame;
-			else
-				frames = curr_frame;
-			last_frame = curr_frame;
+			curr_frame->next = frames->next;
+			frames->next = curr_frame;
 		}
 	    opt_frame_items '}'
 		{
-			set_frame(root_frame);
+			set_frame(frames);
 		}
 	;
 
@@ -535,13 +515,11 @@ frame_item:
 debug_item:
 	TOK_DBG_DEL ID
 		{
-			append_root_frame();
 			if (!dbg_delete(NULL, $2))
 				YYABORT;
 		}
 	| TOK_DBG_DEL ID '.' ID
 		{
-			append_root_frame();
 			if (!dbg_delete($2, $4))
 				YYABORT;
 		}
@@ -562,13 +540,6 @@ debug_item:
 		}
 	| TOK_DBG_DUMP
 		{
-			/*
-			 * It's okay to do append the root frame multiple
-			 * times. If more frames are added afterwards, they
-			 * just replace the root frame until it gets appended a
-			 * final time when parsing ends.
-			 */
-			append_root_frame();
 			if (!dump(stdout)) {
 				perror("stdout");
 				exit(1);
@@ -929,7 +900,7 @@ meas:
 qbase:
 	ID
 		{
-			$$ = find_vec(root_frame, $1);
+			$$ = find_vec(frames, $1);
 			if (!$$) {
 				yyerrorf("unknown vector \"%s\"", $1);
 				YYABORT;

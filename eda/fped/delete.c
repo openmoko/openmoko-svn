@@ -177,7 +177,12 @@ static void do_delete_vec(struct vec *vec)
 
 	delete_vecs_by_ref(vec->frame->vecs, vec);
 	delete_objs_by_ref(&vec->frame->objs, vec);
-	delete_objs_by_ref(&root_frame->objs, vec); /* catch measurements */
+	/*
+	 * Catch measurements. During final cleanup, we may operate on an empty
+	 * list of frames, hence the test.
+	 */
+	if (frames)
+		delete_objs_by_ref(&frames->objs, vec);
 }
 
 
@@ -546,19 +551,18 @@ static void delete_references(const struct frame *ref)
 void delete_frame(struct frame *frame)
 {
 	struct deletion *del;
-
+	struct frame *walk;
 	groups++;
 
 	del = new_deletion(dt_frame);
 	del->u.frame.ref = frame;
-	del->u.frame.prev = frame->prev;
-
-	if (frame->next)
-		frame->next->prev = frame->prev;
-	if (frame->prev)
-		frame->prev->next = frame->next;
+	del->u.frame.prev = NULL;
+	for (walk = frames; walk != frame; walk = walk->next)
+		del->u.frame.prev = walk;
+	if (del->u.frame.prev)
+		del->u.frame.prev->next = frame->next;
 	else
-		frames = frame->next;
+		frames = frame->next; /* hmm, deleting the root frame ? */
 
 	delete_references(frame);
 }
@@ -573,7 +577,6 @@ static void undelete_frame(struct frame *frame, struct frame *prev)
 		assert(frame->next == frames);
 		frames = frame;
 	}
-	frame->next->prev = frame;
 }
 
 

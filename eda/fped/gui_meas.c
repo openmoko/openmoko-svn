@@ -277,7 +277,7 @@ static int end_new_meas(struct inst *from, struct inst *to)
 		return 0;
 	/* it's safe to pass "from" here, but we may change it later */
 	obj = new_obj_unconnected(ot_meas, from);
-	connect_obj(root_frame, obj);
+	connect_obj(frames, obj);
 	meas = &obj->u.meas;
 	meas->label = NULL;
 	switch (mode) {

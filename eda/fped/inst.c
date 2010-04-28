@@ -82,7 +82,7 @@ static int show_this(const struct inst *inst)
 	if (inst->ops == &frame_ops && inst->u.frame.ref == active_frame)
 		return 1;
 	if (!inst->outer)
-		return active_frame == root_frame;
+		return active_frame == frames;
 	return inst->outer->u.frame.ref == active_frame;
 }
 

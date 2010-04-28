@@ -393,7 +393,7 @@ int gui_main(void)
 	gui_setup_style(root->window);
 	init_canvas();
 	edit_nothing();
-	select_frame(root_frame);
+	select_frame(frames);
 	make_popups();
 
 	gtk_main();
