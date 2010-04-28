@@ -22,10 +22,10 @@ Setting things up
 
     - awk
     - bash
-    - gv (derivative of Ghostview)
-    - grep
-    - gzip
     - GNU make (package "make" or similar)
+    - grep
+    - gv (derivative of Ghostview)
+    - gzip
     - Perl
     - sed
     - Subversion (svn)
@@ -39,19 +39,38 @@ Setting things up
 - You will need a recent version of KiCad. Many distributions come
   with truly ancient versions. To build KiCad,
 
-  - download KiCad, revision 1923:
+  - fulfill the following prerequisites:
 
-    svn checkout -r 1923 \
-      https://kicad.svn.sourceforge.net/svnroot/kicad/trunk/kicad
-    cd kicad
+    - Bazaar (bzr)
+
+    - a recent version of CMake (2.6.4 is known to work)
+
+    - a recent development version of libboost (1.36 or higher)
+
+    - a recent development version of wxWindows (2.8.10 or higher with
+      OpenGL support). If compilation of KiCad fails with
+
+      #error Please set wxUSE_GLCANVAS to 1 in setup.h.
+
+      then you need to build wxWindows as well. We'll use version 2.8.11,
+      which solves a build problem that existed in 2.8.10:
+
+      wget http://prdownloads.sourceforge.net/wxwindows/wxGTK-2.8.11.tar.bz2
+      tar xfj wxGTK-2.8.11.tar.bz2
+      cd wxGTK-2.8.11
+      ./configure --prefix=/usr/local --with-opengl --enable-unicode
+      make
+      make install
+      cd ..
+
+  - download KiCad, revision 2358:
+
+    bzr branch -r 2358 lp:kicad kicad
+    cd kiad
 
     The KiCad revision we currently use is recorded in the first line
     of kicad-patches/series. Our patches and build process may or may
     not work with more recent revisions.
-
-  - you need a recent development version of libboost (1.36 or higher)
-
-  - you need a recent development version of wxWindows (libwxgtk-2.8)
 
   - Make a link to the patches of the gta02-core project:
 

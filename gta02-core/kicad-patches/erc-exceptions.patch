@@ -32,8 +32,8 @@ Updated to rev 1923
 
 Index: kicad/eeschema/erc.cpp
 ===================================================================
---- kicad.orig/eeschema/erc.cpp	2009-08-13 16:48:27.000000000 +0200
-+++ kicad/eeschema/erc.cpp	2009-08-13 16:49:08.000000000 +0200
+--- kicad.orig/eeschema/erc.cpp	2010-04-28 05:40:38.000000000 -0300
++++ kicad/eeschema/erc.cpp	2010-04-28 05:49:35.000000000 -0300
 @@ -4,6 +4,7 @@
  
  #include "fctsys.h"
@@ -42,9 +42,9 @@ Index: kicad/eeschema/erc.cpp
  #include "class_drawpanel.h"
  #include "kicad_string.h"
  #include "gestfich.h"
-@@ -212,6 +213,187 @@
-     return err_count;
+@@ -224,6 +225,173 @@
  }
+ 
  
 +static struct exception
 +{
@@ -58,9 +58,7 @@ Index: kicad/eeschema/erc.cpp
 +
 +
 +
-+/********************************************************************/
 +static void FreeExceptions( void )
-+/********************************************************************/
 +{
 +    struct exception* next;
 +
@@ -74,9 +72,7 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static bool ParseField( char **s, char **field )
-+/********************************************************************/
 +{
 +    *field = *s;
 +    if( ! **s )
@@ -92,9 +88,7 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static bool ParseException( char *s )
-+/********************************************************************/
 +{
 +    struct exception tmp;
 +    struct exception* e;
@@ -119,9 +113,7 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static bool LoadExceptionsByName( const wxString &file_name )
-+/********************************************************************/
 +{
 +    FILE* file;
 +    char buf[200]; /* enough room for chatty comments */
@@ -147,20 +139,20 @@ Index: kicad/eeschema/erc.cpp
 +        hash = strchr( s, '#' );
 +        if( hash )
 +            *hash = 0;
-+        
++
 +        // skip leading whitespace
 +        while( *s && isspace( *s ) )
 +            s++;
 +        if( ! *s )
 +            continue;
-+        
++
 +        tmp = (char*) MyMalloc( strlen( s ) + 1 );
 +        strcpy( tmp, s );
-+        
++
 +        if( ! ParseException( tmp ) )
 +        {
 +            wxString msg;
-+        
++
 +            msg.Printf( wxT( "Parse error at %s:%d" ), CONV_TO_UTF8(file_name), n );
 +            DisplayError( NULL, msg );
 +            MyFree( tmp );
@@ -174,9 +166,7 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static void LoadExceptions( void )
-+/********************************************************************/
 +{
 +    wxFileName fn;
 +
@@ -187,9 +177,7 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static bool FindException( NETLIST_OBJECT* a, NETLIST_OBJECT* b )
-+/********************************************************************/
 +{
 +    SCH_COMPONENT* a_comp = (SCH_COMPONENT*) a->m_Link;
 +    SCH_COMPONENT* b_comp = (SCH_COMPONENT*) b->m_Link;
@@ -219,18 +207,16 @@ Index: kicad/eeschema/erc.cpp
 +}
 +
 +
-+/********************************************************************/
 +static bool IsException( NETLIST_OBJECT* a, NETLIST_OBJECT* b )
-+/********************************************************************/
 +{
 +    return FindException( a, b ) || FindException( b, a);
 +}
 +
 +
- /**************************************************/
  void DIALOG_ERC::TestErc( wxArrayString* aMessagesList )
- /**************************************************/
-@@ -248,6 +430,7 @@
+ {
+     wxFileName fn;
+@@ -258,6 +426,7 @@
  
      g_EESchemaVar.NbErrorErc   = 0;
      g_EESchemaVar.NbWarningErc = 0;
@@ -238,16 +224,16 @@ Index: kicad/eeschema/erc.cpp
  
      /* Cleanup the entire hierarchy */
      EDA_ScreenList ScreenList;
-@@ -272,6 +455,8 @@
+@@ -285,6 +454,8 @@
  
      m_Parent->BuildNetListBase();
  
 +    LoadExceptions();
 +
-     /* Reset the flag m_FlagOfConnection, that will be used next, in calculations */
-     for( unsigned ii = 0;  ii < g_NetObjectslist.size(); ii++ )
-        g_NetObjectslist[ii]->m_FlagOfConnection = UNCONNECTED;
-@@ -339,7 +524,13 @@
+     /* Reset the flag m_FlagOfConnection, that will be used next, in
+      * calculations */
+     for( unsigned ii = 0; ii < g_NetObjectslist.size(); ii++ )
+@@ -354,7 +525,13 @@
  
      // Displays global results:
      wxString num;
@@ -261,25 +247,25 @@ Index: kicad/eeschema/erc.cpp
 +        num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc );
      m_TotalErrCount->SetLabel( num );
  
-     num.Printf( wxT( "%d" ), g_EESchemaVar.NbErrorErc - g_EESchemaVar.NbWarningErc );
-@@ -619,6 +810,12 @@
-             if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection > 0 )
-                 break;
+     num.Printf( wxT(
+@@ -657,6 +834,12 @@
+             if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection != 0 )
+ 		break;
  
-+            if( IsException( g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst] ) )
-+            {
-+                g_EESchemaVar.NbExceptionErc++;
-+                break;
-+            }
++		if( IsException( g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst] ) )
++		{
++		    g_EESchemaVar.NbExceptionErc++;
++		    break;
++		}
 +
-             Diagnose( panel, g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst], 0, erc );
-             g_NetObjectslist[NetItemTst]->m_FlagOfConnection = NOCONNECT_SYMBOL_PRESENT;
-             break;
+             Diagnose( panel,
+                       g_NetObjectslist[NetItemRef],
+                       g_NetObjectslist[NetItemTst],
 Index: kicad/eeschema/general.h
 ===================================================================
---- kicad.orig/eeschema/general.h	2009-08-13 16:48:08.000000000 +0200
-+++ kicad/eeschema/general.h	2009-08-13 16:49:08.000000000 +0200
-@@ -123,6 +123,7 @@
+--- kicad.orig/eeschema/general.h	2010-04-28 04:34:54.000000000 -0300
++++ kicad/eeschema/general.h	2010-04-28 05:42:13.000000000 -0300
+@@ -117,6 +117,7 @@
  {
      int NbErrorErc;
      int NbWarningErc;

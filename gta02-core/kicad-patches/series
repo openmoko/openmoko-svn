@@ -1,4 +1,4 @@
-# Based on SVN revision 1923
+# Based on BZR revision 2358
 
 # eeschema --plot extension, pending
 eeschema-plot-only-mode.patch

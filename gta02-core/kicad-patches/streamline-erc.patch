@@ -9,36 +9,44 @@ for better readability and to facilitate future extensions.
 
 Index: kicad/eeschema/erc.cpp
 ===================================================================
---- kicad.orig/eeschema/erc.cpp	2009-07-03 05:00:34.000000000 -0300
-+++ kicad/eeschema/erc.cpp	2009-07-03 05:06:29.000000000 -0300
-@@ -609,18 +609,18 @@
+--- kicad.orig/eeschema/erc.cpp	2010-04-28 05:40:28.000000000 -0300
++++ kicad/eeschema/erc.cpp	2010-04-28 05:40:38.000000000 -0300
+@@ -648,23 +648,22 @@
                  break;
  
              *NetNbItems += 1;
--            if( erc == OK )         // 1 marqueur par pin maxi
++            if( erc != OK )
++		break;
++
++	    erc = DiagErc[ref_elect_type][jj];
+             if( erc == OK )
 -            {
 -                erc = DiagErc[ref_elect_type][jj];
 -                if( erc != OK )
 -                {
 -                    if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection == 0 )
 -                    {
--                        Diagnose( panel, g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst], 0, erc );
--                        g_NetObjectslist[NetItemTst]->m_FlagOfConnection = NOCONNECT_SYMBOL_PRESENT;
+-                        Diagnose( panel,
+-                                  g_NetObjectslist[NetItemRef],
+-                                  g_NetObjectslist[NetItemTst],
+-                                  0,
+-                                  erc );
+-                        g_NetObjectslist[NetItemTst]->m_FlagOfConnection =
+-                            NOCONNECT_SYMBOL_PRESENT;
 -                    }
 -                }
 -            }
-+            if( erc != OK )         // 1 marqueur par pin maxi
-+                break;
++		break;
++            if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection != 0 )
++		break;
 +
-+            erc = DiagErc[ref_elect_type][jj];
-+            if( erc == OK )
-+                break;
-+
-+            if( g_NetObjectslist[NetItemTst]->m_FlagOfConnection > 0 )
-+                break;
-+
-+            Diagnose( panel, g_NetObjectslist[NetItemRef], g_NetObjectslist[NetItemTst], 0, erc );
-+            g_NetObjectslist[NetItemTst]->m_FlagOfConnection = NOCONNECT_SYMBOL_PRESENT;
++            Diagnose( panel,
++                      g_NetObjectslist[NetItemRef],
++                      g_NetObjectslist[NetItemTst],
++                      0,
++                      erc );
++            g_NetObjectslist[NetItemTst]->m_FlagOfConnection =
++		NOCONNECT_SYMBOL_PRESENT;
              break;
          }
      }

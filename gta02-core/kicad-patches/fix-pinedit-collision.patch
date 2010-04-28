@@ -12,16 +12,17 @@ can neither occur at the GUI nor in the underlying model.
 
 Index: kicad/eeschema/pinedit.cpp
 ===================================================================
---- kicad.orig/eeschema/pinedit.cpp        2009-05-21 23:00:00.000000000 -0300
-+++ kicad/eeschema/pinedit.cpp        2009-05-21 23:00:12.000000000 -0300
-@@ -193,6 +193,10 @@
+--- kicad.orig/eeschema/pinedit.cpp	2010-04-28 04:34:54.000000000 -0300
++++ kicad/eeschema/pinedit.cpp	2010-04-28 05:35:24.000000000 -0300
+@@ -231,6 +231,11 @@
+         if( Pin == CurrentPin || newpos != Pin->m_Pos || Pin->m_Flags )
              continue;
-         if( newpos != Pin->m_Pos )
-             continue;
-+        if( g_EditPinByPinIsOn &&
-+            Pin->m_Unit != CurrentPin->m_Unit &&
-+            Pin->m_Unit && CurrentPin->m_Unit )
-+            continue;
-         if( Pin->m_Flags )
-             continue;
+ 
++	if( g_EditPinByPinIsOn &&
++	    Pin->m_Unit != CurrentPin->m_Unit &&
++	    Pin->m_Unit && CurrentPin->m_Unit )
++	    continue;
++
          if( ask_for_pin && !g_EditPinByPinIsOn )
+         {
+             DrawPanel->m_IgnoreMouseEvents = true;
