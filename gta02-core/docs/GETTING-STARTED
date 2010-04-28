@@ -66,7 +66,7 @@ Setting things up
   - download KiCad, revision 2358:
 
     bzr branch -r 2358 lp:kicad kicad
-    cd kiad
+    cd kicad
 
     The KiCad revision we currently use is recorded in the first line
     of kicad-patches/series. Our patches and build process may or may
