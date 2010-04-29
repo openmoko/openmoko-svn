@@ -32,7 +32,6 @@ Bugs:
 - focus should return to canvas if nobody else wants it
 - whenever we call parse_* for input parsing, we may leak lots of expressions
 - can't edit measurement labels through the GUI
-- unbalanced parentheses in text throw off Postscript syntax
 
 Code cleanup:
 - merge edit_unique with edit_name

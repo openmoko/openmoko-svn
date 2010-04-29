@@ -166,6 +166,22 @@ static int get_box(unit_type x, unit_type y, unit_type *xa, unit_type *ya)
 }
 
 
+/* ----- Helper functions -------------------------------------------------- */
+
+
+static void ps_string(FILE *file, const char *s)
+{
+	fputc('(', file);
+	while (*s) {
+		if (*s == '(' || *s == ')' || *s == '\\')
+			fputc('\\', file);
+		fputc(*s, file);
+		s++;
+	}
+	fputc(')', file);
+}
+
+
 /* ----- Items ------------------------------------------------------------- */
 
 
@@ -184,11 +200,14 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 	if (w < 0)
 		w = -w;
 	fprintf(file, "0 setgray /Helvetica-Bold findfont dup\n");
-	fprintf(file, "   (%s) %d %d\n", inst->u.pad.name, w/2, h/2);
+	fprintf(file, "   ");
+	ps_string(file, inst->u.pad.name);
+	fprintf(file, " %d %d\n", w/2, h/2);
 	fprintf(file, "   boxfont\n");
 	fprintf(file, "   %d %d moveto\n", (a.x+b.x)/2, (a.y+b.y)/2);
-	fprintf(file, "   (%s) center %d showoutlined newpath\n",
-	    inst->u.pad.name, PS_FONT_OUTLINE);
+	fprintf(file, "   ");
+	ps_string(file, inst->u.pad.name);
+	fprintf(file, " center %d showoutlined newpath\n", PS_FONT_OUTLINE);
 }
 
 
@@ -372,13 +391,16 @@ static void ps_vec(FILE *file, const struct inst *inst)
 	d = sub_vec(b, a);
 	fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
 	fprintf(file, "    /Helvetica-Bold findfont dup\n");
-	fprintf(file, "    (%s) %d %d realsize\n", s,
+	fprintf(file, "    ");
+	ps_string(file, s);
+	fprintf(file, " %d %d realsize\n",
 	    (int) (dist_point(a, b)-2*PS_VEC_ARROW_LEN),
 	    PS_VEC_TEXT_HEIGHT);
 	fprintf(file, "    boxfont\n");
 	fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
-	fprintf(file, "    (%s) %d realsize pop 0 hcenter\n",
-	    s, PS_VEC_BASE_OFFSET);
+	fprintf(file, "    ");
+	ps_string(file, s);
+	fprintf(file, " %d realsize pop 0 hcenter\n", PS_VEC_BASE_OFFSET);
 	fprintf(file, "    show grestore\n");
 	free(s);
 }
@@ -450,20 +472,26 @@ fprintf(stderr, "%s -> width %d height %d vs. %d\n",
 	if (height) {
 		fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
 		fprintf(file, "    /Helvetica-Bold findfont dup\n");
-		fprintf(file, "    (%s) %d realsize %d realsize\n",
-		    s, width, height);
+		fprintf(file, "    ");
+		ps_string(file, s);
+		fprintf(file, " %d realsize %d realsize\n", width, height);
 		fprintf(file, "    boxfont\n");
 		fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
-		fprintf(file, "    (%s) %d realsize hcenter\n", s, offset);
+		fprintf(file, "    ");
+		ps_string(file, s);
+		fprintf(file, " %d realsize hcenter\n", offset);
 		fprintf(file, "    show grestore\n");
 	} else {
 		fprintf(file, "gsave %d %d moveto\n", c.x/2, c.y/2);
 		fprintf(file, "    /Helvetica-Bold findfont dup\n");
-		fprintf(file, "    (%s) %d %d realsize\n", s, width,
-		    PS_MEAS_TEXT_HEIGHT);
+		fprintf(file, "    ");
+		ps_string(file, s);
+		fprintf(file, " %d %d realsize\n", width, PS_MEAS_TEXT_HEIGHT);
 		fprintf(file, "    boxfont\n");
 		fprintf(file, "    %f rotate\n", atan2(d.y, d.x)/M_PI*180);
-		fprintf(file, "    (%s) %d realsize hcenter\n", s, offset);
+		fprintf(file, "    ");
+		ps_string(file, s);
+		fprintf(file, " %d realsize hcenter\n", offset);
 		fprintf(file, "    show grestore\n");
 	}
 	free(s);
@@ -694,10 +722,13 @@ static void ps_header(FILE *file, const struct pkg *pkg)
 	fprintf(file, "gsave %d %d moveto\n",
 	    -PAGE_HALF_WIDTH, PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT);
 	fprintf(file, "    /Helvetica-Bold findfont dup\n");
-	fprintf(file, "    (%s) %d %d\n",
-	    pkg->name, PAGE_HALF_WIDTH, PS_HEADER_HEIGHT);
+	fprintf(file, "    ");
+	ps_string(file, pkg->name);
+	fprintf(file, " %d %d\n", PAGE_HALF_WIDTH, PS_HEADER_HEIGHT);
 	fprintf(file, "    boxfont\n");
-	fprintf(file, "    (%s) show grestore\n", pkg->name);
+	fprintf(file, "    ");
+	ps_string(file, pkg->name);
+	fprintf(file, " show grestore\n");
 
 	ps_hline(file, PAGE_HALF_HEIGHT-PS_HEADER_HEIGHT-PS_DIVIDER_BORDER);
 }
@@ -716,7 +747,9 @@ static void ps_page(FILE *file, int page, const struct pkg *pkg)
 "    72 %d div 1000 div dup scale\n",
     (int) MIL_UNITS);
 	fprintf(file, "%%%%EndPageSetup\n");
-	fprintf(file, "[ /Title (%s) /OUT pdfmark\n", pkg->name);
+	fprintf(file, "[ /Title ");
+	ps_string(file, pkg->name);
+	fprintf(file, " /OUT pdfmark\n");
 }
 
 
@@ -740,9 +773,13 @@ static void ps_unit(FILE *file,
 
 	fprintf(file, "gsave %d %d moveto\n", x, y);
 	fprintf(file, "    /Helvetica findfont dup\n");
-	fprintf(file, "    (%s) %d %d\n", s, w, h);
+	fprintf(file, "    ");
+	ps_string(file, s);
+	fprintf(file, " %d %d\n", w, h);
 	fprintf(file, "    boxfont\n");
-	fprintf(file, "    (%s) show grestore\n", s);
+	fprintf(file, "    ");
+	ps_string(file, s);
+	fprintf(file, " show grestore\n");
 }
 
 
