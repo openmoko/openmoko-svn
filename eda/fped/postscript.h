@@ -1,5 +1,5 @@
 /*
- * ps.h - Dump objects in Postscript
+ * postscript.h - Dump objects in Postscript
  *
  * Written 2009, 2010 by Werner Almesberger
  * Copyright 2009, 2010 by Werner Almesberger
@@ -23,7 +23,7 @@ struct postscript_params {
         int show_stuff;         /* vecs and frames */
         int label_vecs;
         int show_meas;
-};
+} postscript_params;
 
 
 int postscript(FILE *file);

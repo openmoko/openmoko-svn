@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 
 #include "cpp.h"
@@ -22,6 +23,7 @@
 #include "obj.h"
 #include "inst.h"
 #include "file.h"
+#include "postscript.h"
 #include "dump.h"
 #include "gui.h"
 #include "delete.h"
@@ -65,14 +67,16 @@ static void load_file(const char *name)
 static void usage(const char *name)
 {
 	fprintf(stderr,
-"usage: %s [-k] [-p|-P] [-T [-T]] [cpp_option ...] [in_file [out_file]]\n\n"
+"usage: %s [-k] [-p|-P [-s scale]] [-T [-T]] [cpp_option ...]\n"
+"       %*s [in_file [out_file]]\n\n"
 "  -k          write KiCad output, then exit\n"
 "  -p          write Postscript output, then exit\n"
 "  -P          write Postscript output (full page), then exit\n"
+"  -s scale    scale factor for -P (default: auto-scale)\n"
 "  -T          test mode. Load file, then exit\n"
 "  -T -T       test mode. Load file, dump to stdout, then exit\n"
 "  cpp_option  -Idir, -Dname[=value], or -Uname\n"
-    , name);
+    , name, (int) strlen(name), "");
 	exit(1);
 }
 
@@ -84,6 +88,7 @@ int main(int argc, char **argv)
 	char *args[2];
 	int fake_argc;
 	char opt[] = "-?";
+	char *end;
 	int error;
 	int batch = 0;
 	int test_mode = 0;
@@ -91,7 +96,7 @@ int main(int argc, char **argv)
 	int batch_write_ps = 0, batch_write_ps_fullpage = 0;
 	int c;
 
-	while ((c = getopt(argc, argv, "kpD:I:PTU:")) != EOF)
+	while ((c = getopt(argc, argv, "kps:D:I:PTU:")) != EOF)
 		switch (c) {
 		case 'k':
 			batch_write_kicad = 1;
@@ -101,6 +106,13 @@ int main(int argc, char **argv)
 			break;
 		case 'P':
 			batch_write_ps_fullpage = 1;
+			break;
+		case 's':
+			if (!batch_write_ps_fullpage)
+				usage(*argv);
+			postscript_params.zoom = strtod(optarg, &end);
+			if (*end)
+				usage(*argv);
 			break;
 		case 'T':
 			batch = 1;
