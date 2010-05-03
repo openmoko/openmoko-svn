@@ -2,9 +2,9 @@
 # Make a Library of Everything
 
 COMPS="aat1275irn k4m51323pe lis302dl pcf50633-04-n3 sc32442 wm8753lgefl"
-COMPS="$COMPS ms2v-t1s si1040x tas4025a atr0635 coax ht110 isc5804at2"
-COMPS="$COMPS exc24cb102u dtc123 fa2012 rt9013_b rt9702 rt9711_bd_5 varistor"
-COMPS="$COMPS 74x1g00_5 74x1g125 74x2g126 vibrator mini_usb_b smsn16"
+COMPS="$COMPS ms2v-t1s si1040x tas4025a atr0635 ht110 isc5804at2"
+COMPS="$COMPS dtc123 fa2012 rt9013_b rt9702 rt9711_bd_5"
+COMPS="$COMPS 74x1g00_5 74x1g125 74x2g126 mini_usb_b smsn16"
 COMPS="$COMPS sw_push_4 emh4 ht210 r3113d b7840 atr0610 it3205be gsm_antenna"
 COMPS="$COMPS coax dfbm-cs320 exc24cb102u gta02_wlan_h gta02_wlan_s"
 COMPS="$COMPS td028ttec1 varistor vibrator jack_4p microphone debug_con"
