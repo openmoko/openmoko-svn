@@ -87,7 +87,7 @@ spotless:
 		rm -f $(SCH:%=%-bom.sch) gta02-core-bom-*.ps
 
 show-dup:	gta02-core.par
-		$(BOOM) ./pardup.pl gta02-core.par
+		$(BOOM) pardup.pl gta02-core.par
 
 show-missing:	$(EQU) fic/fic.dsc
 		(echo '#ORD'; grep '^MISSING ' gta02-core.ord ; ) | \
