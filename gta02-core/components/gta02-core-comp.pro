@@ -157,3 +157,4 @@ LibName49=./gsm_antenna
 LibName50=./ntgd1100l
 LibName51=./si1040x
 LibName52=./wte06016
+LibName53=./amp-10100492

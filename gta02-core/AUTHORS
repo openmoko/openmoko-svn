@@ -87,6 +87,7 @@ Luke Duncan <duncan72187@gmail.com>
   io.sch
   lcm.sch
   memory.sch
+
   Compilations:
   components/gta02-core-expanded.lib
   components/gta02-core.lib
@@ -95,6 +96,7 @@ Werner Almesberger <werner@openmoko.org>
 
   The scripts under scripts/ and expanded/
   components/mkloe
+  components/amp-10100492.lib (based on Alvaro's smsn16.lib)
   modules/332fbga-p05.fpd
   modules/bga96-8x12-0mm8.fpd
   modules/ge865.fpd

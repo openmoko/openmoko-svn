@@ -194,8 +194,11 @@ D: http://www.vishay.com/doc?71809
 
 # SIM/SD combo (SMSN16-J0-2214)
 S: smsn16
-A: simsd
 D: http://www.proconn-tech.com.tw/pdf/new/COMBO/SMSN16-02-C(SMSN16-X0-2X00)2%20IN%20Hinge%20Type%20.pdf
+
+# SIM/SD combo (Amphenol 101-00492-20)
+S: simsd
+D: http://media.digikey.com/pdf/Data Sheets/Amphenol%20PDFs/101-00492.pdf
 
 # Speaker (Philips 2403 252 28828)
 S: speaker
