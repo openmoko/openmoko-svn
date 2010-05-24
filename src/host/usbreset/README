@@ -19,6 +19,6 @@ Compilation and installation
 ----------------------------
 
 ./autogen.sh
-./confgure
+./configure
 make
 make install
