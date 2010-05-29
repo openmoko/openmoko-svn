@@ -1,8 +1,8 @@
 /*
  * gui_meas.c - GUI, measurements
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+* Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,43 +61,43 @@ static struct meas_dsc meas_dsc_y = {
 
 static int is_min(lt_op_type lt, const struct inst *inst)
 {
-	struct coord min;
+	const struct sample *min;
 
-	min = meas_find_min(lt, active_pkg->samples[inst->vec->n]);
-	return coord_eq(inst->u.vec.end, min);
+	min = meas_find_min(lt, active_pkg->samples[inst->vec->n], NULL);
+	return coord_eq(inst->u.vec.end, min->pos);
 }
 
 
 static int is_next(lt_op_type lt,
     const struct inst *inst, const struct inst *ref)
 {
-	struct coord next;
+	const struct sample *next;
 
 	next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
-	    ref->u.vec.end);
-	return coord_eq(inst->u.vec.end, next);
+	    ref->u.vec.end, NULL);
+	return coord_eq(inst->u.vec.end, next->pos);
 }
 
 
 static int is_max(lt_op_type lt, const struct inst *inst)
 {
-	struct coord max;
+	const struct sample *max;
 
-	max = meas_find_max(lt, active_pkg->samples[inst->vec->n]);
-	return coord_eq(inst->u.vec.end, max);
+	max = meas_find_max(lt, active_pkg->samples[inst->vec->n], NULL);
+	return coord_eq(inst->u.vec.end, max->pos);
 }
 
 
 static int is_a_next(lt_op_type lt, struct inst *inst)
 {
 	struct inst *a;
-	struct coord min, next;
+	const struct sample *min, *next;
 
 	for (a = insts_ip_vec(); a; a = a->next) {
-		min = meas_find_min(lt, active_pkg->samples[a->vec->n]);
+		min = meas_find_min(lt, active_pkg->samples[a->vec->n], NULL);
 		next = meas_find_next(lt, active_pkg->samples[inst->vec->n],
-		    min);
-		if (coord_eq(next, inst->u.vec.end))
+		    min->pos, NULL);
+		if (coord_eq(next->pos, inst->u.vec.end))
 			return 1;
 	}
 	return 0;
@@ -309,6 +309,9 @@ static int end_new_meas(struct inst *from, struct inst *to)
 	    (mode == min_to_next_or_max);
 	meas->offset = NULL;
 	meas_dsc = NULL;
+	/* we don't support qualifiers through the GUI yet */
+	meas->low_qual = NULL;
+	meas->high_qual = NULL;
 	return 1;
 }
 

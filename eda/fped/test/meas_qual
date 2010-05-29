@@ -1,0 +1,231 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped_dump "qualified measurements: no qualifier" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame a @
+meas c.v >> c.v
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame c {
+	v: vec @(0mm, 0mm)
+}
+
+frame b {
+	frame c @
+}
+
+frame a {
+	frame b @
+}
+
+package "_"
+unit mm
+frame a @
+meas c.v >> c.v
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "qualified measurements: fully qualified" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame a @
+meas a/b/c.v >> c.v
+EOF
+expect_grep '^meas' <<EOF
+meas a/b/c.v >> c.v
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "qualified measurements: partially qualified" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame a @
+meas a/c.v >> c.v
+EOF
+expect_grep '^meas' <<EOF
+meas a/c.v >> c.v
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "qualified measurements: wrong order" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame a @
+meas b/a/c.v >> c.v
+EOF
+expect_grep 'warning' <<EOF
+5: warning: not all qualifiers can be reached near "v"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "qualified measurements: unlinked frame" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame x {}
+frame a @
+frame x @
+meas a/c.v >> x/c.v
+EOF
+expect_grep 'warning' <<EOF
+7: warning: not all qualifiers can be reached near "v"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "qualified measurements: duplicate qualifier" <<EOF
+frame c { v: vec @(0mm, 0mm) }
+frame b { frame c @ }
+frame a { frame b @ }
+frame a @
+meas b/b/c.v >> c.v
+EOF
+expect <<EOF
+5: duplicate qualifier "b" near "v"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "qualified measurements: \"macro\" unqualified" <<EOF
+frame x {
+	a: vec @(0mm, 0mm)
+	b: vec .(d, 0mm)
+}
+frame a {
+	set d = 2mm
+	frame x @
+}
+frame b {
+	set d = 3mm
+	frame x @
+}
+frame a @
+vec @(1mm, 0mm)
+frame b .
+meas x.a >> x.b /* dummy */
+m: meas x.a >> x.b
+%meas m
+EOF
+expect <<EOF
+4
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "qualified measurements: \"macro\" qualified (a)" <<EOF
+frame x {
+	a: vec @(0mm, 0mm)
+	b: vec .(d, 0mm)
+}
+frame a {
+	set d = 2mm
+	frame x @
+}
+frame b {
+	set d = 3mm
+	frame x @
+}
+frame a @
+vec @(1mm, 0mm)
+frame b .
+meas x.a >> x.b /* dummy */
+m: meas a/x.a >> a/x.b
+%meas m
+EOF
+expect <<EOF
+2
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "qualified measurements: \"macro\" qualified (b)" <<EOF
+frame x {
+	a: vec @(0mm, 0mm)
+	b: vec .(d, 0mm)
+}
+frame a {
+	set d = 2mm
+	frame x @
+}
+frame b {
+	set d = 3mm
+	frame x @
+}
+frame a @
+vec @(1mm, 0mm)
+frame b .
+meas x.a >> x.b /* dummy */
+m: meas b/x.a >> b/x.b
+%meas m
+EOF
+expect <<EOF
+3
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "qualified measurements: \"macro\" qualified (a/b)" <<EOF
+frame x {
+	a: vec @(0mm, 0mm)
+	b: vec .(d, 0mm)
+}
+frame a {
+	set d = 2mm
+	frame x @
+}
+frame b {
+	set d = 3mm
+	frame x @
+}
+frame a @
+vec @(1mm, 0mm)
+frame b .
+meas x.a >> x.b /* dummy */
+m: meas a/x.a >> b/x.b
+%meas m
+EOF
+expect <<EOF
+4
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "qualified measurements: \"macro\" qualified (b/a)" <<EOF
+frame x {
+	a: vec @(0mm, 0mm)
+	b: vec .(d, 0mm)
+}
+frame a {
+	set d = 2mm
+	frame x @
+}
+frame b {
+	set d = 3mm
+	frame x @
+}
+frame a @
+vec @(1mm, 0mm)
+frame b .
+meas x.a >> x.b /* dummy */
+m: meas b/x.a >> a/x.b
+%meas m
+EOF
+expect <<EOF
+1
+EOF
+
+###############################################################################

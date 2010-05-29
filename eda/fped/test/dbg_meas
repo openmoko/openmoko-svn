@@ -1,0 +1,54 @@
+#!/bin/sh
+. ./Common
+
+###############################################################################
+
+fped "%meas: print mm (default)" <<EOF
+a: vec @(0mm, 0mm)
+b: vec @(3mm, 4mm)
+meas a >> b	/* work-around to simplify grammar */
+m: meas a >> b
+%meas m
+EOF
+expect <<EOF
+5
+EOF
+
+#------------------------------------------------------------------------------
+
+fped "%meas: print mil" <<EOF
+unit mil
+a: vec @(0mm, 0mm)
+b: vec @(2.54mm, 0mm)
+meas a >> b	/* work-around to simplify grammar */
+m: meas a >> b
+%meas m
+EOF
+expect <<EOF
+100
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "%meas: invalid ID" <<EOF
+%meas m
+EOF
+expect <<EOF
+1: unknown object "m" near "m"
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_fail "%meas: measurement not instantiated" <<EOF
+a: vec @(0mm, 0mm)
+loop i = 1, 0
+b: vec @(i*1mm, 0mm)
+meas a >> b	/* work-around to simplify grammar */
+m: meas a >> b
+%meas m
+EOF
+expect <<EOF
+measurement "m" was not instantiated
+EOF
+
+###############################################################################

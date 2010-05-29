@@ -521,6 +521,17 @@ static void destroy_frame(struct frame *frame)
 }
 
 
+static int qual_ref(const struct frame_qual *qual, const struct frame *ref)
+{
+	while (qual) {
+		if (qual->frame == ref)
+			return 1;
+		qual = qual->next;
+	}
+	return 0;
+}
+
+
 static void delete_references(const struct frame *ref)
 {
 	struct frame *frame;
@@ -535,7 +546,9 @@ static void delete_references(const struct frame *ref)
 				break;
 			case ot_meas:
 				if (obj->base->frame == ref ||
-				    obj->u.meas.high->frame == ref)
+				    obj->u.meas.high->frame == ref ||
+				    qual_ref(obj->u.meas.low_qual, ref) ||
+				    qual_ref(obj->u.meas.high_qual, ref))
 					do_delete_obj(obj);
 				break;
 			default:

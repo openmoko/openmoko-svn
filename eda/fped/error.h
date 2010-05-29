@@ -1,8 +1,8 @@
 /*
  * error.h - Error reporting
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@ extern int lineno;
 
 extern void (*reporter)(const char *s);
 
+
+void yywarn(const char *s);
 
 void yyerrorf(const char *fmt, ...)
     __attribute__((format(printf, 1, 2)));

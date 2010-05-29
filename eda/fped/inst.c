@@ -35,7 +35,7 @@
 struct inst *selected_inst = NULL;
 struct bbox active_frame_bbox;
 struct pkg *pkgs, *active_pkg, *curr_pkg;
-struct inst *curr_frame = NULL;
+struct inst *frame_instantiating = NULL;
 
 static struct pkg *prev_pkgs;
 
@@ -574,8 +574,8 @@ static void update_bbox(struct bbox *bbox, struct coord coord)
 
 static void propagate_bbox(const struct inst *inst)
 {
-	struct inst *frame =
-	    curr_frame ? curr_frame : curr_pkg->insts[ip_frame];
+	struct inst *frame = frame_instantiating ?
+	    frame_instantiating : curr_pkg->insts[ip_frame];
 
 	update_bbox(&frame->bbox, inst->bbox.min);
 	update_bbox(&frame->bbox, inst->bbox.max);
@@ -602,7 +602,7 @@ static struct inst *add_inst(const struct inst_ops *ops, enum inst_prio prio,
 	inst->vec = NULL;
 	inst->obj = NULL;
 	inst->base = inst->bbox.min = inst->bbox.max = base;
-	inst->outer = curr_frame;
+	inst->outer = frame_instantiating;
 	inst->active = IS_ACTIVE;
 	inst->next = NULL;
 	*curr_pkg->next_inst[prio] = inst;
@@ -1030,7 +1030,7 @@ static struct inst_ops meas_ops = {
 };
 
 
-static struct inst *find_meas_hint(const struct obj *obj)
+struct inst *find_meas_hint(const struct obj *obj)
 {
 	struct inst *inst;
 
@@ -1151,16 +1151,16 @@ void inst_begin_frame(struct obj *obj, struct frame *frame,
 	inst->u.frame.active = is_active_frame;
 	inst->active = active;
 	find_inst(inst);
-	curr_frame = inst;
+	frame_instantiating = inst;
 }
 
 
 void inst_end_frame(const struct frame *frame)
 {
-	struct inst *inst = curr_frame;
+	struct inst *inst = frame_instantiating;
 
-	curr_frame = curr_frame->outer;
-	if (curr_frame)
+	frame_instantiating = frame_instantiating->outer;
+	if (frame_instantiating)
 		propagate_bbox(inst);
 	if (inst->u.frame.active && frame == active_frame)
 		active_frame_bbox = inst->bbox;
@@ -1245,7 +1245,7 @@ void inst_start(void)
 	pkgs = NULL;
 	inst_select_pkg(NULL);
 	curr_pkg = pkgs;
-	curr_frame = NULL;
+	frame_instantiating = NULL;
 }
 
 

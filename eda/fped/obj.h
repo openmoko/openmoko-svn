@@ -163,8 +163,11 @@ struct frame {
 	/* generating and editing */
 	struct obj *active_ref;
 
-	/* For searching */
+	/* for searching */
 	struct obj *found_ref;	/* NULL if not found yet */
+
+	/* index into bit vector in samples */
+	int n;
 
 	/* for dumping */
 	int dumped;

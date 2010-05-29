@@ -131,6 +131,8 @@ SP	[\t ]*
 				  return TOK_DBG_FRAME; }
 <INITIAL>"%print"		{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_PRINT; }
+<INITIAL>"%meas"		{ BEGIN(NOKEYWORD);
+				  return TOK_DBG_MEAS; }
 <INITIAL>"%dump"		{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_DUMP; }
 <INITIAL>"%exit"		{ BEGIN(NOKEYWORD);
@@ -173,10 +175,12 @@ SP	[\t ]*
 
 ;				BEGIN(INITIAL);
 
-"{"				{ BEGIN(NOKEYWORD);
-				  disable_keywords = is_table;
+"{"				{ disable_keywords = is_table;
+				  BEGIN(disable_keywords ?
+				    NOKEYWORD : INITIAL);
 				  return '{'; }
 "}"				{ disable_keywords = 0;
+				  BEGIN(INITIAL);
 				  return '}'; }
 
 ^#\ [0-9]+\ \"[^"]*\"(\ [0-9]+)*\n {

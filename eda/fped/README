@@ -582,6 +582,60 @@ measx "width = " a >> b 0mm
 would print "width = 1mm"
 
 
+Additional qualifiers
+- - - - - - - - - - -
+
+When using frames as reusable building blocks, similar to functions or
+macros in many programming languages, one may need finer control over
+the points that are selected for measurements.
+
+For example, let us consider a frame "square" that draws a square
+centered at the frame's origin and with a side length given by the
+variable "size". This variable be set in the frame referencing
+"square".
+
+    frame square {
+	a: vec @(-size/2, -size/2)
+	b: vec @(size/2, size/2)
+	rect a b
+    }
+
+    frame small {
+	set size = 2mm
+	frame square @
+    }
+
+    frame big {
+	set size = 5mm
+	frame square @
+    }
+
+    frame small @
+    vec @(5mm, 0mm)
+    frame big .
+
+If we want to measure the size of each square, we could use
+
+measx square.a -> square.b
+
+Unfortunately, this only measures the small square. To reach the
+big frame, we need to tell fped to use only those points in "square"
+that have been placed when "square" was invoked from the big frame.
+
+This is accomplished by prefixing the points in question with the
+name(s) of the frames that need to be visited. The frame names are
+separated by slashes (/).
+
+measx big/square.a -> square.b
+
+For clarity, it's better to qualify both points, e.g.,
+
+measx big/square.a -> big/square.b
+
+If multiple frame names are given, they must be in the order in
+which they are invoked.
+
+
 Experimental: debugging directives
 ----------------------------------
 
@@ -592,6 +646,7 @@ most of which mimick the effect of GUI operations:
 %move <identifier> [<number>] <identifier>
 %frame <identifier> <qualified-base>
 %print <expression>
+%meas <identifier>
 %dump
 %exit
 %tsort { -<id> | +<id> | <id-before> <id-after> [<number>] ... }
@@ -621,6 +676,10 @@ parent frame's origin can be references as "@".
 
 %dump writes the footprint definition in the fped language to standard
 output. %exit immediately exits fped, without invoking the GUI.
+
+%print evaluates the expression and prints the result to standard output.
+%meas performs an instantiation and prints the value of the labeled
+measurement.
 
 %tsort is used to test-drive the topological sort algorithm. The items
 in the curly braces are declarations of nodes with (-<id>) or without

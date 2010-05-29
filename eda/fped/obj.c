@@ -18,6 +18,7 @@
 #include "util.h"
 #include "error.h"
 #include "expr.h"
+#include "bitset.h"
 #include "meas.h"
 #include "inst.h"
 #include "hole.h"
@@ -36,6 +37,9 @@ char *pkg_name = NULL;
 struct frame *frames = NULL;
 struct frame *active_frame = NULL;
 void *instantiation_error = NULL;
+
+
+static struct bitset *frame_set; /* frames visited in "call chain" */
 
 
 /* ----- Searching --------------------------------------------------------- */
@@ -181,7 +185,7 @@ static int generate_vecs(struct frame *frame, struct coord base)
 		vec->pos.y += y.n;
 		if (!inst_vec(vec, vec_base))
 			goto error;
-		meas_post(vec, vec->pos);
+		meas_post(vec, vec->pos, frame_set);
 	}
 	return 1;
 
@@ -399,9 +403,11 @@ static int generate_frame(struct frame *frame, struct coord base,
 	inst_begin_frame(frame_ref, frame, base,
 	    active && parent == active_frame,
 	    active && frame == active_frame);
+	bitset_set(frame_set, frame->n);
 	frame->curr_parent = parent;
 	ok = iterate_tables(frame, frame->tables, base, active);
 	inst_end_frame(frame);
+	bitset_clear(frame_set, frame->n);
 	frame->curr_parent = NULL;
 	return ok;
 }
@@ -458,13 +464,27 @@ static void activate_found(void)
 }
 
 
+static int enumerate_frames(void)
+{
+	struct frame *frame;
+	int n = 0;
+
+	for (frame = frames; frame; frame = frame->next)
+		frame->n = n++;
+	return n;
+}
+
+
 int instantiate(void)
 {
 	struct coord zero = { 0, 0 };
+	int n_frames;
 	int ok;
 
 	meas_start();
 	inst_start();
+	n_frames = enumerate_frames();
+	frame_set = bitset_new(n_frames);
 	instantiation_error = NULL;
 	reset_all_loops();
 	reset_found();
@@ -480,11 +500,12 @@ int instantiate(void)
 	if (ok)
 		ok = refine_layers();
 	if (ok)
-		ok = instantiate_meas();
+		ok = instantiate_meas(n_frames);
 	if (ok)
 		inst_commit();
 	else
 		inst_revert();
+	bitset_free(frame_set);
 	return ok;
 }
 

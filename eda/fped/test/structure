@@ -72,6 +72,7 @@ frame f {
 	a: vec @(0mm, 0mm)
 	b: vec @(1mm, 1mm)
 }
+frame f @
 meas f.a -> f.b
 EOF
 expect <<EOF
@@ -84,6 +85,7 @@ frame f {
 
 package "_"
 unit mm
+frame f @
 meas f.a -> f.b
 EOF
 

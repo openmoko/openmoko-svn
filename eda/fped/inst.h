@@ -137,9 +137,9 @@ extern struct bbox active_frame_bbox;
 
 /*
  * frame being instantiated - we need to export this one for meas.c, so that
- * measurement scan update the root frame's bounding box.
+ * measurements can update the root frame's bounding box.
  */
-extern struct inst *curr_frame;
+extern struct inst *frame_instantiating;
 
 /*
  * @@@ Note that we over-generalize a bit here: the only item that ever ends up
@@ -183,6 +183,7 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b);
 int inst_hole(struct obj *obj, struct coord a, struct coord b);
 int inst_arc(struct obj *obj, struct coord center, struct coord start,
     struct coord stop, unit_type width);
+struct inst *find_meas_hint(const struct obj *obj);
 int inst_meas(struct obj *obj, struct coord from, struct coord to);
 void inst_meas_hint(struct obj *obj, unit_type offset);
 

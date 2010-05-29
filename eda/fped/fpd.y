@@ -17,13 +17,17 @@
 
 #include "util.h"
 #include "error.h"
+#include "coord.h"
 #include "expr.h"
 #include "obj.h"
 #include "meas.h"
 #include "gui_status.h"
+#include "gui_inst.h" /* for %meas */
 #include "dump.h"
 #include "tsort.h"
 #include "fpd.h"
+
+#include "y.tab.h"
 
 
 struct expr *expr_result;
@@ -47,6 +51,9 @@ static int n_vars, n_values;
 static const char *id_sin, *id_cos, *id_sqrt;
 
 static struct tsort *tsort;
+
+
+/* ----- lookup functions -------------------------------------------------- */
 
 
 static struct frame *find_frame(const char *name)
@@ -107,6 +114,9 @@ static struct var *find_var(const struct frame *frame, const char *name)
 			return &loop->var;
 	return NULL;
 }
+
+
+/* ----- item creation ----------------------------------------------------- */
 
 
 static void set_frame(struct frame *frame)
@@ -175,6 +185,65 @@ static struct obj *new_obj(enum obj_type type)
 	obj->lineno = lineno;
 	return obj;
 }
+
+
+/* ---- frame qualifiers --------------------------------------------------- */
+
+
+static int duplicate_qualifier(const struct frame_qual *a,
+    const struct frame_qual *b)
+{
+	if (!b)
+		return 0;
+	if (a != b && a->frame == b->frame) {
+		yyerrorf("duplicate qualifier \"%s\"", a->frame->name);
+		return 1;
+	}
+	if (b && duplicate_qualifier(a, b->next))
+		return 1;
+	return duplicate_qualifier(a->next, a->next);
+}
+
+
+static int can_reach(const struct frame *curr, const struct frame_qual *qual,
+    const struct frame *end)
+{
+	const struct obj *obj;
+
+	if (curr == end)
+		return !qual;
+
+	/*
+	 * Don't recurse for removing the qualifier alone. We require a frame
+	 * reference step as well, so that things like foo.foo.foo.bar.vec
+	 * aren't allowed.
+	 *
+	 * Since a duplicate qualifier can never work, we test for this error
+	 * explicitly in "duplicate_qualifier".
+	 */
+	if (qual && curr == qual->frame)
+		qual = qual->next;
+
+	for (obj = curr->objs; obj; obj = obj->next)
+		if (obj->type == ot_frame)
+			if (can_reach(obj->u.frame.ref, qual, end))
+				return 1;
+	return 0;
+}
+
+
+static int check_qbase(struct qbase *qbase)
+{
+	if (duplicate_qualifier(qbase->qualifiers, qbase->qualifiers))
+		return 0;
+
+	if (!can_reach(frames, qbase->qualifiers, qbase->vec->frame))
+		yywarn("not all qualifiers can be reached");
+	return 1;
+}
+
+
+/* ----- debugging directives ---------------------------------------------- */
 
 
 static int dbg_delete(const char *frame_name, const char *name)
@@ -314,6 +383,43 @@ static int dbg_print(const struct expr *expr)
 }
 
 
+static int dbg_meas(const char *name)
+{
+	const struct obj *obj;
+	const struct inst *inst;
+	struct coord a1, b1;
+	char *s;
+
+	obj = find_obj(frames, name);
+	if (!obj) {
+		yyerrorf("unknown object \"%s\"", name);
+		return 0;
+	}
+
+	/* from fped.c:main */
+
+	if (!pkg_name)
+                pkg_name = stralloc("_");
+        reporter = report_to_stderr;
+	if (!instantiate())
+		return 0;
+
+	inst = find_meas_hint(obj);
+	if (!inst) {
+		yyerrorf("measurement \"%s\" was not instantiated", name);
+		return 0;
+	}
+
+	project_meas(inst, &a1, &b1);
+	s = format_len(obj->u.meas.label ? obj->u.meas.label : "",
+	    dist_point(a1, b1), curr_unit);
+	printf("%s\n", s);
+	free(s);
+
+	return 1;
+}
+
+
 %}
 
 
@@ -339,6 +445,10 @@ static int dbg_print(const struct expr *expr)
 		struct frame *frame;
 		struct vec *vec;
 	} qvec;
+	struct qbase {
+		struct vec *vec;
+		struct frame_qual *qualifiers;
+	} qbase;
 };
 
 
@@ -348,7 +458,7 @@ static int dbg_print(const struct expr *expr)
 %token		TOK_MEAS TOK_MEASX TOK_MEASY TOK_UNIT
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 %token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_FRAME TOK_DBG_PRINT
-%token		TOK_DBG_DUMP TOK_DBG_EXIT TOK_DBG_TSORT
+%token		TOK_DBG_DUMP TOK_DBG_EXIT TOK_DBG_TSORT TOK_DBG_MEAS
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -358,8 +468,8 @@ static int dbg_print(const struct expr *expr)
 %type	<var>	vars var
 %type	<row>	rows
 %type	<value>	row value opt_value_list
-%type	<vec>	vec base qbase
-%type	<obj>	object obj meas
+%type	<vec>	vec base
+%type	<obj>	object obj meas unlabeled_meas
 %type	<expr>	expr opt_expr add_expr mult_expr unary_expr primary_expr
 %type	<num>	opt_num
 %type	<frame>	frame_qualifier
@@ -368,6 +478,7 @@ static int dbg_print(const struct expr *expr)
 %type	<mt>	meas_type
 %type	<mo>	meas_op
 %type	<qvec>	qualified_base
+%type	<qbase>	qbase qbase_unchecked
 
 %%
 
@@ -536,6 +647,11 @@ debug_item:
 	| TOK_DBG_PRINT expr
 		{
 			if (!dbg_print($2))
+				YYABORT;
+		}
+	| TOK_DBG_MEAS ID
+		{
+			if (!dbg_meas($2))
 				YYABORT;
 		}
 	| TOK_DBG_DUMP
@@ -867,7 +983,7 @@ opt_measurements:
 	;
 
 measurements:
-	meas
+	unlabeled_meas	/* @@@ hack */
 		{
 			*next_obj = $1;
 			next_obj = &$1->next;
@@ -881,6 +997,22 @@ measurements:
 	;
 
 meas:
+	unlabeled_meas
+		{
+			$$ = $1;
+		}
+	| LABEL unlabeled_meas
+		{
+			$$ = $2;
+			if (find_label(curr_frame, $1)) {
+				yyerrorf("duplicate label \"%s\"", $1);
+				YYABORT;
+			}
+			$$->name = $1;
+		}
+	;
+
+unlabeled_meas:
 	meas_type opt_string qbase meas_op qbase opt_expr
 		{
 			struct meas *meas;
@@ -889,32 +1021,62 @@ meas:
 			meas = &$$->u.meas;
 			meas->type = $4.max ? $1+3 : $1;
 			meas->label = $2;
-			$$->base = $3;
+			$$->base = $3.vec;
+			meas->low_qual = $3.qualifiers;
 			meas->inverted = $4.inverted;
-			meas->high = $5;
+			meas->high = $5.vec;
+			meas->high_qual = $5.qualifiers;
 			meas->offset = $6;
 			$$->next = NULL;
 		}
 	;
 
 qbase:
+	qbase_unchecked
+		{
+			$$ = $1;
+			if (!check_qbase(&$$))
+				YYABORT;
+		}
+	;
+
+qbase_unchecked:
 	ID
 		{
-			$$ = find_vec(frames, $1);
-			if (!$$) {
+			$$.vec = find_vec(frames, $1);
+			if (!$$.vec) {
 				yyerrorf("unknown vector \"%s\"", $1);
 				YYABORT;
 			}
+			$$.qualifiers = NULL;
 		}
 	| ID '.' ID
 		{
 			const struct frame *frame;
 
 			frame = find_frame($1);
-			$$ = frame ? find_vec(frame, $3) : NULL;
-			if (!$$) {
+			$$.vec = frame ? find_vec(frame, $3) : NULL;
+			if (!$$.vec) {
 				yyerrorf("unknown vector \"%s.%s\"", $1, $3);
 				YYABORT;
+			}
+			$$.qualifiers = NULL;
+		}
+	| ID '/' qbase
+		{
+			const struct frame *frame;
+			struct frame_qual *qual;
+
+			$$ = $3;
+			frame = find_frame($1);
+			if (!frame) {
+				yyerrorf("unknown frame \"%s\"", $1);
+				YYABORT;
+			} else {
+				qual = alloc_type(struct frame_qual);
+				qual->frame = frame;
+				qual->next = $$.qualifiers;
+				$$.qualifiers = qual;
 			}
 		}
 	;

@@ -1,8 +1,8 @@
 /*
  * meas.c - Measurements
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ void reset_samples(struct sample **samples, int n)
 	for (i = 0; i != n; i++)
 		while (samples[i]) {
 			next = samples[i]->next;
+			bitset_free(samples[i]->frame_set);
 			free(samples[i]);
 			samples[i] = next;
 		}
@@ -53,7 +54,8 @@ void meas_start(void)
 }
 
 
-void meas_post(const struct vec *vec, struct coord pos)
+void meas_post(const struct vec *vec, struct coord pos,
+    const struct bitset *frame_set)
 {
 	struct sample **walk, *new;
 
@@ -64,11 +66,18 @@ void meas_post(const struct vec *vec, struct coord pos)
 			continue;
 		if (pos.x < (*walk)->pos.x)
 			break;
-		if (pos.x == (*walk)->pos.x)
+		if (pos.x != (*walk)->pos.x)
+			continue;
+		if (bitset_ge((*walk)->frame_set, frame_set))
 			return;
+		if (bitset_ge(frame_set, (*walk)->frame_set)) {
+			bitset_or((*walk)->frame_set, frame_set);
+			return;
+		}
 	}
 	new = alloc_type(struct sample);
 	new->pos = pos;
+	new->frame_set = bitset_clone(frame_set);
 	new->next = *walk;
 	*walk = new;
 }
@@ -177,45 +186,47 @@ static int better_next(lt_op_type lt,
  * else if (*a == a0 && *a <xy a0) use *a
  */
 
-struct coord meas_find_min(lt_op_type lt, const struct sample *s)
+const struct sample *meas_find_min(lt_op_type lt, const struct sample *s,
+    const struct bitset *qual)
 {
-	struct coord min;
+	const struct sample *min = NULL;
 
-	min = s->pos;
 	while (s) {
-		if (lt(s->pos, min) ||
-		    (!lt(min, s->pos) && lt_xy(s->pos, min)))
-			min = s->pos;
+		if (!qual || bitset_ge(s->frame_set, qual))
+			if (!min || lt(s->pos, min->pos) ||
+			    (!lt(min->pos, s->pos) && lt_xy(s->pos, min->pos)))
+				min = s;
 		s = s->next;
 	}
 	return min;
 }
 
 
-struct coord meas_find_next(lt_op_type lt, const struct sample *s,
-    struct coord ref)
+const struct sample *meas_find_next(lt_op_type lt, const struct sample *s,
+    struct coord ref, const struct bitset *qual)
 {
-	struct coord next;
+	const struct sample *next = NULL;
 
-	next = s->pos;
 	while (s) {
-		if (better_next(lt, ref, next, s->pos))
-			next = s->pos;
+		if (!qual || bitset_ge(s->frame_set, qual))
+			if (!next || better_next(lt, ref, next->pos, s->pos))
+				next = s;
 		s = s->next;
 	}
 	return next;
 }
 
 
-struct coord meas_find_max(lt_op_type lt, const struct sample *s)
+const struct sample *meas_find_max(lt_op_type lt, const struct sample *s,
+    const struct bitset *qual)
 {
-	struct coord max;
+	const struct sample *max = NULL;
 
-	max = s->pos;
 	while (s) {
-		if (lt(max, s->pos) ||
-		    (!lt(s->pos, max) && lt_xy(max, s->pos)))
-			max = s->pos;
+		if (!qual || bitset_ge(s->frame_set, qual))
+			if (!max || lt(max->pos, s->pos) ||
+			    (!lt(s->pos, max->pos) && lt_xy(max->pos, s->pos)))
+				max = s;
 		s = s->next;
 	}
 	return max;
@@ -225,46 +236,73 @@ struct coord meas_find_max(lt_op_type lt, const struct sample *s)
 /* ----- instantiation ----------------------------------------------------- */
 
 
-static int instantiate_meas_pkg(void)
+static struct bitset *make_frame_set(struct frame_qual *qual, int n_frames)
+{
+	struct bitset *set;
+
+	set = bitset_new(n_frames);
+	while (qual) {
+		bitset_set(set, qual->frame->n);
+		qual = qual->next;
+	}
+	return set;
+}
+
+
+static int instantiate_meas_pkg(int n_frames)
 {
 	struct obj *obj;
 	const struct meas *meas;
-	struct coord a0, b0;
+	struct bitset *set;
+	const struct sample *a0, *b0;
 	lt_op_type lt;
 
 	for (obj = frames->objs; obj; obj = obj->next) {
 		if (obj->type != ot_meas)
 			continue;
 		meas = &obj->u.meas;
+
+		/* optimization. not really needed anymore. */
 		if (!curr_pkg->samples[obj->base->n] ||
 		    !curr_pkg->samples[meas->high->n])
 			continue;
 
 		lt = lt_op[meas->type];
-		a0 = meas_find_min(lt, curr_pkg->samples[obj->base->n]);
+
+		set = make_frame_set(meas->low_qual, n_frames);
+		a0 = meas_find_min(lt, curr_pkg->samples[obj->base->n], set);
+		bitset_free(set);
+		if (!a0)
+			continue;
+
+		set = make_frame_set(meas->high_qual, n_frames);
 		if (is_next[meas->type])
 			b0 = meas_find_next(lt,
-			    curr_pkg->samples[meas->high->n], a0);
+			    curr_pkg->samples[meas->high->n], a0->pos, set);
 		else
 			b0 = meas_find_max(lt,
-			    curr_pkg->samples[meas->high->n]);
+			    curr_pkg->samples[meas->high->n], set);
+		bitset_free(set);
+		if (!b0)
+			continue;
 
 		inst_meas(obj,
-		    meas->inverted ? b0 : a0, meas->inverted ? a0 : b0);
+		    meas->inverted ? b0->pos : a0->pos,
+		    meas->inverted ? a0->pos : b0->pos);
 	}
 	return 1;
 }
 
 
-int instantiate_meas(void)
+int instantiate_meas(int n_frames)
 {
 	struct pkg *pkg;
 
-	curr_frame = pkgs->insts[ip_frame];
+	frame_instantiating = pkgs->insts[ip_frame];
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		if (pkg->name) {
 			inst_select_pkg(pkg->name);
-			if (!instantiate_meas_pkg())
+			if (!instantiate_meas_pkg(n_frames))
 				return 0;
 		}
 	return 1;

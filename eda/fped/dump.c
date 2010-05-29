@@ -13,6 +13,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 
 #include "util.h"
 #include "unparse.h"
@@ -389,14 +391,35 @@ static const char *meas_type_name[mt_n] = {
 
 
 
-static char *print_meas_base(struct vec *base)
+static char *print_meas_base(struct vec *base, const struct frame_qual *qual)
 {
 	const char *name;
+	size_t n;
+	const struct frame_qual *walk;
+	char *s, *p;
 
 	name = base_name(base, NULL);
-	if (base->frame == frames)
-		return stralloc(name);
-	return stralloc_printf("%s.%s", base->frame->name, name);
+	n = strlen(name)+1; /* vec\0 */
+	for (walk = qual; walk; walk = walk->next)
+		n += strlen(walk->frame->name)+1; /* frame/ */
+	if (base->frame != frames)
+		n += strlen(base->frame->name)+1; /* frame. */
+
+	s = p = alloc_size(n);
+	for (walk = qual; walk; walk = walk->next) {
+		n = strlen(walk->frame->name);
+		memcpy(p, walk->frame->name, n);
+		p[n] = '/';
+		p += n+1;
+	}
+	if (base->frame != frames) {
+		n = strlen(base->frame->name);
+		memcpy(p, base->frame->name, n);
+		p[n] = '.';
+		p += n+1;
+	}
+	strcpy(p, name);
+	return s;
 }
 
 
@@ -413,11 +436,11 @@ char *print_meas(const struct obj *obj)
 		free(s);
 		s = t;
 	}
-	s1 = print_meas_base(obj->base);
+	s1 = print_meas_base(obj->base, obj->u.meas.low_qual);
 	s2 = stralloc_printf(" %s ",
 		    obj->u.meas.type < 3 ? obj->u.meas.inverted ? "<-" : "->" :
 		    obj->u.meas.inverted ? "<<" : ">>");
-	s3 = print_meas_base(obj->u.meas.high);
+	s3 = print_meas_base(obj->u.meas.high, obj->u.meas.high_qual);
 	t = stralloc_printf("%s%s%s%s", s, s1, s2, s3);
 	free(s);
 	free(s1);

@@ -48,6 +48,7 @@ fped_dump "delete vector: measurements disappear (other frame)" <<EOF
 frame f {
 	v: vec @(0mm, 0mm)
 }
+frame f @
 meas f.v -> f.v
 %del f.v
 EOF
@@ -59,6 +60,7 @@ frame f {
 
 package "_"
 unit mm
+frame f @
 EOF
 
 ###############################################################################

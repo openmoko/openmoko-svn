@@ -53,12 +53,38 @@ frame f {
 	v: vec @(0mm, 0mm)
 }
 
+frame f @
 meas f.v -> f.v
 
 %del f
 EOF
 expect <<EOF
 /* MACHINE-GENERATED ! */
+
+package "_"
+unit mm
+EOF
+
+#------------------------------------------------------------------------------
+
+fped_dump "delete frame: measurements with qualifiers disappear" <<EOF
+frame f {
+	v: vec @(0mm, 0mm)
+}
+
+frame g { frame f @ }
+
+frame g @
+meas g/f.v -> f.v
+
+%del g
+EOF
+expect <<EOF
+/* MACHINE-GENERATED ! */
+
+frame f {
+	v: vec @(0mm, 0mm)
+}
 
 package "_"
 unit mm

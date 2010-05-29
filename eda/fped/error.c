@@ -1,8 +1,8 @@
 /*
  * error.c - Error reporting
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,13 @@ extern char *yytext;
 
 int lineno = 1;
 void (*reporter)(const char *s) = report_to_stderr;
+
+
+void yywarn(const char *s)
+{
+	/* we use yywarn only when starting */
+	fprintf(stderr, "%d: warning: %s near \"%s\"\n", lineno, s, yytext);
+}
 
 
 void yyerrorf(const char *fmt, ...)
