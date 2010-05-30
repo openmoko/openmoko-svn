@@ -30,23 +30,13 @@ static void kicad_centric(struct coord a, struct coord b,
     struct coord *center, struct coord *size)
 {
 	struct coord min, max;
-	unit_type tmp;
 
 	min.x = units_to_kicad(a.x);
 	min.y = units_to_kicad(a.y);
 	max.x = units_to_kicad(b.x);
 	max.y = units_to_kicad(b.y);
 
-	if (min.x > max.x) {
-		tmp = min.x;
-		min.x = max.x;
-		max.x = tmp;
-	}
-	if (min.y > max.y) {
-		tmp = min.y;
-		min.y = max.y;
-		max.y = tmp;
-	}
+	sort_coord(&min, &max);
 
 	size->x = max.x-min.x;
 	size->y = max.y-min.y;

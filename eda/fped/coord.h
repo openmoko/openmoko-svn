@@ -1,8 +1,8 @@
 /*
  * coord.h - Coordinate representation and basic operations
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,6 @@ struct coord rotate_r(struct coord c, unit_type r, double angle);
 double theta_vec(struct coord v);
 double theta(struct coord c, struct coord p);
 
-void swap_coord(unit_type *a, unit_type *b);
 void sort_coord(struct coord *min, struct coord *max);
 
 unit_type dist_point(struct coord a, struct coord b);

@@ -189,7 +189,8 @@ static void meas_highlight_b(void)
 
 struct pix_buf *draw_move_meas(struct inst *inst, struct coord pos, int i)
 {
-	return draw_move_line_common(inst, inst->u.meas.end, pos, i);
+	return draw_move_line_common(inst, inst->u.meas.end, pos,
+	    inst->obj->u.meas.inverted ? 1-i : i);
 }
 
 
@@ -349,6 +350,7 @@ static struct inst *vec_at(const struct vec *vec, struct coord pos)
 void begin_drag_move_meas(struct inst *inst, int i)
 {
 	const struct meas *meas = &inst->obj->u.meas;
+	struct coord a, b;
 
 	switch (meas->type) {
 	case mt_xy_next:
@@ -367,14 +369,24 @@ void begin_drag_move_meas(struct inst *inst, int i)
 		abort();
 	}
 	highlight = meas_highlight_b;
+
+	/*
+	 * We're setting up the same conditions as after picking the first
+	 * point when making a new measurement. Thus, we set meas_inst to the
+	 * vector to the endpoint we're not moving.
+	 */
+	a = inst->base;
+	b = inst->u.meas.end;
+	if (inst->obj->u.meas.inverted)
+		swap(a, b);
 	switch (i) {
 	case 0:
 		mode = meas->type < 3 ? next_to_min : max_to_min;
-		meas_inst = vec_at(inst->obj->u.meas.high, inst->u.meas.end);
+		meas_inst = vec_at(inst->obj->u.meas.high, b);
 		break;
 	case 1:
 		mode = min_to_next_or_max;
-		meas_inst = vec_at(inst->obj->base, inst->base);
+		meas_inst = vec_at(inst->obj->base, a);
 		break;
 	default:
 		abort();

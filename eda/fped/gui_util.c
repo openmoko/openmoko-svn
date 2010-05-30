@@ -65,19 +65,12 @@ struct pix_buf *save_pix_buf(GdkDrawable *da, int xa, int ya, int xb, int yb,
     int border)
 {
 	struct pix_buf *buf;
-	int tmp;
 	int w, h;
 
-	if (xa > xb) {
-		tmp = xa;
-		xa = xb;
-		xb = tmp;
-	}
-	if (ya > yb) {
-		tmp = ya;
-		ya = yb;
-		yb = tmp;
-	}
+	if (xa > xb)
+		swap(xa, xb);
+	if (ya > yb)
+		swap(ya, yb);
 	buf = alloc_type(struct pix_buf);
 	buf->da = da;
 	buf->x = xa-border;

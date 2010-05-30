@@ -1,8 +1,8 @@
 /*
  * coord.c - Coordinate representation and basic operations
  *
- * Written 2009 by Werner Almesberger
- * Copyright 2009 by Werner Almesberger
+ * Written 2009, 2010 by Werner Almesberger
+ * Copyright 2009, 2010 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 
 #include <math.h>
 
+#include "util.h"
 #include "coord.h"
 
 
@@ -153,22 +154,12 @@ double theta(struct coord c, struct coord p)
 /* ----- sorting coordinates ----------------------------------------------- */
 
 
-void swap_coord(unit_type *a, unit_type *b)
-{
-	unit_type tmp;
-
-	tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
-
-
 void sort_coord(struct coord *min, struct coord *max)
 {
 	if (min->x > max->x)
-		swap_coord(&min->x, &max->x);
+		swap(min->x, max->x);
 	if (min->y > max->y)
-		swap_coord(&min->y, &max->y);
+		swap(min->y, max->y);
 
 }
 

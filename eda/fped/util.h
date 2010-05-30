@@ -1,8 +1,8 @@
 /*
  * util.h - Common utility functions
  *
- * Written 2006, 2009 by Werner Almesberger
- * Copyright 2006, 2009 Werner Almesberger
+ * Written 2006, 2009, 2010 by Werner Almesberger
+ * Copyright 2006, 2009, 2010 Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,11 @@
 	strncpy(strnalloc_tmp, (s), (n));		\
 	strnalloc_tmp[n] = 0;				\
 	strnalloc_tmp; })
+
+#define swap(a, b) \
+    ({	typeof(a) swap_tmp = (a);			\
+	(a) = (b);					\
+	(b) = swap_tmp; })
 
 
 char *stralloc_vprintf(const char *fmt, va_list ap);
