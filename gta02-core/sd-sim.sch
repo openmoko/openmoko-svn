@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Mon May  3 14:22:05 2010
+EESchema Schematic File Version 2  date Sun May 30 06:24:38 2010
 LIBS:power
 LIBS:device
 LIBS:conn
@@ -9,7 +9,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 5 14
 Title ""
-Date "3 may 2010"
+Date "30 may 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -256,6 +256,7 @@ U 1 1 4BDF05F5
 P 11100 5800
 F 0 "CON7501" H 10650 6700 60  0000 C CNN
 F 1 "AMP-10100492" H 10350 5150 60  0000 C CNN
+F 2 "AMP-10100492" H 11100 5800 60  0001 C CNN
 	1    11100 5800
 	1    0    0    -1  
 $EndComp

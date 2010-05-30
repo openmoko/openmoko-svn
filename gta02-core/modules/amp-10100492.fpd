@@ -1,0 +1,182 @@
+/* MACHINE-GENERATED ! */
+
+frame SIMpads {
+	table
+	    { b, s, p }
+	    { 2.5mm, 0.9mm, 1.27mm }
+
+	table
+	    { n, name }
+	    { 1, "C1" }
+	    { 2, "C5" }
+	    { 3, "C2" }
+	    { 4, "C6" }
+	    { 5, "C3" }
+	    { 6, "C7" }
+	    { 7, "C4" }
+	    { 8, "C8" }
+
+	__0: vec @(0mm, -(8-n)*p)
+	ur: vec .(b/2, s/2)
+	ll: vec __0(-b/2, -s/2)
+	pad "$name" . ur
+}
+
+frame SDpads {
+	table
+	    { b, s, p }
+	    { 2.5mm, 0.7mm, 1.1mm }
+
+	loop n = 1, 8
+
+	__0: vec @(-(n-1)*p, 0mm)
+	ur: vec .(s/2, b/2)
+	ll: vec __0(-s/2, -b/2)
+	pad "P$n" ur .
+}
+
+frame GNDpad {
+	ur: vec @(w/2, h/2)
+	ll: vec @(-w/2, -h/2)
+	pad "$name" . ur
+}
+
+frame G6 {
+	table
+	    { name, h, w }
+	    { "G6", 1.65mm, 1.8mm }
+
+	frame GNDpad @
+}
+
+frame G5 {
+	table
+	    { name, h, w }
+	    { "G5", 1.7mm, 1.4mm }
+
+	frame GNDpad @
+}
+
+frame G4 {
+	table
+	    { name, h, w }
+	    { "G4", 1.4mm, 1.4mm }
+
+	frame GNDpad @
+}
+
+frame G3 {
+	table
+	    { name, h, w }
+	    { "G3", 2mm, 1.8mm }
+
+	frame GNDpad @
+}
+
+frame G2 {
+	table
+	    { name, h, w }
+	    { "G2", 2mm, 1.5mm }
+
+	frame GNDpad @
+}
+
+frame G1 {
+	table
+	    { name, h, w }
+	    { "G1", 1.9mm, 1.3mm }
+
+	frame GNDpad @
+}
+
+frame GND {
+	__3: vec @(0mm, -(2.54mm+8.89mm+3.67mm))
+	__4: vec .(2.38mm, 0mm)
+	frame G4 .
+	__5: vec __3(7.45mm, 0mm)
+	frame G5 .
+	__7: vec @(0mm, 13.32mm+0.65mm-12.5mm-2.5mm/2)
+	__2: vec .(20.5mm, -0.65mm)
+	frame G1 .
+	__6: vec .(-0.05mm, -14.42mm)
+	frame G6 .
+	__1: vec __7(12.25mm, 0mm)
+	frame G2 .
+	__0: vec __7(3.88mm, 0mm)
+	frame G3 .
+}
+
+frame hole {
+	set r = 1mm/2
+
+	__0: vec @(r, r)
+	__1: vec @(-r, -r)
+	hole . __0
+}
+
+frame outline {
+	__0: vec @(-w, -h)
+	rect . @ 5mil
+}
+
+frame holes {
+	__0: vec @(19.8mm, -12.5mm)
+	frame hole .
+	frame hole @
+}
+
+package "AMP-10100492"
+unit mm
+table
+    { h, w }
+    { 17.65mm, 27.2mm }
+
+ref: vec @(-8mm, 12.5mm/2)
+frame holes .
+frame GND .
+__0: vec .(10.6mm+7.7mm, -(12.5mm+2.5mm/2))
+frame SDpads .
+__2: vec ref(19.8mm+1.75mm, 1.38mm)
+frame outline .
+__1: vec ref(-3mm, -2.54mm)
+frame SIMpads .
+measy SIMpads.__0 >> __1 3mm
+measy __1 >> ref 3mm
+measy GND.__3 -> SIMpads.__0 6mm
+measx GND.__4 >> GND.__3 1.5mm
+measx GND.__5 >> GND.__3 2.5mm
+measx SDpads.__0 >> GND.__3 5mm
+measx GND.__6 >> GND.__3 5mm
+measx SDpads.__0 >> __0 -5mm
+measy GND.__2 >> __0 2mm
+measy GND.__2 >> GND.__6 3mm
+measy hole.__1 <- hole.__0 0.5mm
+measx ref >> GND.__0 2mm
+measx ref >> GND.__1 3mm
+measx ref >> holes.__0 4mm
+measx ref >> GND.__2 5mm
+measy ref << SDpads.ur
+measy GND.__2 << GND.__1 11.25mm
+measx outline.__0 >> __2 h+5mm
+measy outline.__0 >> __2 2.5mm
+measy ref >> __2
+measx SDpads.__0 -> SDpads.__0 -3.7mm
+measy SIMpads.__0 -> SIMpads.__0 2mm
+measx SIMpads.ll -> SIMpads.ur -1mm
+measy SIMpads.ll -> SIMpads.ur -3.1mm
+measy SDpads.ll -> SDpads.ur 0.5mm
+measx SDpads.ll -> SDpads.ur 3mm
+measy __1 >> __2 4mm
+measy holes.__0 >> ref
+measx G1/GNDpad.ll -> G1/GNDpad.ur -1mm
+measx G2/GNDpad.ll -> G2/GNDpad.ur -1mm
+measx G3/GNDpad.ll -> G3/GNDpad.ur -1mm
+measx G4/GNDpad.ll -> G4/GNDpad.ur 2mm
+measx G5/GNDpad.ll -> G5/GNDpad.ur 2.2mm
+measx G6/GNDpad.ll -> G6/GNDpad.ur -1mm
+measy G1/GNDpad.ll <- G1/GNDpad.ur 0.5mm
+measy G2/GNDpad.ll -> G2/GNDpad.ur 0.5mm
+measy G3/GNDpad.ll -> G3/GNDpad.ur 0.5mm
+measy G4/GNDpad.ll -> G4/GNDpad.ur 0.5mm
+measy G5/GNDpad.ll -> G5/GNDpad.ur 0.5mm
+measy G6/GNDpad.ll <- G6/GNDpad.ur 0.5mm

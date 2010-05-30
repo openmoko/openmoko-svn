@@ -98,6 +98,7 @@ Werner Almesberger <werner@openmoko.org>
   components/mkloe
   components/amp-10100492.lib (based on Alvaro's smsn16.lib)
   modules/332fbga-p05.fpd
+  modules/amp-10100492.fpd
   modules/bga96-8x12-0mm8.fpd
   modules/ge865.fpd
   modules/sod-523.fpd

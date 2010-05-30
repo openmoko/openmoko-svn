@@ -127,4 +127,6 @@ S: 1ss400
 F: dtc123je
 D: http://www.digikey.com/Web%20Export/Supplier%20Content/ROHM_511/PDF/Rohm_TransistorSoldering.pdf
 
-
+# AMP 10100492
+F: amp-10100492
+S: simsd
