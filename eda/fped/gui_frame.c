@@ -1734,7 +1734,8 @@ static GtkWidget *build_frame_label(struct frame *frame)
 	    "button_release_event", G_CALLBACK(frame_release_event), frame);
 	frame->label = label;
 
-	setup_frame_drag(frame);
+	if (frame != frames)
+		setup_frame_drag(frame);
 
 	return box_of_label(label);
 }

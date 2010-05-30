@@ -11,8 +11,10 @@
  */
 
 
+#include <assert.h>
 #include <gtk/gtk.h>
 
+#include "util.h"
 #include "obj.h"
 #include "gui_util.h"
 #include "gui.h"
@@ -73,7 +75,7 @@ int is_dragging_anything(void)
 }
 
 
-/* ----- helper functions for indexed list and swapping -------------------- */
+/* ----- helper functions for indexed list --------------------------------- */
 
 
 #define NDX(first, item)					\
@@ -90,12 +92,6 @@ int is_dragging_anything(void)
 	   for (NTH_walk = &(first); NTH_n; NTH_n--)		\
 		NTH_walk = &(*NTH_walk)->next;			\
 	   NTH_walk; })
-
-#define	SWAP(a, b)						\
-	({ typeof(a) SWAP_tmp;					\
-	   SWAP_tmp = a;					\
-	   a = b;						\
-	   b = SWAP_tmp; })
 
 
 /* ----- generic helper functions. maybe move to gui_util later ------------ */
@@ -136,6 +132,64 @@ static void swap_table_cells(GtkWidget *a, GtkWidget *b)
 }
 
 
+static GtkWidget *pick_table_cell(GtkWidget *table, int x, int y)
+{
+	GList *children, *walk;
+	GtkWidget *child;
+	guint pos[4];
+
+	children = gtk_container_get_children(GTK_CONTAINER(table));
+	for (walk = children; walk; walk = g_list_next(walk)) {
+		child = g_list_nth_data(walk, 0);
+		assert(child);
+		get_cell_coords(child, pos);
+		if (pos[0] == x && pos[2] == y)
+			break;
+	}
+	g_list_free(children);
+	return walk ? child : NULL;
+}
+
+
+static void swap_table_cells_by_coord(GtkWidget *table_a,
+    int a_col, int a_row, GtkWidget *table_b, int b_col, int b_row)
+{
+	GtkWidget *a, *b;
+
+	a = pick_table_cell(table_a, a_col, a_row);
+	b = pick_table_cell(table_b, b_col, b_row);
+	if (a) {
+		g_object_ref(a);
+        	gtk_container_remove(GTK_CONTAINER(table_a), a);
+	}
+	if (b) {
+		g_object_ref(b);
+        	gtk_container_remove(GTK_CONTAINER(table_b), b);
+	}
+	if (a)
+	        gtk_table_attach_defaults(GTK_TABLE(table_b), a,
+		    b_col, b_col+1, b_row, b_row+1);
+	if (b)
+	        gtk_table_attach_defaults(GTK_TABLE(table_a), b,
+		    a_col, a_col+1, a_row, a_row+1);
+	if (a)
+	        g_object_unref(a);
+	if (b)
+	        g_object_unref(b);
+}
+
+
+static void swap_table_rows(GtkWidget *table, int a, int b)
+{
+	guint cols;
+	int i;
+
+	g_object_get(table, "n-columns", &cols, NULL);
+	for (i = 0; i != cols; i++)
+		swap_table_cells_by_coord(table, i, a, table, i, b);
+}
+
+
 /* ----- swap table items -------------------------------------------------- */
 
 
@@ -149,8 +203,8 @@ static void swap_vars(struct table *table, int a, int b)
 	swap_table_cells(box_of_label((*var_a)->widget),
 	    box_of_label((*var_b)->widget));
 
-	SWAP(*var_a, *var_b);
-	SWAP((*var_a)->next, (*var_b)->next);
+	swap(*var_a, *var_b);
+	swap((*var_a)->next, (*var_b)->next);
 }
 
 
@@ -164,8 +218,8 @@ static void swap_values(struct row *row, int a, int b)
 	swap_table_cells(box_of_label((*value_a)->widget),
 	    box_of_label((*value_b)->widget));
 
-	SWAP(*value_a, *value_b);
-	SWAP((*value_a)->next, (*value_b)->next);
+	swap(*value_a, *value_b);
+	swap((*value_a)->next, (*value_b)->next);
 }
 
 
@@ -192,8 +246,24 @@ static void swap_rows(struct row **a, struct row **b)
 		value_a = value_a->next;
 		value_b = value_b->next;
 	}
-	SWAP(*a, *b);
-	SWAP((*a)->next, (*b)->next);
+	swap(*a, *b);
+	swap((*a)->next, (*b)->next);
+}
+
+
+/* ----- swap frames ------------------------------------------------------- */
+
+
+static void swap_frames(GtkWidget *table, int a, int b)
+{
+	struct frame **frame_a = NTH(frames, a);
+	struct frame **frame_b = NTH(frames, b);
+
+	swap_table_rows(table, 2*a+1, 2*b+1);
+	swap_table_rows(table, 2*a+2, 2*b+2);
+
+	swap(*frame_a, *frame_b);
+	swap((*frame_a)->next, (*frame_b)->next);
 }
 
 
@@ -410,9 +480,20 @@ static gboolean drag_frame_motion(GtkWidget *widget,
     GdkDragContext *drag_context, gint x, gint y, guint time_,
     gpointer user_data)
 {
+	struct frame *from = dragging;
+	struct frame *to = user_data;
+	int from_n, to_n, i;
+
 	if (!has_target(widget, drag_context, "frame"))
 		return FALSE;
-	/* nothing else to do yet */
+	assert(from != frames);
+	assert(to != frames);
+	from_n = NDX(frames, from);
+	to_n = NDX(frames, to);
+	for (i = from_n < to_n ? from_n : to_n;
+	    i != (from_n < to_n ? to_n : from_n); i++)
+		swap_frames(gtk_widget_get_ancestor(widget, GTK_TYPE_TABLE),
+		    i, i+1);
 	return FALSE;
 }
 
@@ -431,7 +512,9 @@ void setup_frame_drag(struct frame *frame)
 
 	box = box_of_label(frame->label);
 	gtk_drag_source_set(box, GDK_BUTTON1_MASK,
-	    &target_frame, 1, GDK_ACTION_COPY);
+	    &target_frame, 1, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_MOTION,
+	    &target_frame, 1, GDK_ACTION_MOVE);
 	setup_drag_common(box, frame);
 
 	/* override */

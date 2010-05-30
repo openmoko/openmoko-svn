@@ -5,7 +5,6 @@ Major missing features:
   each individual frame 10x.
 
 Minor missing features:
-- reorder frames (can use text editor)
 - reorder variables in a frame (can use text editor)
 - move items/vectors up and down the hierarchy
 
