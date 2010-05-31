@@ -93,6 +93,10 @@ int is_dragging_anything(void)
 		NTH_walk = &(*NTH_walk)->next;			\
 	   NTH_walk; })
 
+#define FOR_UNORDERED(var, a, b) \
+	for (var = (a) < (b) ? (a) : (b); var != ((a) < (b) ? (b) : (a)); \
+	    var++)
+
 
 /* ----- generic helper functions. maybe move to gui_util later ------------ */
 
@@ -203,8 +207,8 @@ static void swap_vars(struct table *table, int a, int b)
 	swap_table_cells(box_of_label((*var_a)->widget),
 	    box_of_label((*var_b)->widget));
 
-	swap(*var_a, *var_b);
-	swap((*var_a)->next, (*var_b)->next);
+	SWAP(*var_a, *var_b);
+	SWAP((*var_a)->next, (*var_b)->next);
 }
 
 
@@ -218,10 +222,9 @@ static void swap_values(struct row *row, int a, int b)
 	swap_table_cells(box_of_label((*value_a)->widget),
 	    box_of_label((*value_b)->widget));
 
-	swap(*value_a, *value_b);
-	swap((*value_a)->next, (*value_b)->next);
+	SWAP(*value_a, *value_b);
+	SWAP((*value_a)->next, (*value_b)->next);
 }
-
 
 
 static void swap_cols(struct table *table, int a, int b)
@@ -246,8 +249,8 @@ static void swap_rows(struct row **a, struct row **b)
 		value_a = value_a->next;
 		value_b = value_b->next;
 	}
-	swap(*a, *b);
-	swap((*a)->next, (*b)->next);
+	SWAP(*a, *b);
+	SWAP((*a)->next, (*b)->next);
 }
 
 
@@ -262,8 +265,8 @@ static void swap_frames(GtkWidget *table, int a, int b)
 	swap_table_rows(table, 2*a+1, 2*b+1);
 	swap_table_rows(table, 2*a+2, 2*b+2);
 
-	swap(*frame_a, *frame_b);
-	swap((*frame_a)->next, (*frame_b)->next);
+	SWAP(*frame_a, *frame_b);
+	SWAP((*frame_a)->next, (*frame_b)->next);
 }
 
 
@@ -341,8 +344,7 @@ static gboolean drag_var_motion(GtkWidget *widget,
 		return FALSE;
 	from_n = NDX(from->table->vars, from);
 	to_n = NDX(to->table->vars, to);
-	for (i = from_n < to_n ? from_n : to_n;
-	    i != (from_n < to_n ? to_n : from_n); i++)
+	FOR_UNORDERED(i, from_n, to_n)
 		swap_cols(from->table, i, i+1);
 	return FALSE;
 }
@@ -386,8 +388,7 @@ static gboolean drag_value_motion(GtkWidget *widget,
 
 	from_n = NDX(from->row->values, from);
 	to_n = NDX(to->row->values, to);
-	for (i = from_n < to_n ? from_n : to_n;
-	    i != (from_n < to_n ? to_n : from_n); i++)
+	FOR_UNORDERED(i, from_n, to_n)
 		swap_cols(table, i, i+1);
 
 	/* rows */
@@ -490,8 +491,7 @@ static gboolean drag_frame_motion(GtkWidget *widget,
 	assert(to != frames);
 	from_n = NDX(frames, from);
 	to_n = NDX(frames, to);
-	for (i = from_n < to_n ? from_n : to_n;
-	    i != (from_n < to_n ? to_n : from_n); i++)
+	FOR_UNORDERED(i, from_n, to_n)
 		swap_frames(gtk_widget_get_ancestor(widget, GTK_TYPE_TABLE),
 		    i, i+1);
 	return FALSE;

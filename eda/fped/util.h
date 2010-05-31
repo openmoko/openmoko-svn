@@ -51,10 +51,10 @@
 	strnalloc_tmp[n] = 0;				\
 	strnalloc_tmp; })
 
-#define swap(a, b) \
-    ({	typeof(a) swap_tmp = (a);			\
+#define SWAP(a, b) \
+    ({	typeof(a) SWAP_tmp = (a);			\
 	(a) = (b);					\
-	(b) = swap_tmp; })
+	(b) = SWAP_tmp; })
 
 
 char *stralloc_vprintf(const char *fmt, va_list ap);

@@ -53,12 +53,14 @@ Open decisions:
   A1: no: would cause confusion in GUI (vectors could become orphaned)
   A2: yes. but we don't change the linkage.
 - Q: how do we handle stacks of objects ?
-  A: we don't but we make it easy to avoid them, by giving a good zoom,
-     flexible selection, and by disallowing stacks of identical objects in the
-     first place.
+  A1: we don't but we make it easy to avoid them, by giving a good zoom,
+      flexible selection, and by disallowing stacks of identical objects in the
+      first place.
+  A2: the current mechanism of selecting the next eligible object when clicking
+      on the same position repeatedly lets one cycle through stacks.
 - Q: add frame arguments ? (e.g., .frame pad(pin_num_offset) ...)
-  we can already approximate this by introducing an intermediate table that
-  sets up the arguments (provided that we don't consider vectors as well)
+  A: we can already approximate this by introducing an intermediate table that
+     sets up the arguments (provided that we don't consider vectors as well)
 - Q: should we make it a requirement to generate objects only once ?
   A: yes.
 

@@ -157,9 +157,9 @@ double theta(struct coord c, struct coord p)
 void sort_coord(struct coord *min, struct coord *max)
 {
 	if (min->x > max->x)
-		swap(min->x, max->x);
+		SWAP(min->x, max->x);
 	if (min->y > max->y)
-		swap(min->y, max->y);
+		SWAP(min->y, max->y);
 
 }
 

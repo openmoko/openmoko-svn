@@ -378,7 +378,7 @@ void begin_drag_move_meas(struct inst *inst, int i)
 	a = inst->base;
 	b = inst->u.meas.end;
 	if (inst->obj->u.meas.inverted)
-		swap(a, b);
+		SWAP(a, b);
 	switch (i) {
 	case 0:
 		mode = meas->type < 3 ? next_to_min : max_to_min;
