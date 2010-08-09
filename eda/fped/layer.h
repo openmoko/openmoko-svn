@@ -15,6 +15,8 @@
 
 #include <stdint.h>
 
+#include "overlap.h"
+
 
 typedef uint32_t layer_type;
 
@@ -75,6 +77,6 @@ enum pad_type layers_to_pad_type(layer_type layers);
 
 layer_type mech_hole_layers(void);
 
-int refine_layers(void);
+int refine_layers(enum allow_overlap allow);
 
 #endif /* !LAYER_H */

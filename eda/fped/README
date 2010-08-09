@@ -106,7 +106,7 @@ The file has the following structure:
 frame definitions
 ...
 package name
-unit
+setup
 objects
 ...
 
@@ -122,6 +122,14 @@ E.g., to draw a line from (1mm, 1mm) to (2mm, 2mm), one would make a
 vector from the origin to (1mm, 1mm) and one either from the origin or
 from the previous vector to (2mm, 2mm), and then make a line connecting
 the two points.
+
+
+Setup
+- - -
+
+The setup section defines settings that affect the entire footprint.
+It is optional and can contain a "unit" directive and an "allow"
+directive.
 
 
 Units
@@ -152,6 +160,24 @@ If the "unit" directive is omitted, fped defaults to millimeters.
 
 When saving a footprint definition, the default unit is set to the
 unit set in the GUI.
+
+
+Allow
+- - -
+
+fped normally disallows overlapping pads. This restriction can be
+relaxed with the "allow" directive. 
+
+allow touch
+
+Allows pads touching but not having more than their border in common.
+
+allow overlap
+
+Do not check for overlaps at all.
+
+If the "allow" directive is omitted, fped defaults to allowing
+neigher overlap nor touch.
 
 
 Vectors

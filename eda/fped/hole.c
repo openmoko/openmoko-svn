@@ -19,7 +19,7 @@
 
 static int check_through_hole(struct inst *pad, struct inst *hole)
 {
-	if (!overlap(pad, hole))
+	if (!overlap(pad, hole, ao_none))
 		return 1;
 	if (!inside(hole, pad)) {
 		fail("hole (line %d) not completely inside "

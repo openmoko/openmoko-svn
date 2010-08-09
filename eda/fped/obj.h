@@ -20,6 +20,7 @@
 #include "expr.h"
 #include "coord.h"
 #include "meas.h"
+#include "overlap.h"
 #include "layer.h"
 
 
@@ -242,6 +243,7 @@ extern char *pkg_name; /* anonymous common package first */
 extern struct frame *frames; /* root frame first */
 extern struct frame *active_frame;
 extern void *instantiation_error;
+extern enum allow_overlap allow_overlap;
 
 
 struct inst;

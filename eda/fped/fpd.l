@@ -61,6 +61,8 @@ void scan_values(const char *s)
 
 /* keywords are only accepted at the beginning of a line */
 %s NOKEYWORD
+/* ALLOW is followed by special keywords (we could use NOKEYWORD as well) */
+%s ALLOW
 
 NUM	[0-9]+\.?[0-9]*
 SP	[\t ]*
@@ -122,6 +124,10 @@ SP	[\t ]*
 				  return TOK_MEASY; }
 <INITIAL>"unit"			{ BEGIN(NOKEYWORD);
 				  return TOK_UNIT; }
+
+<INITIAL>"allow"		BEGIN(ALLOW);
+<ALLOW>"overlap"		return TOK_ALLOW_OVERLAP;
+<ALLOW>"touch"			return TOK_ALLOW_TOUCH;
 
 <INITIAL>"%del"			{ BEGIN(NOKEYWORD);
 				  return TOK_DBG_DEL; }

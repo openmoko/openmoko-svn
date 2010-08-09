@@ -459,6 +459,7 @@ static int dbg_meas(const char *name)
 %token		TOK_NEXT TOK_NEXT_INVERTED TOK_MAX TOK_MAX_INVERTED
 %token		TOK_DBG_DEL TOK_DBG_MOVE TOK_DBG_FRAME TOK_DBG_PRINT
 %token		TOK_DBG_DUMP TOK_DBG_EXIT TOK_DBG_TSORT TOK_DBG_MEAS
+%token		TOK_ALLOW_OVERLAP TOK_ALLOW_TOUCH
 
 %token	<num>	NUMBER
 %token	<str>	STRING
@@ -508,8 +509,8 @@ all:
 	;
 
 fpd:
-	frame_defs part_name opt_unit opt_frame_items opt_measurements
-	| frame_defs unit opt_frame_items opt_measurements
+	frame_defs part_name opt_setup opt_frame_items opt_measurements
+	| frame_defs setup opt_frame_items opt_measurements
 	| frame_defs frame_items opt_measurements
 	| frame_defs opt_measurements
 	;
@@ -532,8 +533,15 @@ part_name:
 		}
 	;
 
-opt_unit:
-	| unit
+opt_setup:
+	| setup
+	;
+
+setup:
+	unit
+	| allow
+	| unit allow
+	| allow unit
 	;
 
 unit:
@@ -549,6 +557,17 @@ unit:
 				yyerrorf("unrecognized unit \"%s\"", $2);
 				YYABORT;
 			}
+		}
+	;
+
+allow:
+	TOK_ALLOW_TOUCH
+		{
+			allow_overlap = ao_touch;
+		}
+	| TOK_ALLOW_OVERLAP
+		{
+			allow_overlap = ao_any;
 		}
 	;
 

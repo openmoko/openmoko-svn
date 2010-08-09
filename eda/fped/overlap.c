@@ -71,15 +71,23 @@ struct shape {
 
 
 static int circle_circle_overlap(struct coord c1, unit_type r1,
-    struct coord c2, unit_type r2)
+    struct coord c2, unit_type r2, enum allow_overlap allow)
 {
+	if (allow == ao_touch)
+		return dist_point(c1, c2) < r1+r2;
 	return dist_point(c1, c2) <= r1+r2;
 }
 
 
 static int circle_rect_overlap(struct coord c, unit_type r,
-    struct coord min, struct coord max)
+    struct coord min, struct coord max, enum allow_overlap allow)
 {
+	if (allow == ao_touch) {
+		if (c.x <= min.x-r || c.x >= max.x+r)
+			return 0;
+		if (c.y <= min.y-r || c.y >= max.y+r)
+			return 0;
+	}
 	if (c.x < min.x-r || c.x > max.x+r)
 		return 0;
 	if (c.y < min.y-r || c.y > max.y+r)
@@ -89,8 +97,14 @@ static int circle_rect_overlap(struct coord c, unit_type r,
 
 
 static int rect_rect_overlap(struct coord min1, struct coord max1,
-    struct coord min2, struct coord max2)
+    struct coord min2, struct coord max2, enum allow_overlap allow)
 {
+	if (allow == ao_touch) {
+		if (max1.x <= min2.x || max2.x <= min1.x)
+			return 0;
+		if (max1.y <= min2.y || max2.y <= min1.y)
+			return 0;
+	}
 	if (max1.x < min2.x || max2.x < min1.x)
 		return 0;
 	if (max1.y < min2.y || max2.y < min1.y)
@@ -99,15 +113,18 @@ static int rect_rect_overlap(struct coord min1, struct coord max1,
 }
 
 
-static int shapes_overlap(const struct shape *a, const struct shape *b)
+static int shapes_overlap(const struct shape *a, const struct shape *b,
+    enum allow_overlap allow)
 {
 	if (a->circle && !b->circle)
-		return shapes_overlap(b, a);
+		return shapes_overlap(b, a, allow);
 	if (a->circle) /* b must be circle, too */
-		return circle_circle_overlap(a->center, a->r, b->center, b->r);
+		return circle_circle_overlap(a->center, a->r, b->center, b->r,
+		    allow);
 	if (b->circle) /* a must be rect */
-		return circle_rect_overlap(b->center, b->r, a->min, a->max);
-	return rect_rect_overlap(a->min, a->max, b->min, b->max);
+		return circle_rect_overlap(b->center, b->r, a->min, a->max,
+		    allow);
+	return rect_rect_overlap(a->min, a->max, b->min, b->max, allow);
 }
 
 
@@ -115,11 +132,11 @@ static int shapes_overlap(const struct shape *a, const struct shape *b)
 
 
 static int test_overlap(const struct inst *a, const struct inst *b,
-    const struct shape *other);
+    const struct shape *other, enum allow_overlap allow);
 
 
 static int do_circle(const struct inst *next, const struct shape *other,
-    unit_type x, unit_type y, unit_type r)
+    unit_type x, unit_type y, unit_type r, enum allow_overlap allow)
 {
 	struct shape shape = {
 		.circle = 1,
@@ -131,13 +148,14 @@ static int do_circle(const struct inst *next, const struct shape *other,
 	};
 
 	if (next)
-		return test_overlap(next, NULL, &shape);
-	return shapes_overlap(other, &shape);
+		return test_overlap(next, NULL, &shape, allow);
+	return shapes_overlap(other, &shape, allow);
 }
 
 
 static int do_rect(const struct inst *next, const struct shape *other,
-    unit_type x, unit_type y, unit_type w, unit_type h)
+    unit_type x, unit_type y, unit_type w, unit_type h,
+    enum allow_overlap allow)
 {
 	struct shape shape = {
 		.circle = 0,
@@ -152,13 +170,13 @@ static int do_rect(const struct inst *next, const struct shape *other,
 	};
 
 	if (next)
-		return test_overlap(next, NULL, &shape);
-	return shapes_overlap(other, &shape);
+		return test_overlap(next, NULL, &shape, allow);
+	return shapes_overlap(other, &shape, allow);
 }
 
 
 static int test_overlap(const struct inst *a, const struct inst *b,
-    const struct shape *other)
+    const struct shape *other, enum allow_overlap allow)
 {
 	struct coord min, max;
 	unit_type h, w, r;
@@ -183,23 +201,26 @@ static int test_overlap(const struct inst *a, const struct inst *b,
 	w = max.x-min.x;
 
 	if (!rounded)
-		return do_rect(b, other, min.x, min.y, w, h);
+		return do_rect(b, other, min.x, min.y, w, h, allow);
 
 	if (h > w) {
 		r = w/2;
-		return do_circle(b, other, min.x+r, max.y-r, r) ||
-		    do_rect(b, other, min.x, min.y+r, w, h-2*r) ||
-		    do_circle(b, other, min.x+r, min.y+r, r);
+		return do_circle(b, other, min.x+r, max.y-r, r, allow) ||
+		    do_rect(b, other, min.x, min.y+r, w, h-2*r, allow) ||
+		    do_circle(b, other, min.x+r, min.y+r, r, allow);
 	} else {
 		r = h/2;
-		return do_circle(b, other, min.x+r, min.y+r, r) ||
-		    do_rect(b, other, min.x+r, min.y, w-2*r, h) ||
-		    do_circle(b, other, max.x-r, min.y+r, r);
+		return do_circle(b, other, min.x+r, min.y+r, r, allow) ||
+		    do_rect(b, other, min.x+r, min.y, w-2*r, h, allow) ||
+		    do_circle(b, other, max.x-r, min.y+r, r, allow);
 	}
 }
 
 
-int overlap(const struct inst *a, const struct inst *b)
+int overlap(const struct inst *a, const struct inst *b,
+    enum allow_overlap allow)
 {
-	return test_overlap(a, b, NULL);
+	if (allow == ao_any)
+		return 0;
+	return test_overlap(a, b, NULL, allow);
 }

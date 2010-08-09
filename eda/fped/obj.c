@@ -22,6 +22,7 @@
 #include "meas.h"
 #include "inst.h"
 #include "hole.h"
+#include "overlap.h"
 #include "layer.h"
 #include "delete.h"
 #include "obj.h"
@@ -37,6 +38,7 @@ char *pkg_name = NULL;
 struct frame *frames = NULL;
 struct frame *active_frame = NULL;
 void *instantiation_error = NULL;
+enum allow_overlap allow_overlap = ao_none;
 
 
 static struct bitset *frame_set; /* frames visited in "call chain" */
@@ -498,7 +500,7 @@ int instantiate(void)
 	if (ok)
 		ok = link_holes();
 	if (ok)
-		ok = refine_layers();
+		ok = refine_layers(allow_overlap);
 	if (ok)
 		ok = instantiate_meas(n_frames);
 	if (ok)

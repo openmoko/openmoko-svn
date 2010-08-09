@@ -113,7 +113,8 @@ static int refine_overlapping(struct inst *copper, struct inst *other)
 }
 
 
-static int refine_copper(const struct pkg *pkg_copper, struct inst *copper)
+static int refine_copper(const struct pkg *pkg_copper, struct inst *copper,
+    enum allow_overlap allow)
 {
 	const struct pkg *pkg;
 	struct inst *other;
@@ -126,7 +127,7 @@ static int refine_copper(const struct pkg *pkg_copper, struct inst *copper)
 			continue;
 		for (other = pkg->insts[ip_pad_copper]; other;
 		    other = other->next)
-			if (copper != other && overlap(copper, other)) {
+			if (copper != other && overlap(copper, other, allow)) {
 				fail("overlapping copper pads "
 				    "(\"%s\" line %d, \"%s\" line %d)",
 				    copper->u.pad.name, copper->obj->lineno,
@@ -136,7 +137,7 @@ static int refine_copper(const struct pkg *pkg_copper, struct inst *copper)
 			}
 		for (other = pkg->insts[ip_pad_special]; other;
 		    other = other->next)
-			if (overlap(copper, other))
+			if (overlap(copper, other, ao_none))
 				if (!refine_overlapping(copper, other))
 					return 0;
 	}
@@ -155,7 +156,7 @@ static void mirror_layers(layer_type *layers)
 }
 
 
-int refine_layers(void)
+int refine_layers(enum allow_overlap allow)
 {
 	const struct pkg *pkg;
 	struct inst *copper;
@@ -163,7 +164,7 @@ int refine_layers(void)
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		for (copper = pkg->insts[ip_pad_copper]; copper;
 		    copper = copper->next) {
-			if (!refine_copper(pkg, copper))
+			if (!refine_copper(pkg, copper, allow))
 				return 0;
 			if (copper->u.pad.hole)
 				mirror_layers(&copper->u.pad.layers);

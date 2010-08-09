@@ -569,6 +569,23 @@ static void dump_unit(FILE *file)
 }
 
 
+static void dump_allow(FILE *file)
+{
+	switch (allow_overlap) {
+	case ao_none:
+		break;
+	case ao_touch:
+		fprintf(file, "allow touch\n");
+		break;
+	case ao_any:
+		fprintf(file, "allow overlap\n");
+		break;
+	default:
+		abort();
+	}
+}
+
+
 static void reverse_frames(FILE *file, struct frame *last)
 {
 	if (last) {
@@ -589,6 +606,8 @@ int dump(FILE *file)
 	reverse_frames(file, frames->next);
 	fprintf(file, "package \"%s\"\n", pkg_name);
 	dump_unit(file);
+	dump_allow(file);
+	fprintf(file, "\n");
 	dump_frame(file, frames, "");
 
 	fflush(file);
