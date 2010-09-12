@@ -45,6 +45,7 @@ sub bom
     my @f = split(/\s*;\s*/, $');
     next if $f[0] eq "NC";
     for (@f) {
+	s/\s+$//;
 	&sanitize(\$_);
     }
     $cmp{$ref} = [ @f ];
