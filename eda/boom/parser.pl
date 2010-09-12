@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use re 'eval';
+use IO::File;
 
 
 #
@@ -362,10 +363,24 @@ sub babylonic
 }
 
 
-sub parse
+sub parse_one
 {
-    $mode = *skip;
-    while (<>) {
+    local ($name) = @_;
+
+    my $file = new IO::File->new($name) || die "$name: $!";
+    while (1) {
+	$_ = <$file>;
+	if (!defined $_) {
+	    $file->close();
+	    return unless @inc;
+	    $file = pop @inc;
+	    next;
+	}
+	if (/^\s*include\s+(.*?)\s*$/) {
+	    push(@inc, $file);
+	    $file = new IO::File->new($1) || die "$1: $!";
+	    next;
+	}
 	chop;
 
 # ----- KiCad BOM parsing. Alas, the BOM is localized, so there are almost no
@@ -441,5 +456,15 @@ sub parse
 	&$mode($_);
     }
 }
+
+
+sub parse
+{
+    $mode = *skip;
+    for (@ARGV) {
+	&parse_one($_);
+    }
+}
+
 
 return 1;
