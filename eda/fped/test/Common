@@ -71,6 +71,15 @@ expect_grep()
 }
 
 
+expect_sed()
+{
+	sed "$1" <_out >_tmp || exit 1
+	mv _tmp _out
+	shift
+	expect "$@"
+}
+
+
 if [ ! -z "$CWD_PREFIX" -a ! -z "$FPED" -a "$FPED" = "${FPED#/}" ]; then
     FPED="$CWD_PREFIX/$FPED"
 fi

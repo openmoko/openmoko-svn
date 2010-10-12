@@ -162,7 +162,7 @@ test tests:	all
 		LANG= sh -c \
 		  'passed=0 && cd test && \
 		  for n in [a-z]*; do \
-		  SCRIPT=$$n CWD_PREFIX=.. . ./$$n; done; \
+		  [ $$n != core ] && SCRIPT=$$n CWD_PREFIX=.. . ./$$n; done; \
 		  echo "Passed all $$passed tests"'
 
 valgrind:
@@ -173,7 +173,7 @@ valgrind:
 clean:
 		rm -f $(OBJS) $(XPMS:%=icons/%) $(XPMS:%.xpm=icons/%.ppm)
 		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend $(OBJS:.o=.d)
-		rm -f __dbg????.png _tmp*
+		rm -f __dbg????.png _tmp* test/core
 
 # ----- Install / uninstall ---------------------------------------------------
 

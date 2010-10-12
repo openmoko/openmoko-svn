@@ -126,9 +126,9 @@ fped_fail "tsort: cycle" <<EOF
 	b a
 }
 EOF
-expect <<EOF
+expect_sed 's/Aborted.*/Aborted/' <<EOF
 cycle detected in partial order
-Aborted (core dumped)
+Aborted
 EOF
 
 # not entirely comfortable about the "Aborted (core dumped)". It's a system
