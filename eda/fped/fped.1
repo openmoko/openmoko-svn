@@ -1,0 +1,51 @@
+.TH FPED: "1" "October 2010"
+.SH NAME
+fped \- Footprint editor
+.SH SYNOPSIS
+.TP
+.B fped [\-k] [\-p|\-P [\-s scale]] [\-T [\-T]] [cpp_option ...] 
+[in_file [out_file]]
+
+.SH DESCRIPTION
+.B
+fped is an editor that allows the interactive creation of footprints of
+electronic components. Footprint definitions are stored in a text format
+that resembles a programming language.
+The language is constrained such that anything that can be expressed in
+the textual definition also has a straightforward equivalent operation
+that can be performed through the GUI.
+A description of the GUI can be found here:
+http://people.openmoko.org/werner/fped/gui.html
+.SH OPTIONS
+.TP
+\fB\-k\fR
+write KiCad output, then exit
+.TP
+\fB\-p\fR
+write Postscript output, then exit
+.TP
+\fB\-P\fR
+write Postscript output (full page), then exit
+.TP
+\fB\-s\fR scale
+scale factor for \fB\-P\fR (default: auto\-scale)
+.TP
+\fB\-T\fR
+test mode. Load file, then exit
+.TP
+\fB\-T\fR \fB\-T\fR
+test mode. Load file, dump to stdout, then exit
+.TP
+cpp_option
+\fB\-Idir\fR, \fB\-Dname\fR[=\fIvalue\fR], or \fB\-Uname\fR
+.PP
+Please report any further bugs at
+.B werner@openmoko.org
+.SH LICENCE
+.B fped
+is covered by the GNU General Public License (GPL), version 2 or later.
+.SH AUTHORS
+Werner Almesberger <werner@openmoko.org>
+.PP
+This manual page was written by Xiangfu Liu <xiangfu@sharism.cc>
+It is licensed under the terms of the GNU GPL (version 2 or later).
