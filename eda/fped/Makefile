@@ -45,9 +45,9 @@ LDLIBS = -lm -lfl $(LIBS_GTK)
 YACC = bison -y
 YYFLAGS = -v
 
-SVN_VERSION=$(shell svn info -R | sed '/Last Changed Rev: /s///p;d' | \
+SVN_VERSION:=$(shell svn info -R | sed '/Last Changed Rev: /s///p;d' | \
     sort -r | sed 1q)
-SVN_STATUS=$(shell [ -z "`svn status -q`" ] || echo +)
+SVN_STATUS:=$(shell [ -z "`svn status -q`" ] || echo +)
 
 
 # ----- Verbosity control -----------------------------------------------------
