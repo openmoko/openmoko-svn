@@ -81,7 +81,8 @@ endif
 
 # ----- Rules -----------------------------------------------------------------
 
-.PHONY:		all dep depend clean install uninstall manual upload-manual
+.PHONY:		all dep depend clean spotless
+.PHONY:		install uninstall manual upload-manual
 .PHONY:		update montage test tests valgrind
 
 .SUFFIXES:	.fig .xpm .ppm
@@ -96,7 +97,7 @@ endif
 		    '/^\(.*:\)\? */{p;s///;s/ *\\\?$$/ /;s/  */:\n/g;H;}' \
 		    -e '$${g;p;}' -e d >$*.d; \
 		  [ "$${PIPESTATUS[*]}" = "0 0" ] || { rm -f $*.d; exit 1; }
-		
+
 # generate 26x26 pixels icons, then drop the 1-pixel frame
 
 .fig.ppm:
@@ -174,6 +175,9 @@ clean:
 		rm -f $(OBJS) $(XPMS:%=icons/%) $(XPMS:%.xpm=icons/%.ppm)
 		rm -f lex.yy.c y.tab.c y.tab.h y.output .depend $(OBJS:.o=.d)
 		rm -f __dbg????.png _tmp* test/core
+
+spotless:	clean
+		rm -f fped
 
 # ----- Install / uninstall ---------------------------------------------------
 
