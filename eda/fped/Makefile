@@ -10,7 +10,7 @@
 # (at your option) any later version.
 #
 
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 
 UPLOAD = werner@sita.openmoko.org:public_html/fped/
 
@@ -182,10 +182,11 @@ spotless:	clean
 # ----- Install / uninstall ---------------------------------------------------
 
 install:	all
-		install -m 755 fped $(PREFIX)/bin/
+		mkdir -p $(DESTDIR)/$(PREFIX)/bin/
+		install -m 755 fped $(DESTDIR)/$(PREFIX)/bin/
 
 uninstall:
-		rm -f $(PREFIX)/bin/fped
+		rm -f $(DESTDIR)/$(PREFIX)/bin/fped
 
 # ----- SVN update ------------------------------------------------------------
 
