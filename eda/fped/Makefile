@@ -41,6 +41,7 @@ CFLAGS = -g -std=gnu99 $(CFLAGS_GTK) -DCPP='"cpp"' \
          -DSVN_VERSION='"$(SVN_VERSION)$(SVN_STATUS)"' $(CFLAGS_WARN)
 SLOPPY = -Wno-unused -Wno-implicit-function-declaration \
 	 -Wno-missing-prototypes -Wno-missing-declarations
+LDFLAGS =
 LDLIBS = -lm -lfl $(LIBS_GTK)
 YACC = bison -y
 YYFLAGS = -v
@@ -116,7 +117,7 @@ endif
 all:		fped
 
 fped:		$(OBJS)
-		$(CC) -o $@ $(OBJS) $(LDLIBS)
+		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 lex.yy.c:	fpd.l y.tab.h
 		$(LEX) fpd.l
