@@ -20,6 +20,7 @@ for (keys %id) {
     next unless $id{$_} eq "$key $_";
     undef %field;
     $field{"REF"} = $_;
+    &match_set_error("$_");
     if (!&apply_rules()) {
 	print "$id{$_}\n" if $negate;
 	next;

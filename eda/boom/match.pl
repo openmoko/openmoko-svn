@@ -147,7 +147,11 @@ sub sub_expand
     while ($s =~ /^([^\$]*)\$([A-Za-z_]\w*)(:(\d+))?|^([^\$]*)\${([A-Za-z_]\w*)(:(\d+))?}/) {
 	my $name = "$2$6";
 	$name .= "__$4$8" if defined($4) || defined($8);
-	die "don't know \"$name\"" unless defined $found{$name};
+	if (!defined $found{$name}) {
+		die "don't know \"$name\"".
+		  (defined $__match_error ?
+		  " (processing \"$__match_error\")" : "");
+	}
 	$s = $1.$5.$found{$name}.$';
     }
     return $s;
@@ -194,6 +198,12 @@ sub apply_rules
 	}
     }
     return 0;
+}
+
+
+sub match_set_error
+{
+    $__match_error = $_[0];
 }
 
 
