@@ -6,16 +6,20 @@ require "misc.pl";
 
 sub usage
 {
-    print STDERR "usage: $0 [-s/from/to/ ...] ...\n";
+    print STDERR "usage: $0 [-s/from/to/ ...] [-t] ...\n";
     exit(1);
 }
 
-
-while ($ARGV[0] =~ /^-s/) {
-    &usage unless &dsc_xlat_arg($');
+while ($ARGV[0] =~ /^-./) {
+    if ($ARGV[0] =~ /^-s/) {
+	&usage unless &dsc_xlat_arg($');
+    } elsif ($ARGV[0] eq "-t") {
+	$total = 1;
+    } else {
+	&usage;
+    }
     shift @ARGV;
 }
-&usage if $ARGV[0] =~ /^-./;
 
 &parse;
 
@@ -36,6 +40,7 @@ for (sort keys %order) {
     push(@{ $out[3] }, defined $dsc ? $dsc : "???");
     push(@{ $out[4] }, $order{$_}[1]);
     push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
+    $price{$order{$_}[1]} += $order{$_}[2];
 }
 
 for (@out) {
@@ -67,4 +72,12 @@ for ($i = 0; $i <= $#{ $out[0] }; $i++) {
     }
     $l =~ s/\s*$//;
     print "$l\n";
+}
+
+if ($total) {
+    print "$n item".($n == 1 ? "" : "s");
+    for (sort keys %price) {
+	print ", $_ $price{$_}";
+    }
+    print "\n";
 }
