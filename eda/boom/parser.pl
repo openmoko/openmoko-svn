@@ -363,22 +363,43 @@ sub babylonic
 }
 
 
+sub dirname
+{
+    local ($name) = @_;
+
+    return $name =~ m|/[^/]*$| ? $` : ".";
+}
+
+
+sub rel_path
+{
+    local ($cwd, $path) = @_;
+
+    return $path =~ m|^/| ? $path : "$cwd/$path";
+}
+
+
 sub parse_one
 {
     local ($name) = @_;
 
     my $file = new IO::File->new($name) || die "$name: $!";
+    my $dir = &dirname($name);
+
     while (1) {
 	$_ = <$file>;
 	if (!defined $_) {
 	    $file->close();
 	    return unless @inc;
 	    $file = pop @inc;
+	    $dir = pop @dir;
 	    next;
 	}
 	if (/^\s*include\s+(.*?)\s*$/) {
 	    push(@inc, $file);
-	    $file = new IO::File->new($1) || die "$1: $!";
+	    push(@dir, $dir);
+	    $name = &rel_path($dir, $1);
+	    $file = new IO::File->new($name) || die "$name: $!";
 	    next;
 	}
 	chop;
