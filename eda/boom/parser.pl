@@ -399,6 +399,7 @@ sub parse_one
 	    push(@inc, $file);
 	    push(@dir, $dir);
 	    $name = &rel_path($dir, $1);
+	    $dir = &dirname($name);
 	    $file = new IO::File->new($name) || die "$name: $!";
 	    next;
 	}
