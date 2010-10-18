@@ -259,7 +259,7 @@ with the cost and the component references the item is used for. The
 file begins with a line containing only
 #ORD
 
-After this, each line contains the supplier (namespace), the reference
+After this, each line contains the supplier (namespace), the part
 number, the number of items to order, the currency code, the cost,
 and one or more component references.
 
