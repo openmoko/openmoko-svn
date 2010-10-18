@@ -4,33 +4,61 @@ require "parser.pl";
 require "match.pl";
 
 
-if ($ARGV[0] eq "-d") {
-    $debug = 1;
-    shift @ARGV;
-}
-if ($ARGV[0] eq "-n") {
-    $negate = 1;
-    shift @ARGV;
-}
-$key = shift @ARGV;
-&parse;
+sub translate
+{
+    local ($r) = @_;
 
-print "#CHR\n";
-for (keys %id) {
-    next unless $id{$_} eq "$key $_";
     undef %field;
-    $field{"REF"} = $_;
-    &match_set_error("$_");
+    $field{"REF"} = $r;
+    &match_set_error($r);
     if (!&apply_rules()) {
-	print "$id{$_}\n" if $negate;
-	next;
+	print "$id{$r}\n" if $negate;
+	return;
     }
-    next if $negate;
-    print $id{$_};
+    return if $negate;
+    print $id{$r};
     for (sort keys %field) {
 	next if $_ =~ /^_/;
 	next if $_ eq "REF";
 	print " $_=$field{$_}";
     }
     print "\n";
+}
+
+
+sub usage
+{
+    print STDERR "usage: $0 [-d|-n] key file ...\n";
+    print STDERR "       $0 -q query file ...\n";
+    exit(1);
+}
+
+while ($ARGV[0] =~ /^-/) {
+    if ($ARGV[0] eq "-d") {
+	$debug = 1;
+    } elsif ($ARGV[0] eq "-n") {
+	$negate = 1;
+    } elsif ($ARGV[0] eq "-q") {
+	$query = 1;
+    } else {
+	&usage;
+    }
+    shift @ARGV;
+}
+
+$key = shift @ARGV;
+&usage unless defined $key;
+
+&parse;
+
+if ($query) {
+    $debug = 1;
+    &translate($key);
+    exit(0);
+}
+
+print "#CHR\n";
+for (keys %id) {
+    next unless $id{$_} eq "$key $_";
+    &translate($_);
 }
