@@ -142,7 +142,7 @@ KiCad field  Field name
 -----------  ----------
 Reference    REF (*)
 Value        VAL
-FP           Footprint
+Footprint    FP           
 Field1       F1
 ...          ...
 
