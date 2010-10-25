@@ -488,5 +488,9 @@ sub parse
     }
 }
 
+#
+# in case user calls directly &parse_one and not &parse
+#
+$mode = *skip;
 
 return 1;

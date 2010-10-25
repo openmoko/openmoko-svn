@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+
+require "parser.pl";
+require "match.pl";
+
+
+sub usage
+{
+	print STDERR "usage: $0 [-d] file.sub|field ...\n\n";
+	print STDERR "  fields: ref value [footprint user-field ...]\n";
+}
+
+
+for (@ARGV) {
+	if ($_ eq "-d") {
+		$debug = 1;
+		next;
+	}
+	&usage if /^-/;
+	if (/\.sub$/) {
+		&parse_one($_);
+	} else {
+		push(@f, $_);
+	}
+}
+
+&usage unless @f >= 2;
+
+$field{"REF"} = shift @f;
+$field{"VAL"} = shift @f;
+$field{"FP"} = shift @f;
+
+for (my $i = 1; $i != 10; $i++) {
+	$field{"F$i"} = $f[$i-1];
+}
+
+&apply_rules;
+
+for (sort keys %field) {
+	if ($field{$_} =~ / /) {
+		print "$_ = \"$field{$_}\"\n";
+	} else {
+		print "$_ = $field{$_}\n";
+	}
+}
