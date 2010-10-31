@@ -297,9 +297,11 @@ static void gui_draw_pad_text(struct inst *self)
 	hole_max = translate(self->u.pad.hole->u.hole.other);
 	sort_coord(&hole_min, &hole_max);
 
-	box_min.x = box_min.y = box_max.x = box_max.y;
-	maximize_box(&box_min, &box_max,
-	    pad_min.x, pad_min.y, pad_max.x, hole_min.y);	/* top */
+	box_min.x = pad_min.x;					/* top */
+	box_min.y = pad_min.y;
+	box_max.x = pad_max.x;
+	box_max.y = hole_min.y;
+
 	maximize_box(&box_min, &box_max,
 	    pad_min.x, hole_max.y, pad_max.x, pad_max.y);	/* bottom */
 	maximize_box(&box_min, &box_max,
