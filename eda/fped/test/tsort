@@ -126,14 +126,12 @@ fped_fail "tsort: cycle" <<EOF
 	b a
 }
 EOF
-expect_sed 's/Aborted.*/Aborted/' <<EOF
+expect_sed '/Aborted/d' <<EOF
 cycle detected in partial order
-Aborted
 EOF
 
-# not entirely comfortable about the "Aborted (core dumped)". It's a system
-# message (from the shell) that may get mangled. Also, since few people keep
-# their cores these days, "(core dumped)" shouldn't really appear. Wonder why
-# it does. strace agrees that __WCOREFLAG is set ...
+# The "Aborted" can be reported with or without "(core dumped)", and sometimes
+# not at all. So we just remove it. We already know that tsort has detected
+# the problem.
 
 ###############################################################################
