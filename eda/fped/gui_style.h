@@ -1,8 +1,8 @@
 /*
  * gui_style.h - GUI, style definitions
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@ extern GdkGC *gc_vec[mode_n];
 extern GdkGC *gc_obj[mode_n];
 extern GdkGC *gc_pad[mode_n];
 extern GdkGC *gc_pad_bare[mode_n];
+extern GdkGC *gc_pad_trace[mode_n];
 extern GdkGC *gc_pad_mask[mode_n];
 extern GdkGC *gc_ptext[mode_n];
 extern GdkGC *gc_rim[mode_n];

@@ -1,8 +1,8 @@
 /*
  * postscript.c - Dump objects in Postscript
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,8 @@
 
 #define	PS_HATCH		mm_to_units(0.1)
 #define	PS_HATCH_LINE		mm_to_units(0.015)
+
+#define	PS_STRIPE		mm_to_units(0.08)
 
 #define	PS_RIM_LINE		mm_to_units(0.02)
 
@@ -223,6 +225,8 @@ static const char *hatch(layer_type layers)
 		return "backhatchpath";
 	case pt_mask:
 		return "dotpath";
+	case pt_trace:
+		return "horpath";
 	default:
 		abort();
 	}
@@ -940,7 +944,7 @@ static void prologue(FILE *file, int pages)
 "/backhatchpath {\n"
 "     gsave flattenpath pathbbox clip newpath\n"
 "    /ury exch def /urx exch def /lly exch def /llx exch def\n"
-"    0 %d ury lly sub urx llx sub add {\n"	/* for 0 to urx-llx_ury-lly */
+"    0 %d ury lly sub urx llx sub add {\n"	/* for 0 to urx-llx+ury-lly */
 "	llx add dup lly moveto\n"
 "	ury lly sub sub ury lineto stroke\n"
 "    } for\n"
@@ -949,6 +953,16 @@ static void prologue(FILE *file, int pages)
 fprintf(file,
 "/crosspath {\n"
 "    gsave hatchpath grestore backhatchpath } def\n");
+
+	fprintf(file,
+"/horpath {\n"
+"     gsave flattenpath pathbbox clip newpath\n"
+"    /ury exch def /urx exch def /lly exch def /llx exch def\n"
+"    lly %d ury {\n"			/* for lly to ury */
+"	dup llx exch moveto\n"
+"	urx exch lineto stroke\n"
+"    } for\n"
+"    grestore newpath } def\n", PS_STRIPE);
 
 	/*
 	 * Stack: font string width height factor -> factor

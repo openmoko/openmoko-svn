@@ -1,8 +1,8 @@
 /*
  * inst.c - Instance structures
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -896,7 +896,8 @@ int inst_pad(struct obj *obj, const char *name, struct coord a, struct coord b)
 	struct inst *inst;
 
 	inst = add_inst(obj->u.pad.rounded ? &rpad_ops : &pad_ops,
-	    obj->u.pad.type == pt_normal || obj->u.pad.type == pt_bare ?
+	    obj->u.pad.type == pt_normal || obj->u.pad.type == pt_bare ||
+	    obj->u.pad.type == pt_trace ?
 	    ip_pad_copper : ip_pad_special, a);
 	inst->obj = obj;
 	inst->u.pad.name = stralloc(name);

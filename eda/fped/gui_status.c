@@ -1,8 +1,8 @@
 /*
  * gui_status.c - GUI, status area
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -203,6 +203,9 @@ static void show_pad_type(void)
 		break;
 	case pt_bare:
 		s = "bare";
+		break;
+	case pt_trace:
+		s = "trace";
 		break;
 	case pt_paste:
 		s = "paste";

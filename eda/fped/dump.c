@@ -1,8 +1,8 @@
 /*
  * dump.c - Dump objects in the native FPD format
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -344,6 +344,9 @@ char *print_obj(const struct obj *obj, const struct vec *prev)
 			break;
 		case pt_bare:
 			s2 = " bare";
+			break;
+		case pt_trace:
+			s2 = " trace";
 			break;
 		case pt_paste:
 			s2 = " paste";

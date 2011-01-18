@@ -270,8 +270,16 @@ Type		Layers
 ---------	-------------------------------------
 (default)	copper, solder mask, and solder paste
 bare		copper and solder mask
+trace		copper without solder mask opening
 paste		solder paste
 mask		solder mask
+
+Typical uses:
+- "bare": connectors printed directly on the PCB
+- "trace": connections or antennas
+- "paste": sparse solder paste, e.g., for QFN center pads
+- "mask": non-standard mask openings, e.g., for solder mask defined
+  pads
 
 
 Rounded pads

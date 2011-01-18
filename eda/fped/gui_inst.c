@@ -1,8 +1,8 @@
 /*
  * gui_inst.c - GUI, instance functions
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -319,6 +319,8 @@ static GdkGC *pad_gc(const struct inst *inst, int *fill)
 	switch (layers_to_pad_type(inst->u.pad.layers)) {
 	case pt_bare:
 		return gc_pad_bare[get_mode(inst)];
+	case pt_trace:
+		return gc_pad_trace[get_mode(inst)];
 	case pt_mask:
 		*fill = FALSE;
 		return gc_pad_mask[get_mode(inst)];

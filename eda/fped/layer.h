@@ -1,8 +1,8 @@
 /*
  * layer.h - PCB layers on a pad
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,7 @@ enum kicad_layer {
 enum pad_type {
 	pt_normal,	/* copper and solder mask */
 	pt_bare,	/* only copper (and finish) */
+	pt_trace,	/* only copper, without solder mask opening */
 	pt_paste,	/* only solder paste */
 	pt_mask,	/* only solder mask */
 	pt_n

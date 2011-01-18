@@ -1,7 +1,8 @@
-/* * gui_style.c - GUI, style definitions
+/*
+ * gui_style.c - GUI, style definitions
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@ GdkGC *gc_vec[mode_n];
 GdkGC *gc_obj[mode_n];
 GdkGC *gc_pad[mode_n];
 GdkGC *gc_pad_bare[mode_n];
+GdkGC *gc_pad_trace[mode_n];
 GdkGC *gc_pad_mask[mode_n];
 GdkGC *gc_ptext[mode_n];
 GdkGC *gc_rim[mode_n];
@@ -68,6 +70,7 @@ void gui_setup_style(GdkDrawable *drawable)
 	style(gc_obj,		"#006060", "#00ffff", "#ffff80", 1);
 	style(gc_pad,		"#400000", "#ff0000", "#ffff80", 1);
 	style(gc_pad_bare,	"#402000", "#ff6000", "#ffff80", 1);
+	style(gc_pad_trace,	"#304000", "#80c000", "#ffff80", 1);
 	style(gc_pad_mask,	"#000040", "#0000ff", "#ffff80", 2);
 	style(gc_ptext,		"#404040", "#ffffff", "#ffffff", 1);
 	style(gc_hole,		"#000000", "#000000", "#000000", 0);
