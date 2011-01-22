@@ -342,6 +342,17 @@ void change_world_reselect(void)
 {
 	struct obj *selected_obj;
 
+	/*
+	 * We can edit an object even if it's not selected if it was picked
+	 * via the item view. inst_select_obj tries to find an instance, but
+	 * if there's never been a successful instantiation since creation of
+	 * the object or if the object is unreachable for some other reason,
+	 * then selected_inst will be NULL.
+	 */
+	if (!selected_inst) {
+		change_world();
+		return;
+	}
 	selected_obj = selected_inst->obj;
 	change_world();
 	inst_select_obj(selected_obj);
