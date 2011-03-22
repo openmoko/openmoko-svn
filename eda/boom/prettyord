@@ -6,13 +6,30 @@ require "misc.pl";
 
 sub usage
 {
-    print STDERR "usage: $0 [-s/from/to/ ...] [-t] ...\n";
+    print STDERR <<"END";
+usage: $0 [-c] [-f|-t] [-r] [-s/from/to/ ...] ...
+
+  -c           generate CSV output (default: generate formatted text)
+  -f           generate SMT fab output (default: generate shopping list)
+  -r           sort by component reference (default: sort by part number)
+  -s/from/to/  substitute description and treat result as reference
+  -t           print the total number of items and the total cost.
+               -t cannot be combined with -c or -f.
+END
     exit(1);
 }
 
+$shop = 1;
+$by_pn = 1;
 while ($ARGV[0] =~ /^-./) {
     if ($ARGV[0] =~ /^-s/) {
 	&usage unless &dsc_xlat_arg($');
+    } elsif ($ARGV[0] eq "-c") {
+	$csv = 1;
+    } elsif ($ARGV[0] eq "-f") {
+	$shop = 0;
+    } elsif ($ARGV[0] eq "-r") {
+	$by_pn = 0;
     } elsif ($ARGV[0] eq "-t") {
 	$total = 1;
     } else {
@@ -21,26 +38,57 @@ while ($ARGV[0] =~ /^-./) {
     shift @ARGV;
 }
 
+&usage if $total && !$shop;
+&usage if $total && $csv;
+
 &parse;
 
 $out[0][0] = "Pos";
 $out[1][0] = "Qty";
 $out[2][0] = "P/N";
 $out[3][0] = "Description";
-$out[4][0] = "Value";
-$out[5][0] = "";
 
-for (sort keys %order) {
+if ($shop) {
+    $out[4][0] = "Value";
+    $out[5][0] = "";
+} else {
+    $out[4][0] = "Ref";
+}
+
+for (sort { $by_pn ? $a cmp $b : $order{$a}[3] cmp $order{$b}[3] }
+  keys %order) {
     push(@{ $out[0] }, ++$n);
-    push(@{ $out[1] }, $order{$_}[0]);
+    push(@{ $out[1] }, $shop ? $order{$_}[0] : @{ $order{$_} }-3);
     @f = split(/\s+/, $_);
-    push(@{ $out[2] }, $f[1]);
+    push(@{ $out[2] }, $shop ? $f[1] : "$f[0] $f[1]");
     my $dsc = &dsc_find($_);
     print STDERR "$_: no description\n" unless defined $dsc;
     push(@{ $out[3] }, defined $dsc ? $dsc : "???");
-    push(@{ $out[4] }, $order{$_}[1]);
-    push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
-    $price{$order{$_}[1]} += $order{$_}[2];
+    if ($shop) {
+	push(@{ $out[4] }, $order{$_}[1]);
+	push(@{ $out[5] }, sprintf("%.2f", $order{$_}[2]));
+	$price{$order{$_}[1]} += $order{$_}[2];
+    } else {
+	my @r = @{ $order{$_} };
+	push(@{ $out[4] }, join(", ", @r[3..$#r]));
+    }
+}
+
+if ($csv) {
+    for ($i = 0; $i <= $#{ $out[0] }; $i++) {
+	for ($j = 0; $j <= $#out; $j++) {
+	    print "," if $j;
+	    if ($i && $j < 2) {
+		print $out[$j][$i];
+	    } else {
+		my $s = $out[$j][$i];
+		$s =~ s/"/''/g;
+		print "\"$s\"";
+	    }
+	}
+	print "\n";
+    }
+    exit(0);
 }
 
 for (@out) {
