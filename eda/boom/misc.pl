@@ -76,4 +76,20 @@ sub dsc_xlat_arg
 }
 
 
+#
+# Lexical ordering of component references
+#
+
+sub cmp_cref
+{
+    local ($a, $b) = @_;
+    local ($as, $an, $bs, $bn);
+
+    return $a cmp $b unless ($as, $an) = $a =~ /^([[:alpha:]]+)(\d*)$/;
+    return $a cmp $b unless ($bs, $bn) = $b =~ /^([[:alpha:]]+)(\d*)$/;
+    return $as cmp $bs unless $as eq $bs;
+    return $an <=> $bn
+}
+
+
 return 1;

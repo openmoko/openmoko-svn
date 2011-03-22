@@ -55,7 +55,7 @@ if ($shop) {
     $out[4][0] = "Ref";
 }
 
-for (sort { $by_pn ? $a cmp $b : $order{$a}[3] cmp $order{$b}[3] }
+for (sort { $by_pn ? $a cmp $b : &cmp_cref($order{$a}[3], $order{$b}[3]) }
   keys %order) {
     push(@{ $out[0] }, ++$n);
     push(@{ $out[1] }, $shop ? $order{$_}[0] : @{ $order{$_} }-3);

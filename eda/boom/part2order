@@ -104,7 +104,7 @@ for (sort { &rank($b, $a) } keys %want) {
     while (keys %{ $comps{$id} }) {
 	last if $best_qty < $mult;
 	$best_qty -= $mult;
-	my $ref = (sort keys %{ $comps{$id} })[0];
+	my $ref = (sort { &cmp_cref($a, $b); } keys %{ $comps{$id} })[0];
 #print STDERR "$id: $ref + ", join("|", keys %{ $comps{$id} }), "\n";
 	my @f = @{ $parts{$ref} };
 	while (@f) {
