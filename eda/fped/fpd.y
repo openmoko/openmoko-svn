@@ -675,7 +675,7 @@ debug_item:
 		}
 	| TOK_DBG_DUMP
 		{
-			if (!dump(stdout)) {
+			if (!dump(stdout, NULL)) {
 				perror("stdout");
 				exit(1);
 			}
