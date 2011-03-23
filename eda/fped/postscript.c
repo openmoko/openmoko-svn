@@ -192,9 +192,11 @@ static void ps_pad_name(FILE *file, const struct inst *inst)
 {
 	struct coord a = inst->base;
 	struct coord b = inst->u.pad.other;
+	const char *s;
 	unit_type h, w;
 
-	if (!*inst->u.pad.name)
+	for (s = inst->u.pad.name; *s == ' '; s++);
+	if (!*s)
 		return;
 	h = a.y-b.y;
 	w = a.x-b.x;
