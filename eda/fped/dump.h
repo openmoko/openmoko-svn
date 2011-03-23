@@ -1,8 +1,8 @@
 /*
  * dump.h - Dump objects in the native FPD format
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,6 @@ char *print_meas(const struct obj *obj);
 
 struct order *order_frame(const struct frame *frame);
 
-int dump(FILE *file);
+int dump(FILE *file, const char *one);
 
 #endif /* !DUMP_H */

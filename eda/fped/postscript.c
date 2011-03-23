@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "util.h"
 #include "coord.h"
@@ -1082,19 +1083,26 @@ static void epilogue(FILE *file)
 
 
 static int ps_for_all_pkg(FILE *file,
-    void (*fn)(FILE *file, const struct pkg *pkg, int page))
+    void (*fn)(FILE *file, const struct pkg *pkg, int page),
+    const char *one)
 {
 	struct pkg *pkg;
 	int pages;
 
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		if (pkg->name)
-			pages++;
+			if (!one || !strcmp(pkg->name, one))
+				pages++;
+	if (one && !pages) {
+		fprintf(stderr, "no package \"%s\" to select\n", one);
+		return 0;
+	}
 	prologue(file, pages);
 	pages = 0;
 	for (pkg = pkgs; pkg; pkg = pkg->next)
 		if (pkg->name)
-			fn(file, pkg, ++pages);
+			if (!one || !strcmp(pkg->name, one))
+				fn(file, pkg, ++pages);
 	epilogue(file);
 
 	fflush(file);
@@ -1102,9 +1110,9 @@ static int ps_for_all_pkg(FILE *file,
 }
 
 
-int postscript(FILE *file)
+int postscript(FILE *file, const char *one)
 {
-	return ps_for_all_pkg(file, ps_package);
+	return ps_for_all_pkg(file, ps_package, one);
 }
 
 
@@ -1136,7 +1144,7 @@ static void ps_package_fullpage(FILE *file, const struct pkg *pkg, int page)
 }
 
 
-int postscript_fullpage(FILE *file)
+int postscript_fullpage(FILE *file, const char *one)
 {
-	return ps_for_all_pkg(file, ps_package_fullpage);
+	return ps_for_all_pkg(file, ps_package_fullpage, one);
 }

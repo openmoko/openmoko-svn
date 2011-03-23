@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <sys/types.h>
 
 #include "util.h"
@@ -598,9 +599,11 @@ static void reverse_frames(FILE *file, struct frame *last)
 }
 
 
-int dump(FILE *file)
+int dump(FILE *file, const char *one)
 {
 	struct frame *frame;
+
+	assert(!one);
 
 	fprintf(file, "%s\n", MACHINE_GENERATED);
 	for (frame = frames; frame; frame = frame->next)

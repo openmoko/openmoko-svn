@@ -1,8 +1,8 @@
 /*
  * kicad.c - Dump objects in the KiCad board/module format
  *
- * Written 2009, 2010 by Werner Almesberger
- * Copyright 2009, 2010 by Werner Almesberger
+ * Written 2009-2011 by Werner Almesberger
+ * Copyright 2009-2011 by Werner Almesberger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 
 #include "coord.h"
 #include "inst.h"
@@ -300,10 +301,12 @@ static void kicad_module(FILE *file, const struct pkg *pkg, time_t now)
 }
 
 
-int kicad(FILE *file)
+int kicad(FILE *file, const char *one)
 {
 	const struct pkg *pkg;
 	time_t now = time(NULL);
+
+	assert(!one);
 
 	fprintf(file, "PCBNEW-LibModule-V1 %s", ctime(&now));
 
