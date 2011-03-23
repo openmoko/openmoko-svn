@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "util.h"
 #include "coord.h"
@@ -1095,6 +1096,7 @@ static int ps_for_all_pkg(FILE *file,
 				pages++;
 	if (one && !pages) {
 		fprintf(stderr, "no package \"%s\" to select\n", one);
+		errno = ENOENT;
 		return 0;
 	}
 	prologue(file, pages);
