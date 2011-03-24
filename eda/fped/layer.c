@@ -91,8 +91,7 @@ enum pad_type layers_to_pad_type(layer_type layers)
 
 layer_type mech_hole_layers(void)
 {
-	return LAYER_PASTE_TOP | LAYER_PASTE_BOTTOM |
-	    LAYER_MASK_TOP | LAYER_MASK_BOTTOM;
+	return LAYER_MASK_TOP | LAYER_MASK_BOTTOM;
 }
 
 
