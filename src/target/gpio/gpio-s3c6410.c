@@ -199,9 +199,9 @@ static void set_h(const struct port *p, int num, int c, int d, int r)
 	}
 	
 	if (d != -1) {
-		dat = *(uint32_t *) (mem+p->offset+4);
+		dat = *(uint32_t *) (mem+p->offset+8);
 		dat = (dat & ~(1 << num)) | (d << num);
-		*(uint32_t *) (mem+p->offset+4) = dat;
+		*(uint32_t *) (mem+p->offset+8) = dat;
 	}
 
 	pud = *(uint32_t *) (mem+p->offset+12);
