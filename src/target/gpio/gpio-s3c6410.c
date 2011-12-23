@@ -204,9 +204,9 @@ static void set_h(const struct port *p, int num, int c, int d, int r)
 		*(uint32_t *) (mem+p->offset+4) = dat;
 	}
 
-	pud = *(uint32_t *) (mem+p->offset+8);
+	pud = *(uint32_t *) (mem+p->offset+12);
 	pud = (pud & ~(15 << (num*4))) | (r << (num*4));
-	*(uint32_t *) (mem+p->offset+8) = pud;
+	*(uint32_t *) (mem+p->offset+12) = pud;
 }
 
 
